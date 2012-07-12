@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.statistics.model;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -21,9 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
-import org.amanzi.awe.statistics.enumeration.Period;
-import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
@@ -51,45 +47,45 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorIfDimensionIsNull() throws DatabaseException {
+    public void testConstructorIfDimensionIsNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testConstructorIfDimensionIsNull start");
         new StatisticsLevel(null, LEVEL_NAME);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorIfDimensionHasWrongType() throws DatabaseException {
+    public void testConstructorIfDimensionHasWrongType() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testConstructorIfDimensionHasWrongType start");
         String fakeDimensionType = "fakeDimensionType";
-        Node dimensionRoot = getMockedDimension(fakeDimensionType, fakeDimensionType);
+        Node dimensionRoot = getMockedNodeWithNameAndType(fakeDimensionType, fakeDimensionType);
         new StatisticsLevel(dimensionRoot, LEVEL_NAME);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorIfNameIsNull() throws DatabaseException {
+    public void testConstructorIfNameIsNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testConstructorIfNameIsNull start");
-        Node dimensionRoot = getMockedDimension(DimensionTypes.TIME.getId(), Period.HOURLY.getId());
+        Node dimensionRoot = getMockedDimension(DimensionTypes.TIME);
         new StatisticsLevel(dimensionRoot, null);
     }
 
     @Test
-    public void testConstructorIfEverythingIsOk() throws DatabaseException {
+    public void testConstructorIfEverythingIsOk() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testConstructorIfEverythingIsOk start");
-        Node dimensionRoot = getMockedDimension(StatisticsNodeTypes.DIMENSION.getId(), DimensionTypes.TIME.getId());
+        Node dimensionRoot = getMockedDimension(DimensionTypes.TIME);
         new StatisticsLevel(dimensionRoot, LEVEL_NAME);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testAddSourceIfSourceNull() throws DatabaseException {
+    public void testAddSourceIfSourceNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testAddSourceIfSourceNull start");
-        Node dimensionRoot = getMockedDimension(StatisticsNodeTypes.DIMENSION.getId(), DimensionTypes.TIME.getId());
+        Node dimensionRoot = getMockedDimension(DimensionTypes.TIME);
         StatisticsLevel level = new StatisticsLevel(dimensionRoot, LEVEL_NAME);
         level.addSourceLevel(null);
     }
 
     @Test
-    public void testAddSource() throws DatabaseException {
+    public void testAddSource() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testAddSource start");
-        Node dimensionRoot = getMockedDimension(StatisticsNodeTypes.DIMENSION.getId(), DimensionTypes.TIME.getId());
+        Node dimensionRoot = getMockedDimension(DimensionTypes.TIME);
         StatisticsLevel level = new StatisticsLevel(dimensionRoot, LEVEL_NAME);
         StatisticsLevel levelSource = new StatisticsLevel(dimensionRoot, LEVEL_NAME + Math.PI);
         level.addSourceLevel(levelSource);
@@ -98,8 +94,8 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     @Test
     public void testGetSourceLevel() throws DatabaseException {
         LOGGER.info("testGetSourceLevel start");
-        Node mockedLevel = createLevelRoot(LEVEL_NAME);
-        Node mockedSourceLevel = createLevelRoot(LEVEL_NAME + Math.PI);
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        Node mockedSourceLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
         StatisticsLevel level = new StatisticsLevel(mockedLevel);
         StatisticsLevel sourceLevel = new StatisticsLevel(mockedSourceLevel);
         List<Node> sources = new ArrayList<Node>();
@@ -112,42 +108,21 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     @Test(expected = IllegalArgumentException.class)
     public void testGetAggregateStatisticsModelIfCorrelatedIsNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetAggregateStatisticsModelIfCorrelatedIsNull start");
-        Node mockedLevel = createLevelRoot(LEVEL_NAME);
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
         StatisticsLevel level = new StatisticsLevel(mockedLevel);
         level.getAggregateStatisticsModel(null);
 
     }
 
+    @Test
     public void testGetAggregateStatisticsModelIfExist() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetAggregateStatisticsModelIfCorrelatedIsNull start");
-        Node mockedLevel = createLevelRoot(LEVEL_NAME);
-        Node mockedCorrelatedLevel = createLevelRoot(LEVEL_NAME + Math.PI);
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        Node mockedCorrelatedLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
         Node mockedAggregation = getMockedAggregatedStatistics(AGGREGATED_STATISTICS_NAME);
         StatisticsLevel level = new StatisticsLevel(mockedLevel);
         StatisticsLevel correlatedLevel = new StatisticsLevel(mockedCorrelatedLevel);
         when(statisticsService.findAggregatedModel(eq(mockedLevel), eq(mockedCorrelatedLevel))).thenReturn(mockedAggregation);
         level.getAggregateStatisticsModel(correlatedLevel);
-    }
-
-    /**
-     * return dimension root
-     * 
-     * @param fakeDimensionType
-     * @return
-     */
-    private Node getMockedDimension(String type, String name) {
-        Node dimension = getMockedNode();
-        when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.TYPE))).thenReturn(type);
-        when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.NAME))).thenReturn(name);
-        return dimension;
-    }
-
-    public Node createLevelRoot(String name) {
-        Node statRoot = getMockedNode();
-        when(statisticsService.findStatisticsLevelNode(any(Node.class), eq(name))).thenReturn(statRoot);
-        when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.TYPE))).thenReturn(
-                StatisticsNodeTypes.STATISTICS.getId());
-        when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.NAME))).thenReturn(name);
-        return statRoot;
     }
 }

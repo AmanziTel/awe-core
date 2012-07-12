@@ -26,7 +26,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @since 1.0.0
  */
 public enum StatisticsNodeTypes implements INodeType {
-    STATISTICS_MODEL, PERIOD_STATISTICS, S_ROW, S_CELL, DIMENSION, STATISTICS, S_GROUP, LEVEL;
+    STATISTICS_MODEL, S_ROW, S_CELL, DIMENSION, STATISTICS, S_GROUP, LEVEL;
     static {
         NodeTypeManager.registerNodeType(StatisticsNodeTypes.class);
     }

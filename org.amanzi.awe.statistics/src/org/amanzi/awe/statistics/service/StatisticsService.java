@@ -79,6 +79,42 @@ public class StatisticsService {
     }
 
     /**
+     * create statistic model root node
+     * 
+     * @param parent
+     * @param name
+     * @param type
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public Node createStatisticsModelRoot(Node parent, String name, boolean isNeedToSearchDuplicate) throws DatabaseException {
+        LOGGER.info("create statistic model node not found. parent:" + parent + " name:" + name);
+        if (parent == null) {
+            LOGGER.error("parentNode is null");
+            throw new IllegalArgumentException("parentNode can't be null");
+        }
+        if (isNeedToSearchDuplicate) {
+            Node finded = findFirstRelationshipNode(parent, DatasetService.NAME, name, StatisticsRelationshipTypes.STATISTICS);
+            if (finded != null) {
+                LOGGER.error("Statistics model root with name " + name + " is already exists");
+                throw new DatabaseException("Statistics model root with name " + name + " is already exists");
+            }
+        }
+        Node statisticsRoot = datasetService.createNode(parent, StatisticsRelationshipTypes.STATISTICS,
+                StatisticsNodeTypes.STATISTICS_MODEL);
+        try {
+            datasetService.setAnyProperty(parent, DatasetService.NAME, name);
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("unexpected exception");
+            /*
+             * cann't be thrown
+             */
+        }
+        return statisticsRoot;
+    }
+
+    /**
      * find dimension root
      * 
      * @param rootNode
@@ -89,19 +125,25 @@ public class StatisticsService {
         return findFirstRelationshipNode(rootNode, DatasetService.NAME, type.getId(), DatasetRelationTypes.CHILD);
     }
 
-    public Node createDimension(Node parent, DimensionTypes type) throws DatabaseException {
+    /**
+     * create new Dimension node
+     * 
+     * @param parent
+     * @param type
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public Node createDimension(Node parent, DimensionTypes type, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
         LOGGER.info("create dimension model node . parent:" + parent + " name:" + type.getId());
-        Node newlyNode = datasetService.createNode(parent, DatasetRelationTypes.CHILD, StatisticsNodeTypes.DIMENSION);
-        try {
-            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, type.getId());
-        } catch (IllegalNodeDataException e) {
-            LOGGER.error("Unexpected exception thrown", e);
-            // cann't be thrown
-        }
-        return newlyNode;
+        return findOrCreateNode(parent, DatasetService.NAME, type.getId(), StatisticsNodeTypes.DIMENSION, isNeedToSearchDuplicate,
+                Boolean.FALSE);
     }
 
     /**
+     * find statistics level by name
+     * 
      * @param parentNode
      * @param levelName
      */
@@ -116,243 +158,15 @@ public class StatisticsService {
      * @param name
      * @return
      * @throws DatabaseException
+     * @throws IllegalNodeDataException
      */
-    public Node createStatisticsLevelNode(Node parent, String name) throws DatabaseException {
+    public Node createStatisticsLevelNode(Node parent, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
         LOGGER.info("create StatisticsLevel model node . parent:" + parent + " name:" + name);
-        Node newlyNode = datasetService.createNode(parent, DatasetRelationTypes.CHILD, StatisticsNodeTypes.LEVEL);
-        try {
-            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, name);
-        } catch (IllegalNodeDataException e) {
-            LOGGER.error("Unexpected exception thrown", e);
-            // cann't be thrown
-        }
-        return newlyNode;
-    }
-
-    /**
-     * return all nodes by first OUTGOING Relationship
-     * 
-     * @param parent
-     * @param relType
-     * @return
-     */
-    public Iterable<Node> getFirstRelationsipsNodes(Node parent, RelationshipType relType) {
-        return datasetService.getFirstRelationTraverser(parent, relType, Direction.OUTGOING);
-    }
-
-    /**
-     * searching for a highest period;
-     * 
-     * @param existedPeriods
-     */
-    public Node getHighestPeriod(Iterable<Node> existedPeriods) {
-        Period[] sortedPeriods = Period.getSortedPeriods();
-        for (Period period : sortedPeriods) {
-            for (Node existed : existedPeriods) {
-                if (!existed.getProperty(DatasetService.TYPE).equals(StatisticsNodeTypes.PERIOD_STATISTICS.getId())) {
-                    continue;
-                }
-                if (period.getId().equals(existed.getProperty(DatasetService.NAME))) {
-                    return existed;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * method for search required node by firstRelationship
-     * 
-     * @param parentNode
-     * @param propertyName
-     * @param propertyValue
-     * @param relType
-     * @return
-     */
-    private Node findFirstRelationshipNode(Node parentNode, String propertyName, String propertyValue, RelationshipType relType) {
-        LOGGER.info("try to find node with propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
-                + " by relationship: " + relType);
-        Iterator<Node> statisticsNodes = getFirstRelationsipsNodes(parentNode, relType).iterator();
-        while (statisticsNodes.hasNext()) {
-            Node currentNode = statisticsNodes.next();
-            if (currentNode.getProperty(propertyName, StringUtils.EMPTY).equals(propertyValue)) {
-                LOGGER.info("node founded propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
-                        + " by relationship: " + relType);
-                return currentNode;
-            }
-        }
-        LOGGER.info("node ngetFirstRelationsipsNodesot found. propetyName:" + propertyName + " value:" + propertyValue
-                + " from parent:" + parentNode + " by relationship: " + relType);
-        return null;
-    }
-
-    /**
-     * create statistic model root node
-     * 
-     * @param parent
-     * @param name
-     * @param type
-     * @return
-     * @throws DatabaseException
-     * @throws IllegalNodeDataException
-     */
-    public Node createStatisticsModelRoot(Node parent, String name) throws DatabaseException {
-        LOGGER.info("create statistic model node not found. parent:" + parent + " name:" + name);
-        Node newlyNode = datasetService.createNode(parent, StatisticsRelationshipTypes.STATISTICS,
-                StatisticsNodeTypes.STATISTICS_MODEL);
-        try {
-            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, name);
-        } catch (IllegalNodeDataException e) {
-            LOGGER.error("Unexpected exception thrown", e);
-            // cann't be thrown
-        }
-        return newlyNode;
-    }
-
-    /**
-     * try to find period statistics model node, if not found- create new one
-     * 
-     * @param rootNode
-     * @param period
-     * @return
-     * @throws DatabaseException
-     */
-    public Node getPeriod(Node rootNode, Period period) throws DatabaseException {
-        Node findedPeriod = findFirstRelationshipNode(rootNode, DatasetService.NAME, period.getId(), DatasetRelationTypes.CHILD);
-        if (findedPeriod == null) {
-            createPeriodNode(rootNode, period);
-        }
-        return findedPeriod;
-    }
-
-    /**
-     * create period statistic model node
-     * 
-     * @param rootNode
-     * @param period
-     * @return
-     * @throws DatabaseException
-     */
-    private Node createPeriodNode(Node rootNode, Period period) throws DatabaseException {
-        LOGGER.info("create period statistic model node not found. parent:" + rootNode + " name:" + period);
-        Node newlyNode = datasetService.createNode(rootNode, DatasetRelationTypes.CHILD, StatisticsNodeTypes.PERIOD_STATISTICS);
-        try {
-            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, period.getId());
-        } catch (IllegalNodeDataException e) {
-            LOGGER.error("Unexpected exception thrown", e);
-        }
-        return newlyNode;
-    }
-
-    /**
-     * create SOURCE relationship between periodNode and sourceNOde
-     * 
-     * @param periodNode
-     * @param underline
-     * @throws DatabaseException
-     */
-    public void addSource(Node periodNode, Node sourceNode) throws DatabaseException {
-        LOGGER.info("add source:" + sourceNode + " to period:" + periodNode);
-        datasetService.createRelationship(periodNode, sourceNode, StatisticsRelationshipTypes.SOURCE);
-    }
-
-    /**
-     * return sources nodes;
-     * 
-     * @param parentNode
-     * @return
-     */
-    public Iterable<Node> getSources(Node parentNode) {
-        return datasetService.getFirstRelationTraverser(parentNode, StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING);
-    }
-
-    /**
-     * create new node in CHILD->NEXT chain {@link DatasetService#addChild(Node,Node,Node)}
-     * 
-     * @param rootNode
-     * @param propertyName
-     * @param value
-     * @param type
-     * @return
-     * @throws DatabaseException
-     * @throws IllegalNodeDataException
-     */
-    private Node createNodeInChain(Node rootNode, String propertyName, Object value, INodeType type) throws DatabaseException,
-            IllegalNodeDataException {
-        Node srowNode = null;
-        try {
-            srowNode = datasetService.createNode(type);
-            datasetService.setAnyProperty(srowNode, propertyName, value);
-        } catch (DatabaseException e) {
-            LOGGER.error("Unexpectable exception thrown. Cann't compleatly identify S_ROW node type", e);
-            throw e;
-        }
-        return datasetService.addChild(rootNode, srowNode, null);
-    }
-
-    /**
-     * try to findNode in chain
-     * 
-     * @param rootNode
-     * @param propertyName
-     * @param value
-     * @return
-     */
-    public Node findNodeInChain(Node rootNode, String propertyName, Object value) {
-        return datasetService.findNodeInChainByProperty(rootNode, propertyName, value);
-    }
-
-    /**
-     * create S_ROW node and added it to child->next chain
-     * 
-     * @param rootNode
-     * @param timestamp
-     * @param isNeedToSearchDuplicate
-     * @return
-     * @throws DatabaseException
-     * @throws IllegalNodeDataException
-     */
-    public Node createSRow(Node rootNode, Long timestamp, boolean isNeedToSearchDuplicate) throws DatabaseException,
-            IllegalNodeDataException {
-        if (isNeedToSearchDuplicate) {
-            Node srowNode = findNodeInChain(rootNode, DriveModel.TIMESTAMP, timestamp);
-            if (srowNode != null) {
-                LOGGER.error("Duplicated node found");
-                throw new DatabaseException("Duplicated node founded");
-            }
-        }
-        return createNodeInChain(rootNode, DriveModel.TIMESTAMP, timestamp, StatisticsNodeTypes.S_ROW);
-    }
-
-    /**
-     * create sCellNode
-     * 
-     * @param parentSrow S_ROW root of branch s_cell will belongs to
-     * @param name name of S_CELL
-     * @param isNeedToSearchDuplicate - if need to search dupli
-     * @return
-     */
-    public Node createSCell(Node parentSrow, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
-            IllegalNodeDataException {
-        if (isNeedToSearchDuplicate) {
-            Node sCellNode = findNodeInChain(parentSrow, DatasetService.NAME, name);
-            if (sCellNode != null) {
-                LOGGER.error("Duplicated node found");
-                throw new DatabaseException("Duplicated node founded");
-            }
-        }
-        return createNodeInChain(parentSrow, DatasetService.NAME, name, StatisticsNodeTypes.S_CELL);
-    }
-
-    /**
-     * return node property value or null if not exist
-     * 
-     * @param node
-     * @param propertyName
-     * @return
-     */
-    public Object getNodeProperty(Node node, String propertyName) {
-        return node.getProperty(propertyName, null);
+        return findOrCreateNode(parent, DatasetService.NAME, name, StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate,
+                Boolean.FALSE);
+        // return findOrCreateNamedNode(parent, name, DatasetRelationTypes.CHILD,
+        // StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate);
     }
 
     /**
@@ -396,10 +210,207 @@ public class StatisticsService {
     }
 
     /**
+     * try to create new s_group node. if isNeedToSearchDuplicate is true and node is already exist
+     * - {@link DatabaseException} will be thrown
      * 
+     * @param rootNode
+     * @param name
+     * @param isNeedToSearchDuplicate
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
      */
     public Node createSGroup(Node rootNode, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
-        return createSCell(rootNode, name, isNeedToSearchDuplicate);
+        return findOrCreateNode(rootNode, DatasetService.NAME, name, StatisticsNodeTypes.S_GROUP, isNeedToSearchDuplicate,
+                Boolean.TRUE);
     }
+
+    /**
+     * create S_ROW node and added it to child->next chain
+     * 
+     * @param rootNode
+     * @param timestamp
+     * @param isNeedToSearchDuplicate
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public Node createSRow(Node rootNode, Long timestamp, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
+        return findOrCreateNode(rootNode, DriveModel.TIMESTAMP, timestamp, StatisticsNodeTypes.S_ROW, isNeedToSearchDuplicate,
+                Boolean.TRUE);
+    }
+
+    /**
+     * try to create new s_cell node. if isNeedToSearchDuplicate is true and node is already exist -
+     * {@link DatabaseException} will be thrown
+     * 
+     * @param parentSrow S_ROW root of branch s_cell will belongs to
+     * @param name name of S_CELL
+     * @param isNeedToSearchDuplicate - if need to search duplicate
+     * @return
+     */
+    public Node createSCell(Node parentSrow, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
+        return findOrCreateNode(parentSrow, DatasetService.NAME, name, StatisticsNodeTypes.S_CELL, isNeedToSearchDuplicate,
+                Boolean.TRUE);
+    }
+
+    /**
+     * create SOURCE relationship between periodNode and sourceNOde
+     * 
+     * @param periodNode
+     * @param underline
+     * @throws DatabaseException
+     */
+    public void addSource(Node periodNode, Node sourceNode) throws DatabaseException {
+        LOGGER.info("add source:" + sourceNode + " to period:" + periodNode);
+        datasetService.createRelationship(periodNode, sourceNode, StatisticsRelationshipTypes.SOURCE);
+    }
+
+    /**
+     * return sources nodes;
+     * 
+     * @param parentNode
+     * @return
+     */
+    public Iterable<Node> getSources(Node parentNode) {
+        return datasetService.getFirstRelationTraverser(parentNode, StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING);
+    }
+
+    /**
+     * return all nodes by first OUTGOING Relationship
+     * 
+     * @param parent
+     * @param relType
+     * @return
+     */
+    public Iterable<Node> getFirstRelationsipsNodes(Node parent, RelationshipType relType) {
+        return datasetService.getFirstRelationTraverser(parent, relType, Direction.OUTGOING);
+    }
+
+    /**
+     * searching for a highest period;
+     * 
+     * @param existedPeriods
+     */
+    public Node getHighestPeriod(Iterable<Node> existedPeriods) {
+        Period[] sortedPeriods = Period.getSortedPeriods();
+        for (Period period : sortedPeriods) {
+            for (Node existed : existedPeriods) {
+                if (!existed.getProperty(DatasetService.TYPE).equals(StatisticsNodeTypes.LEVEL.getId())) {
+                    continue;
+                }
+                if (period.getId().equals(existed.getProperty(DatasetService.NAME))) {
+                    return existed;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * try to findNode in chain
+     * 
+     * @param rootNode
+     * @param propertyName
+     * @param value
+     * @return
+     */
+    public Node findNodeInChain(Node rootNode, String propertyName, Object value) {
+        return datasetService.findNodeInChainByProperty(rootNode, propertyName, value);
+    }
+
+    /**
+     * return node property value or null if not exist
+     * 
+     * @param node
+     * @param propertyName
+     * @return
+     */
+    public Object getNodeProperty(Node node, String propertyName) {
+        return node.getProperty(propertyName, null);
+    }
+
+    /**
+     * try to create new node with required attributes node. if isNeedToSearchDuplicate is true and
+     * node is already exist - {@link DatabaseException} will be thrown
+     * 
+     * @param rootNode start searching point
+     * @param propertyName property name to search
+     * @param propertyValue property value to search
+     * @param nodeType node type
+     * @param isNeedToSearchDuplicate
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    private Node findOrCreateNode(Node rootNode, String propertyName, Object propertyValue, INodeType nodeType,
+            boolean isNeedToSearchDuplicate, boolean addToChain) throws DatabaseException, IllegalNodeDataException {
+        if (isNeedToSearchDuplicate) {
+            Node srowNode = findNodeInChain(rootNode, propertyName, propertyValue);
+            if (srowNode != null) {
+                LOGGER.error("Duplicated node found");
+                throw new DatabaseException("Duplicated node founded");
+            }
+        }
+        return createNode(rootNode, propertyName, propertyValue, nodeType, addToChain);
+    }
+
+    /**
+     * method for search required node by firstRelationship
+     * 
+     * @param parentNode
+     * @param propertyName
+     * @param propertyValue
+     * @param relType
+     * @return
+     */
+    private Node findFirstRelationshipNode(Node parentNode, String propertyName, String propertyValue, RelationshipType relType) {
+        LOGGER.info("try to find node with propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
+                + " by relationship: " + relType);
+        Iterator<Node> statisticsNodes = getFirstRelationsipsNodes(parentNode, relType).iterator();
+        while (statisticsNodes.hasNext()) {
+            Node currentNode = statisticsNodes.next();
+            if (currentNode.getProperty(propertyName, StringUtils.EMPTY).equals(propertyValue)) {
+                LOGGER.info("node founded propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
+                        + " by relationship: " + relType);
+                return currentNode;
+            }
+        }
+        LOGGER.info("node ngetFirstRelationsipsNodesot found. propetyName:" + propertyName + " value:" + propertyValue
+                + " from parent:" + parentNode + " by relationship: " + relType);
+        return null;
+    }
+
+    /**
+     * create new node in CHILD->NEXT chain {@link DatasetService#addChild(Node,Node,Node)} if
+     * addToChain is TRUE, else add new node as child {@link DatasetService#addChild(Node,Node)}
+     * 
+     * @param rootNode
+     * @param propertyName
+     * @param value
+     * @param type
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    private Node createNode(Node rootNode, String propertyName, Object value, INodeType type, boolean addToChain)
+            throws DatabaseException, IllegalNodeDataException {
+        Node srowNode = null;
+        try {
+            srowNode = datasetService.createNode(type);
+            datasetService.setAnyProperty(srowNode, propertyName, value);
+        } catch (DatabaseException e) {
+            LOGGER.error("Unexpectable exception thrown. Cann't compleatly identify S_ROW node type", e);
+            throw e;
+        }
+        if (addToChain) {
+            return datasetService.addChild(rootNode, srowNode, null);
+        } else {
+            return datasetService.addChild(rootNode, srowNode);
+        }
+    }
+
 }

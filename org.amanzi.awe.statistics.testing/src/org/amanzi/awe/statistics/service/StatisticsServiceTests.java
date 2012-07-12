@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
@@ -63,6 +64,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     private Node projectNode;
     private StatisticsService statisticsService;
     private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+    private static final int ARRAYS_SIZE = 5;
 
     @BeforeClass
     public static final void beforeClass() {
@@ -96,21 +98,21 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     public void testCreateStatisticModelRootIfParentNull() throws DatabaseException {
         LOGGER.info("testCreateStatisticModelRootIfParentNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        statisticsService.createStatisticsModelRoot(null, STATISTIC_ROOT_NAME);
+        statisticsService.createStatisticsModelRoot(null, STATISTIC_ROOT_NAME, false);
     }
 
     @Test(expected = DatabaseException.class)
     public void testCreateStatisticModelRootIfNameIsNull() throws DatabaseException {
         LOGGER.info("testCreateStatisticModelRootIfNameIsNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        statisticsService.createStatisticsModelRoot(datasetNode, null);
+        statisticsService.createStatisticsModelRoot(datasetNode, null, false);
     }
 
     @Test
     public void testCreateStatisticModelRoot() throws DatabaseException {
         LOGGER.info("testCreateStatisticModelRoot started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        statisticsService.createStatisticsModelRoot(datasetNode, STATISTIC_ROOT_NAME);
+        statisticsService.createStatisticsModelRoot(datasetNode, STATISTIC_ROOT_NAME, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -149,8 +151,8 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testAddSource started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
-        Node periodD = createPeriodNode(statRoot, Period.DAILY);
+        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
+        Node periodD = createLevelNode(statRoot, Period.DAILY.getId());
         statisticsService.addSource(periodD, periodH);
         Assert.assertNotNull("SOURCE relationship not exists",
                 periodD.getSingleRelationship(StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING));
@@ -161,8 +163,8 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testGetSources started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
-        Node periodD = createPeriodNode(statRoot, Period.DAILY);
+        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
+        Node periodD = createLevelNode(statRoot, Period.DAILY.getId());
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
 
         Iterator<Node> sources = statisticsService.getSources(periodD).iterator();
@@ -174,14 +176,18 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testFindNodeInChain started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
-        List<Node> chainList = createChildNextChain(periodH, 5, StatisticsNodeTypes.S_ROW);
-
+        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
+        List<Node> chainList = createChildNextChain(periodH, ARRAYS_SIZE, StatisticsNodeTypes.S_ROW);
+        List<Node> innerBranch = createChildNextChain(chainList.get(3), ARRAYS_SIZE, StatisticsNodeTypes.S_ROW);
         for (Node storedNode : chainList) {
             Node findedNode = statisticsService.findNodeInChain(periodH, DriveModel.TIMESTAMP,
                     storedNode.getProperty(DriveModel.TIMESTAMP));
             Assert.assertEquals("Unexpected nodes.", storedNode, findedNode);
         }
+        Node innerBranchNode = innerBranch.get(3);
+        Node findedNode = statisticsService.findNodeInChain(periodH, DriveModel.TIMESTAMP,
+                innerBranchNode.getProperty(DriveModel.TIMESTAMP));
+        Assert.assertNull(findedNode);
     }
 
     @Test
@@ -189,7 +195,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testCreateSRowIfNotExist started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
         statisticsService.createSRow(periodH, timestamp, true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
@@ -203,7 +209,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testCreateSRowIfExist started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
         statisticsService.createSRow(periodH, timestamp, true);
         statisticsService.createSRow(periodH, timestamp, true);
@@ -214,7 +220,8 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testCreateSCell started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
+        Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
         statisticsService.createSRow(periodH, timestamp, true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
@@ -232,7 +239,8 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testCreateSCell started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
+        Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
         statisticsService.createSRow(periodH, timestamp, true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
@@ -242,20 +250,21 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testGetAllPeriods() throws DatabaseException, IllegalNodeDataException {
+    public void testGetFirstRelationsipsNodes() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetAllPeriods started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
-        Node periodD = createPeriodNode(statRoot, Period.DAILY);
-        Node periodW = createPeriodNode(statRoot, Period.WEEKLY);
+        Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
+        Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
+        Node periodD = createLevelNode(dimension, Period.DAILY.getId());
+        Node periodW = createLevelNode(dimension, Period.WEEKLY.getId());
         List<Node> expectedNodes = new ArrayList<Node>();
         expectedNodes.add(periodH);
         expectedNodes.add(periodD);
         expectedNodes.add(periodW);
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
-        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(statRoot, DatasetRelationTypes.CHILD);
+        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(dimension, DatasetRelationTypes.CHILD);
         Assert.assertNotNull("Periods count cann't be null", periods);
         Iterator<Node> periodsIterator = periods.iterator();
 
@@ -269,19 +278,56 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testGetHighestPeriod started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
-        Node periodD = createPeriodNode(statRoot, Period.DAILY);
-        Node periodW = createPeriodNode(statRoot, Period.WEEKLY);
+        Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
+        Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
+        Node periodD = createLevelNode(dimension, Period.DAILY.getId());
+        Node periodW = createLevelNode(dimension, Period.WEEKLY.getId());
         List<Node> expectedNodes = new ArrayList<Node>();
         expectedNodes.add(periodH);
         expectedNodes.add(periodD);
         expectedNodes.add(periodW);
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
-        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(statRoot, DatasetRelationTypes.CHILD);
+        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(dimension, DatasetRelationTypes.CHILD);
         Assert.assertNotNull("Periods count cann't be null", periods);
         Node highestPeriod = statisticsService.getHighestPeriod(periods);
         Assert.assertEquals("Unexpected highest period ", periodW, highestPeriod);
+    }
+
+    @Test
+    public void testFindDimension() {
+        LOGGER.info("testFindDimension started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node knownDimension = createDimensionNode(statRoot, DimensionTypes.TIME);
+        Node existedNode = statisticsService.findDimension(statRoot, DimensionTypes.TIME);
+        Assert.assertEquals("Expected node not found", knownDimension, existedNode);
+    }
+
+    @Test
+    public void testCreateDimension() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testFindDimension started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node expectedDimensionTime = statisticsService.createDimension(statRoot, DimensionTypes.TIME, false);
+        Node expectedDimensionNetwork = statisticsService.createDimension(statRoot, DimensionTypes.NETWORK, false);
+        Iterable<Node> dimensions = datasetService.getChildrenTraverser(statRoot);
+        Assert.assertNotNull("Unexpected dimensionsList", dimensions);
+        for (Node dimension : dimensions) {
+            if (!dimension.equals(expectedDimensionTime) && !dimension.equals(expectedDimensionNetwork)) {
+                Assert.fail("unexpected dimension");
+            }
+        }
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCreateLevelIfExists() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testFindDimension started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node dimensionTime = statisticsService.createDimension(statRoot, DimensionTypes.TIME, false);
+        createLevelNode(dimensionTime, Period.HOURLY.getId());
+        statisticsService.createStatisticsLevelNode(dimensionTime, Period.HOURLY.getId(), true);
     }
 
     private List<Node> createChildNextChain(Node rootNode, int count, INodeType type) {
@@ -302,16 +348,32 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         return chainList;
     }
 
-    private Node createPeriodNode(Node statisticNode, Period period) {
+    private Node createLevelNode(Node statisticNode, String name) {
         Node periodNode = null;
         try {
-            periodNode = datasetService
-                    .createNode(statisticNode, DatasetRelationTypes.CHILD, StatisticsNodeTypes.PERIOD_STATISTICS);
-            datasetService.setAnyProperty(periodNode, DatasetService.NAME, period.getId());
+            periodNode = datasetService.createNode(statisticNode, DatasetRelationTypes.CHILD, StatisticsNodeTypes.LEVEL);
+            datasetService.setAnyProperty(periodNode, DatasetService.NAME, name);
         } catch (Exception e) {
             LOGGER.error("cann't create period statistic root");
         }
         return periodNode;
+    }
+
+    /**
+     * create dimension node
+     * 
+     * @param type
+     * @return
+     */
+    private Node createDimensionNode(Node parent, DimensionTypes type) {
+        Node dimension = null;
+        try {
+            dimension = datasetService.createNode(parent, DatasetRelationTypes.CHILD, StatisticsNodeTypes.DIMENSION);
+            datasetService.setAnyProperty(dimension, DatasetService.NAME, type.getId());
+        } catch (Exception e) {
+            LOGGER.error("cann't create statistics root");
+        }
+        return dimension;
     }
 
     /**

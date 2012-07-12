@@ -44,12 +44,14 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
     @Test
     public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
-        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class), eq(Boolean.FALSE))).thenReturn(
+                statisticModelNode);
         StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
         assertEquals("Unexpected model root", statisticModelNode, model.getRootNode());
 
     }
 
+    @Test
     public void testGetAllDimensions() throws IllegalArgumentException, DatabaseException {
         // (String)statisticService.getNodeProperty(dimension, DatasetService.NAME)
         Node dimensionMocked = getMockedNode();
@@ -60,13 +62,14 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
         Assert.assertEquals(dimensionMocked, dimensions.iterator().next().getRootNode());
     }
 
-    public void testGetDimensionIfFound() throws IllegalArgumentException, DatabaseException {
+    @Test
+    public void testGetDimensionIfFound() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
         Node dimensionMocked = getMockedNode();
         when(statisticsService.getNodeProperty(eq(dimensionMocked), eq(DatasetService.NAME))).thenReturn(DimensionTypes.TIME);
         when(statisticsService.findDimension(eq(statisticModelNode), eq(DimensionTypes.TIME))).thenReturn(dimensionMocked);
         StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
         Dimension dimension = model.getDimension(DimensionTypes.TIME);
-        verify(statisticsService, never()).createDimension(any(Node.class), any(DimensionTypes.class));
+        verify(statisticsService, never()).createDimension(any(Node.class), any(DimensionTypes.class), eq(false));
         Assert.assertEquals(dimensionMocked, dimension.getRootNode());
     }
 }

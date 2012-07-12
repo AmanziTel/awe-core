@@ -311,4 +311,5 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
         }
         return dataElements;
     }
+    
 }

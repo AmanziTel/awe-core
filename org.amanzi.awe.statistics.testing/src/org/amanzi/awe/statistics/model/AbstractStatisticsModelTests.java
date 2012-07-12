@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.amanzi.awe.statistics.AbstractStatisticsTest;
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
@@ -40,6 +41,7 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
     protected static final String MODEL_NAME = "model";
     protected static Node parentNode;
     protected static Node statisticModelNode;
+    protected static final int ARRAYS_SIZE = 5;
 
     @Before
     public void setUp() {
@@ -102,5 +104,42 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
     protected Node getMockedNode() {
         Node node = mock(Node.class);
         return node;
+    }
+
+    /**
+     * return dimension root
+     * 
+     * @param fakeDimensionType
+     * @return
+     */
+    protected Node getMockedNodeWithNameAndType(String type, String name) {
+        Node dimension = getMockedNode();
+        when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.TYPE))).thenReturn(type);
+        when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.NAME))).thenReturn(name);
+        return dimension;
+    }
+
+    /**
+     * return mocked dimension node
+     */
+    protected Node getMockedDimension(DimensionTypes type) {
+        return getMockedNodeWithNameAndType(StatisticsNodeTypes.DIMENSION.getId(), type.getId());
+    }
+
+    /**
+     * create mocked level
+     * 
+     * @param name
+     * @return
+     */
+    protected Node getMockedLevel(String name, boolean mockFoundation) {
+        Node statRoot = getMockedNode();
+        if (mockFoundation) {
+            when(statisticsService.findStatisticsLevelNode(any(Node.class), eq(name))).thenReturn(statRoot);
+        }
+        when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.TYPE))).thenReturn(
+                StatisticsNodeTypes.STATISTICS.getId());
+        when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.NAME))).thenReturn(name);
+        return statRoot;
     }
 }

@@ -23,14 +23,15 @@ import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * Statistics Model play role of container for {@link Dimension}. may store some common
- * information about statistics;
+ * Statistics Model play role of container for {@link Dimension}. may store some common information
+ * about statistics;
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -64,7 +65,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
         this.name = (String)templateName;
         rootNode = statisticService.findStatistic(parentNode, name);
         if (rootNode == null) {
-            rootNode = statisticService.createStatisticsModelRoot(parentNode, name);
+            rootNode = statisticService.createStatisticsModelRoot(parentNode, name, false);
         }
         LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
         minTimestamp = (Long)this.parentNode.getProperty(DriveModel.MIN_TIMESTAMP);
@@ -112,21 +113,27 @@ public class StatisticsModel extends AbstractStatisticsModel {
      * @throws DatabaseException
      */
     private void initDefaultDimensions() throws DatabaseException {
-        Dimension timeModel = new Dimension(rootNode, DimensionTypes.TIME);
-        Period highestPeriod = Period.getHighestPeriod(minTimestamp, maxTimestamp);
-        createPeriods(timeModel, highestPeriod);
-        new Dimension(rootNode, DimensionTypes.NETWORK);
+        Dimension timeModel;
+        try {
+            timeModel = new Dimension(rootNode, DimensionTypes.TIME);
+            Period highestPeriod = Period.getHighestPeriod(minTimestamp, maxTimestamp);
+            createTimeLevels(timeModel, highestPeriod);
+            new Dimension(rootNode, DimensionTypes.NETWORK);
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("cann't intialize default Dimensions because of", e);
+        }
 
     }
 
     /**
-     * get existed or new(if not found) dimension model
+     * get existed or new(if not found) dimension
      * 
      * @param type
      * @return
      * @throws DatabaseException
+     * @throws IllegalNodeDataException
      */
-    public Dimension getDimension(DimensionTypes type) throws DatabaseException {
+    public Dimension getDimension(DimensionTypes type) throws DatabaseException, IllegalNodeDataException {
         return new Dimension(rootNode, type);
     }
 
@@ -136,12 +143,17 @@ public class StatisticsModel extends AbstractStatisticsModel {
      * @param timeModel
      * @throws DatabaseException
      */
-    private Period createPeriods(Dimension timeModel, Period period) throws DatabaseException {
-        StatisticsLevel level = timeModel.getLevel(period.getId());
-        Period underlinePeriod = period.getUnderlyingPeriod();
-        if (period.getUnderlyingPeriod() != null) {
-            createPeriods(timeModel, underlinePeriod);
-            level.addSourceLevel(timeModel.getLevel(underlinePeriod.getId()));
+    private Period createTimeLevels(Dimension timeModel, Period period) throws DatabaseException {
+        StatisticsLevel level;
+        try {
+            level = timeModel.getLevel(period.getId());
+            Period underlinePeriod = period.getUnderlyingPeriod();
+            if (period.getUnderlyingPeriod() != null) {
+                createTimeLevels(timeModel, underlinePeriod);
+                level.addSourceLevel(timeModel.getLevel(underlinePeriod.getId()));
+            }
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("can't create time level because of", e);
         }
         return period;
 

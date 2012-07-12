@@ -21,6 +21,7 @@ import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -46,8 +47,9 @@ public class Dimension extends AbstractLevelElement {
      * @param statisticsRoot
      * @param dimensionType
      * @throws DatabaseException
+     * @throws IllegalNodeDataException
      */
-    Dimension(Node statisticsRoot, DimensionTypes dimensionType) throws DatabaseException {
+    Dimension(Node statisticsRoot, DimensionTypes dimensionType) throws DatabaseException, IllegalNodeDataException {
         super(StatisticsNodeTypes.DIMENSION);
         initStatisticsService();
         if (statisticsRoot == null) {
@@ -55,11 +57,11 @@ public class Dimension extends AbstractLevelElement {
             throw new IllegalArgumentException("statistics root cann't be null");
         }
         rootNode = statisticService.findDimension(statisticsRoot, dimensionType);
+        if (rootNode == null) {
+            rootNode = statisticService.createDimension(statisticsRoot, dimensionType, false);
+        }
         this.dimensionType = dimensionType;
         name = dimensionType.getId();
-        if (rootNode == null) {
-            rootNode = statisticService.createDimension(statisticsRoot, dimensionType);
-        }
     }
 
     /**
@@ -88,11 +90,16 @@ public class Dimension extends AbstractLevelElement {
      * @param name
      * @return
      * @throws DatabaseException
+     * @throws IllegalNodeDataException
      */
-    public StatisticsLevel getLevel(String name) throws DatabaseException {
+    public StatisticsLevel getLevel(String name) throws DatabaseException, IllegalNodeDataException {
+        if (name == null || name.isEmpty()) {
+            LOGGER.error("level name can't be null or empty");
+            throw new IllegalArgumentException("Incorrect name");
+        }
         Node level = statisticService.findStatisticsLevelNode(rootNode, name);
         if (level == null) {
-            level = statisticService.createStatisticsLevelNode(rootNode, name);
+            level = statisticService.createStatisticsLevelNode(rootNode, name, false);
         }
         return new StatisticsLevel(level);
     }

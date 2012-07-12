@@ -41,8 +41,9 @@ public class StatisticsLevel extends AbstractLevelElement {
      * @param statisticsRoot
      * @param dimensionType
      * @throws DatabaseException
+     * @throws IllegalNodeDataException
      */
-    StatisticsLevel(Node dimensionRoot, String name) throws DatabaseException {
+    StatisticsLevel(Node dimensionRoot, String name) throws DatabaseException, IllegalNodeDataException {
         super(StatisticsNodeTypes.LEVEL);
         initStatisticsService();
         if (dimensionRoot == null) {
@@ -61,7 +62,7 @@ public class StatisticsLevel extends AbstractLevelElement {
         this.name = name;
         rootNode = statisticService.findStatisticsLevelNode(parentNode, name);
         if (rootNode == null) {
-            rootNode = statisticService.createStatisticsLevelNode(parentNode, name);
+            rootNode = statisticService.createStatisticsLevelNode(parentNode, name, false);
         }
     }
 
