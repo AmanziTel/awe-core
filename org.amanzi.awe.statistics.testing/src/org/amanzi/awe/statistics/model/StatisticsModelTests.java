@@ -19,8 +19,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.junit.Assert;
@@ -53,19 +57,24 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
 
     @Test
     public void testGetAllDimensions() throws IllegalArgumentException, DatabaseException {
-        // (String)statisticService.getNodeProperty(dimension, DatasetService.NAME)
-        Node dimensionMocked = getMockedNode();
-        when(statisticsService.getNodeProperty(eq(dimensionMocked), eq(DatasetService.NAME))).thenReturn(DimensionTypes.TIME);
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
+        List<Node> foundedNodes = new ArrayList<Node>();
+        foundedNodes.add(dimensionMocked);
+        when(statisticsService.getFirstRelationsipsNodes(eq(statisticModelNode), eq(DatasetRelationTypes.CHILD))).thenReturn(
+                foundedNodes);
         StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
         Iterable<Dimension> dimensions = model.getAllDimensions();
-        Assert.assertTrue(dimensions.iterator().hasNext());
+        Assert.assertTrue("Unexpected empty list", dimensions.iterator().hasNext());
         Assert.assertEquals(dimensionMocked, dimensions.iterator().next().getRootNode());
     }
 
     @Test
     public void testGetDimensionIfFound() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
-        Node dimensionMocked = getMockedNode();
-        when(statisticsService.getNodeProperty(eq(dimensionMocked), eq(DatasetService.NAME))).thenReturn(DimensionTypes.TIME);
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
+        when(statisticsService.getNodeProperty(eq(dimensionMocked), eq(DatasetService.NAME))).thenReturn(
+                DimensionTypes.TIME.getId());
         when(statisticsService.findDimension(eq(statisticModelNode), eq(DimensionTypes.TIME))).thenReturn(dimensionMocked);
         StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
         Dimension dimension = model.getDimension(DimensionTypes.TIME);

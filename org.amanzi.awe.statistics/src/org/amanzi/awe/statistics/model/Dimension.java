@@ -33,7 +33,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class Dimension extends AbstractLevelElement {
+public class Dimension extends AbstractEntity {
     /*
      * logger instantiation
      */
@@ -62,12 +62,14 @@ public class Dimension extends AbstractLevelElement {
         }
         this.dimensionType = dimensionType;
         name = dimensionType.getId();
+        parentNode = statisticsRoot;
     }
 
     /**
      * @param dimension
+     * @throws DatabaseException
      */
-    Dimension(Node dimension) {
+    Dimension(Node dimension) throws DatabaseException {
         super(StatisticsNodeTypes.DIMENSION);
         initStatisticsService();
         if (dimension == null) {
@@ -81,6 +83,7 @@ public class Dimension extends AbstractLevelElement {
             LOGGER.error("can't identify dimension type: " + dimensionType);
             throw new IllegalArgumentException("incorrect dimensionType");
         }
+        parentNode = statisticService.getParentNode(dimension);
 
     }
 
@@ -108,8 +111,9 @@ public class Dimension extends AbstractLevelElement {
      * return all existed levels of this dimension
      * 
      * @return
+     * @throws DatabaseException
      */
-    public Iterable<StatisticsLevel> getAllLevels() {
+    public Iterable<StatisticsLevel> getAllLevels() throws DatabaseException {
         Iterable<Node> allLevelsNodes = statisticService.getFirstRelationsipsNodes(rootNode, DatasetRelationTypes.CHILD);
         List<StatisticsLevel> levelModels = new ArrayList<StatisticsLevel>();
         if (allLevelsNodes == null) {

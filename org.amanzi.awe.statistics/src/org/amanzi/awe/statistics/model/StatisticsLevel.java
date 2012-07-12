@@ -16,6 +16,7 @@ package org.amanzi.awe.statistics.model;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -28,7 +29,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsLevel extends AbstractLevelElement {
+public class StatisticsLevel extends AbstractEntity {
 
     /*
      * logger instantiation;
@@ -70,8 +71,9 @@ public class StatisticsLevel extends AbstractLevelElement {
      * instantiate statistics model with existed level node
      * 
      * @param levelNode
+     * @throws DatabaseException
      */
-    StatisticsLevel(Node levelNode) {
+    StatisticsLevel(Node levelNode) throws DatabaseException {
         super(StatisticsNodeTypes.LEVEL);
         initStatisticsService();
         if (levelNode == null) {
@@ -84,6 +86,7 @@ public class StatisticsLevel extends AbstractLevelElement {
             throw new IllegalArgumentException("cann't find name property in node " + levelNode);
         }
         rootNode = levelNode;
+        parentNode = statisticService.getParentNode(rootNode);
     }
 
     /**
@@ -108,25 +111,61 @@ public class StatisticsLevel extends AbstractLevelElement {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public AggregatedStatistics getAggregateStatisticsModel(StatisticsLevel correlatedLevel) throws DatabaseException,
+    public AggregatedStatistics getAggregateStatistics(StatisticsLevel correlatedLevel) throws DatabaseException,
             IllegalNodeDataException {
+        AggregatedStatistics statistics = findAggregatedStatistics(correlatedLevel);
+        if (findAggregatedStatistics(correlatedLevel) == null) {
+            statistics = new AggregatedStatistics(this, correlatedLevel);
+        }
+        return statistics;
+    }
+
+    /**
+     * create aggregated statistics element. if such element is already in database throw
+     * DuplicatedNodeNameException
+     * 
+     * @param correlatedLevel
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     * @throws DuplicateNodeNameException
+     */
+    public AggregatedStatistics createAggregatedStatistics(StatisticsLevel correlatedLevel) throws DatabaseException,
+            IllegalNodeDataException, DuplicateNodeNameException {
+        AggregatedStatistics statistics = findAggregatedStatistics(correlatedLevel);
+        if (statistics != null) {
+            LOGGER.error("statistics for levels " + getName() + " " + correlatedLevel.getName() + " is already exists");
+            throw new DuplicateNodeNameException();
+        }
+        statistics = new AggregatedStatistics(this, correlatedLevel);
+        return statistics;
+    }
+
+    /**
+     * find statistics model
+     * 
+     * @param correlatedLevel
+     * @return null if not found
+     */
+    public AggregatedStatistics findAggregatedStatistics(StatisticsLevel correlatedLevel) {
         if (correlatedLevel == null) {
             LOGGER.error("correlatedLevel is Null");
             throw new IllegalArgumentException("correlated level can't be null");
         }
-        Node aggregatedNode = statisticService.findAggregatedModel(rootNode, correlatedLevel.getRootNode());
+        Node aggregatedNode = statisticService.findAggregatedStatistics(rootNode, correlatedLevel.getRootNode());
         if (aggregatedNode != null) {
             return new AggregatedStatistics(aggregatedNode);
         }
-        return new AggregatedStatistics(this, correlatedLevel);
+        return null;
     }
 
     /**
      * return source level if exist. else return null
      * 
      * @return
+     * @throws DatabaseException
      */
-    public StatisticsLevel getSourceLevel() {
+    public StatisticsLevel getSourceLevel() throws DatabaseException {
         Iterable<Node> sources = statisticService.getSources(rootNode);
         if (sources == null) {
             return null;

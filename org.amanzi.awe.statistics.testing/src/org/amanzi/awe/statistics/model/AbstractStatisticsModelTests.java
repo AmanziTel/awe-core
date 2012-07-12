@@ -18,11 +18,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.awe.statistics.AbstractStatisticsTest;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.junit.Before;
 import org.neo4j.graphdb.Node;
@@ -42,6 +48,12 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
     protected static Node parentNode;
     protected static Node statisticModelNode;
     protected static final int ARRAYS_SIZE = 5;
+    protected static final String SCELL_NAME = "scell";
+    protected static final String SGROUP_NAME = "sgroup";
+    protected static final String FIRST_LEVEL_NAME = "test";
+    protected static final String SECOND_LEVEL_NAME = "hourly";
+
+    protected static final String NAME_FORMAT = "%s, %s";
 
     @Before
     public void setUp() {
@@ -49,7 +61,7 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
         initMockedParentNode();
         initMockedStatisticsRootModel();
         StatisticsModel.setStatisticsService(statisticsService);
-        AbstractLevelElement.setStatisticsService(statisticsService);
+        AbstractEntity.setStatisticsService(statisticsService);
     }
 
     /**
@@ -141,5 +153,83 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
                 StatisticsNodeTypes.STATISTICS.getId());
         when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.NAME))).thenReturn(name);
         return statRoot;
+    }
+
+    /**
+     * get level and source dimention node with mocked service
+     * 
+     * @param name
+     * @param mockFoundation
+     * @param dimension
+     * @return
+     * @throws DatabaseException
+     */
+    protected Node getMockedLevelWithDimension(String name, boolean mockFoundation, DimensionTypes dimension)
+            throws DatabaseException {
+        Node level = getMockedLevel(name, mockFoundation);
+        Node dimenNode = getMockedDimension(dimension);
+        when(statisticsService.getParentNode(eq(level))).thenReturn(dimenNode);
+        return level;
+    }
+
+    /**
+     * get group root with mocked services
+     * 
+     * @return
+     */
+    protected Node getMockedGroup(String name) {
+        Node mockedGroup = getMockedNode();
+        Node mockedAgregated = getMockedAggregatedStatistics(String.format(NAME_FORMAT, FIRST_LEVEL_NAME, SECOND_LEVEL_NAME));
+        when(statisticsService.getNodeProperty(eq(mockedGroup), eq(DatasetService.NAME))).thenReturn(name);
+        when(statisticsService.getNodeProperty(eq(mockedGroup), eq(DatasetService.TYPE))).thenReturn(
+                StatisticsNodeTypes.S_GROUP.getId());
+        when(statisticsService.getParentLevelNode(eq(mockedGroup))).thenReturn(mockedAgregated);
+        return mockedGroup;
+    }
+
+    /**
+     * return mocked sRow
+     * 
+     * @param timstamp
+     * @return
+     */
+    protected Node getMockedSrow(Long timstamp) {
+        Node mockedSrow = getMockedNode();
+        Node mockedGroup = getMockedGroup(SGROUP_NAME);
+        when(statisticsService.getNodeProperty(eq(mockedSrow), eq(DatasetService.TYPE))).thenReturn(
+                StatisticsNodeTypes.S_ROW.getId());
+        when(statisticsService.getParentLevelNode(eq(mockedSrow))).thenReturn(mockedGroup);
+        return mockedSrow;
+    }
+
+    /**
+     * mocked sCell
+     * 
+     * @param name
+     * @return
+     */
+    protected Node getMockedScell(String name) {
+        Node mockedScell = getMockedNode();
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        when(statisticsService.getNodeProperty(eq(mockedScell), eq(DatasetService.NAME))).thenReturn(name);
+        when(statisticsService.getNodeProperty(eq(mockedScell), eq(DatasetService.TYPE))).thenReturn(
+                StatisticsNodeTypes.S_CELL.getId());
+        when(statisticsService.getParentLevelNode(eq(mockedScell))).thenReturn(mockedSrow);
+        return mockedScell;
+
+    }
+
+    /**
+     * @param size
+     * @return
+     */
+    protected List<IDataElement> generateSources(int size) {
+        List<IDataElement> dataElements = new ArrayList<IDataElement>();
+        for (int i = 0; i < size; i++) {
+            Node sourceNode = getMockedNode();
+            DataElement element = new DataElement(sourceNode);
+            dataElements.add(element);
+        }
+        return dataElements;
     }
 }

@@ -25,6 +25,8 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
+import org.amanzi.awe.statistics.model.Dimension;
+import org.amanzi.awe.statistics.model.StatisticsLevel;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -101,7 +103,7 @@ public class DimensionTests extends AbstractStatisticsModelTests {
     }
 
     @Test
-    public void testGetAllLevelsIfNotFound() {
+    public void testGetAllLevelsIfNotFound() throws DatabaseException {
         Node existedDimension = getMockedDimension(DimensionTypes.TIME);
         when(statisticsService.getFirstRelationsipsNodes(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(null);
         Dimension dimension = new Dimension(existedDimension);
@@ -109,7 +111,7 @@ public class DimensionTests extends AbstractStatisticsModelTests {
     }
 
     @Test
-    public void testGetAllLevelsIfFound() {
+    public void testGetAllLevelsIfFound() throws DatabaseException {
         Node existedDimension = getMockedDimension(DimensionTypes.TIME);
         List<Node> mockedLevels = new ArrayList<Node>();
         for (int i = NumberUtils.INTEGER_ZERO; i < ARRAYS_SIZE; i++) {

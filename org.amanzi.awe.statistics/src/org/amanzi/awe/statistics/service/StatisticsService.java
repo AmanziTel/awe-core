@@ -32,6 +32,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -46,6 +49,13 @@ public class StatisticsService {
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsService.class);
+
+    /**
+     * reverse traversal
+     */
+    protected final TraversalDescription REVERSE_CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
+            .relationships(DatasetRelationTypes.CHILD, Direction.INCOMING).evaluator(Evaluators.all());
     /*
      * services instantiation
      */
@@ -176,7 +186,7 @@ public class StatisticsService {
      * @param rootNode2
      * @return
      */
-    public Node findAggregatedModel(Node firstLevel, Node secondLevel) {
+    public Node findAggregatedStatistics(Node firstLevel, Node secondLevel) {
         Iterable<Node> firstLevelChilds = datasetService.getChildrenTraverser(firstLevel);
         Iterable<Node> secondLevelChilds = datasetService.getChildrenTraverser(secondLevel);
         if (firstLevelChilds == null || secondLevelChilds == null) {
@@ -331,6 +341,34 @@ public class StatisticsService {
      */
     public Object getNodeProperty(Node node, String propertyName) {
         return node.getProperty(propertyName, null);
+    }
+
+    /**
+     * get parent Node if node has more than one parent- return first one
+     * 
+     * @param node
+     * @return
+     * @throws DatabaseException
+     */
+    public Node getParentNode(Node node) throws DatabaseException {
+        Iterable<Relationship> allRelationship = node.getRelationships(Direction.INCOMING);
+
+        if (allRelationship == null) {
+            return null;
+        }
+        return allRelationship.iterator().next().getOtherNode(node);
+    }
+
+    public Node getParentLevelNode(Node node) {
+        Iterable<Node> upperLevel = REVERSE_CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(node).nodes();
+        String nodeType = (String)getNodeProperty(node, DatasetService.TYPE);
+        for (Node searchable : upperLevel) {
+            String searchableType = (String)getNodeProperty(searchable, DatasetService.TYPE);
+            if (!searchableType.equals(nodeType)) {
+                return searchable;
+            }
+        }
+        return null;
     }
 
     /**

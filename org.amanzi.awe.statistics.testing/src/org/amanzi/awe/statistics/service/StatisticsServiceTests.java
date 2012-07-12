@@ -34,6 +34,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -330,6 +331,34 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         statisticsService.createStatisticsLevelNode(dimensionTime, Period.HOURLY.getId(), true);
     }
 
+    @Test
+    public void testGetParentNode() throws DatabaseException {
+        LOGGER.info("testGetParentNode started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Assert.assertEquals(datasetNode, statisticsService.getParentNode(statRoot));
+    }
+
+    @Test
+    public void testGetParentLevel() {
+        LOGGER.info("testGetParentLevel started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        List<Node> chainList = createChildNextChain(statRoot, ARRAYS_SIZE, StatisticsNodeTypes.S_ROW);
+        Node parentToFind = chainList.get(ARRAYS_SIZE - NumberUtils.INTEGER_ONE);
+        chainList = createChildNextChain(parentToFind, ARRAYS_SIZE, StatisticsNodeTypes.S_CELL);
+        Node searchable = statisticsService.getParentLevelNode(chainList.get(ARRAYS_SIZE - NumberUtils.INTEGER_ONE));
+        Assert.assertEquals("Unexpected node found", parentToFind, searchable);
+    }
+
+    /**
+     * create CHILD->NEXT typed nodes chain size of count
+     * 
+     * @param rootNode
+     * @param count
+     * @param type
+     * @return
+     */
     private List<Node> createChildNextChain(Node rootNode, int count, INodeType type) {
         List<Node> chainList = new ArrayList<Node>();
         Node newNode;

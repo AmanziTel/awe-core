@@ -94,8 +94,9 @@ public class StatisticsModel extends AbstractStatisticsModel {
      * get list of all dimension
      * 
      * @return
+     * @throws DatabaseException
      */
-    public Iterable<Dimension> getAllDimensions() {
+    public Iterable<Dimension> getAllDimensions() throws DatabaseException {
         Iterable<Node> dimensions = statisticService.getFirstRelationsipsNodes(rootNode, DatasetRelationTypes.CHILD);
         List<Dimension> dimensionsList = new ArrayList<Dimension>();
         if (dimensions == null) {
