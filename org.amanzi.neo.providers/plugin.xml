@@ -54,7 +54,10 @@
             </providerReference>
             <providerReference
                   refId="org.amanzi.provider.IndexModelProvider">
-            </providerReference></parameters>
+            </providerReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.GeoNodeProperties">
+            </nodePropertiesReference></parameters>
       </provider>
    </extension>
 

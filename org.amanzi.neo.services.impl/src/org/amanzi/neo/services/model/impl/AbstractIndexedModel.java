@@ -53,13 +53,13 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
 
-    private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
+    private final Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
 
-    private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
+    private final IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
 
     protected static DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
-    protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
+    protected AbstractIndexedModel(final Node rootNode, final INodeType nodeType) throws AWEException {
         super(nodeType);
         this.rootNode = rootNode;
         Node gis = null;
@@ -84,7 +84,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param nodeType
      * @throws IOException if was unable to create an index in the database.
      */
-    protected void addLocationIndex(INodeType nodeType) throws AWEException {
+    protected void addLocationIndex(final INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
 
         // since location index exist it should also be a GIS node
@@ -107,8 +107,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         }
     }
 
-    protected Iterable<Node> getNodesInBounds(INodeType nodeType, double minLat, double minLon, double maxLat, double maxLon)
-            throws AWEException {
+    protected Iterable<Node> getNodesInBounds(final INodeType nodeType, final double minLat, final double minLon,
+            final double maxLat, final double maxLon) throws AWEException {
         // validate
         if (nodeType == null) {
             throw new IllegalArgumentException("Node type is null.");
@@ -125,7 +125,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         return locationIndex.searchTraverser(new Double[] {minLat, minLon}, new Double[] {maxLat, maxLon});
     }
 
-    protected Iterable<Node> getNodesByTimestampPeriod(INodeType nodeType, long min_timestamp, long max_timestamp)
+    protected Iterable<Node> getNodesByTimestampPeriod(final INodeType nodeType, final long min_timestamp, final long max_timestamp)
             throws AWEException {
 
         // validate
@@ -150,7 +150,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param nodeType
      * @throws IOException if was unable to create an index in the database.
      */
-    protected void addTimestampIndex(INodeType nodeType) throws AWEException {
+    protected void addTimestampIndex(final INodeType nodeType) throws AWEException {
         LOGGER.debug("addTimestampIndex(" + nodeType + ")");
 
         // validate parameters
@@ -175,7 +175,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * 
      * @param node the node to index
      */
-    protected void indexNode(Node node) {
+    protected void indexNode(final Node node) {
         LOGGER.debug("indexNode(" + node + ")");
 
         // validate parameters
@@ -214,7 +214,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * 
      * @param timestamp the new value of timestamp
      */
-    public void updateTimestamp(long timestamp) {
+    public void updateTimestamp(final long timestamp) {
         if (timestamp < min_timestamp) {
             min_timestamp = timestamp;
         }
@@ -229,7 +229,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param latitude
      * @param longitude
      */
-    public void updateLocationBounds(double latitude, double longitude) {
+    public void updateLocationBounds(final double latitude, final double longitude) {
 
         // update latitude
         if (latitude > max_latitude) {

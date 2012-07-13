@@ -35,13 +35,13 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public class HilbertIndexNode {
-    
+
     public static enum HilbertNodeType implements INodeType {
         HILBERT_INDEX("hilbert_index");
-        
+
         private String id;
-        
-        private HilbertNodeType(String id) {
+
+        private HilbertNodeType(final String id) {
             this.id = id;
         }
 
@@ -49,7 +49,7 @@ public class HilbertIndexNode {
         public String getId() {
             return id;
         }
-        
+
     }
 
     /*
@@ -75,17 +75,17 @@ public class HilbertIndexNode {
     /*
      * Level of this index
      */
-    private int level;
+    private final int level;
 
     /*
      * Order of index
      */
-    private int order;
+    private final int order;
 
     /*
      * Name of Index
      */
-    private String indexName;
+    private final String indexName;
 
     /*
      * Node for this Index
@@ -109,7 +109,7 @@ public class HilbertIndexNode {
      * @param indexName name of index
      * @param order order of index
      */
-    protected HilbertIndexNode(Node referencedNode, String indexName, int order) {
+    protected HilbertIndexNode(final Node referencedNode, final String indexName, final int order) {
         this(referencedNode, indexName, order, 1);
 
         initialize();
@@ -118,7 +118,7 @@ public class HilbertIndexNode {
     /**
      * Creates a node of Index
      */
-    private void createIndexNode(boolean isLastIndex) {
+    private void createIndexNode(final boolean isLastIndex) {
         indexNode = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().createNode();
         indexNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, HilbertNodeType.HILBERT_INDEX.getId());
         indexNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, indexName);
@@ -137,7 +137,7 @@ public class HilbertIndexNode {
      * @param order order of index
      * @param level level of index
      */
-    protected HilbertIndexNode(Node referencedNode, String indexName, int order, int level) {
+    protected HilbertIndexNode(final Node referencedNode, final String indexName, final int order, final int level) {
         this.level = level;
         this.order = order;
         this.indexName = indexName;
@@ -157,10 +157,10 @@ public class HilbertIndexNode {
      * @param highLevelNode node of Index of highly level
      * @param relationshipType type of relationship to new node
      */
-    protected HilbertIndexNode(HilbertIndexNode highLevelNode, RelationshipType relationshipType) {
-        this.level = highLevelNode.getLevel() - 1;
-        this.order = highLevelNode.getOrder();
-        this.indexName = highLevelNode.indexName;
+    protected HilbertIndexNode(final HilbertIndexNode highLevelNode, final RelationshipType relationshipType) {
+        level = highLevelNode.getLevel() - 1;
+        order = highLevelNode.getOrder();
+        indexName = highLevelNode.indexName;
 
         createIndexNode(false);
 
@@ -177,7 +177,7 @@ public class HilbertIndexNode {
      * 
      * @param node node of index
      */
-    protected HilbertIndexNode(Node node) {
+    protected HilbertIndexNode(final Node node) {
         indexNode = node;
         level = (Integer)node.getProperty(HILBERT_INDEX_LEVEL);
         order = (Integer)node.getProperty(HILBERT_INDEX_ORDER);
@@ -219,7 +219,8 @@ public class HilbertIndexNode {
      * @param order order of index
      * @return Index Node
      */
-    public static HilbertIndexNode getFromReferencedNode(Node referencedNode, String indexName, int order, GraphDatabaseService neo) {
+    public static HilbertIndexNode getFromReferencedNode(Node referencedNode, final String indexName, final int order,
+            final GraphDatabaseService neo) {
         if (neo != null) {
             neoService = neo;
         } else {
@@ -267,8 +268,8 @@ public class HilbertIndexNode {
      * @param coordinate coordinate
      * @return index
      */
-    public static HilbertIndexNode getHilbertIndex(HilbertIndexNode root, Pair<Integer, Integer> coordinate) {
-        int max = (int)Math.pow((double)(1 << root.getOrder()), (double)root.getLevel());
+    public static HilbertIndexNode getHilbertIndex(final HilbertIndexNode root, final Pair<Integer, Integer> coordinate) {
+        int max = (int)Math.pow(1 << root.getOrder(), root.getLevel());
 
         int x = coordinate.getLeft();
         int y = coordinate.getRight();
@@ -287,7 +288,8 @@ public class HilbertIndexNode {
      * @param coordinate
      * @return
      */
-    private static HilbertIndexNode createHighLevelIndex(HilbertIndexNode currentLevelIndex, Pair<Integer, Integer> coordinate) {
+    private static HilbertIndexNode createHighLevelIndex(final HilbertIndexNode currentLevelIndex,
+            final Pair<Integer, Integer> coordinate) {
         Relationship relationship = currentLevelIndex.indexNode.getSingleRelationship(
                 PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.INCOMING);
 
@@ -308,7 +310,7 @@ public class HilbertIndexNode {
      * @param y coordinate Y
      * @return indexed Node or null if not exists
      */
-    private Node getIndexedNode(int x, int y) {
+    private Node getIndexedNode(final int x, final int y) {
         RelationshipType relationshipType = getRelationshipType(x, y, level);
 
         Iterator<Relationship> relationships = indexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
@@ -326,7 +328,7 @@ public class HilbertIndexNode {
      * @param x coordinate X
      * @param y coordinate Y
      */
-    private void removeIndexedNode(int x, int y) {
+    private void removeIndexedNode(final int x, final int y) {
         RelationshipType relationshipType = getRelationshipType(x, y, level);
 
         Iterator<Relationship> relationships = indexNode.getRelationships(relationshipType, Direction.OUTGOING).iterator();
@@ -344,7 +346,7 @@ public class HilbertIndexNode {
      * @param createIfNotExist is need to be created?
      * @return founded Index node or null
      */
-    private HilbertIndexNode getUnderlyingIndex(int x, int y, boolean createIfNotExist) {
+    private HilbertIndexNode getUnderlyingIndex(final int x, final int y, final boolean createIfNotExist) {
         RelationshipType relationshipType = getRelationshipType(x, y, level);
 
         HashMap<String, HilbertIndexNode> nodeMap = nodeList.get(level - 1);
@@ -382,11 +384,11 @@ public class HilbertIndexNode {
      * @param coordinate coordinate
      * @return node
      */
-    public Node getIndexedNode(Pair<Integer, Integer> coordinate) {
+    public Node getIndexedNode(final Pair<Integer, Integer> coordinate) {
         int x = coordinate.getLeft();
         int y = coordinate.getRight();
 
-        int max = (int)Math.pow((double)(1 << order), (double)level);
+        int max = (int)Math.pow(1 << order, level);
 
         if ((x >= max) || (y >= max)) {
             return null;
@@ -410,11 +412,11 @@ public class HilbertIndexNode {
      * 
      * @param coordinate coordinates of Index to remove
      */
-    public void removeIndexNode(Pair<Integer, Integer> coordinate) {
+    public void removeIndexNode(final Pair<Integer, Integer> coordinate) {
         int x = coordinate.getLeft();
         int y = coordinate.getRight();
 
-        int max = (int)Math.pow((double)(1 << order), (double)level);
+        int max = (int)Math.pow(1 << order, level);
 
         if ((x >= max) || (y >= max)) {
             return;
@@ -439,7 +441,7 @@ public class HilbertIndexNode {
      * @param node node to index
      * @param coordinate coordinates of node
      */
-    public void index(Node node, Pair<Integer, Integer> coordinate) {
+    public void index(final Node node, final Pair<Integer, Integer> coordinate) {
         int x = coordinate.getLeft();
         int y = coordinate.getRight();
 
@@ -467,7 +469,7 @@ public class HilbertIndexNode {
      * @param currentLevel level for searching
      * @return type of Relationship
      */
-    private RelationshipType getRelationshipType(int x, int y, int currentLevel) {
+    private RelationshipType getRelationshipType(final int x, final int y, final int currentLevel) {
         final Integer position = HilbertSqaud.getHilbertPosition(x, y, currentLevel * order, (currentLevel - 1) * order);
 
         return hilbertRelationshipTypes.get(position);

@@ -10,24 +10,23 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.services.indexes;
+package org.amanzi.neo.services.impl.indexes;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 
-import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
+import org.amanzi.neo.services.impl.indexes.PropertyIndex.NeoIndexRelationshipTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.Traverser;
-import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -488,7 +487,7 @@ public class MultiPropertyIndex<E extends Object> {
         return null;
     }
 
-    public void finishUp() {
+    public synchronized void finishUp() {
         Transaction tx = neo.beginTx();
         try {
             flush();
@@ -529,9 +528,8 @@ public class MultiPropertyIndex<E extends Object> {
      * called by the final finishUp() method.
      * 
      * @param node to index
-     * @throws IOException
      */
-    public void add(final Node node) throws IOException {
+    public void add(final Node node) {
         nodesToIndex.add(node);
     }
 
@@ -580,7 +578,7 @@ public class MultiPropertyIndex<E extends Object> {
         }
     }
 
-    private class SearchEvaluator implements StopEvaluator, ReturnableEvaluator {
+    private class SearchEvaluator implements Evaluator {
         private final ArrayList<int[]> levelMin = new ArrayList<int[]>();
         private final ArrayList<int[]> levelMax = new ArrayList<int[]>();
         private Node currentNode = null;
@@ -675,32 +673,37 @@ public class MultiPropertyIndex<E extends Object> {
             }
         }
 
-        @Override
-        public boolean isStopNode(final TraversalPosition currentPos) {
-            if (currentPos.isStartNode()) {
+        public boolean isStopNode(final Node currentPos, final boolean isStartNode) {
+            if (isStartNode) {
                 return false;
             } else {
-                setTestNode(currentPos.currentNode());
+                setTestNode(currentPos);
                 return !nodeIsIndex || !nodeInRange;
             }
         }
 
-        @Override
-        public boolean isReturnableNode(final TraversalPosition currentPos) {
-            if (currentPos.currentNode().hasProperty("state")) {
-                if (currentPos.currentNode().getProperty("state").equals("disabled")) {
+        public boolean isReturnableNode(final Node currentPos, final boolean isStartNode) {
+            if (currentPos.hasProperty("state")) {
+                if (currentPos.getProperty("state").equals("disabled")) {
                     return false;
                 }
             }
 
-            if (currentPos.isStartNode()) {
+            if (isStartNode) {
                 return false;
             } else {
-                setTestNode(currentPos.currentNode());
+                setTestNode(currentPos);
                 return nodeInRange && !nodeIsIndex;
             }
         }
 
+        @Override
+        public Evaluation evaluate(final Path arg0) {
+            Node lastNode = arg0.endNode();
+            boolean isStartNode = arg0.endNode().equals(arg0.startNode());
+
+            return Evaluation.of(isReturnableNode(lastNode, isStartNode), !isStopNode(lastNode, isStartNode));
+        }
     }
 
     public Traverser searchTraverser(final E[] min, final E[] max, final int resolution) {
@@ -708,8 +711,10 @@ public class MultiPropertyIndex<E extends Object> {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
             SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, resolution);
             // Then we return a traverser using this evaluator
-            return this.root.traverse(Order.DEPTH_FIRST, searchEvaluator, searchEvaluator, NeoIndexRelationshipTypes.IND_CHILD,
-                    Direction.OUTGOING, NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING);
+
+            return Traversal.description().breadthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
+                    .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator)
+                    .traverse(root);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
@@ -720,20 +725,16 @@ public class MultiPropertyIndex<E extends Object> {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
             SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, null);
             // Then we return a traverser using this evaluator
-            return this.root.traverse(Order.DEPTH_FIRST, searchEvaluator, searchEvaluator, NeoIndexRelationshipTypes.IND_CHILD,
-                    Direction.OUTGOING, NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING);
+            return Traversal.description().breadthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
+                    .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator)
+                    .traverse(root);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
-    public Collection<Node> find(final E[] min, final E[] max) {
-        ArrayList<Node> results = new ArrayList<Node>();
-        // TODO why not use - return searchTraverser(min, max).getAllNodes();???
-        for (Node node : searchTraverser(min, max)) {
-            results.add(node);
-        }
-        return results;
+    public Iterable<Node> find(final E[] min, final E[] max) {
+        return searchTraverser(min, max).nodes();
     }
 
     /**

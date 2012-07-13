@@ -19,6 +19,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
 import org.amanzi.neo.services.INodeService;
@@ -39,15 +40,19 @@ public abstract class AbstractDatasetModelProvider<M extends IModel, P extends I
 
     private final IPropertyStatisticsModelProvider propertyStatisticsModelProvider;
 
+    private final IGeoNodeProperties geoNodeProperties;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
     protected AbstractDatasetModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-            final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider) {
+            final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
+            final IGeoNodeProperties geoNodeProperties) {
         super(nodeService, generalNodeProperties);
         this.indexModelProvider = indexModelProvider;
         this.propertyStatisticsModelProvider = propertyStatisticsModelProvider;
+        this.geoNodeProperties = geoNodeProperties;
     }
 
     @Override
@@ -59,6 +64,12 @@ public abstract class AbstractDatasetModelProvider<M extends IModel, P extends I
 
         model.setIndexModel(indexModel);
         model.setPropertyStatisticsModel(statisticsModel);
+
+        model.initializeIndexes();
+    }
+
+    protected IGeoNodeProperties getGeoNodeProperties() {
+        return geoNodeProperties;
     }
 
 }

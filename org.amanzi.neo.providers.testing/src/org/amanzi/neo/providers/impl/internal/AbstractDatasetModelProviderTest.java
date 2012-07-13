@@ -46,7 +46,7 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
          */
         protected TestDatasetModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
                 final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider) {
-            super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider);
+            super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, null);
         }
 
         @Override
@@ -115,4 +115,10 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
         verify(model).setPropertyStatisticsModel(statisitcsModel);
     }
 
+    @Test
+    public void testCheckIndexesInitializedOnPostInitialization() throws Exception {
+        provider.postInitialize(model);
+
+        verify(model).initializeIndexes();
+    }
 }

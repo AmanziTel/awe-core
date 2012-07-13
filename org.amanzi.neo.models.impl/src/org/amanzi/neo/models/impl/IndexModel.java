@@ -19,6 +19,7 @@ import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IIndexService;
+import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -54,6 +55,25 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
     @Override
     public Node getSingleNode(final String indexKey, final String propertyName, final Object value) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void index(final String key, final String proeprtyName, final Node node) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public <T> MultiPropertyIndex<T> getMultiPropertyIndex(final INodeType nodeType, final Node rootNode,
+            final String... propertyNames) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getMultiPropertyIndexKey(final Node rootNode, final INodeType nodeType, final String indexName) {
         // TODO Auto-generated method stub
         return null;
     }

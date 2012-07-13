@@ -44,7 +44,7 @@ public class IndexService extends AbstractService {
      * @return
      * @throws IOException
      */
-    public MultiPropertyIndex<Long> createTimestampIndex(Node rootNode, INodeType nodeType) throws DatabaseException {
+    public MultiPropertyIndex<Long> createTimestampIndex(final Node rootNode, final INodeType nodeType) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
 
         try {
@@ -65,7 +65,7 @@ public class IndexService extends AbstractService {
         }
     }
 
-    public MultiPropertyIndex<Double> createLocationIndex(Node rootNode, INodeType nodeType) throws DatabaseException {
+    public MultiPropertyIndex<Double> createLocationIndex(final Node rootNode, final INodeType nodeType) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
 
         try {

@@ -9,6 +9,10 @@
             class="org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties"
             id="org.amanzi.nodeproperties.generalnodeproperties">
       </nodeProperties>
+      <nodeProperties
+            class="org.amanzi.neo.nodeproperties.impl.GeoNodeProperties"
+            id="org.amanzi.nodeproperties.GeoNodeProperties">
+      </nodeProperties>
    </extension>
 
 </plugin>

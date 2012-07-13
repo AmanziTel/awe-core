@@ -15,8 +15,10 @@ package org.amanzi.neo.providers.impl;
 
 import org.amanzi.neo.models.impl.network.NetworkModel;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -36,6 +38,8 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
         implements
             INetworkModelProvider {
 
+    private IGeoNodeProperties geoNodeProperties;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -43,20 +47,19 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
      * @param propertyStatisticsModelProvider
      */
     protected NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-            final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider) {
-        super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider);
+            final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
+            final IGeoNodeProperties geoNodeProperties) {
+        super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties);
     }
 
     @Override
     protected INodeType getModelType() {
-        // TODO Auto-generated method stub
-        return null;
+        return NetworkElementType.NETWORK;
     }
 
     @Override
     protected NetworkModel createInstance() {
-        // TODO Auto-generated method stub
-        return null;
+        return new NetworkModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties());
     }
 
     @Override

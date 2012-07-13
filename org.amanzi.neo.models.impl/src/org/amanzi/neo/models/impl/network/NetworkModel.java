@@ -23,6 +23,7 @@ import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.apache.commons.lang3.StringUtils;
@@ -45,8 +46,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      * @param nodeService
      * @param generalNodeProperties
      */
-    public NetworkModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
-        super(nodeService, generalNodeProperties);
+    public NetworkModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final IGeoNodeProperties geoNodeProperties) {
+        super(nodeService, generalNodeProperties, geoNodeProperties);
     }
 
     @Override
@@ -86,8 +88,20 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public void createElement(final INetworkElementType elementType, final IDataElement parent, final Map<String, Object> properties)
-            throws ModelException {
+    public void createElement(final INetworkElementType elementType, final IDataElement parent, final String name,
+            final Map<String, Object> properties) throws ModelException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void replaceChild(final IDataElement child, final IDataElement newParent) throws ModelException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void initializeIndexes() {
         // TODO Auto-generated method stub
 
     }

@@ -13,20 +13,26 @@
 
 package org.amanzi.neo.models.impl.network;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
-import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.impl.GeoNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -42,6 +48,8 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
+    private static final IGeoNodeProperties GEO_NODE_PROPERTIES = new GeoNodeProperties();
+
     private static final String DEFAULT_ELEMENT_NAME = "element name";
 
     private static final INetworkElementType DEFAULT_ELEMENT_TYPE = NetworkElementType.SITE;
@@ -54,7 +62,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     private IIndexModel indexModel;
 
-    private INetworkModel networkModel;
+    private NetworkModel networkModel;
 
     private DataElement parentElement;
 
@@ -70,12 +78,10 @@ public class NetworkModelTest extends AbstractMockitoTest {
         statisticsModel = mock(IPropertyStatisticsModel.class);
         indexModel = mock(IIndexModel.class);
 
-        NetworkModel model = spy(new NetworkModel(nodeService, GENERAL_NODE_PROPERTIES));
-        model.setIndexModel(indexModel);
-        model.setPropertyStatisticsModel(statisticsModel);
-        doReturn(rootNode).when(model).getRootNode();
-
-        networkModel = model;
+        networkModel = spy(new NetworkModel(nodeService, GENERAL_NODE_PROPERTIES, GEO_NODE_PROPERTIES));
+        networkModel.setIndexModel(indexModel);
+        networkModel.setPropertyStatisticsModel(statisticsModel);
+        doReturn(rootNode).when(networkModel).getRootNode();
 
         parentNode = getNodeMock();
         elementNode = getNodeMock();
@@ -144,5 +150,26 @@ public class NetworkModelTest extends AbstractMockitoTest {
     @Test(expected = ParameterInconsistencyException.class)
     public void testCheckExceptionOnNullTypeForFindElement() throws Exception {
         networkModel.findElement(null, StringUtils.EMPTY);
+    }
+
+    @Test
+    @Ignore
+    public void testCheckActivityOnCreatingNewElement() throws Exception {
+        Map<String, Object> properties = getProperties();
+
+        networkModel.createElement(DEFAULT_ELEMENT_TYPE, parentElement, DEFAULT_ELEMENT_NAME, properties);
+
+        verify(networkModel).findElement(DEFAULT_ELEMENT_TYPE, DEFAULT_ELEMENT_NAME);
+        verify(nodeService).createNode(parentNode, DEFAULT_ELEMENT_TYPE, NodeServiceRelationshipType.CHILD, DEFAULT_ELEMENT_NAME,
+                properties);
+    }
+
+    private Map<String, Object> getProperties() {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        result.put("property1", "value1");
+        result.put("property2", "value2");
+
+        return result;
     }
 }

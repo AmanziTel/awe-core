@@ -14,6 +14,7 @@
 package org.amanzi.neo.models;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -28,5 +29,11 @@ public interface IIndexModel extends IModel {
 
     String getIndexKey(Node rootNode, INodeType nodeType);
 
+    String getMultiPropertyIndexKey(Node rootNode, INodeType nodeType, String indexName);
+
     Node getSingleNode(String indexKey, String propertyName, Object value);
+
+    void index(String key, String proeprtyName, Node node);
+
+    <T extends Object> MultiPropertyIndex<T> getMultiPropertyIndex(INodeType nodeType, Node rootNode, String... propertyNames);
 }

@@ -173,4 +173,12 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
 
     protected abstract INodeType getModelType();
 
+    protected INodeService getNodeService() {
+        return nodeService;
+    }
+
+    protected IGeneralNodeProperties getGeneralNodeProperties() {
+        return generalNodeProperties;
+    }
+
 }
