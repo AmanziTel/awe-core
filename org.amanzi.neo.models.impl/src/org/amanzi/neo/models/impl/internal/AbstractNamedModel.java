@@ -28,7 +28,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractNamedModel extends AbstractModel {
+public abstract class AbstractNamedModel extends AbstractDataModel {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractNamedModel.class);
 

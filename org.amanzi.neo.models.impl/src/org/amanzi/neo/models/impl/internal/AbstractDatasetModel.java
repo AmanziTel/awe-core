@@ -65,4 +65,8 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         this.propertyStatisticsModel = propertyStatisticsModel;
     }
 
+    protected IIndexModel getIndexModel() {
+        return indexModel;
+    }
+
 }

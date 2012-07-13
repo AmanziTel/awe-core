@@ -17,7 +17,9 @@ import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IIndexService;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -42,6 +44,18 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     @Override
     public void finishUp() throws ModelException {
 
+    }
+
+    @Override
+    public String getIndexKey(final Node rootNode, final INodeType nodeType) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Node getSingleNode(final String indexKey, final String propertyName, final Object value) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

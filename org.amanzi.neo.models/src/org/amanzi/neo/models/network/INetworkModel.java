@@ -13,7 +13,12 @@
 
 package org.amanzi.neo.models.network;
 
+import java.util.Map;
+
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of
@@ -25,5 +30,13 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
  */
 
 public interface INetworkModel extends IPropertyStatisticalModel {
+
+    public interface INetworkElementType extends INodeType {
+
+    }
+
+    IDataElement findElement(INetworkElementType elementType, String elementName) throws ModelException;
+
+    void createElement(INetworkElementType elementType, IDataElement parent, Map<String, Object> properties) throws ModelException;
 
 }

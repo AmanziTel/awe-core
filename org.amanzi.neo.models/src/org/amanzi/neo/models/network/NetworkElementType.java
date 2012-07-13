@@ -11,10 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models;
+package org.amanzi.neo.models.network;
 
-import org.amanzi.neo.nodetypes.INodeType;
-import org.neo4j.graphdb.Node;
+import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -24,9 +24,12 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IIndexModel extends IModel {
+public enum NetworkElementType implements INetworkElementType {
+    NETWORK, BSC, SITE, SECTOR;
 
-    String getIndexKey(Node rootNode, INodeType nodeType);
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
+    }
 
-    Node getSingleNode(String indexKey, String propertyName, Object value);
 }

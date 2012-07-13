@@ -15,6 +15,7 @@ package org.amanzi.neo.providers.internal;
 
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.providers.ContextException;
+import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.providers.context.ProviderContextImpl;
@@ -38,6 +39,8 @@ public abstract class AbstractProviderPlugin extends Plugin {
     private static final String PROJECT_MODEL_PROVIDER_ID = "org.amanzi.providers.ProjectModelProvider";
 
     private static final String PROPERTY_STATISTICS_MODEL_PROVIDER_ID = "org.amanzi.providers.PropertyStatisticsModelProvider";
+
+    private static final String NETWORK_MODEL_PROVIDER_ID = "org.amanzi.provider.NetworkModelProvider";
 
     private static class ProviderContextHolder {
         private static volatile IProviderContext context = new ProviderContextImpl();
@@ -73,6 +76,10 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     public IPropertyStatisticsModel getPropertyStatisticsModelProvider() {
         return getModelProvider(PROPERTY_STATISTICS_MODEL_PROVIDER_ID);
+    }
+
+    public INetworkModelProvider getNetworkModelProvider() {
+        return getModelProvider(NETWORK_MODEL_PROVIDER_ID);
     }
 
     public abstract String getPluginId();
