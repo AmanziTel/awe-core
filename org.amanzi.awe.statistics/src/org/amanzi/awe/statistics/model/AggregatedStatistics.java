@@ -86,7 +86,7 @@ public class AggregatedStatistics extends AbstractEntity {
      * @throws IllegalNodeDataException
      * @throws DatabaseException
      */
-    public StatisticsGroup getSGroup(String name) {
+    public StatisticsGroup findSGroup(String name) {
         loadChildIfNecessary();
         return groups.get(name);
     }
@@ -101,8 +101,7 @@ public class AggregatedStatistics extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsGroup createStatisticsGroup(String name) throws DuplicateNodeNameException, DatabaseException,
-            IllegalNodeDataException {
+    public StatisticsGroup createSGroup(String name) throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
         loadChildIfNecessary();
         if (groups.containsKey(name)) {
             LOGGER.error("s_group with timestamp." + name + "is already exists");

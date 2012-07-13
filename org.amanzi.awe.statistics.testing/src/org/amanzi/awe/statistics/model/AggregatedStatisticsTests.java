@@ -104,7 +104,7 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
         List<Node> groups = new ArrayList<Node>();
         groups.add(sgroupNode);
         when(statisticsService.getChildrenChainTraverser(eq(aggregation))).thenReturn(groups);
-        StatisticsGroup group = stat.getSGroup(SGROUP_NAME);
+        StatisticsGroup group = stat.findSGroup(SGROUP_NAME);
         Assert.assertEquals("Unexpected root node", sgroupNode, group.getRootNode());
     }
 
@@ -114,7 +114,7 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
         Node aggregation = getAggregatedRoot();
         AggregatedStatistics stat = new AggregatedStatistics(aggregation);
         when(statisticsService.getChildrenChainTraverser(eq(aggregation))).thenReturn(null);
-        StatisticsGroup group = stat.getSGroup(SGROUP_NAME);
+        StatisticsGroup group = stat.findSGroup(SGROUP_NAME);
         Assert.assertNull("Unexpected root node", group);
     }
 }

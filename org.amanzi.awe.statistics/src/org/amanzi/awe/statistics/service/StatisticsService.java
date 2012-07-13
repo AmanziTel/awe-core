@@ -87,7 +87,7 @@ public class StatisticsService extends AbstractService {
      * @return
      */
     public Node findStatistic(Node parentNode, String name) throws IllegalArgumentException {
-        return findFirstRelationshipNode(parentNode, DatasetService.NAME, name, StatisticsRelationshipTypes.STATISTICS);
+        return findFirstRelationshipNode(parentNode, NAME, name, StatisticsRelationshipTypes.STATISTICS);
     }
 
     /**
@@ -107,7 +107,7 @@ public class StatisticsService extends AbstractService {
             throw new IllegalArgumentException("parentNode can't be null");
         }
         if (isNeedToSearchDuplicate) {
-            Node finded = findFirstRelationshipNode(parent, DatasetService.NAME, name, StatisticsRelationshipTypes.STATISTICS);
+            Node finded = findFirstRelationshipNode(parent, NAME, name, StatisticsRelationshipTypes.STATISTICS);
             if (finded != null) {
                 LOGGER.error("Statistics model root with name " + name + " is already exists");
                 throw new DatabaseException("Statistics model root with name " + name + " is already exists");
@@ -115,7 +115,7 @@ public class StatisticsService extends AbstractService {
         }
         Node statisticsRoot = createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS_MODEL);
         try {
-            setAnyProperty(parent, DatasetService.NAME, name);
+            setAnyProperty(parent, NAME, name);
         } catch (IllegalNodeDataException e) {
             LOGGER.error("unexpected exception");
             /*
@@ -133,7 +133,7 @@ public class StatisticsService extends AbstractService {
      * @return
      */
     public Node findDimension(Node rootNode, DimensionTypes type) {
-        return findFirstRelationshipNode(rootNode, DatasetService.NAME, type.getId(), DatasetRelationTypes.CHILD);
+        return findFirstRelationshipNode(rootNode, NAME, type.getId(), DatasetRelationTypes.CHILD);
     }
 
     /**
@@ -148,8 +148,7 @@ public class StatisticsService extends AbstractService {
     public Node createDimension(Node parent, DimensionTypes type, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
         LOGGER.info("create dimension model node . parent:" + parent + " name:" + type.getId());
-        return findOrCreateNode(parent, DatasetService.NAME, type.getId(), StatisticsNodeTypes.DIMENSION, isNeedToSearchDuplicate,
-                Boolean.FALSE);
+        return findOrCreateNode(parent, NAME, type.getId(), StatisticsNodeTypes.DIMENSION, isNeedToSearchDuplicate, Boolean.FALSE);
     }
 
     /**
@@ -159,7 +158,7 @@ public class StatisticsService extends AbstractService {
      * @param levelName
      */
     public Node findStatisticsLevelNode(Node parentNode, String levelName) {
-        return findFirstRelationshipNode(parentNode, DatasetService.NAME, levelName, DatasetRelationTypes.CHILD);
+        return findFirstRelationshipNode(parentNode, NAME, levelName, DatasetRelationTypes.CHILD);
     }
 
     /**
@@ -174,8 +173,7 @@ public class StatisticsService extends AbstractService {
     public Node createStatisticsLevelNode(Node parent, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
         LOGGER.info("create StatisticsLevel model node . parent:" + parent + " name:" + name);
-        return findOrCreateNode(parent, DatasetService.NAME, name, StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate,
-                Boolean.FALSE);
+        return findOrCreateNode(parent, NAME, name, StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate, Boolean.FALSE);
         // return findOrCreateNamedNode(parent, name, DatasetRelationTypes.CHILD,
         // StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate);
     }
@@ -216,7 +214,7 @@ public class StatisticsService extends AbstractService {
             IllegalNodeDataException {
         Node newNode = createNode(firstLevel, DatasetRelationTypes.CHILD, StatisticsNodeTypes.STATISTICS);
         createRelationship(secondLevel, newNode, DatasetRelationTypes.CHILD);
-        setAnyProperty(newNode, DatasetService.NAME, name);
+        setAnyProperty(newNode, NAME, name);
         return newNode;
     }
 
@@ -233,8 +231,7 @@ public class StatisticsService extends AbstractService {
      */
     public Node createSGroup(Node rootNode, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
-        return findOrCreateNode(rootNode, DatasetService.NAME, name, StatisticsNodeTypes.S_GROUP, isNeedToSearchDuplicate,
-                Boolean.TRUE);
+        return findOrCreateNode(rootNode, NAME, name, StatisticsNodeTypes.S_GROUP, isNeedToSearchDuplicate, Boolean.TRUE);
     }
 
     /**
@@ -247,10 +244,13 @@ public class StatisticsService extends AbstractService {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public Node createSRow(Node rootNode, Long timestamp, boolean isNeedToSearchDuplicate) throws DatabaseException,
+    public Node createSRow(Node rootNode, Long timestamp, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
-        return findOrCreateNode(rootNode, DriveModel.TIMESTAMP, timestamp, StatisticsNodeTypes.S_ROW, isNeedToSearchDuplicate,
-                Boolean.TRUE);
+        Node sRow = findOrCreateNode(rootNode, NAME, name, StatisticsNodeTypes.S_ROW, isNeedToSearchDuplicate, Boolean.TRUE);
+        if (timestamp != null) {
+            setAnyProperty(sRow, DriveModel.TIMESTAMP, timestamp);
+        }
+        return sRow;
     }
 
     /**
@@ -264,8 +264,7 @@ public class StatisticsService extends AbstractService {
      */
     public Node createSCell(Node parentSrow, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
-        return findOrCreateNode(parentSrow, DatasetService.NAME, name, StatisticsNodeTypes.S_CELL, isNeedToSearchDuplicate,
-                Boolean.TRUE);
+        return findOrCreateNode(parentSrow, NAME, name, StatisticsNodeTypes.S_CELL, isNeedToSearchDuplicate, Boolean.TRUE);
     }
 
     /**
@@ -313,7 +312,7 @@ public class StatisticsService extends AbstractService {
                 if (!existed.getProperty(DatasetService.TYPE).equals(StatisticsNodeTypes.LEVEL.getId())) {
                     continue;
                 }
-                if (period.getId().equals(existed.getProperty(DatasetService.NAME))) {
+                if (period.getId().equals(existed.getProperty(NAME))) {
                     return existed;
                 }
             }

@@ -47,7 +47,7 @@ public class StatisticsRowTests extends AbstractStatisticsModelTests {
     @Test
     public void testGetScellIfNotFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfNotFounded started ");
-        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE, SROW_NAME);
         Node group = getMockedGroup(SGROUP_NAME);
         StatisticsRow row = new StatisticsRow(group, mockedSrow);
         when(statisticsService.getChildrenChainTraverser(eq(mockedSrow))).thenReturn(null);
@@ -58,7 +58,7 @@ public class StatisticsRowTests extends AbstractStatisticsModelTests {
     @Test
     public void testGetSCellIfFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfNotFounded started ");
-        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE, SROW_NAME);
         Node group = getMockedGroup(SGROUP_NAME);
         StatisticsRow row = new StatisticsRow(group, mockedSrow);
         Node scell = getMockedScell(SCELL_NAME);
@@ -72,7 +72,7 @@ public class StatisticsRowTests extends AbstractStatisticsModelTests {
     @Test(expected = IllegalArgumentException.class)
     public void testGetSCellIfScellNameIsIncorrect() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfScellNameIsIncorrect started ");
-        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE, SROW_NAME);
         Node group = getMockedGroup(SGROUP_NAME);
         StatisticsRow row = new StatisticsRow(group, mockedSrow);
         Node scell = getMockedScell(SCELL_NAME);

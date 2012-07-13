@@ -54,6 +54,7 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
     protected static final String LEVEL_NAME = "levelName";
     protected static final String NAME_FORMAT = "%s, %s";
     protected static final String AGGREGATED_STATISTICS_NAME = "aggregation";
+    protected static final String SROW_NAME = "srow";
 
     @Before
     public void setUp() {
@@ -170,10 +171,11 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
      * @param timstamp
      * @return
      */
-    protected Node getMockedSrow(Long timstamp) {
+    protected Node getMockedSrow(Long timstamp, String name) {
         Node mockedSrow = getMockedNode();
         when(statisticsService.getType(eq(mockedSrow))).thenReturn(StatisticsNodeTypes.S_ROW.getId());
         when(statisticsService.getNodeProperty(eq(mockedSrow), eq(DriveModel.TIMESTAMP))).thenReturn(timstamp);
+        when(statisticsService.getNodeProperty(eq(mockedSrow), eq(StatisticsService.NAME))).thenReturn(name);
         return mockedSrow;
     }
 

@@ -198,7 +198,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node statRoot = createStatisticsRoot(datasetNode);
         Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, true);
+        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
         Node existed = srows.next();
         Assert.assertEquals("Unexpected timestamp found", existed.getProperty(DriveModel.TIMESTAMP), timestamp);
@@ -212,8 +212,8 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node statRoot = createStatisticsRoot(datasetNode);
         Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, true);
-        statisticsService.createSRow(periodH, timestamp, true);
+        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
+        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
     }
 
     @Test
@@ -224,7 +224,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
         Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, true);
+        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
         Node existedSrow = srows.next();
         statisticsService.createSCell(existedSrow, SCELL_NAME, true);
@@ -243,7 +243,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
         Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, true);
+        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
         Node existedSrow = srows.next();
         statisticsService.createSCell(existedSrow, SCELL_NAME, true);

@@ -35,6 +35,7 @@ import org.neo4j.graphdb.Node;
 public class StatisticsRow extends AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(StatisticsRow.class);
     private static final String PROPERTY_SUMMARY_NAME = "summary";
+    static final String SUMMARY_NAME = "total";
     // key - column/header name
     private LinkedHashMap<String, StatisticsCell> cells;
     private StatisticsGroup group;
@@ -111,7 +112,7 @@ public class StatisticsRow extends AbstractEntity {
      * @return
      */
     public boolean isSummaryNode() {
-        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_SUMMARY_NAME);
+        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, SUMMARY_NAME);
         if (summury == null) {
             return false;
         }

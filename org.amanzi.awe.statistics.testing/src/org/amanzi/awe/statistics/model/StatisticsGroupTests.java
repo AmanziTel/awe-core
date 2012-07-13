@@ -41,6 +41,7 @@ public class StatisticsGroupTests extends AbstractStatisticsModelTests {
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsGroupTests.class);
 
+
     @Test
     public void testGetSRowIfNotFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSRowIfNotFounded started ");
@@ -48,7 +49,7 @@ public class StatisticsGroupTests extends AbstractStatisticsModelTests {
         Node level = getMockedLevel(FIRST_LEVEL_NAME, Boolean.TRUE);
         StatisticsGroup group = new StatisticsGroup(level, sGroup);
         when(statisticsService.getChildrenChainTraverser(eq(sGroup))).thenReturn(null);
-        StatisticsRow row = group.getSRow(Long.MIN_VALUE);
+        StatisticsRow row = group.getSRow(SROW_NAME);
         Assert.assertNull("Unexpected root node", row);
     }
 
@@ -56,13 +57,13 @@ public class StatisticsGroupTests extends AbstractStatisticsModelTests {
     public void testGetSRowIfFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSRowIfNotFounded started ");
         Node sGroup = getMockedGroup(SGROUP_NAME);
-        Node srow = getMockedSrow(Long.MIN_VALUE);
+        Node srow = getMockedSrow(Long.MIN_VALUE, SROW_NAME);
         Node level = getMockedLevel(FIRST_LEVEL_NAME, Boolean.TRUE);
         StatisticsGroup group = new StatisticsGroup(level, sGroup);
         List<Node> rows = new ArrayList<Node>();
         rows.add(srow);
         when(statisticsService.getChildrenChainTraverser(eq(sGroup))).thenReturn(rows);
-        StatisticsRow row = group.getSRow(Long.MIN_VALUE);
+        StatisticsRow row = group.getSRow(SROW_NAME);
         Assert.assertEquals("Unexpected root node", srow, row.getRootNode());
     }
 }

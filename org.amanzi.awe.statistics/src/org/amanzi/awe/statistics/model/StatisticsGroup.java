@@ -16,10 +16,10 @@ package org.amanzi.awe.statistics.model;
 import java.util.LinkedHashMap;
 
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
+import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -34,7 +34,7 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsGroup extends AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(StatisticsGroup.class);
-    private LinkedHashMap<Long, StatisticsRow> rows;
+    private LinkedHashMap<String, StatisticsRow> rows;
 
     /**
      * constructor for instantiation
@@ -55,13 +55,13 @@ public class StatisticsGroup extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsRow getSRow(Long timestamp) {
-        if (timestamp == null) {
+    public StatisticsRow getSRow(String name) {
+        if (name == null) {
             LOGGER.error("timestamp element is null.");
             throw new IllegalArgumentException("timestamp element is null");
         }
         loadChildIfNecessary();
-        return rows.get(timestamp);
+        return rows.get(name);
     }
 
     /**
@@ -74,17 +74,31 @@ public class StatisticsGroup extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsRow createStatisticsRow(Long timestamp) throws DuplicateNodeNameException, DatabaseException,
+    public StatisticsRow createStatisticsRow(Long timestamp, String name) throws DuplicateNodeNameException, DatabaseException,
             IllegalNodeDataException {
         loadChildIfNecessary();
-        if (rows.containsKey(timestamp)) {
+        if (rows.containsKey(name)) {
             LOGGER.error("s_row with timestamp." + timestamp + "is already exists");
             throw new DuplicateNodeNameException();
         }
-        Node statisticsRow = statisticService.createSRow(rootNode, timestamp, Boolean.FALSE);
+        Node statisticsRow = statisticService.createSRow(rootNode, timestamp, name, Boolean.FALSE);
         StatisticsRow newRow = new StatisticsRow(rootNode, statisticsRow);
-        rows.put(timestamp, newRow);
+        rows.put(name, newRow);
         return newRow;
+    }
+
+    /**
+     * create summury row
+     * 
+     * @return
+     * @throws IllegalNodeDataException
+     * @throws DatabaseException
+     * @throws DuplicateNodeNameException
+     */
+    public StatisticsRow createSummuryRow() throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
+        StatisticsRow row = createStatisticsRow(null, StatisticsRow.SUMMARY_NAME);
+        row.setSummary(Boolean.TRUE);
+        return row;
     }
 
     /**
@@ -132,14 +146,14 @@ public class StatisticsGroup extends AbstractEntity {
     @Override
     protected void loadChildIfNecessary() {
         if (rows == null) {
-            rows = new LinkedHashMap<Long, StatisticsRow>();
+            rows = new LinkedHashMap<String, StatisticsRow>();
             Iterable<Node> rowsNodes = statisticService.getChildrenChainTraverser(rootNode);
             if (rowsNodes == null) {
                 return;
             }
             for (Node rowNode : rowsNodes) {
-                Long timestamp = (Long)statisticService.getNodeProperty(rowNode, DriveModel.TIMESTAMP);
-                rows.put(timestamp, new StatisticsRow(rootNode, rowNode));
+                String name = (String)statisticService.getNodeProperty(rowNode, StatisticsService.NAME);
+                rows.put(name, new StatisticsRow(rootNode, rowNode));
             }
         }
     }

@@ -25,7 +25,29 @@ import java.util.GregorianCalendar;
  * @since 1.0.0
  */
 public enum Period {
+    // 15 min
+    QUATER_HOUR("15min", null, -1) {
+        @Override
+        public Long addPeriod(Long time) {
+            Calendar cl = Calendar.getInstance();
+            cl.setTimeInMillis(time);
+            cl.add(Calendar.MINUTE, 15);
+            return cl.getTimeInMillis();
+        }
 
+        @Override
+        public Long getStartTime(Long time) {
+            GregorianCalendar cl = new GregorianCalendar();
+            cl.setTimeInMillis(time);
+            cl.set(Calendar.SECOND, 0);
+            cl.set(Calendar.MILLISECOND, 0);
+            int min = cl.get(Calendar.MINUTE);
+            min = min - min % 15;
+            cl.set(Calendar.MINUTE, min);
+            return cl.getTimeInMillis();
+        }
+
+    },
     // 1 hour
     HOURLY(Messages.CTP_HOURLY, null, -1) {
         @Override
