@@ -119,7 +119,11 @@ public class StatisticsManager {
             return statistics;
 
         } else {
-            // return buildLowerLevel(timeLevel, networkLevel, template, monitor);
+            try {
+                return buildLowerLevel(timeLevel, networkLevel, template, monitor);
+            } catch (IllegalNodeDataException e) {
+                LOGGER.error("Exception while low level statistics calulated", e);
+            }
         }
         return null;
     }
@@ -135,7 +139,6 @@ public class StatisticsManager {
      */
     private AggregatedStatistics buildLowerLevel(StatisticsLevel timeLevel, StatisticsLevel networkLevel, Object template,
             IProgressMonitor monitor) throws DatabaseException, IllegalNodeDataException {
-        int rowAdded = 0;
         final String task = "Building stats for " + timeLevel.getName() + "/" + networkLevel.getName();
         LOGGER.debug(task);
         monitor.subTask(task);
@@ -143,25 +146,17 @@ public class StatisticsManager {
         AggregatedStatistics statistics = networkLevel.getAggregateStatistics(timeLevel);
         Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
         // String hash = createScriptForTemplate(template);
-        long noUsedNodes = 0;
         long currentStartTime = period.getStartTime(currentStatisticsModel.getMinTimestamp());
         long nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
-        long oldCount = 0;
-        long count = 0;
-        int comm = 0;
         do {
 
-            long startForPeriod = System.currentTimeMillis();
             String debugInfo = "currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
                     + currentStatisticsModel.getMaxTimestamp();
             LOGGER.debug(debugInfo);
 
             Iterable<IDataElement> elements = aggregatedModel.findAllElementsByTimestampPeriod(currentStartTime, nextStartTime);
             long startFindGroup = 0L;
-            long cellCalcTime = 0L;
             for (IDataElement element : elements) {
-                count++;
-                boolean isUsed = false;
                 if (monitor.isCanceled()) {
                     break;
                 }
@@ -184,7 +179,10 @@ public class StatisticsManager {
                 group = findOrCreateGroup(statistics, element.get(networkLevel.getName()), defaultValue);
                 startFindGroup = System.currentTimeMillis() - startFindGroup;
                 StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
-                long t = System.currentTimeMillis();
+                StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
+                /*
+                 * TODO KV: implement s_cell creation.
+                 */
             }
         } while (currentStartTime < currentStatisticsModel.getMaxTimestamp());
         return null;
@@ -236,6 +234,27 @@ public class StatisticsManager {
             summaries.put(groupName, summaryRow);
         }
         return summaryRow;
+    }
+
+    /**
+     * find cell or create new one
+     * 
+     * @param row
+     * @param name
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    private StatisticsCell findOrCreateCell(StatisticsRow row, String name) throws DatabaseException, IllegalNodeDataException {
+        StatisticsCell cell = row.getSCell(name);
+        if (cell == null) {
+            try {
+                cell = row.createStatisticsCell(name);
+            } catch (DuplicateNodeNameException e) {
+                LOGGER.error("Unexpected exteption thrown", e);
+            }
+        }
+        return cell;
     }
 
     /**
