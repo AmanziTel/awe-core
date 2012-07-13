@@ -13,14 +13,14 @@
 
 package org.amanzi.awe.statistics.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.neo.services.DatasetService;
+import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -34,12 +34,15 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class Dimension extends AbstractEntity {
+
     /*
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(Dimension.class);
 
     private DimensionTypes dimensionType;
+
+    private LinkedHashMap<String, StatisticsLevel> levels;
 
     /**
      * initialize new dimension Level
@@ -66,29 +69,21 @@ public class Dimension extends AbstractEntity {
     }
 
     /**
-     * @param dimension
-     * @throws DatabaseException
+     * @param parent
+     * @param current
+     * @param type
      */
-    Dimension(Node dimension) throws DatabaseException {
-        super(StatisticsNodeTypes.DIMENSION);
-        initStatisticsService();
-        if (dimension == null) {
-            LOGGER.error("Cann't initialize dimension with existed node .Node is null is null.");
-            throw new IllegalArgumentException("statistics root cann't be null");
-        }
-        rootNode = dimension;
-        name = (String)statisticService.getNodeProperty(dimension, DatasetService.NAME);
+    public Dimension(Node parent, Node current) {
+        super(parent, current, StatisticsNodeTypes.DIMENSION);
         dimensionType = DimensionTypes.findById(name);
         if (dimensionType == null) {
             LOGGER.error("can't identify dimension type: " + dimensionType);
             throw new IllegalArgumentException("incorrect dimensionType");
         }
-        parentNode = statisticService.getParentNode(dimension);
-
     }
 
     /**
-     * return statistics Level . try to find it out. if not found- create new one
+     * return statistics Level . try to find it out else return null
      * 
      * @param name
      * @return
@@ -96,15 +91,31 @@ public class Dimension extends AbstractEntity {
      * @throws IllegalNodeDataException
      */
     public StatisticsLevel getLevel(String name) throws DatabaseException, IllegalNodeDataException {
-        if (name == null || name.isEmpty()) {
-            LOGGER.error("level name can't be null or empty");
-            throw new IllegalArgumentException("Incorrect name");
+        loadChildIfNecessary();
+        return levels.get(name);
+    }
+
+    /**
+     * try to create new level in this statistics. if level is already exists throw
+     * DuplicatedNodeNameException
+     * 
+     * @param timestamp
+     * @return
+     * @throws DuplicateNodeNameException
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public StatisticsLevel createStatisticsLevel(String name) throws DuplicateNodeNameException, DatabaseException,
+            IllegalNodeDataException {
+        loadChildIfNecessary();
+        if (levels.containsKey(name)) {
+            LOGGER.error("level with name." + name + "is already exists");
+            throw new DuplicateNodeNameException();
         }
-        Node level = statisticService.findStatisticsLevelNode(rootNode, name);
-        if (level == null) {
-            level = statisticService.createStatisticsLevelNode(rootNode, name, false);
-        }
-        return new StatisticsLevel(level);
+        Node statisticsLevel = statisticService.createStatisticsLevelNode(rootNode, name, Boolean.FALSE);
+        StatisticsLevel newLevel = new StatisticsLevel(rootNode, statisticsLevel);
+        levels.put(name, newLevel);
+        return newLevel;
     }
 
     /**
@@ -114,15 +125,8 @@ public class Dimension extends AbstractEntity {
      * @throws DatabaseException
      */
     public Iterable<StatisticsLevel> getAllLevels() throws DatabaseException {
-        Iterable<Node> allLevelsNodes = statisticService.getFirstRelationsipsNodes(rootNode, DatasetRelationTypes.CHILD);
-        List<StatisticsLevel> levelModels = new ArrayList<StatisticsLevel>();
-        if (allLevelsNodes == null) {
-            return levelModels;
-        }
-        for (Node level : allLevelsNodes) {
-            levelModels.add(new StatisticsLevel(level));
-        }
-        return levelModels;
+        loadChildIfNecessary();
+        return levels.values();
     }
 
     /**
@@ -130,5 +134,20 @@ public class Dimension extends AbstractEntity {
      */
     public DimensionTypes getDimensionType() {
         return dimensionType;
+    }
+
+    @Override
+    protected void loadChildIfNecessary() throws DatabaseException {
+        if (levels == null) {
+            levels = new LinkedHashMap<String, StatisticsLevel>();
+            Iterable<Node> levelNodes = statisticService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD);
+            if (levelNodes == null) {
+                return;
+            }
+            for (Node rowNode : levelNodes) {
+                String name = (String)statisticService.getNodeProperty(rowNode, StatisticsService.NAME);
+                levels.put(name, new StatisticsLevel(rootNode, rowNode));
+            }
+        }
     }
 }

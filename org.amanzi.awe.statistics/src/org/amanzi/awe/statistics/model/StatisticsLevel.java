@@ -14,7 +14,6 @@
 package org.amanzi.awe.statistics.model;
 
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -51,8 +50,8 @@ public class StatisticsLevel extends AbstractEntity {
             LOGGER.error("parent can't be null");
             throw new IllegalArgumentException("dimension root cann't be null");
         }
-        if (!StatisticsNodeTypes.DIMENSION.getId().equals(statisticService.getNodeProperty(dimensionRoot, DatasetService.TYPE))) {
-            LOGGER.error("incorrect parent type.arentNode should have Dimension Type.");
+        if (!StatisticsNodeTypes.DIMENSION.getId().equals(statisticService.getType(dimensionRoot))) {
+            LOGGER.error("incorrect parent type.parentNode should have Dimension Type.");
             throw new IllegalArgumentException("incorrect parent type.");
         }
         parentNode = dimensionRoot;
@@ -73,20 +72,9 @@ public class StatisticsLevel extends AbstractEntity {
      * @param levelNode
      * @throws DatabaseException
      */
-    StatisticsLevel(Node levelNode) throws DatabaseException {
-        super(StatisticsNodeTypes.LEVEL);
+    StatisticsLevel(Node parent, Node levelNode) throws DatabaseException {
+        super(parent, levelNode, StatisticsNodeTypes.LEVEL);
         initStatisticsService();
-        if (levelNode == null) {
-            LOGGER.error("level node can't be null");
-            throw new IllegalArgumentException("level node cann't be null");
-        }
-        name = (String)statisticService.getNodeProperty(levelNode, DatasetService.NAME);
-        if (name == null) {
-            LOGGER.error("cann't find name property in node " + levelNode);
-            throw new IllegalArgumentException("cann't find name property in node " + levelNode);
-        }
-        rootNode = levelNode;
-        parentNode = statisticService.getParentNode(rootNode);
     }
 
     /**
@@ -170,6 +158,10 @@ public class StatisticsLevel extends AbstractEntity {
         if (sources == null) {
             return null;
         }
-        return new StatisticsLevel(sources.iterator().next());
+        return new StatisticsLevel(parentNode, sources.iterator().next());
+    }
+
+    @Override
+    protected void loadChildIfNecessary() {
     }
 }

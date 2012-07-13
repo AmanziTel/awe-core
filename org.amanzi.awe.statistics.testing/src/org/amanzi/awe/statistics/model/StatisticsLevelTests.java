@@ -24,6 +24,7 @@ import org.amanzi.awe.statistics.model.StatisticsLevel;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,8 +40,6 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     private static final Logger LOGGER = Logger.getLogger(StatisticsLevelTests.class);
-    private static final String LEVEL_NAME = "levelName";
-    private static final String AGGREGATED_STATISTICS_NAME = "aggregation";
 
     @Before
     public void setUp() {
@@ -66,7 +65,7 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     public void testConstructorIfNameIsNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testConstructorIfNameIsNull start");
         Node dimensionRoot = getMockedDimension(DimensionTypes.TIME);
-        new StatisticsLevel(dimensionRoot, null);
+        new StatisticsLevel(dimensionRoot, StringUtils.EMPTY);
     }
 
     @Test
@@ -97,9 +96,10 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     public void testGetSourceLevel() throws DatabaseException {
         LOGGER.info("testGetSourceLevel start");
         Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        Node dimension = getMockedDimension(DimensionTypes.NETWORK);
         Node mockedSourceLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
-        StatisticsLevel level = new StatisticsLevel(mockedLevel);
-        StatisticsLevel sourceLevel = new StatisticsLevel(mockedSourceLevel);
+        StatisticsLevel level = new StatisticsLevel(dimension, mockedLevel);
+        StatisticsLevel sourceLevel = new StatisticsLevel(dimension, mockedSourceLevel);
         List<Node> sources = new ArrayList<Node>();
         sources.add(mockedSourceLevel);
         when(statisticsService.getSources(eq(mockedLevel))).thenReturn(sources);
@@ -112,7 +112,8 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
             DuplicateNodeNameException {
         LOGGER.info("testFindAggregatedStatisticsModelIfLevelIsNull start");
         Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
-        StatisticsLevel level = new StatisticsLevel(mockedLevel);
+        Node dimension = getMockedDimension(DimensionTypes.NETWORK);
+        StatisticsLevel level = new StatisticsLevel(dimension, mockedLevel);
         level.findAggregatedStatistics(null);
     }
 
@@ -120,11 +121,13 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     public void testCreateAggregateStatisticsIfExist() throws DatabaseException, IllegalNodeDataException,
             DuplicateNodeNameException {
         LOGGER.info("testCreateAggregateStatisticsIfExist start");
-        Node mockedLevel = getMockedLevelWithDimension(LEVEL_NAME, Boolean.TRUE, DimensionTypes.TIME);
-        Node mockedCorrelatedLevel = getMockedLevelWithDimension(LEVEL_NAME + Math.PI, Boolean.TRUE, DimensionTypes.NETWORK);
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        Node mockedCorrelatedLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
         Node mockedAggregation = getMockedAggregatedStatistics(AGGREGATED_STATISTICS_NAME);
-        StatisticsLevel level = new StatisticsLevel(mockedLevel);
-        StatisticsLevel correlatedLevel = new StatisticsLevel(mockedCorrelatedLevel);
+        Node networkD = getMockedDimension(DimensionTypes.NETWORK);
+        Node timeD = getMockedDimension(DimensionTypes.TIME);
+        StatisticsLevel level = new StatisticsLevel(networkD, mockedLevel);
+        StatisticsLevel correlatedLevel = new StatisticsLevel(timeD, mockedCorrelatedLevel);
         when(statisticsService.findAggregatedStatistics(eq(mockedLevel), eq(mockedCorrelatedLevel))).thenReturn(mockedAggregation);
         level.createAggregatedStatistics(correlatedLevel);
     }
@@ -133,10 +136,12 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     public void testCreateAggregateStatisticsIfNotExist() throws DatabaseException, IllegalNodeDataException,
             DuplicateNodeNameException {
         LOGGER.info("testCreateAggregateStatisticsIfNotExist start");
-        Node mockedLevel = getMockedLevelWithDimension(LEVEL_NAME, Boolean.TRUE, DimensionTypes.TIME);
-        Node mockedCorrelatedLevel = getMockedLevelWithDimension(LEVEL_NAME + Math.PI, Boolean.TRUE, DimensionTypes.NETWORK);
-        StatisticsLevel level = new StatisticsLevel(mockedLevel);
-        StatisticsLevel correlatedLevel = new StatisticsLevel(mockedCorrelatedLevel);
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        Node mockedCorrelatedLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
+        Node networkD = getMockedDimension(DimensionTypes.NETWORK);
+        Node timeD = getMockedDimension(DimensionTypes.TIME);
+        StatisticsLevel level = new StatisticsLevel(networkD, mockedLevel);
+        StatisticsLevel correlatedLevel = new StatisticsLevel(timeD, mockedCorrelatedLevel);
         when(statisticsService.findAggregatedStatistics(eq(mockedLevel), eq(mockedCorrelatedLevel))).thenReturn(null);
         level.createAggregatedStatistics(correlatedLevel);
     }
@@ -145,7 +150,8 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
     public void testGetAggregateStatisticsIfCorrelatedIsNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetAggregateStatisticsModelIfCorrelatedIsNull start");
         Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
-        StatisticsLevel level = new StatisticsLevel(mockedLevel);
+        Node networkD = getMockedDimension(DimensionTypes.NETWORK);
+        StatisticsLevel level = new StatisticsLevel(networkD, mockedLevel);
         level.getAggregateStatistics(null);
 
     }
@@ -156,8 +162,10 @@ public class StatisticsLevelTests extends AbstractStatisticsModelTests {
         Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
         Node mockedCorrelatedLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
         Node mockedAggregation = getMockedAggregatedStatistics(AGGREGATED_STATISTICS_NAME);
-        StatisticsLevel level = new StatisticsLevel(mockedLevel);
-        StatisticsLevel correlatedLevel = new StatisticsLevel(mockedCorrelatedLevel);
+        Node networkD = getMockedDimension(DimensionTypes.NETWORK);
+        Node timeD = getMockedDimension(DimensionTypes.TIME);
+        StatisticsLevel level = new StatisticsLevel(networkD, mockedLevel);
+        StatisticsLevel correlatedLevel = new StatisticsLevel(timeD, mockedCorrelatedLevel);
         when(statisticsService.findAggregatedStatistics(eq(mockedLevel), eq(mockedCorrelatedLevel))).thenReturn(mockedAggregation);
         level.getAggregateStatistics(correlatedLevel);
     }

@@ -13,10 +13,13 @@
 
 package org.amanzi.awe.statistics.model;
 
+import java.util.LinkedHashMap;
+
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.neo.services.DatasetService;
+import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -38,7 +41,7 @@ public class AggregatedStatistics extends AbstractEntity {
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(AggregatedStatistics.class);
-
+    private LinkedHashMap<String, StatisticsGroup> groups;
     private static final String NAME_FORMAT = "%s, %s";
 
     AggregatedStatistics(StatisticsLevel firstLevel, StatisticsLevel secondLevel) throws DatabaseException,
@@ -48,18 +51,15 @@ public class AggregatedStatistics extends AbstractEntity {
             LOGGER.error("can't create aggregated statistics element because of incorrect levels information");
             throw new IllegalArgumentException("StatisticsLevel elements can't be null");
         }
-        Dimension firstLevelDimension = new Dimension(firstLevel.getParentNode());
+        String dimensionType = (String)statisticService.getNodeProperty(firstLevel.getParentNode(), StatisticsService.NAME);
         String firstLevelName = (String)firstLevel.getName();
         String secondLevelName = (String)secondLevel.getName();
-        switch (firstLevelDimension.getDimensionType()) {
-        case NETWORK:
+        if (DimensionTypes.NETWORK.getId().equals(dimensionType)) {
             name = String.format(NAME_FORMAT, firstLevelName, secondLevelName);
             parentNode = secondLevel.getParentNode();
-            break;
-        default:
+        } else {
             parentNode = firstLevel.getParentNode();
             name = String.format(NAME_FORMAT, secondLevelName, firstLevelName);
-            break;
         }
         rootNode = statisticService.createAggregatedStatistics(firstLevel.getRootNode(), secondLevel.getRootNode(), name);
     }
@@ -74,11 +74,11 @@ public class AggregatedStatistics extends AbstractEntity {
             throw new IllegalArgumentException("can't create aggregated statistics element because of null ");
         }
         rootNode = aggregatedNode;
-        name = (String)statisticService.getNodeProperty(aggregatedNode, DatasetService.NAME);
+        name = (String)statisticService.getNodeProperty(aggregatedNode, StatisticsService.NAME);
     }
 
     /**
-     * get s_group data Element or create new one if not exist
+     * get s_group data Element
      * 
      * @param aggregationElement
      * @param name
@@ -86,12 +86,57 @@ public class AggregatedStatistics extends AbstractEntity {
      * @throws IllegalNodeDataException
      * @throws DatabaseException
      */
-    public StatisticsGroup getSGroup(String name) throws DatabaseException, IllegalNodeDataException {
-        Node srowNode = statisticService.findNodeInChain(rootNode, DatasetService.NAME, name);
-        if (srowNode == null) {
-            srowNode = statisticService.createSGroup(rootNode, name, false);
+    public StatisticsGroup getSGroup(String name) {
+        loadChildIfNecessary();
+        return groups.get(name);
+    }
+
+    /**
+     * try to create new group in this statistics. if group is already exists throw
+     * DuplicatedNodeNameException
+     * 
+     * @param timestamp
+     * @return
+     * @throws DuplicateNodeNameException
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public StatisticsGroup createStatisticsGroup(String name) throws DuplicateNodeNameException, DatabaseException,
+            IllegalNodeDataException {
+        loadChildIfNecessary();
+        if (groups.containsKey(name)) {
+            LOGGER.error("s_group with timestamp." + name + "is already exists");
+            throw new DuplicateNodeNameException();
         }
-        return new StatisticsGroup(rootNode, srowNode);
+        Node statisticsRow = statisticService.createSGroup(rootNode, name, Boolean.FALSE);
+        StatisticsGroup newRow = new StatisticsGroup(rootNode, statisticsRow);
+        groups.put(name, newRow);
+        return newRow;
+    }
+
+    /**
+     * get all groups name
+     * 
+     * @return
+     */
+    public Iterable<StatisticsGroup> getAllSGroups() {
+        loadChildIfNecessary();
+        return groups.values();
+    }
+
+    @Override
+    protected void loadChildIfNecessary() {
+        if (groups == null) {
+            groups = new LinkedHashMap<String, StatisticsGroup>();
+            Iterable<Node> groupNodes = statisticService.getChildrenChainTraverser(rootNode);
+            if (groupNodes == null) {
+                return;
+            }
+            for (Node rowNode : groupNodes) {
+                String name = (String)statisticService.getNodeProperty(rowNode, StatisticsService.NAME);
+                groups.put(name, new StatisticsGroup(rootNode, rowNode));
+            }
+        }
     }
 
 }

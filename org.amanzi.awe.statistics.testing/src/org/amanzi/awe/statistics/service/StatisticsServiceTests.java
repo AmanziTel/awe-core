@@ -251,7 +251,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testGetFirstRelationsipsNodes() throws DatabaseException, IllegalNodeDataException {
+    public void testgetFirstRelationTraverser() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetAllPeriods started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
@@ -265,7 +265,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         expectedNodes.add(periodW);
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
-        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(dimension, DatasetRelationTypes.CHILD);
+        Iterable<Node> periods = statisticsService.getFirstRelationTraverser(dimension, DatasetRelationTypes.CHILD);
         Assert.assertNotNull("Periods count cann't be null", periods);
         Iterator<Node> periodsIterator = periods.iterator();
 
@@ -289,7 +289,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         expectedNodes.add(periodW);
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
-        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(dimension, DatasetRelationTypes.CHILD);
+        Iterable<Node> periods = statisticsService.getFirstRelationTraverser(dimension, DatasetRelationTypes.CHILD);
         Assert.assertNotNull("Periods count cann't be null", periods);
         Node highestPeriod = statisticsService.getHighestPeriod(periods);
         Assert.assertEquals("Unexpected highest period ", periodW, highestPeriod);
@@ -332,14 +332,6 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testGetParentNode() throws DatabaseException {
-        LOGGER.info("testGetParentNode started");
-        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        Node statRoot = createStatisticsRoot(datasetNode);
-        Assert.assertEquals(datasetNode, statisticsService.getParentNode(statRoot));
-    }
-
-    @Test
     public void testGetParentLevel() {
         LOGGER.info("testGetParentLevel started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
@@ -349,6 +341,36 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         chainList = createChildNextChain(parentToFind, ARRAYS_SIZE, StatisticsNodeTypes.S_CELL);
         Node searchable = statisticsService.getParentLevelNode(chainList.get(ARRAYS_SIZE - NumberUtils.INTEGER_ONE));
         Assert.assertEquals("Unexpected node found", parentToFind, searchable);
+    }
+
+    @Test
+    public void testGetNodeProperty() {
+        LOGGER.info("testGetNodeProperty started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Object nodeProperty = statisticsService.getNodeProperty(datasetNode, DriveModel.MIN_TIMESTAMP);
+        Assert.assertEquals("Unexpected node property", Long.MIN_VALUE, nodeProperty);
+    }
+
+    @Test
+    public void testRemoveNodeProperty() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testRemoveNodeProperty started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        statisticsService.removeNodeProperty(datasetNode, DriveModel.MIN_TIMESTAMP);
+        Assert.assertFalse(datasetNode.hasProperty(DriveModel.MIN_TIMESTAMP));
+    }
+
+    @Test(expected = IllegalNodeDataException.class)
+    public void testRemoveNodePropertyIfPropertyIsNull() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("STATISTIC_ROOT_NAME started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        statisticsService.removeNodeProperty(datasetNode, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRemoveNodePropertyIfNodeIsNull() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testRemoveNodePropertyIfNodeIsNull started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        statisticsService.removeNodeProperty(null, STATISTIC_ROOT_NAME);
     }
 
     /**

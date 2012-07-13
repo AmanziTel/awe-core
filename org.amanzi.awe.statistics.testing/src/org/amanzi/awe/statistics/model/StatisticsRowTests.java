@@ -15,10 +15,12 @@ package org.amanzi.awe.statistics.model;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Assert;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -46,30 +48,33 @@ public class StatisticsRowTests extends AbstractStatisticsModelTests {
     public void testGetScellIfNotFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfNotFounded started ");
         Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
-        StatisticsRow row = new StatisticsRow(mockedSrow);
-        Node scell = getMockedScell(SCELL_NAME);
-        when(statisticsService.createSCell(eq(mockedSrow), eq(SCELL_NAME), eq(Boolean.FALSE))).thenReturn(scell);
-        when(statisticsService.findNodeInChain(eq(mockedSrow), eq(DatasetService.NAME), any(String.class))).thenReturn(null);
-        row.getSCell(SCELL_NAME);
-        verify(statisticsService, atLeastOnce()).createSCell(eq(mockedSrow), eq(SCELL_NAME), eq(Boolean.FALSE));
+        Node group = getMockedGroup(SGROUP_NAME);
+        StatisticsRow row = new StatisticsRow(group, mockedSrow);
+        when(statisticsService.getChildrenChainTraverser(eq(mockedSrow))).thenReturn(null);
+        StatisticsCell cell = row.getSCell(SCELL_NAME);
+        Assert.assertNull("Unexpected root node", cell);
     }
 
     @Test
     public void testGetSCellIfFounded() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testGetSCellIfFounded started ");
+        LOGGER.info("testGetSCellIfNotFounded started ");
         Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
-        StatisticsRow row = new StatisticsRow(mockedSrow);
+        Node group = getMockedGroup(SGROUP_NAME);
+        StatisticsRow row = new StatisticsRow(group, mockedSrow);
         Node scell = getMockedScell(SCELL_NAME);
-        when(statisticsService.findNodeInChain(eq(mockedSrow), eq(DatasetService.NAME), any(String.class))).thenReturn(scell);
-        row.getSCell(SCELL_NAME);
-        verify(statisticsService, never()).createSCell(eq(mockedSrow), eq(SCELL_NAME), eq(Boolean.FALSE));
+        List<Node> rows = new ArrayList<Node>();
+        rows.add(scell);
+        when(statisticsService.getChildrenChainTraverser(eq(mockedSrow))).thenReturn(rows);
+        StatisticsCell cell = row.getSCell(SCELL_NAME);
+        Assert.assertEquals("Unexpected root node", scell, cell.getRootNode());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetSCellIfScellNameIsIncorrect() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfScellNameIsIncorrect started ");
         Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
-        StatisticsRow row = new StatisticsRow(mockedSrow);
+        Node group = getMockedGroup(SGROUP_NAME);
+        StatisticsRow row = new StatisticsRow(group, mockedSrow);
         Node scell = getMockedScell(SCELL_NAME);
         when(statisticsService.findNodeInChain(eq(mockedSrow), eq(DatasetService.NAME), any(String.class))).thenReturn(scell);
         row.getSCell(StringUtils.EMPTY);

@@ -13,9 +13,12 @@
 
 package org.amanzi.awe.statistics.model;
 
+import java.util.LinkedHashMap;
+
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.neo.services.DatasetService;
+import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -31,6 +34,10 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsRow extends AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(StatisticsRow.class);
+    private static final String PROPERTY_SUMMARY_NAME = "summary";
+    // key - column/header name
+    private LinkedHashMap<String, StatisticsCell> cells;
+    private StatisticsGroup group;
 
     /**
      * @param parent
@@ -42,17 +49,7 @@ public class StatisticsRow extends AbstractEntity {
     }
 
     /**
-     * constructor for instantiation
-     * 
-     * @param existed
-     * @throws DatabaseException
-     */
-    StatisticsRow(Node existed) throws DatabaseException {
-        super(existed, StatisticsNodeTypes.S_ROW);
-    }
-
-    /**
-     * try to find S_CELL node by name if not exist- create new one;
+     * try to find S_CELL node by name if not exist return null;
      * 
      * @param timestamp
      * @return
@@ -65,10 +62,83 @@ public class StatisticsRow extends AbstractEntity {
             LOGGER.error("name of S_CELL node must have a name. currently name is " + name);
             throw e;
         }
-        Node scellNode = statisticService.findNodeInChain(rootNode, DatasetService.NAME, name);
-        if (scellNode == null) {
-            scellNode = statisticService.createSCell(rootNode, name, false);
+        loadChildIfNecessary();
+        return cells.get(name);
+    }
+
+    /**
+     * try to create new group in this statistics. if group is already exists throw
+     * DuplicatedNodeNameException
+     * 
+     * @param timestamp
+     * @return
+     * @throws DuplicateNodeNameException
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public StatisticsCell createStatisticsCell(String name) throws DuplicateNodeNameException, DatabaseException,
+            IllegalNodeDataException {
+        loadChildIfNecessary();
+        if (cells.containsKey(name)) {
+            LOGGER.error("s_cell with name." + name + "is already exists");
+            throw new DuplicateNodeNameException();
         }
-        return new StatisticsCell(rootNode, scellNode);
+        Node sCell = statisticService.createSCell(rootNode, name, false);
+        StatisticsCell newCell = new StatisticsCell(rootNode, sCell);
+        cells.put(name, newCell);
+        return newCell;
+    }
+
+    @Override
+    protected void loadChildIfNecessary() {
+        if (cells == null) {
+            LOGGER.debug("Start loading srows");
+            cells = new LinkedHashMap<String, StatisticsCell>();
+            Iterable<Node> rowsNodes = statisticService.getChildrenChainTraverser(rootNode);
+            if (rowsNodes == null) {
+                return;
+            }
+            for (Node cellNode : rowsNodes) {
+                String name = (String)statisticService.getNodeProperty(cellNode, StatisticsService.NAME);
+                cells.put(name, new StatisticsCell(rootNode, cellNode));
+            }
+        }
+    }
+
+    /**
+     * return summury condition for this node
+     * 
+     * @return
+     */
+    public boolean isSummaryNode() {
+        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_SUMMARY_NAME);
+        if (summury == null) {
+            return false;
+        }
+        return summury;
+    }
+
+    /**
+     * @param isSummary
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public void setSummary(boolean isSummary) throws IllegalNodeDataException, DatabaseException {
+        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_SUMMARY_NAME);
+        if (summury != null && isSummary == Boolean.TRUE) {
+            statisticService.setAnyProperty(rootNode, PROPERTY_SUMMARY_NAME, isSummary);
+        }
+    }
+
+    /**
+     * get group its row belongs to;
+     * 
+     * @return
+     */
+    public StatisticsGroup getParent() {
+        if (group == null) {
+            group = new StatisticsGroup(statisticService.getParentLevelNode(parentNode), parentNode);
+        }
+        return group;
     }
 }

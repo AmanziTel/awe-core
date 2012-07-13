@@ -69,8 +69,8 @@ public class DimensionTests extends AbstractStatisticsModelTests {
     }
 
     @Test
-    public void testConstructorIfxist() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testConstructorIfxist start");
+    public void testConstructorIfExist() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testConstructorIfExist start");
         when(statisticsService.findDimension(eq(statisticModelNode), eq(DimensionTypes.TIME))).thenReturn(null);
         new Dimension(statisticModelNode, DimensionTypes.TIME);
         verify(statisticsService, atLeastOnce())
@@ -79,34 +79,38 @@ public class DimensionTests extends AbstractStatisticsModelTests {
 
     @Test
     public void testGetStatisticsLevelIfFound() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetStatisticsLevelIfFound start");
         Node existedDimension = getMockedDimension(DimensionTypes.TIME);
         Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
         when(statisticsService.findStatisticsLevelNode(eq(existedDimension), eq(LEVEL_NAME))).thenReturn(mockedLevel);
         when(statisticsService.findDimension(eq(statisticModelNode), eq(DimensionTypes.TIME))).thenReturn(existedDimension);
-        Dimension dimension = new Dimension(existedDimension);
+        List<Node> levelNodes = new ArrayList<Node>();
+        levelNodes.add(mockedLevel);
+        when(statisticsService.getFirstRelationTraverser(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(
+                levelNodes);
+        Dimension dimension = new Dimension(statisticModelNode, existedDimension);
         StatisticsLevel level = dimension.getLevel(LEVEL_NAME);
-        verify(statisticsService, never()).createStatisticsLevelNode(eq(existedDimension), eq(LEVEL_NAME), eq(Boolean.FALSE));
         Assert.assertEquals("Unexpected root node", mockedLevel, level.getRootNode());
     }
 
     @Test
     public void testGetStatisticsLevelIfNotFound() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetStatisticsLevelIfNotFound start");
         Node existedDimension = getMockedDimension(DimensionTypes.TIME);
-        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.FALSE);
-        when(statisticsService.findStatisticsLevelNode(eq(existedDimension), eq(LEVEL_NAME))).thenReturn(null);
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        when(statisticsService.findStatisticsLevelNode(eq(existedDimension), eq(LEVEL_NAME))).thenReturn(mockedLevel);
         when(statisticsService.findDimension(eq(statisticModelNode), eq(DimensionTypes.TIME))).thenReturn(existedDimension);
-        when(statisticsService.createStatisticsLevelNode(eq(existedDimension), eq(LEVEL_NAME), eq(Boolean.FALSE))).thenReturn(
-                mockedLevel);
-        Dimension dimension = new Dimension(existedDimension);
+        when(statisticsService.getFirstRelationTraverser(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(null);
+        Dimension dimension = new Dimension(statisticModelNode, existedDimension);
         StatisticsLevel level = dimension.getLevel(LEVEL_NAME);
-        Assert.assertEquals("Unexpected root node", mockedLevel, level.getRootNode());
+        Assert.assertNull("Unexpected node value", level);
     }
 
     @Test
     public void testGetAllLevelsIfNotFound() throws DatabaseException {
         Node existedDimension = getMockedDimension(DimensionTypes.TIME);
-        when(statisticsService.getFirstRelationsipsNodes(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(null);
-        Dimension dimension = new Dimension(existedDimension);
+        when(statisticsService.getFirstRelationTraverser(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(null);
+        Dimension dimension = new Dimension(statisticModelNode, existedDimension);
         Assert.assertFalse("Expected empty node list", dimension.getAllLevels().iterator().hasNext());
     }
 
@@ -117,9 +121,9 @@ public class DimensionTests extends AbstractStatisticsModelTests {
         for (int i = NumberUtils.INTEGER_ZERO; i < ARRAYS_SIZE; i++) {
             mockedLevels.add(getMockedLevel(LEVEL_NAME + i, Boolean.TRUE));
         }
-        when(statisticsService.getFirstRelationsipsNodes(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(
+        when(statisticsService.getFirstRelationTraverser(eq(existedDimension), eq(DatasetRelationTypes.CHILD))).thenReturn(
                 mockedLevels);
-        Dimension dimension = new Dimension(existedDimension);
+        Dimension dimension = new Dimension(statisticModelNode, existedDimension);
         Iterable<StatisticsLevel> levels = dimension.getAllLevels();
         Assert.assertTrue("Expected empty node list", dimension.getAllLevels().iterator().hasNext());
         for (StatisticsLevel level : levels) {

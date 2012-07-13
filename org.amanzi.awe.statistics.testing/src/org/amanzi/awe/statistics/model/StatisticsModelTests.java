@@ -61,7 +61,7 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
         Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
         List<Node> foundedNodes = new ArrayList<Node>();
         foundedNodes.add(dimensionMocked);
-        when(statisticsService.getFirstRelationsipsNodes(eq(statisticModelNode), eq(DatasetRelationTypes.CHILD))).thenReturn(
+        when(statisticsService.getFirstRelationTraverser(eq(statisticModelNode), eq(DatasetRelationTypes.CHILD))).thenReturn(
                 foundedNodes);
         StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
         Iterable<Dimension> dimensions = model.getAllDimensions();

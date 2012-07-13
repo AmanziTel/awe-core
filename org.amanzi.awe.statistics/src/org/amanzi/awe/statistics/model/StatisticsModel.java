@@ -97,13 +97,13 @@ public class StatisticsModel extends AbstractStatisticsModel {
      * @throws DatabaseException
      */
     public Iterable<Dimension> getAllDimensions() throws DatabaseException {
-        Iterable<Node> dimensions = statisticService.getFirstRelationsipsNodes(rootNode, DatasetRelationTypes.CHILD);
+        Iterable<Node> dimensions = statisticService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD);
         List<Dimension> dimensionsList = new ArrayList<Dimension>();
         if (dimensions == null) {
             return dimensionsList;
         }
         for (Node dimension : dimensions) {
-            dimensionsList.add(new Dimension(dimension));
+            dimensionsList.add(new Dimension(rootNode, dimension));
         }
         return dimensionsList;
     }

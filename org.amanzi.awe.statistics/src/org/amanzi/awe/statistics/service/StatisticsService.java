@@ -19,6 +19,7 @@ import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -32,6 +33,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
@@ -44,7 +46,7 @@ import org.neo4j.kernel.Traversal;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsService {
+public class StatisticsService extends AbstractService {
     /*
      * logger instantiation
      */
@@ -111,10 +113,9 @@ public class StatisticsService {
                 throw new DatabaseException("Statistics model root with name " + name + " is already exists");
             }
         }
-        Node statisticsRoot = datasetService.createNode(parent, StatisticsRelationshipTypes.STATISTICS,
-                StatisticsNodeTypes.STATISTICS_MODEL);
+        Node statisticsRoot = createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS_MODEL);
         try {
-            datasetService.setAnyProperty(parent, DatasetService.NAME, name);
+            setAnyProperty(parent, DatasetService.NAME, name);
         } catch (IllegalNodeDataException e) {
             LOGGER.error("unexpected exception");
             /*
@@ -213,9 +214,9 @@ public class StatisticsService {
      */
     public Node createAggregatedStatistics(Node firstLevel, Node secondLevel, String name) throws DatabaseException,
             IllegalNodeDataException {
-        Node newNode = datasetService.createNode(firstLevel, DatasetRelationTypes.CHILD, StatisticsNodeTypes.STATISTICS);
-        datasetService.createRelationship(secondLevel, newNode, DatasetRelationTypes.CHILD);
-        datasetService.setAnyProperty(newNode, DatasetService.NAME, name);
+        Node newNode = createNode(firstLevel, DatasetRelationTypes.CHILD, StatisticsNodeTypes.STATISTICS);
+        createRelationship(secondLevel, newNode, DatasetRelationTypes.CHILD);
+        setAnyProperty(newNode, DatasetService.NAME, name);
         return newNode;
     }
 
@@ -276,7 +277,7 @@ public class StatisticsService {
      */
     public void addSource(Node periodNode, Node sourceNode) throws DatabaseException {
         LOGGER.info("add source:" + sourceNode + " to period:" + periodNode);
-        datasetService.createRelationship(periodNode, sourceNode, StatisticsRelationshipTypes.SOURCE);
+        createRelationship(periodNode, sourceNode, StatisticsRelationshipTypes.SOURCE);
     }
 
     /**
@@ -290,13 +291,13 @@ public class StatisticsService {
     }
 
     /**
-     * return all nodes by first OUTGOING Relationship
+     * see({@link DatasetService#getFirstRelationTraverser(Node, RelationshipType, Direction)})
      * 
      * @param parent
      * @param relType
      * @return
      */
-    public Iterable<Node> getFirstRelationsipsNodes(Node parent, RelationshipType relType) {
+    public Iterable<Node> getFirstRelationTraverser(Node parent, RelationshipType relType) {
         return datasetService.getFirstRelationTraverser(parent, relType, Direction.OUTGOING);
     }
 
@@ -321,7 +322,7 @@ public class StatisticsService {
     }
 
     /**
-     * try to findNode in chain
+     * see {@link DatasetService#findNodeInChainByProperty(Node, String, Object)}
      * 
      * @param rootNode
      * @param propertyName
@@ -344,31 +345,13 @@ public class StatisticsService {
     }
 
     /**
-     * get parent Node if node has more than one parent- return first one
+     * return node type
      * 
      * @param node
      * @return
-     * @throws DatabaseException
      */
-    public Node getParentNode(Node node) throws DatabaseException {
-        Iterable<Relationship> allRelationship = node.getRelationships(Direction.INCOMING);
-
-        if (allRelationship == null) {
-            return null;
-        }
-        return allRelationship.iterator().next().getOtherNode(node);
-    }
-
-    public Node getParentLevelNode(Node node) {
-        Iterable<Node> upperLevel = REVERSE_CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(node).nodes();
-        String nodeType = (String)getNodeProperty(node, DatasetService.TYPE);
-        for (Node searchable : upperLevel) {
-            String searchableType = (String)getNodeProperty(searchable, DatasetService.TYPE);
-            if (!searchableType.equals(nodeType)) {
-                return searchable;
-            }
-        }
-        return null;
+    public String getType(Node node) {
+        return AbstractService.getNodeType(node);
     }
 
     /**
@@ -408,7 +391,7 @@ public class StatisticsService {
     private Node findFirstRelationshipNode(Node parentNode, String propertyName, String propertyValue, RelationshipType relType) {
         LOGGER.info("try to find node with propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
                 + " by relationship: " + relType);
-        Iterator<Node> statisticsNodes = getFirstRelationsipsNodes(parentNode, relType).iterator();
+        Iterator<Node> statisticsNodes = getFirstRelationTraverser(parentNode, relType).iterator();
         while (statisticsNodes.hasNext()) {
             Node currentNode = statisticsNodes.next();
             if (currentNode.getProperty(propertyName, StringUtils.EMPTY).equals(propertyValue)) {
@@ -419,6 +402,62 @@ public class StatisticsService {
         }
         LOGGER.info("node ngetFirstRelationsipsNodesot found. propetyName:" + propertyName + " value:" + propertyValue
                 + " from parent:" + parentNode + " by relationship: " + relType);
+        return null;
+    }
+
+    /**
+     * see({@link DatasetService#getChildrenChainTraverser(Node)})
+     * 
+     * @param rootNode
+     * @return
+     */
+    public Iterable<Node> getChildrenChainTraverser(Node rootNode) {
+        return datasetService.getChildrenChainTraverser(rootNode);
+    }
+
+    /**
+     * remove node property if, node doesn't contain propertyName then throw
+     * {@link DatabaseException}
+     * 
+     * @param rootNode
+     * @param propertyFlaggedName
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public void removeNodeProperty(Node node, String propertyName) throws DatabaseException, IllegalNodeDataException {
+        if ((propertyName == null) || propertyName.equals(StringUtils.EMPTY)) {
+            throw new IllegalNodeDataException(propertyName + " cannot be empty.");
+        }
+        if (node == null) {
+            throw new IllegalArgumentException("Node is null.");
+        }
+        Transaction tx = graphDb.beginTx();
+        try {
+            node.removeProperty(propertyName);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not set " + propertyName, e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * search parentLevel if more
+     * 
+     * @param node
+     * @return
+     */
+    public Node getParentLevelNode(Node node) {
+        Iterable<Node> upperLevel = REVERSE_CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(node).nodes();
+        String nodeType = (String)getNodeProperty(node, DatasetService.TYPE);
+        for (Node searchable : upperLevel) {
+            String searchableType = (String)getNodeProperty(searchable, DatasetService.TYPE);
+            if (!searchableType.equals(nodeType)) {
+                return searchable;
+            }
+        }
         return null;
     }
 
@@ -438,8 +477,8 @@ public class StatisticsService {
             throws DatabaseException, IllegalNodeDataException {
         Node srowNode = null;
         try {
-            srowNode = datasetService.createNode(type);
-            datasetService.setAnyProperty(srowNode, propertyName, value);
+            srowNode = createNode(type);
+            setAnyProperty(srowNode, propertyName, value);
         } catch (DatabaseException e) {
             LOGGER.error("Unexpectable exception thrown. Cann't compleatly identify S_ROW node type", e);
             throw e;

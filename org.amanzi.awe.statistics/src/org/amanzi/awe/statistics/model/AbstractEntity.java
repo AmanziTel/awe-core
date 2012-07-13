@@ -30,6 +30,7 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(AbstractEntity.class);
+    protected static final String PROPERTY_FLAGGED_NAME = "flagged";
     /*
      * statistics service
      */
@@ -70,10 +71,6 @@ public abstract class AbstractEntity {
         this.nodeType = nodeType;
     }
 
-    protected AbstractEntity(Node node, INodeType type) throws DatabaseException {
-        this(statisticService.getParentLevelNode(node), node, type);
-    }
-
     /**
      * instantiation constructor
      * 
@@ -93,7 +90,7 @@ public abstract class AbstractEntity {
             throw new IllegalArgumentException("current node can't be null");
         }
         rootNode = current;
-        if (!type.getId().equals(statisticService.getNodeProperty(rootNode, DatasetService.TYPE))) {
+        if (!type.getId().equals(statisticService.getType(rootNode))) {
             LOGGER.error("Unexpected node Type. Expected " + type.getId());
             throw new IllegalArgumentException("validation failed");
         }
@@ -135,4 +132,11 @@ public abstract class AbstractEntity {
     Node getParentNode() {
         return parentNode;
     }
+
+    /**
+     * load child Entities
+     * 
+     * @throws DatabaseException
+     */
+    protected abstract void loadChildIfNecessary() throws DatabaseException;
 }

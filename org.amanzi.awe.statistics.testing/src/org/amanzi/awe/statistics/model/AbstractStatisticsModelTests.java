@@ -26,7 +26,6 @@ import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
@@ -52,8 +51,9 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
     protected static final String SGROUP_NAME = "sgroup";
     protected static final String FIRST_LEVEL_NAME = "test";
     protected static final String SECOND_LEVEL_NAME = "hourly";
-
+    protected static final String LEVEL_NAME = "levelName";
     protected static final String NAME_FORMAT = "%s, %s";
+    protected static final String AGGREGATED_STATISTICS_NAME = "aggregation";
 
     @Before
     public void setUp() {
@@ -70,10 +70,8 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
      */
     protected Node getMockedAggregatedStatistics(String name) {
         Node aggregation = getMockedNode();
-        when(aggregation.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(name);
         when(statisticsService.getNodeProperty(eq(aggregation), eq(DatasetService.NAME))).thenReturn(name);
-        when(statisticsService.getNodeProperty(eq(aggregation), eq(DatasetService.TYPE))).thenReturn(
-                StatisticsNodeTypes.STATISTICS.getId());
+        when(statisticsService.getType(eq(aggregation))).thenReturn(StatisticsNodeTypes.STATISTICS.getId());
         return aggregation;
     }
 
@@ -126,7 +124,7 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
      */
     protected Node getMockedNodeWithNameAndType(String type, String name) {
         Node dimension = getMockedNode();
-        when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.TYPE))).thenReturn(type);
+        when(statisticsService.getType(eq(dimension))).thenReturn(type);
         when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.NAME))).thenReturn(name);
         return dimension;
     }
@@ -149,27 +147,9 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
         if (mockFoundation) {
             when(statisticsService.findStatisticsLevelNode(any(Node.class), eq(name))).thenReturn(statRoot);
         }
-        when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.TYPE))).thenReturn(
-                StatisticsNodeTypes.STATISTICS.getId());
+        when(statisticsService.getType(eq(statRoot))).thenReturn(StatisticsNodeTypes.LEVEL.getId());
         when(statisticsService.getNodeProperty(eq(statRoot), eq(DatasetService.NAME))).thenReturn(name);
         return statRoot;
-    }
-
-    /**
-     * get level and source dimention node with mocked service
-     * 
-     * @param name
-     * @param mockFoundation
-     * @param dimension
-     * @return
-     * @throws DatabaseException
-     */
-    protected Node getMockedLevelWithDimension(String name, boolean mockFoundation, DimensionTypes dimension)
-            throws DatabaseException {
-        Node level = getMockedLevel(name, mockFoundation);
-        Node dimenNode = getMockedDimension(dimension);
-        when(statisticsService.getParentNode(eq(level))).thenReturn(dimenNode);
-        return level;
     }
 
     /**
@@ -179,11 +159,8 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
      */
     protected Node getMockedGroup(String name) {
         Node mockedGroup = getMockedNode();
-        Node mockedAgregated = getMockedAggregatedStatistics(String.format(NAME_FORMAT, FIRST_LEVEL_NAME, SECOND_LEVEL_NAME));
         when(statisticsService.getNodeProperty(eq(mockedGroup), eq(DatasetService.NAME))).thenReturn(name);
-        when(statisticsService.getNodeProperty(eq(mockedGroup), eq(DatasetService.TYPE))).thenReturn(
-                StatisticsNodeTypes.S_GROUP.getId());
-        when(statisticsService.getParentLevelNode(eq(mockedGroup))).thenReturn(mockedAgregated);
+        when(statisticsService.getType(eq(mockedGroup))).thenReturn(StatisticsNodeTypes.S_GROUP.getId());
         return mockedGroup;
     }
 
@@ -195,10 +172,8 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
      */
     protected Node getMockedSrow(Long timstamp) {
         Node mockedSrow = getMockedNode();
-        Node mockedGroup = getMockedGroup(SGROUP_NAME);
-        when(statisticsService.getNodeProperty(eq(mockedSrow), eq(DatasetService.TYPE))).thenReturn(
-                StatisticsNodeTypes.S_ROW.getId());
-        when(statisticsService.getParentLevelNode(eq(mockedSrow))).thenReturn(mockedGroup);
+        when(statisticsService.getType(eq(mockedSrow))).thenReturn(StatisticsNodeTypes.S_ROW.getId());
+        when(statisticsService.getNodeProperty(eq(mockedSrow), eq(DriveModel.TIMESTAMP))).thenReturn(timstamp);
         return mockedSrow;
     }
 
@@ -210,11 +185,8 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
      */
     protected Node getMockedScell(String name) {
         Node mockedScell = getMockedNode();
-        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
         when(statisticsService.getNodeProperty(eq(mockedScell), eq(DatasetService.NAME))).thenReturn(name);
-        when(statisticsService.getNodeProperty(eq(mockedScell), eq(DatasetService.TYPE))).thenReturn(
-                StatisticsNodeTypes.S_CELL.getId());
-        when(statisticsService.getParentLevelNode(eq(mockedScell))).thenReturn(mockedSrow);
+        when(statisticsService.getType(eq(mockedScell))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
         return mockedScell;
 
     }

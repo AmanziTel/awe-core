@@ -13,8 +13,11 @@
 
 package org.amanzi.awe.statistics.model;
 
+import java.util.LinkedHashMap;
+
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
@@ -31,6 +34,7 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsGroup extends AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(StatisticsGroup.class);
+    private LinkedHashMap<Long, StatisticsRow> rows;
 
     /**
      * constructor for instantiation
@@ -44,33 +48,100 @@ public class StatisticsGroup extends AbstractEntity {
     }
 
     /**
-     * constructor for instantiation
-     * 
-     * @param existed
-     * @throws DatabaseException
-     */
-    StatisticsGroup(Node existed) throws DatabaseException {
-        super(existed, StatisticsNodeTypes.S_GROUP);
-    }
-
-    /**
-     * try to find S_ROW node by timestamp if not exist- create new one;
+     * try to find S_ROW node by timestamp ;
      * 
      * @param timestamp
      * @return
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsRow getSRow(Long timestamp) throws DatabaseException, IllegalNodeDataException {
+    public StatisticsRow getSRow(Long timestamp) {
         if (timestamp == null) {
             LOGGER.error("timestamp element is null.");
             throw new IllegalArgumentException("timestamp element is null");
         }
-        Node sGroupd = rootNode;
-        Node srowNode = statisticService.findNodeInChain(sGroupd, DriveModel.TIMESTAMP, timestamp);
-        if (srowNode == null) {
-            srowNode = statisticService.createSRow(sGroupd, timestamp, false);
-        }
-        return new StatisticsRow(rootNode, srowNode);
+        loadChildIfNecessary();
+        return rows.get(timestamp);
     }
+
+    /**
+     * try to create new row in this group. if row is already exists throw
+     * DuplicatedNodeNameException
+     * 
+     * @param timestamp
+     * @return
+     * @throws DuplicateNodeNameException
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public StatisticsRow createStatisticsRow(Long timestamp) throws DuplicateNodeNameException, DatabaseException,
+            IllegalNodeDataException {
+        loadChildIfNecessary();
+        if (rows.containsKey(timestamp)) {
+            LOGGER.error("s_row with timestamp." + timestamp + "is already exists");
+            throw new DuplicateNodeNameException();
+        }
+        Node statisticsRow = statisticService.createSRow(rootNode, timestamp, Boolean.FALSE);
+        StatisticsRow newRow = new StatisticsRow(rootNode, statisticsRow);
+        rows.put(timestamp, newRow);
+        return newRow;
+    }
+
+    /**
+     * return all Statistics Rows
+     * 
+     * @return
+     */
+    public Iterable<StatisticsRow> getAllSRows() {
+        loadChildIfNecessary();
+        return rows.values();
+    }
+
+    /**
+     * set or remove flagged is true- set flaggedProperty to group else remove it from group node
+     * 
+     * @param flagged
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public void setFlagged(boolean flagged) throws IllegalNodeDataException, DatabaseException {
+        if (flagged) {
+            statisticService.setAnyProperty(rootNode, PROPERTY_FLAGGED_NAME, flagged);
+        } else {
+            statisticService.removeNodeProperty(rootNode, PROPERTY_FLAGGED_NAME);
+
+        }
+    }
+
+    /**
+     * return flagged value of group
+     * 
+     * @return
+     */
+    public boolean isFlagged() {
+        Boolean isFlagged = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_FLAGGED_NAME);
+        if (isFlagged == null) {
+            return Boolean.FALSE;
+        }
+        return isFlagged();
+    }
+
+    /**
+     * Loads rows if necessary
+     */
+    @Override
+    protected void loadChildIfNecessary() {
+        if (rows == null) {
+            rows = new LinkedHashMap<Long, StatisticsRow>();
+            Iterable<Node> rowsNodes = statisticService.getChildrenChainTraverser(rootNode);
+            if (rowsNodes == null) {
+                return;
+            }
+            for (Node rowNode : rowsNodes) {
+                Long timestamp = (Long)statisticService.getNodeProperty(rowNode, DriveModel.TIMESTAMP);
+                rows.put(timestamp, new StatisticsRow(rootNode, rowNode));
+            }
+        }
+    }
+
 }

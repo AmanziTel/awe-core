@@ -47,7 +47,8 @@ public class StatisticsCellTests extends AbstractStatisticsModelTests {
     public void testAddSources() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testAddSources started ");
         Node mockedScell = getMockedScell(SCELL_NAME);
-        StatisticsCell scell = new StatisticsCell(mockedScell);
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        StatisticsCell scell = new StatisticsCell(mockedSrow, mockedScell);
         int listSize = (int)(Math.random() * 100);
         List<IDataElement> generatedSources = generateSources(listSize);
         scell.addSources(generatedSources);
@@ -58,7 +59,8 @@ public class StatisticsCellTests extends AbstractStatisticsModelTests {
     public void testAddSourcesIfSourcesNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testAddSourcesIfSourcesNull started ");
         Node mockedScell = getMockedScell(SCELL_NAME);
-        StatisticsCell scell = new StatisticsCell(mockedScell);
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        StatisticsCell scell = new StatisticsCell(mockedSrow, mockedScell);
         scell.addSources(null);
     }
 
@@ -66,7 +68,8 @@ public class StatisticsCellTests extends AbstractStatisticsModelTests {
     public void testGetSources() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSources started ");
         Node mockedScell = getMockedScell(SCELL_NAME);
-        StatisticsCell scell = new StatisticsCell(mockedScell);
+        Node mockedSrow = getMockedSrow(Long.MIN_VALUE);
+        StatisticsCell scell = new StatisticsCell(mockedSrow, mockedScell);
         int listSize = (int)(Math.random() * 100);
         List<IDataElement> generatedSources = generateSources(listSize);
         List<Node> generatedSourcesNodes = new ArrayList<Node>();

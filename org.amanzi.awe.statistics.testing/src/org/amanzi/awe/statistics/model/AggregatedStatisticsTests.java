@@ -15,12 +15,15 @@ package org.amanzi.awe.statistics.model;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Assert;
+
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
@@ -45,11 +48,16 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
     @Before
     public void setUp() {
         super.setUp();
+        Node mockedLevel = getMockedLevel(LEVEL_NAME, Boolean.TRUE);
+        Node mockedCorrelatedLevel = getMockedLevel(LEVEL_NAME + Math.PI, Boolean.TRUE);
+        Node networkD = getMockedDimension(DimensionTypes.NETWORK);
+        Node timeD = getMockedDimension(DimensionTypes.TIME);
         try {
-            firstLevel = mockLevel(DimensionTypes.NETWORK, FIRST_LEVEL_NAME);
-            secondLevel = mockLevel(DimensionTypes.TIME, SECOND_LEVEL_NAME);
+            firstLevel = new StatisticsLevel(networkD, mockedLevel);
+            secondLevel = new StatisticsLevel(timeD, mockedCorrelatedLevel);
         } catch (DatabaseException e) {
-            LOGGER.error("can't mock levels", e);
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
@@ -89,36 +97,24 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
 
     @Test
     public void testGetGroupIfFounded() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testGetGroup started ");
-        Node levelsRoot = getAggregatedRoot();
-        AggregatedStatistics stat = new AggregatedStatistics(levelsRoot);
+        LOGGER.info("testGetGroupIfFounded started ");
+        Node aggregation = getAggregatedRoot();
+        AggregatedStatistics stat = new AggregatedStatistics(aggregation);
         Node sgroupNode = getMockedGroup(SGROUP_NAME);
-        when(statisticsService.findNodeInChain(eq(levelsRoot), eq(DatasetService.NAME), eq(SGROUP_NAME))).thenReturn(sgroupNode);
-        stat.getSGroup(SGROUP_NAME);
-        verify(statisticsService, never()).createSGroup(eq(levelsRoot), eq(SGROUP_NAME), eq(Boolean.FALSE));
+        List<Node> groups = new ArrayList<Node>();
+        groups.add(sgroupNode);
+        when(statisticsService.getChildrenChainTraverser(eq(aggregation))).thenReturn(groups);
+        StatisticsGroup group = stat.getSGroup(SGROUP_NAME);
+        Assert.assertEquals("Unexpected root node", sgroupNode, group.getRootNode());
     }
 
     @Test
     public void testGetGroupIfNotFounded() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testGetGroup started ");
-        Node levelsRoot = getAggregatedRoot();
-        Node mockedGroup = getMockedGroup(SGROUP_NAME);
-        AggregatedStatistics stat = new AggregatedStatistics(levelsRoot);
-        when(statisticsService.findNodeInChain(eq(levelsRoot), eq(DatasetService.NAME), eq(SGROUP_NAME))).thenReturn(null);
-        when(statisticsService.createSGroup(eq(levelsRoot), eq(SGROUP_NAME), eq(Boolean.FALSE))).thenReturn(mockedGroup);
-        stat.getSGroup(SGROUP_NAME);
-        verify(statisticsService, atLeastOnce()).createSGroup(eq(levelsRoot), eq(SGROUP_NAME), eq(Boolean.FALSE));
+        LOGGER.info("testGetGroupIfNotFounded started ");
+        Node aggregation = getAggregatedRoot();
+        AggregatedStatistics stat = new AggregatedStatistics(aggregation);
+        when(statisticsService.getChildrenChainTraverser(eq(aggregation))).thenReturn(null);
+        StatisticsGroup group = stat.getSGroup(SGROUP_NAME);
+        Assert.assertNull("Unexpected root node", group);
     }
-
-    /**
-     * @param type
-     * @param name
-     * @return
-     * @throws DatabaseException
-     */
-    private StatisticsLevel mockLevel(DimensionTypes type, String name) throws DatabaseException {
-        Node mockedLevel = getMockedLevelWithDimension(name, true, type);
-        return new StatisticsLevel(mockedLevel);
-    }
-
 }
