@@ -29,7 +29,12 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class AbstractEntity {
+
+    /*
+     * logger instantiation
+     */
     private static final Logger LOGGER = Logger.getLogger(AbstractEntity.class);
+
     protected static final String PROPERTY_FLAGGED_NAME = "flagged";
     /*
      * statistics service

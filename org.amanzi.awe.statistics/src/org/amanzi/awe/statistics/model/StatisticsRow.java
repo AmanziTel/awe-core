@@ -25,7 +25,7 @@ import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * StatisticsRow entity. Can be instantiated only from {@link StatisticGroup}. play role of storage
+ * StatisticsRow entity. Can be instantiated only from {@link StatisticsGroup}. play role of storage
  * for {@link StatisticsCell}
  * </p>
  * 
@@ -33,7 +33,11 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsRow extends AbstractEntity {
+    /*
+     * logger instantiation
+     */
     private static final Logger LOGGER = Logger.getLogger(StatisticsRow.class);
+
     private static final String PROPERTY_SUMMARY_NAME = "summary";
     static final String SUMMARY_NAME = "total";
     // key - column/header name

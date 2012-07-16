@@ -53,7 +53,7 @@ public class StatisticsManager {
     private StatisticsUtils utils = StatisticsUtils.getInstance();
 
     /*
-     * cann't be created directly. Just through getInstance.
+     * cann't be created directly Just through getInstance.
      */
     private StatisticsManager() {
     }

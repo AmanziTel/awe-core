@@ -34,7 +34,11 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsCell extends AbstractEntity {
 
+    /*
+     * logger instantiation
+     */
     private static final Logger LOGGER = Logger.getLogger(StatisticsCell.class);
+
     private boolean isSelected = false;
     private StatisticsRow row;
 

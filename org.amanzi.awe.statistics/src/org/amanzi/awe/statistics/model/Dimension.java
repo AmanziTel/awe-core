@@ -41,7 +41,6 @@ public class Dimension extends AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(Dimension.class);
 
     private DimensionTypes dimensionType;
-
     private LinkedHashMap<String, StatisticsLevel> levels;
 
     /**

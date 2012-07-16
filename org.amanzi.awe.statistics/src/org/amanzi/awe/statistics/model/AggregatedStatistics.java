@@ -27,10 +27,11 @@ import org.neo4j.graphdb.Node;
 /**
  * <p>
  * Aggregated statistics consists of:<br>
- * <b>S_GROUP-</b> unique property value <br>
- * S_ROW -</b> list of periods separated in according with {@link DimensionTypes#TIME} dimension
- * (see : {@link Dimension}) level (see : {@link StatisticsLevel}) <br>
- * <b> S_CELL - </b> list of templates kpi's. S_CELL- has a list of sources.
+ * <b>S_GROUP-</b> unique property value {@link StatisticsGroup}<br>
+ * S_ROW -</b>{@link StatisticsRow} list of periods separated in according with
+ * {@link DimensionTypes#TIME} dimension (see : {@link Dimension}) level (see :
+ * {@link StatisticsLevel}) <br>
+ * <b> S_CELL - </b> {@link StatisticsCell} list of templates kpi's. S_CELL- has a list of sources.
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -41,6 +42,7 @@ public class AggregatedStatistics extends AbstractEntity {
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(AggregatedStatistics.class);
+
     private LinkedHashMap<String, StatisticsGroup> groups;
     private static final String NAME_FORMAT = "%s, %s";
 

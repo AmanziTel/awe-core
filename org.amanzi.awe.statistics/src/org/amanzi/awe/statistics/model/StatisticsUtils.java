@@ -21,17 +21,14 @@ import org.amanzi.awe.statistics.enumeration.Period;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * TODO Purpose of
  * <p>
+ * manipulation with statistics data
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
 public class StatisticsUtils {
-    /*
-     * 
-     */
     private static final String NO_TIME = "No time";
     private static StatisticsUtils utils;
 

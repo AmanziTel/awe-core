@@ -33,7 +33,11 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsGroup extends AbstractEntity {
+    /*
+     * logger instantiation
+     */
     private static final Logger LOGGER = Logger.getLogger(StatisticsGroup.class);
+
     private LinkedHashMap<String, StatisticsRow> rows;
 
     /**
