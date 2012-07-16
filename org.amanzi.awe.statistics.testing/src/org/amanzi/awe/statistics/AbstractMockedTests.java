@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.statistics.AbstractStatisticsTest;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.service.StatisticsService;
@@ -40,7 +39,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTest {
+public abstract class AbstractMockedTests extends AbstractStatisticsTest {
     protected static StatisticsService statisticsService;
     protected static final String PARENT_NAME = "model";
     protected static final String MODEL_NAME = "model";
@@ -61,8 +60,6 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
         statisticsService = getMockedService();
         initMockedParentNode();
         initMockedStatisticsRootModel();
-        StatisticsModel.setStatisticsService(statisticsService);
-        AbstractEntity.setStatisticsService(statisticsService);
     }
 
     /**

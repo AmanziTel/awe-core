@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -24,6 +24,8 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.amanzi.awe.statistics.AbstractMockedTests;
+import org.amanzi.awe.statistics.entities.impl.StatisticsCell;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -40,7 +42,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsCellTests extends AbstractStatisticsModelTests {
+public class StatisticsCellTests extends AbstractMockedTests {
     private static final Logger LOGGER = Logger.getLogger(StatisticsCellTests.class);
 
     @Test

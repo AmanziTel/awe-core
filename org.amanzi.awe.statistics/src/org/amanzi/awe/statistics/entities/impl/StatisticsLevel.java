@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities.impl;
 
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -43,7 +43,7 @@ public class StatisticsLevel extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    StatisticsLevel(Node dimensionRoot, String name) throws DatabaseException, IllegalNodeDataException {
+    public StatisticsLevel(Node dimensionRoot, String name) throws DatabaseException, IllegalNodeDataException {
         super(StatisticsNodeTypes.LEVEL);
         initStatisticsService();
         if (dimensionRoot == null) {
@@ -72,7 +72,7 @@ public class StatisticsLevel extends AbstractEntity {
      * @param levelNode
      * @throws DatabaseException
      */
-    StatisticsLevel(Node parent, Node levelNode) throws DatabaseException {
+    public StatisticsLevel(Node parent, Node levelNode) throws DatabaseException {
         super(parent, levelNode, StatisticsNodeTypes.LEVEL);
         initStatisticsService();
     }
@@ -161,7 +161,4 @@ public class StatisticsLevel extends AbstractEntity {
         return new StatisticsLevel(parentNode, sources.iterator().next());
     }
 
-    @Override
-    protected void loadChildIfNecessary() {
-    }
 }

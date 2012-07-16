@@ -11,17 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.statistics.engine.IAggregationFunction;
+import org.amanzi.awe.statistics.entities.IAggregatedStatisticsEntity;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
+import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
+import org.amanzi.awe.statistics.exceptions.UnableToModifyException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -32,15 +37,18 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsCell extends AbstractEntity {
+public class StatisticsCell extends AbstractFlaggedEntity implements IAggregatedStatisticsEntity {
 
     /*
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsCell.class);
 
+    private static final String VALUE_NAME = "value";
+
     private boolean isSelected = false;
     private StatisticsRow row;
+    private IAggregationFunction function;
 
     /**
      * constructor for instantiation
@@ -48,7 +56,7 @@ public class StatisticsCell extends AbstractEntity {
      * @param parent
      * @param cellNode
      */
-    StatisticsCell(Node parent, Node cellNode) {
+    public StatisticsCell(Node parent, Node cellNode) {
         super(parent, cellNode, StatisticsNodeTypes.S_CELL);
     }
 
@@ -85,6 +93,21 @@ public class StatisticsCell extends AbstractEntity {
     }
 
     /**
+     * create {@link StatisticsRelationshipTypes#SOURCE} relationship between this source and
+     * sourceCell
+     * 
+     * @param sourceCell
+     * @throws DatabaseException
+     */
+    public void addSourceCell(StatisticsCell sourceCell) throws DatabaseException {
+        if (sourceCell == null) {
+            LOGGER.error("source cell can't be null");
+            throw new IllegalArgumentException("source is null");
+        }
+        statisticService.addSource(rootNode, sourceCell.getRootNode());
+    }
+
+    /**
      * return list of sources elements
      * 
      * @param parentNode
@@ -100,40 +123,44 @@ public class StatisticsCell extends AbstractEntity {
     }
 
     /**
-     * set or remove flagged is true- set flaggedProperty to group else remove it from group node
-     * 
-     * @param flagged
-     * @throws DatabaseException
-     * @throws IllegalNodeDataException
+     * check if cell is selected
      */
-    public void setFlagged(boolean flagged) throws IllegalNodeDataException, DatabaseException {
-        if (flagged) {
-            statisticService.setAnyProperty(rootNode, PROPERTY_FLAGGED_NAME, flagged);
-        } else {
-            statisticService.removeNodeProperty(rootNode, PROPERTY_FLAGGED_NAME);
-
-        }
-    }
-
-    /**
-     * return flagged value of group
-     * 
-     * @return
-     */
-    public boolean isFlagged() {
-        Boolean isFlagged = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_FLAGGED_NAME);
-        if (isFlagged == null) {
-            return Boolean.FALSE;
-        }
-        return isFlagged();
-    }
-
     public boolean isSelected() {
         return isSelected;
     }
 
     public void setSelected(boolean select) {
         this.isSelected = select;
+    }
+
+    /**
+     * update cell value
+     * 
+     * @param value
+     * @return
+     * @throws UnableToModifyException
+     * @throws IllegalNodeDataException
+     * @throws DatabaseException
+     */
+    public boolean updateValue(Number value) throws UnableToModifyException, IllegalNodeDataException, DatabaseException {
+        if (function == null) {
+            LOGGER.error("Unnable to modify node . Probably  reason is read only parameter is true");
+            throw new UnableToModifyException("Unnable to modify node . Perhaps the reason is read only parameter is true");
+        }
+        if (value != null || (value == null && function.acceptsNulls())) {
+            statisticService.setAnyProperty(rootNode, VALUE_NAME, function.update(value).getResult());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * return cell value
+     * 
+     * @return
+     */
+    public Number getValue() {
+        return (Number)statisticService.getNodeProperty(rootNode, VALUE_NAME);
     }
 
     /**
@@ -148,7 +175,12 @@ public class StatisticsCell extends AbstractEntity {
         return row;
     }
 
-    @Override
-    protected void loadChildIfNecessary() {
+    /**
+     * @param set function
+     */
+    public void setFunction(IAggregationFunction function) {
+        this.function = function;
     }
+
+   
 }

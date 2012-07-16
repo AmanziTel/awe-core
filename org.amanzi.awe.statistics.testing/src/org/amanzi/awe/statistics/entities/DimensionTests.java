@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -24,9 +24,10 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.amanzi.awe.statistics.AbstractMockedTests;
+import org.amanzi.awe.statistics.entities.impl.Dimension;
+import org.amanzi.awe.statistics.entities.impl.StatisticsLevel;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
-import org.amanzi.awe.statistics.model.Dimension;
-import org.amanzi.awe.statistics.model.StatisticsLevel;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -44,7 +45,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class DimensionTests extends AbstractStatisticsModelTests {
+public class DimensionTests extends AbstractMockedTests {
     private static final Logger LOGGER = Logger.getLogger(StatisticsLevelTests.class);
     private static final String LEVEL_NAME = "level";
 

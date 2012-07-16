@@ -11,9 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
-
-import java.util.LinkedHashMap;
+package org.amanzi.awe.statistics.entities.impl;
 
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
@@ -37,16 +35,15 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AggregatedStatistics extends AbstractEntity {
+public class AggregatedStatistics extends AbstractStorageEntity<StatisticsGroup> {
     /*
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(AggregatedStatistics.class);
 
-    private LinkedHashMap<String, StatisticsGroup> groups;
     private static final String NAME_FORMAT = "%s, %s";
 
-    AggregatedStatistics(StatisticsLevel firstLevel, StatisticsLevel secondLevel) throws DatabaseException,
+    public AggregatedStatistics(StatisticsLevel firstLevel, StatisticsLevel secondLevel) throws DatabaseException,
             IllegalNodeDataException {
         super(StatisticsNodeTypes.STATISTICS);
         if (firstLevel == null || secondLevel == null) {
@@ -79,65 +76,22 @@ public class AggregatedStatistics extends AbstractEntity {
         name = (String)statisticService.getNodeProperty(aggregatedNode, StatisticsService.NAME);
     }
 
-    /**
-     * get s_group data Element
-     * 
-     * @param aggregationElement
-     * @param name
-     * @return
-     * @throws IllegalNodeDataException
-     * @throws DatabaseException
-     */
-    public StatisticsGroup findSGroup(String name) {
-        loadChildIfNecessary();
-        return groups.get(name);
+    @Override
+    protected StatisticsGroup instantiateChild(Node rootNode, Node childNode) {
+        return new StatisticsGroup(rootNode, childNode);
     }
 
     /**
-     * try to create new group in this statistics. if group is already exists throw
-     * DuplicatedNodeNameException
+     * add new group. if group is already exist- throws DuplicateNodeNameException;
      * 
-     * @param timestamp
+     * @param name
      * @return
      * @throws DuplicateNodeNameException
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsGroup createSGroup(String name) throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
-        loadChildIfNecessary();
-        if (groups.containsKey(name)) {
-            LOGGER.error("s_group with timestamp." + name + "is already exists");
-            throw new DuplicateNodeNameException();
-        }
-        Node statisticsRow = statisticService.createSGroup(rootNode, name, Boolean.FALSE);
-        StatisticsGroup newRow = new StatisticsGroup(rootNode, statisticsRow);
-        groups.put(name, newRow);
-        return newRow;
-    }
-
-    /**
-     * get all groups name
-     * 
-     * @return
-     */
-    public Iterable<StatisticsGroup> getAllSGroups() {
-        loadChildIfNecessary();
-        return groups.values();
-    }
-
-    @Override
-    protected void loadChildIfNecessary() {
-        if (groups == null) {
-            groups = new LinkedHashMap<String, StatisticsGroup>();
-            Iterable<Node> groupNodes = statisticService.getChildrenChainTraverser(rootNode);
-            if (groupNodes == null) {
-                return;
-            }
-            for (Node rowNode : groupNodes) {
-                String name = (String)statisticService.getNodeProperty(rowNode, StatisticsService.NAME);
-                groups.put(name, new StatisticsGroup(rootNode, rowNode));
-            }
-        }
+    public StatisticsGroup addGroup(String name) throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
+        return createChildWithName(name, StatisticsNodeTypes.S_GROUP);
     }
 
 }

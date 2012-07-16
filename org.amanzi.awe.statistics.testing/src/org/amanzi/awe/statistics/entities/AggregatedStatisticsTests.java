@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -23,6 +23,10 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.amanzi.awe.statistics.AbstractMockedTests;
+import org.amanzi.awe.statistics.entities.impl.AggregatedStatistics;
+import org.amanzi.awe.statistics.entities.impl.StatisticsGroup;
+import org.amanzi.awe.statistics.entities.impl.StatisticsLevel;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -39,7 +43,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
+public class AggregatedStatisticsTests extends AbstractMockedTests {
     private static final Logger LOGGER = Logger.getLogger(AggregatedStatisticsTests.class);
 
     private StatisticsLevel firstLevel;
@@ -104,7 +108,7 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
         List<Node> groups = new ArrayList<Node>();
         groups.add(sgroupNode);
         when(statisticsService.getChildrenChainTraverser(eq(aggregation))).thenReturn(groups);
-        StatisticsGroup group = stat.findSGroup(SGROUP_NAME);
+        StatisticsGroup group = stat.findChildByName(SGROUP_NAME);
         Assert.assertEquals("Unexpected root node", sgroupNode, group.getRootNode());
     }
 
@@ -114,7 +118,7 @@ public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
         Node aggregation = getAggregatedRoot();
         AggregatedStatistics stat = new AggregatedStatistics(aggregation);
         when(statisticsService.getChildrenChainTraverser(eq(aggregation))).thenReturn(null);
-        StatisticsGroup group = stat.findSGroup(SGROUP_NAME);
+        StatisticsGroup group = stat.findChildByName(SGROUP_NAME);
         Assert.assertNull("Unexpected root node", group);
     }
 }

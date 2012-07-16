@@ -11,12 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities.impl;
 
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -44,7 +43,7 @@ public abstract class AbstractEntity {
     /*
      * service instantiation
      */
-    static void setStatisticsService(StatisticsService service) {
+    public static void setStatisticsService(StatisticsService service) {
         statisticService = service;
     }
 
@@ -138,10 +137,4 @@ public abstract class AbstractEntity {
         return parentNode;
     }
 
-    /**
-     * load child Entities
-     * 
-     * @throws DatabaseException
-     */
-    protected abstract void loadChildIfNecessary() throws DatabaseException;
 }

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.statistics.entities.impl;
 
 import java.util.LinkedHashMap;
 
@@ -51,7 +51,7 @@ public class Dimension extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    Dimension(Node statisticsRoot, DimensionTypes dimensionType) throws DatabaseException, IllegalNodeDataException {
+    public Dimension(Node statisticsRoot, DimensionTypes dimensionType) throws DatabaseException, IllegalNodeDataException {
         super(StatisticsNodeTypes.DIMENSION);
         initStatisticsService();
         if (statisticsRoot == null) {
@@ -135,7 +135,6 @@ public class Dimension extends AbstractEntity {
         return dimensionType;
     }
 
-    @Override
     protected void loadChildIfNecessary() throws DatabaseException {
         if (levels == null) {
             levels = new LinkedHashMap<String, StatisticsLevel>();
