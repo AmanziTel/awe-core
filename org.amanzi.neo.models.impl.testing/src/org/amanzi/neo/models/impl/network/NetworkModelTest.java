@@ -77,6 +77,8 @@ public class NetworkModelTest extends AbstractMockitoTest {
         statisticsModel = mock(IPropertyStatisticsModel.class);
         indexModel = mock(IIndexModel.class);
 
+        rootNode = getNodeMock();
+
         networkModel = spy(new NetworkModel(nodeService, GENERAL_NODE_PROPERTIES, GEO_NODE_PROPERTIES));
         networkModel.setIndexModel(indexModel);
         networkModel.setPropertyStatisticsModel(statisticsModel);
@@ -86,7 +88,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
         elementNode = getNodeMock();
 
         parentElement = mock(DataElement.class);
-        when(parentElement.getNode()).thenReturn(rootNode);
+        when(parentElement.getNode()).thenReturn(parentNode);
 
         when(indexModel.getIndexKey(rootNode, DEFAULT_ELEMENT_TYPE)).thenReturn(DEFAULT_KEY);
     }

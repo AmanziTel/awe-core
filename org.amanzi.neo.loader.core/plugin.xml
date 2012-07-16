@@ -13,5 +13,11 @@
             id="org.amanzi.parser.CSVParser">
       </parser>
    </extension>
+   <extension
+         point="org.amanzi.loaderSynonyms">
+      <synonyms
+            synonymsFile="synonyms/network.synonyms">
+      </synonyms>
+   </extension>
 
 </plugin>
