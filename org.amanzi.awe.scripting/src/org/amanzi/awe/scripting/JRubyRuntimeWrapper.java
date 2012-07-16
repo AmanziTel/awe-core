@@ -53,9 +53,23 @@ public class JRubyRuntimeWrapper {
      */
     public Object executeScriptByName(String scriptName) throws FileNotFoundException, ScriptingException {
         String script = ScriptUtils.getInstance().getScript(scriptName, destination);
-        IRubyObject object = runtime.evalScriptlet(script);
+        return executeScript(script);
+    }
 
-        return defineJavaObject(object);
+    /**
+     * execute script
+     * 
+     * @param script
+     * @return
+     */
+    public Object executeScript(String script) throws ScriptingException {
+        try {
+            IRubyObject object = runtime.evalScriptlet(script);
+            return defineJavaObject(object);
+        } catch (Exception e) {
+            throw new ScriptingException("Can't execute script " + script + "because of", e);
+        }
+
     }
 
     /**
