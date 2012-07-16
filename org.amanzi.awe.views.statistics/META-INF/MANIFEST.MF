@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: StatisticsUI
+Bundle-SymbolicName: org.amanzi.awe.views.statistics;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.statistics.ui.StatisticsPlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui;bundle-version="3.7.0",
+ org.amanzi.awe.statistics;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy

@@ -29,8 +29,14 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     org.amanzi.awe.statistics.enumeration.PeriodTests.class,
     org.amanzi.awe.statistics.model.StatisticsModelTests.class,
-    org.amanzi.awe.statistics.service.StatisticsServiceTests.class
+    org.amanzi.awe.statistics.service.StatisticsServiceTests.class,
+    org.amanzi.awe.statistics.model.DimensionTests.class,
+    org.amanzi.awe.statistics.model.StatisticsLevelTests.class,
+    org.amanzi.awe.statistics.model.AggregatedStatisticsTests.class,
+    org.amanzi.awe.statistics.model.StatisticsGroupTests.class,
+    org.amanzi.awe.statistics.model.StatisticsRowTests.class,
+    org.amanzi.awe.statistics.model.StatisticsCellTests.class
     })
-public class StatisticsServiceSuite {
+public class StatisticsTestsSuite {
 
 }

@@ -15,13 +15,19 @@ package org.amanzi.awe.statistics.model;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.amanzi.awe.statistics.enumeration.Period;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -36,71 +42,43 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
-        new StatisticsModel(null);
+        new StatisticsModel(null, null);
     }
 
     @Test
     public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
-
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
-        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
-        StatisticsModel model = new StatisticsModel(parentNode);
+        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class), eq(Boolean.FALSE))).thenReturn(
+                statisticModelNode);
+        StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
         assertEquals("Unexpected model root", statisticModelNode, model.getRootNode());
 
     }
 
     @Test
-    public void testPeriodModelInitializationHourly() throws DatabaseException, IllegalArgumentException {
-        PeriodRange range = generatePeriod(Period.HOURLY);
-        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
-        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
-        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
-        mockTimestampParent(range.getMin(), range.getMax());
-        new StatisticsModel(parentNode);
+    public void testGetAllDimensions() throws IllegalArgumentException, DatabaseException {
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
+        List<Node> foundedNodes = new ArrayList<Node>();
+        foundedNodes.add(dimensionMocked);
+        when(statisticsService.getFirstRelationTraverser(eq(statisticModelNode), eq(DatasetRelationTypes.CHILD))).thenReturn(
+                foundedNodes);
+        StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
+        Iterable<Dimension> dimensions = model.getAllDimensions();
+        Assert.assertTrue("Unexpected empty list", dimensions.iterator().hasNext());
+        Assert.assertEquals(dimensionMocked, dimensions.iterator().next().getRootNode());
     }
 
     @Test
-    public void testPeriodModelInitializationMonthly() throws DatabaseException, IllegalArgumentException {
-        PeriodRange range = generatePeriod(Period.MONTHLY);
-        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
-        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
-        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
-        mockedNode = getMockedPeriodNode(Period.DAILY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.DAILY))).thenReturn(mockedNode);
-        mockedNode = getMockedPeriodNode(Period.WEEKLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.WEEKLY))).thenReturn(mockedNode);
-        mockedNode = getMockedPeriodNode(Period.MONTHLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.MONTHLY))).thenReturn(mockedNode);
-
-        mockTimestampParent(range.getMin(), range.getMax());
-        new StatisticsModel(parentNode);
-
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.HOURLY));
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.DAILY));
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.WEEKLY));
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.MONTHLY));
+    public void testGetDimensionIfFound() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
+        when(statisticsService.getNodeProperty(eq(dimensionMocked), eq(DatasetService.NAME))).thenReturn(
+                DimensionTypes.TIME.getId());
+        when(statisticsService.findDimension(eq(statisticModelNode), eq(DimensionTypes.TIME))).thenReturn(dimensionMocked);
+        StatisticsModel model = new StatisticsModel(parentNode, MODEL_NAME);
+        Dimension dimension = model.getDimension(DimensionTypes.TIME);
+        verify(statisticsService, never()).createDimension(any(Node.class), any(DimensionTypes.class), eq(false));
+        Assert.assertEquals(dimensionMocked, dimension.getRootNode());
     }
-
-    @Test
-    public void testPeriodModelInitializationWeekly() throws DatabaseException, IllegalArgumentException {
-        PeriodRange range = generatePeriod(Period.WEEKLY);
-        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
-        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
-        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
-        mockedNode = getMockedPeriodNode(Period.DAILY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.DAILY))).thenReturn(mockedNode);
-        mockedNode = getMockedPeriodNode(Period.WEEKLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.WEEKLY))).thenReturn(mockedNode);
-
-        mockTimestampParent(range.getMin(), range.getMax());
-        new StatisticsModel(parentNode);
-
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.HOURLY));
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.DAILY));
-        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.WEEKLY));
-    }
-
 }

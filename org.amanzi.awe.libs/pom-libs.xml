@@ -47,13 +47,7 @@
 									<directory>${basedir}/lib</directory>
 									<includes>
 										<include>*.*</include>
-									</includes>
-									<followSymlinks>false</followSymlinks>
-								</fileset>
-								<fileset>
-									<directory>${basedir}/lib/source</directory>
-									<includes>
-										<include>*.*</include>
+										<include>sources/*</include>
 									</includes>
 									<followSymlinks>false</followSymlinks>
 								</fileset>

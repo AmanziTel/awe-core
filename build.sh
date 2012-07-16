@@ -19,4 +19,3 @@ if [ "$1" == development ]
 		$M2_HOME/bin/mvn clean install
 	fi
 fi
-
