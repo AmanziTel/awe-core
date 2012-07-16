@@ -37,9 +37,9 @@ public interface INetworkModel extends IPropertyStatisticalModel {
 
     IDataElement findElement(INetworkElementType elementType, String elementName) throws ModelException;
 
-    void createElement(INetworkElementType elementType, IDataElement parent, String name, Map<String, Object> properties)
+    IDataElement createElement(INetworkElementType elementType, IDataElement parent, String name, Map<String, Object> properties)
             throws ModelException;
 
-    void replaceChild(IDataElement child, IDataElement newParent) throws ModelException;
+    IDataElement replaceChild(IDataElement child, IDataElement newParent) throws ModelException;
 
 }

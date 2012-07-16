@@ -30,11 +30,18 @@ public class ParameterInconsistencyException extends ModelException {
 
     private final Object parameterValue;
 
-    public ParameterInconsistencyException(String parameterName, Object parameterValue) {
+    public ParameterInconsistencyException(final String parameterName, final Object parameterValue) {
         super();
 
         this.parameterName = parameterName;
         this.parameterValue = parameterValue;
+    }
+
+    public ParameterInconsistencyException(final String parameterName) {
+        super();
+
+        this.parameterName = parameterName;
+        parameterValue = null;
     }
 
     /**

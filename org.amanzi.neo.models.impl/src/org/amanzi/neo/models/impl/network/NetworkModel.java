@@ -26,6 +26,8 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -64,7 +66,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         // validate input
         if (elementType == null) {
-            throw new ParameterInconsistencyException("elementType", elementType);
+            throw new ParameterInconsistencyException("elementType");
         }
 
         if (StringUtils.isEmpty(elementName)) {
@@ -88,16 +90,53 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public void createElement(final INetworkElementType elementType, final IDataElement parent, final String name,
+    public IDataElement createElement(final INetworkElementType elementType, final IDataElement parent, final String name,
             final Map<String, Object> properties) throws ModelException {
-        // TODO Auto-generated method stub
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createElement", elementType, parent, name, properties));
+        }
 
+        // validate input
+        if (elementType == null) {
+            throw new ParameterInconsistencyException("elementType");
+        }
+        if (parent == null) {
+            throw new ParameterInconsistencyException("parent");
+        }
+        if (StringUtils.isEmpty(name)) {
+            throw new ParameterInconsistencyException("name", name);
+        }
+        if (properties == null) {
+            throw new ParameterInconsistencyException("properties", null);
+        }
+
+        IDataElement result = null;
+
+        // check duplication
+        if ((findElement(elementType, name) == null) && (parent instanceof DataElement)) {
+            try {
+                Node parentNode = ((DataElement)parent).getNode();
+                Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
+                        properties);
+
+                result = new DataElement(node);
+            } catch (ServiceException e) {
+                processException("An error occured on creating new Network Element", e);
+            }
+
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createElement"));
+        }
+
+        return result;
     }
 
     @Override
-    public void replaceChild(final IDataElement child, final IDataElement newParent) throws ModelException {
+    public IDataElement replaceChild(final IDataElement child, final IDataElement newParent) throws ModelException {
         // TODO Auto-generated method stub
-
+        return null;
     }
 
     @Override

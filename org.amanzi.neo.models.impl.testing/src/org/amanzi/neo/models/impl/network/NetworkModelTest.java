@@ -32,7 +32,6 @@ import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -153,7 +152,6 @@ public class NetworkModelTest extends AbstractMockitoTest {
     }
 
     @Test
-    @Ignore
     public void testCheckActivityOnCreatingNewElement() throws Exception {
         Map<String, Object> properties = getProperties();
 
