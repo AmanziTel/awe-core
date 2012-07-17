@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
-			<version>20030211.134440</version>
+			<version>1.8.3</version>
 		</dependency>
 	</dependencies>
 	<profiles>
