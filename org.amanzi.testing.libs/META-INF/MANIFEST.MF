@@ -6,13 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.apache.commons.beanutils,
- org.apache.commons.beanutils.converters,
- org.apache.commons.beanutils.expression,
- org.apache.commons.beanutils.locale,
- org.apache.commons.beanutils.locale.converters,
- org.apache.commons.collections,
- org.hamcrest,
+Export-Package: org.hamcrest,
  org.jmock,
  org.jmock.internal,
  org.jmock.lib.legacy,
@@ -27,5 +21,4 @@ Bundle-ClassPath: lib/mockito-core-1.9.0.jar,
  lib/hamcrest-core-1.1.jar,
  lib/objenesis-1.0.jar,
  lib/hamcrest-library-1.1.jar,
- lib/jmock-legacy-2.5.1.jar,
- lib/commons-beanutils-1.8.3.jar
+ lib/jmock-legacy-2.5.1.jar
