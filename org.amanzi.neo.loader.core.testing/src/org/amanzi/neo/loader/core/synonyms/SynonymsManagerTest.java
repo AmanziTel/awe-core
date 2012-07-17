@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -56,7 +59,7 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     private static final String NETWORK_SYNONYMS = "synonyms/network.synonyms";
 
     private enum TestNodeTypes implements INodeType {
-        TEST_TYPE_FOR_SYNONYMS;
+        TEST_TYPE_FOR_SYNONYMS, TEST_SYNONYMS_TYPE_1, TEST_SYNONYMS_TYPE_2;
 
         @Override
         public String getId() {
@@ -171,7 +174,7 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
         synonymsManager = spy(new SynonymsManager(registry));
 
-        Map<INodeType, Synonyms> result = synonymsManager.initializeSynonymsCache(DEFAULT_TYPE);
+        Map<INodeType, List<Synonyms>> result = synonymsManager.initializeSynonymsCache(DEFAULT_TYPE);
 
         assertNotNull("result cannot be null", result);
         assertTrue("synonyms map should be empty", result.isEmpty());
@@ -251,6 +254,34 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
         assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
         assertEquals("unexpected class", SynonymType.UNKOWN, synonyms.getSynonymType());
         assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
+    }
+
+    @Test
+    public void testCheckSynonymsFromTestFile() {
+        synonymsManager = SynonymsManager.getInstance();
+
+        for (INodeType nodeType : new INodeType[] {TestNodeTypes.TEST_SYNONYMS_TYPE_1, TestNodeTypes.TEST_SYNONYMS_TYPE_2}) {
+            List<Synonyms> synonyms = synonymsManager.getSynonyms("test", nodeType);
+
+            assertEquals("unexpected size of synonyms list", 2, synonyms.size());
+
+            Collections.sort(synonyms, new Comparator<Synonyms>() {
+
+                @Override
+                public int compare(Synonyms o1, Synonyms o2) {
+                    return o1.getPropertyName().compareTo(o2.getPropertyName());
+                }
+
+            });
+
+            for (int i = 0; i < 2; i++) {
+                String property = "property" + (i + 1);
+
+                Synonyms synonym = synonyms.get(i);
+
+                assertEquals("unexpected name", property, synonym.getPropertyName());
+            }
+        }
     }
 
     private IConfigurationElement generateResouceElement(String pluginId, String path) {

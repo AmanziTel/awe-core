@@ -1,0 +1,4 @@
+test_synonyms_type_1.property1@Integer=property1, property2
+test_synonyms_type_1.property2=property1, property2
+test_synonyms_type_2.property1@Integer=property1, property2
+test_synonyms_type_2.property2=property1, property2

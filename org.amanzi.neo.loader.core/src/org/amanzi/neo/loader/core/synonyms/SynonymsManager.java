@@ -55,7 +55,7 @@ public class SynonymsManager {
 
     private static final String HEADERS_SEPARATOR = ",";
 
-    private static final Pattern SYNONYM_KEY_PATTERN = Pattern.compile("(([a-zA-Z_]+)\\.){1}([a-zA-Z_]+){1}(@([a-zA-Z]+))?");
+    private static final Pattern SYNONYM_KEY_PATTERN = Pattern.compile("(([a-zA-Z_0-9]+)\\.){1}([a-zA-Z_0-9]+){1}(@([a-zA-Z]+))?");
 
     private static final int NODETYPE_GROUP_INDEX = 2;
 
@@ -67,7 +67,7 @@ public class SynonymsManager {
         private static volatile SynonymsManager INSTANCE = new SynonymsManager();
     }
 
-    private final Map<String, Map<INodeType, Synonyms>> synonymsCache = new HashMap<String, Map<INodeType, Synonyms>>();
+    private final Map<String, Map<INodeType, List<Synonyms>>> synonymsCache = new HashMap<String, Map<INodeType, List<Synonyms>>>();
 
     private final IExtensionRegistry registry;
 
@@ -113,14 +113,25 @@ public class SynonymsManager {
         return bundle.getResource(resourcePath);
     }
 
-    protected synchronized Map<INodeType, Synonyms> initializeSynonymsCache(String dataType) {
-        HashMap<INodeType, Synonyms> result = new HashMap<INodeType, Synonyms>();
+    protected synchronized Map<INodeType, List<Synonyms>> initializeSynonymsCache(String dataType) {
+        HashMap<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
 
         List<URL> urlList = resources.get(dataType);
         if (urlList != null) {
             for (URL singleURL : urlList) {
                 try {
-                    result.putAll(loadSynonyms(singleURL.openStream()));
+                    Map<INodeType, List<Synonyms>> synonyms = loadSynonyms(singleURL.openStream());
+
+                    for (INodeType nodeType : synonyms.keySet()) {
+                        List<Synonyms> synonymsList = result.get(nodeType);
+                        if (synonymsList == null) {
+                            synonymsList = new ArrayList<Synonyms>();
+
+                            result.put(nodeType, synonymsList);
+                        }
+                        synonymsList.addAll(synonyms.get(nodeType));
+                    }
+
                 } catch (IOException e) {
                     LOGGER.error("Unable to load Synonyms", e);
                 }
@@ -130,8 +141,8 @@ public class SynonymsManager {
         return result;
     }
 
-    protected Map<INodeType, Synonyms> loadSynonyms(InputStream stream) throws IOException {
-        Map<INodeType, Synonyms> result = new HashMap<INodeType, Synonyms>();
+    protected Map<INodeType, List<Synonyms>> loadSynonyms(InputStream stream) throws IOException {
+        Map<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
 
         Properties properties = new Properties();
         properties.load(stream);
@@ -139,7 +150,13 @@ public class SynonymsManager {
         for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
             Pair<INodeType, Synonyms> pair = parseSynonyms(propertyEntry);
 
-            result.put(pair.getKey(), pair.getValue());
+            List<Synonyms> synonymsList = result.get(pair.getLeft());
+            if (synonymsList == null) {
+                synonymsList = new ArrayList<Synonyms>();
+
+                result.put(pair.getKey(), synonymsList);
+            }
+            synonymsList.add(pair.getRight());
         }
 
         return result;
@@ -178,8 +195,8 @@ public class SynonymsManager {
         return null;
     }
 
-    public Synonyms getSynonyms(String synonymsType, INodeType nodeType) {
-        Map<INodeType, Synonyms> subTypeSynonyms = synonymsCache.get(synonymsType);
+    public List<Synonyms> getSynonyms(String synonymsType, INodeType nodeType) {
+        Map<INodeType, List<Synonyms>> subTypeSynonyms = synonymsCache.get(synonymsType);
 
         if (subTypeSynonyms == null) {
             subTypeSynonyms = initializeSynonymsCache(synonymsType);
