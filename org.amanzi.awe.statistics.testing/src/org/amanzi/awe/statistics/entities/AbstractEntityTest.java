@@ -13,14 +13,23 @@
 
 package org.amanzi.awe.statistics.entities;
 
+import org.amanzi.awe.statistics.AbstractMockedTests;
+import org.amanzi.awe.statistics.entities.impl.AbstractEntity;
+import org.junit.Before;
+
 /**
  * <p>
- * just mark class as Entity of {@link AggregatedStatistics}
+ * abstractEntityTest
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IAggregatedStatisticsEntity {
+public class AbstractEntityTest extends AbstractMockedTests {
 
+    @Before
+    public void setUp() {
+        super.setUp();
+        AbstractEntity.setStatisticsService(statisticsService);
+    }
 }

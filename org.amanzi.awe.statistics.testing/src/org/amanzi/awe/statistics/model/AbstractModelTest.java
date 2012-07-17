@@ -11,16 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.entities;
+package org.amanzi.awe.statistics.model;
+
+import org.amanzi.awe.statistics.AbstractMockedTests;
+import org.junit.Before;
 
 /**
- * <p>
- * just mark class as Entity of {@link AggregatedStatistics}
- * </p>
+ * TODO Purpose of
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IAggregatedStatisticsEntity {
-
+public class AbstractModelTest extends AbstractMockedTests {
+    @Before
+    public void setUp() {
+        super.setUp();
+        StatisticsModel.setStatisticsService(statisticsService);
+    }
 }
