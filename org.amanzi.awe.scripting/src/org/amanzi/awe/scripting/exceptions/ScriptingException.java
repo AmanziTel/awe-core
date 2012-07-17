@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.scripting.utils;
+package org.amanzi.awe.scripting.exceptions;
 
 /**
  * <p>

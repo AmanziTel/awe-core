@@ -18,11 +18,14 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
-import org.amanzi.awe.scripting.utils.ScriptingException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -49,7 +52,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * constants definition
      */
     private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
-    private static final String PROJECT_FOLDER = "awe-scripts";
+    private static final String SCRIPTS_FOLDER = "awe-scripts";
     private static final String RUBY_SCRIPT_FOLDER = "/ruby";
 
     /**
@@ -71,7 +74,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     public List<File> getScriptsForProject(String projectName) {
         File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
-                + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
+                + AbstractScriptingPlugin.SCRIPTS_FOLDER + File.separator + projectName);
         if (!projectFolder.exists()) {
             LOGGER.info("project folder " + projectName + " doesn't exist");
             return null;
@@ -86,16 +89,13 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws IOException
      */
     public void initScriptManager(BundleContext context) throws IOException {
-        if (RUBY_SCRIPT_FOLDER.equalsIgnoreCase(getScriptPath())) {
-            LOGGER.error("undefined project folder", new IOException(" undefined project folder "));
-        }
         try {
-            URL workspaceName = context.getBundle().getEntry(getScriptPath());
+            URL workspaceName = context.getBundle().getEntry(RUBY_SCRIPT_FOLDER);
             URL workspaceLocator = FileLocator.toFileURL(workspaceName);
             LOGGER.info("Start workspace initializing");
-            manager.initWorkspace(workspaceLocator);
+            manager.initWorkspace();
             LOGGER.info("Start file copying");
-            manager.copyScripts();
+            manager.copySources(workspaceLocator);
         } catch (IOException e) {
             LOGGER.error("Error in wokspace preparator", e);
             throw e;
@@ -108,7 +108,16 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws ScriptingException
      */
     public void initRuntime() throws ScriptingException {
-        initRuntime(manager.getDestination());
+        initRuntime(manager.getScriptsFolder());
+    }
+
+    /**
+     * get all available scripts
+     * 
+     * @return
+     */
+    public Map<String, File> getAllScripts() {
+        return manager.getAllWorkspaceScripts();
     }
 
     /**
@@ -130,7 +139,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
             runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
-            runtimeWrapper = new JRubyRuntimeWrapper(runtime, scriptFolder);
+            runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
         } catch (Exception e) {
             LOGGER.error("Error in runtime initialisation", e);
             throw new ScriptingException(e);
@@ -156,15 +165,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     }
 
     /**
-     * script folder path; by default @return ruby;
-     * 
-     * @return
-     */
-    public String getScriptPath() {
-        return RUBY_SCRIPT_FOLDER;
-    }
-
-    /**
      * <p>
      * Script management utils - purposed for control of script file and definition script
      * directories
@@ -174,14 +174,14 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @since 1.0.0
      */
     private static class ScriptingManager {
-        private File source = null;
-        private File destination = null;
+        private File scriptsFolder;
+        private static final String SCRIPT_NAME_FORMAT = "%s:%s";
         private static final FileFilter FILE_FILTER = new FileFilter() {
 
             @Override
             public boolean accept(File pathname) {
                 final String name = pathname.getName();
-                return name.endsWith(".rb");
+                return name.endsWith(".rb") || name.endsWith(".t");
             }
         };
 
@@ -192,51 +192,57 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * @return false if workspace is already exist, true- if newly created
          * @throws IOException
          */
-        public boolean initWorkspace(URL rubyScriptingFolder) throws IOException {
-            source = null;
-            destination = null;
-
-            File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
-            if (!projectFolder.exists()) {
-                FileUtils.forceMkdir(projectFolder);
+        public void initWorkspace() throws IOException {
+            scriptsFolder = new File(WORKSPACE_FOLDER + File.separator + SCRIPTS_FOLDER);
+            if (!scriptsFolder.exists()) {
+                FileUtils.forceMkdir(scriptsFolder);
             }
-            source = new File(rubyScriptingFolder.getPath());
-            String scriptFolderName = rubyScriptingFolder.getFile();
-            scriptFolderName = scriptFolderName.substring(0, scriptFolderName.length() - 1);
-            scriptFolderName = scriptFolderName.substring(scriptFolderName.lastIndexOf(File.separator) + 1,
-                    scriptFolderName.length());
-            boolean isExist = false;
-            for (File existingName : projectFolder.listFiles()) {
-                if (existingName.getName().equals(scriptFolderName)) {
-                    destination = existingName;
-                    isExist = true;
-                    break;
+        }
+
+        public void copySources(URL rubyScriptingFolder) throws IOException {
+            File rubyFolder = new File(rubyScriptingFolder.getPath());
+            for (File source : rubyFolder.listFiles()) {
+                if (!source.isDirectory()) {
+                    continue;
+                }
+                String scriptFolderName = source.getAbsolutePath();
+                scriptFolderName = scriptFolderName.substring(0, scriptFolderName.length());
+                scriptFolderName = scriptFolderName.substring(scriptFolderName.lastIndexOf(File.separator) + 1,
+                        scriptFolderName.length());
+                File destination;
+                String createScriptFolder = scriptsFolder.getAbsolutePath() + File.separator + scriptFolderName;
+                destination = new File(createScriptFolder);
+                FileUtils.forceMkdir(destination);
+                FileUtils.copyDirectory(source, destination, FILE_FILTER);
+            }
+        }
+
+        /**
+         * @return Returns the scriptsFolder.
+         */
+        public File getScriptsFolder() {
+            return scriptsFolder;
+        }
+
+        /**
+         * return all workspace file list
+         * 
+         * @return
+         */
+        public Map<String, File> getAllWorkspaceScripts() {
+            File projectFolder = new File(WORKSPACE_FOLDER + File.separator + SCRIPTS_FOLDER);
+            File[] modules = projectFolder.listFiles();
+            Map<String, File> fileList = new HashMap<String, File>();
+            for (File module : modules) {
+                File[] scripts = module.listFiles();
+                if (scripts.length > NumberUtils.INTEGER_ZERO) {
+                    for (File script : scripts) {
+                        fileList.put(String.format(SCRIPT_NAME_FORMAT, module.getName(), script.getName()), script);
+                    }
                 }
             }
-            if (isExist) {
-                return false;
-            }
-            String createScriptFolder = projectFolder.getAbsolutePath() + File.separator + scriptFolderName;
-            destination = new File(createScriptFolder);
-            FileUtils.forceMkdir(destination);
-            return true;
+            return fileList;
         }
 
-        /**
-         * copy directory from source to
-         * 
-         * @throws IOException
-         */
-        public void copyScripts() throws IOException {
-
-            FileUtils.copyDirectory(source, destination, FILE_FILTER);
-        }
-
-        /**
-         * @return Returns the destination.
-         */
-        public File getDestination() {
-            return destination;
-        }
     }
 }

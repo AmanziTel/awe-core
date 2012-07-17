@@ -14,7 +14,7 @@
 package org.amanzi.awe.scripting.testing;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
-import org.amanzi.awe.scripting.utils.ScriptingException;
+import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.apache.log4j.Logger;
 import org.osgi.framework.BundleContext;
 
@@ -31,7 +31,6 @@ public class TestActivator extends AbstractScriptingPlugin {
     private static final Logger LOGGER = Logger.getLogger(TestActivator.class);
 
     public static final String ID = "org.amanzi.awe.scripting.testing";
-    public static final String SCRIPT_PATH = "ruby/netview/";
     private static TestActivator plugin;
 
     private static void initPlugin(TestActivator plug) {
@@ -48,11 +47,6 @@ public class TestActivator extends AbstractScriptingPlugin {
             LOGGER.error("Activator starting problem ", e);
             throw new ScriptingException(e);
         }
-    }
-
-    @Override
-    public String getScriptPath() {
-        return SCRIPT_PATH;
     }
 
     public static TestActivator getDefault() {

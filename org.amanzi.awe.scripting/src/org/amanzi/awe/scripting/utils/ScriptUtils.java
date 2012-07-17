@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
+import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
