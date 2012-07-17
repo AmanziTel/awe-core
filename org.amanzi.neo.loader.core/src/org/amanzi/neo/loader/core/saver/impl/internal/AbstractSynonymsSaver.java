@@ -15,9 +15,11 @@ package org.amanzi.neo.loader.core.saver.impl.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.nodetypes.INodeType;
 
@@ -31,26 +33,43 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration, IMappedStringData> {
 
-    private static abstract class Property<C extends Object> {
-
-        private final boolean isReusable;
+    protected static abstract class Property<C extends Object> {
 
         private final String headerName;
 
-        public Property(String headerName, final boolean isReusable) {
-            this.isReusable = isReusable;
+        private final String propertyName;
+
+        public Property(String propertyName, String headerName) {
+            this.propertyName = propertyName;
             this.headerName = headerName;
         }
 
         protected String getValue(IMappedStringData data) {
-            if (isReusable) {
-                return data.get(headerName);
-            } else {
-                return data.remove(headerName);
-            }
+            return data.get(headerName);
         }
 
         protected abstract C parse(IMappedStringData data);
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+    }
+
+    private static final class SkippedProperty extends Property<Object> {
+
+        /**
+         * @param headerName
+         * @param isReusable
+         */
+        public SkippedProperty() {
+            super(null, null);
+        }
+
+        @Override
+        protected Object parse(IMappedStringData data) {
+            return null;
+        }
 
     }
 
@@ -60,8 +79,8 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
          * @param headerName
          * @param isReusable
          */
-        public DoubleProperty(String headerName) {
-            super(headerName, false);
+        public DoubleProperty(String headerName, String propertyName) {
+            super(headerName, propertyName);
         }
 
         @Override
@@ -77,8 +96,8 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
          * @param headerName
          * @param isReusable
          */
-        public IntegerProperty(String headerName) {
-            super(headerName, false);
+        public IntegerProperty(String headerName, String propertyName) {
+            super(headerName, propertyName);
         }
 
         @Override
@@ -95,17 +114,21 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
          * @param isReusable
          */
         public UndefinedProperty(String headerName) {
-            super(headerName, false);
+            super(headerName, headerName);
         }
 
         @Override
         protected String parse(IMappedStringData data) {
-            return null;
+            return getValue(data);
         }
 
     }
 
-    private final Map<String, Property< ? >> headers = new HashMap<String, AbstractSynonymsSaver.Property< ? >>();
+    protected static final Property< ? > SKIPPED_PROPERTY = new SkippedProperty();
+
+    private final Map<INodeType, Map<String, Property< ? >>> headers = new HashMap<INodeType, Map<String, Property< ? >>>();
+
+    private final Map<INodeType, Synonyms> notHandledSynonyms = new HashMap<INodeType, Synonyms>();
 
     private final SynonymsManager synonymsManager;
 
@@ -114,11 +137,37 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
     }
 
     protected Map<String, Object> getElementProperties(INodeType nodeType, IMappedStringData data, boolean addNonMappedHeaders) {
-        return null;
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        Map<String, Property< ? >> properties = headers.get(nodeType);
+        if (properties == null) {
+            properties = new HashMap<String, AbstractSynonymsSaver.Property< ? >>();
+
+            headers.put(nodeType, properties);
+        }
+
+        for (Entry<String, String> dataEntry : data.entrySet()) {
+            String propertyName = dataEntry.getKey();
+
+            Property< ? > property = properties.get(propertyName);
+            if (property == null) {
+                property = createProperty();
+
+                properties.put(propertyName, property);
+            }
+
+            result.put(property.getPropertyName(), property.parse(data));
+        }
+
+        return result;
     }
 
     protected SynonymsManager getSynonymsManager() {
         return synonymsManager;
+    }
+
+    protected Property< ? > createProperty() {
+        return null;
     }
 
     protected abstract String getDatasetType();
