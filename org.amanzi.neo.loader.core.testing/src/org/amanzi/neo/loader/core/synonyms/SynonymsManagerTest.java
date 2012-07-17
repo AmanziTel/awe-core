@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.synonyms;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
@@ -23,6 +24,8 @@ import java.util.Map.Entry;
 import org.amanzi.neo.loader.core.internal.Activator;
 import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,6 +36,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -51,42 +55,36 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     /** String NETWORK_SYNONYMS field */
     private static final String NETWORK_SYNONYMS = "synonyms/network.synonyms";
 
+    private enum TestNodeTypes implements INodeType {
+        TEST_TYPE_FOR_SYNONYMS;
+
+        @Override
+        public String getId() {
+            return NodeTypeUtils.getTypeId(this);
+        }
+    }
+
+    private static final INodeType DEFAULT_NODE_TYPE = TestNodeTypes.TEST_TYPE_FOR_SYNONYMS;
+
     private static final String DRIVE_SYNONYMS = "synonyms/drive.synonyms";
 
     private static final String N2N_SYNONYMS = "synonyms/n2n.synonyms";
 
-    private static final String DEFAULT_SUB_TYPE = "subtype";
+    private static final String DEFAULT_TYPE = "network";
 
     private static final Class<Integer> DEFAULT_CLASS = Integer.class;
 
     private static final String DEFAULT_PROPERTY = "property";
 
-    private static final String KEY_WITH_SUBTYPE = DEFAULT_SUB_TYPE + "." + DEFAULT_PROPERTY;
+    private static final String KEY_WITH_NODETYPE = DEFAULT_NODE_TYPE.getId() + "." + DEFAULT_PROPERTY;
 
-    private static final String KEY_WITHOUT_SUBTYPE = DEFAULT_PROPERTY;
-
-    private static final String KEY_WITH_SUBTYPE_AND_CLASS = KEY_WITH_SUBTYPE + "@" + DEFAULT_CLASS.getSimpleName();
-
-    private static final String KEY_WITHOUT_SUBTYPE_BUT_WITH_CLASS = KEY_WITHOUT_SUBTYPE + "@" + DEFAULT_CLASS.getSimpleName();
+    private static final String KEY_WITH_SUBTYPE_AND_CLASS = KEY_WITH_NODETYPE + "@" + DEFAULT_CLASS.getSimpleName();
 
     private static final String SYNONYMS_LINE_WITH_SUBTYPE = KEY_WITH_SUBTYPE_AND_CLASS + "=synonym1, synonym2, synonym3";
 
-    private static final String SYNONYMS_LINE_WITHOUT_SUBTYPE = KEY_WITHOUT_SUBTYPE_BUT_WITH_CLASS
-            + "=synonym4, synonym5, synonym6";
-
-    private static final String SYNONYMS_LINE_WITHOUT_CLASS = KEY_WITH_SUBTYPE + "=synonym7, synonym8, synonym9";
-
-    private static final String SYNONYMS_LINE_WITHOUT_CLASS_AND_SUBTYPE = KEY_WITHOUT_SUBTYPE + "=synonym10, synonym11, synonym12";
+    private static final String SYNONYMS_LINE_WITHOUT_CLASS = KEY_WITH_NODETYPE + "=synonym7, synonym8, synonym9";
 
     private static final String SYNONYM_BASE = "synonym";
-
-    private static final INodeType DEFAULT_TYPE = new INodeType() {
-
-        @Override
-        public String getId() {
-            return "network";
-        }
-    };
 
     private static final String[] SYNONYM_PATHES = {NETWORK_SYNONYMS, DRIVE_SYNONYMS, N2N_SYNONYMS};
 
@@ -95,6 +93,13 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     private SynonymsManager synonymsManager;
 
     private IExtensionRegistry registry;
+
+    @BeforeClass
+    public static void setUpClass() throws IOException {
+        AbstractMockitoTest.setUpClass();
+
+        NodeTypeManager.getInstance().registerNodeType(TestNodeTypes.class);
+    }
 
     /**
      * @throws java.lang.Exception
@@ -133,19 +138,6 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckActivityOnGetSynonyms() {
-        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
-
-        synonymsManager = spy(new SynonymsManager(registry));
-
-        doReturn(new HashMap<String, Synonyms>()).when(synonymsManager).initializeSynonymsCache(any(String.class));
-
-        synonymsManager.getSynonyms(DEFAULT_TYPE);
-
-        verify(synonymsManager).getSynonyms(DEFAULT_TYPE, "[ALL]");
-    }
-
-    @Test
     public void testCheckActivityOnGetSynonymsWithSubType() {
         when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
 
@@ -153,9 +145,9 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
         doReturn(new HashMap<String, Synonyms>()).when(synonymsManager).initializeSynonymsCache(any(String.class));
 
-        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_SUB_TYPE);
+        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_NODE_TYPE);
 
-        verify(synonymsManager).initializeSynonymsCache(DEFAULT_TYPE.getId());
+        verify(synonymsManager).initializeSynonymsCache(DEFAULT_TYPE);
     }
 
     @Test
@@ -166,11 +158,11 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
         doReturn(new HashMap<String, Synonyms>()).when(synonymsManager).initializeSynonymsCache(any(String.class));
 
-        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_SUB_TYPE);
-        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_SUB_TYPE);
-        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_SUB_TYPE);
+        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_NODE_TYPE);
+        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_NODE_TYPE);
+        synonymsManager.getSynonyms(DEFAULT_TYPE, DEFAULT_NODE_TYPE);
 
-        verify(synonymsManager).initializeSynonymsCache(DEFAULT_TYPE.getId());
+        verify(synonymsManager).initializeSynonymsCache(DEFAULT_TYPE);
     }
 
     @Test
@@ -179,7 +171,7 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
         synonymsManager = spy(new SynonymsManager(registry));
 
-        Map<String, Synonyms> result = synonymsManager.initializeSynonymsCache(DEFAULT_TYPE.getId());
+        Map<INodeType, Synonyms> result = synonymsManager.initializeSynonymsCache(DEFAULT_TYPE);
 
         assertNotNull("result cannot be null", result);
         assertTrue("synonyms map should be empty", result.isEmpty());
@@ -192,9 +184,9 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
         when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {resource});
 
         synonymsManager = spy(new SynonymsManager(registry));
-        doReturn(new HashMap<String, Synonyms>()).when(synonymsManager).loadSynonyms(any(InputStream.class));
+        doReturn(new HashMap<INodeType, Synonyms>()).when(synonymsManager).loadSynonyms(any(InputStream.class));
 
-        synonymsManager.initializeSynonymsCache(DEFAULT_TYPE.getId());
+        synonymsManager.initializeSynonymsCache(DEFAULT_TYPE);
 
         verify(synonymsManager).loadSynonyms(any(InputStream.class));
     }
@@ -206,11 +198,11 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
         synonymsManager = spy(new SynonymsManager(registry));
 
-        doReturn(new ImmutablePair<String, Synonyms>(new String(), new Synonyms(StringUtils.EMPTY, ArrayUtils.EMPTY_STRING_ARRAY)))
-                .when(synonymsManager).parseSynonyms(any(Entry.class));
+        doReturn(
+                new ImmutablePair<INodeType, Synonyms>(DEFAULT_NODE_TYPE, new Synonyms(StringUtils.EMPTY,
+                        ArrayUtils.EMPTY_STRING_ARRAY))).when(synonymsManager).parseSynonyms(any(Entry.class));
 
-        String[] lines = {SYNONYMS_LINE_WITH_SUBTYPE, SYNONYMS_LINE_WITHOUT_SUBTYPE, SYNONYMS_LINE_WITHOUT_CLASS,
-                SYNONYMS_LINE_WITHOUT_CLASS_AND_SUBTYPE};
+        String[] lines = {SYNONYMS_LINE_WITH_SUBTYPE, SYNONYMS_LINE_WITHOUT_CLASS};
 
         synonymsManager.loadSynonyms(getSynonymsStream(lines));
 
@@ -225,34 +217,11 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
         when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
 
-        synonymsManager = spy(new SynonymsManager(registry));
+        synonymsManager = new SynonymsManager(registry);
 
-        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
+        Pair<INodeType, Synonyms> result = synonymsManager.parseSynonyms(entry);
 
-        assertEquals("unexpected subtype", DEFAULT_SUB_TYPE, result.getKey());
-
-        Synonyms synonyms = result.getValue();
-
-        assertNotNull("synonyms should not be null", synonyms);
-        assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
-        assertEquals("unexpected class", DEFAULT_CLASS, synonyms.getSynonymType().getSynonymClass());
-        assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
-    }
-
-    @Test
-    public void testCheckParsingStatisticsLineWithoutSubType() throws Exception {
-        String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
-
-        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITHOUT_SUBTYPE_BUT_WITH_CLASS,
-                getSynonymsLine(synonymsArray));
-
-        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
-
-        synonymsManager = spy(new SynonymsManager(registry));
-
-        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
-
-        assertEquals("unexpected subtype", "[ALL]", result.getKey());
+        assertEquals("unexpected subtype", DEFAULT_NODE_TYPE, result.getKey());
 
         Synonyms synonyms = result.getValue();
 
@@ -266,37 +235,15 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     public void testCheckParsingStatisticsLineWithoutClass() throws Exception {
         String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
 
-        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITH_SUBTYPE, getSynonymsLine(synonymsArray));
+        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITH_NODETYPE, getSynonymsLine(synonymsArray));
 
         when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
 
         synonymsManager = spy(new SynonymsManager(registry));
 
-        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
+        Pair<INodeType, Synonyms> result = synonymsManager.parseSynonyms(entry);
 
-        assertEquals("unexpected subtype", DEFAULT_SUB_TYPE, result.getKey());
-
-        Synonyms synonyms = result.getValue();
-
-        assertNotNull("synonyms should not be null", synonyms);
-        assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
-        assertEquals("unexpected class", SynonymType.UNKOWN, synonyms.getSynonymType());
-        assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
-    }
-
-    @Test
-    public void testCheckParsingStatisticsLineWithoutSubTypeAndClass() throws Exception {
-        String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
-
-        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITHOUT_SUBTYPE, getSynonymsLine(synonymsArray));
-
-        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
-
-        synonymsManager = spy(new SynonymsManager(registry));
-
-        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
-
-        assertEquals("unexpected subtype", "[ALL]", result.getKey());
+        assertEquals("unexpected subtype", DEFAULT_NODE_TYPE, result.getKey());
 
         Synonyms synonyms = result.getValue();
 

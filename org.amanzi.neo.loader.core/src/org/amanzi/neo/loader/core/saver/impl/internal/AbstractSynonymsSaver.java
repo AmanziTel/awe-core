@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of
@@ -105,10 +107,20 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
 
     private final Map<String, Property< ? >> headers = new HashMap<String, AbstractSynonymsSaver.Property< ? >>();
 
-    @Override
-    public void save(IMappedStringData dataElement) {
+    private final SynonymsManager synonymsManager;
+
+    protected AbstractSynonymsSaver() {
+        synonymsManager = SynonymsManager.getInstance();
     }
 
-    protected abstract void saveElement(Map<String, Object> element);
+    protected Map<String, Object> getElementProperties(INodeType nodeType, IMappedStringData data, boolean addNonMappedHeaders) {
+        return null;
+    }
+
+    protected SynonymsManager getSynonymsManager() {
+        return synonymsManager;
+    }
+
+    protected abstract String getDatasetType();
 
 }

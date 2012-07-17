@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -52,13 +53,11 @@ public class SynonymsManager {
 
     private static final String SYNONYMS_FILE_ATTRIBUTE = "synonymsFile";
 
-    private static final String ALL_SUBTYPES = "[ALL]";
-
     private static final String HEADERS_SEPARATOR = ",";
 
-    private static final Pattern SYNONYM_KEY_PATTERN = Pattern.compile("(([a-zA-Z]+)\\.)?([a-zA-Z_]+){1}(@([a-zA-Z]+))?");
+    private static final Pattern SYNONYM_KEY_PATTERN = Pattern.compile("(([a-zA-Z_]+)\\.){1}([a-zA-Z_]+){1}(@([a-zA-Z]+))?");
 
-    private static final int SUBTYPE_GROUP_INDEX = 2;
+    private static final int NODETYPE_GROUP_INDEX = 2;
 
     private static final int PROPERTY_GROUP_INDEX = 3;
 
@@ -68,7 +67,7 @@ public class SynonymsManager {
         private static volatile SynonymsManager INSTANCE = new SynonymsManager();
     }
 
-    private final Map<INodeType, Map<String, Synonyms>> synonymsCache = new HashMap<INodeType, Map<String, Synonyms>>();
+    private final Map<String, Map<INodeType, Synonyms>> synonymsCache = new HashMap<String, Map<INodeType, Synonyms>>();
 
     private final IExtensionRegistry registry;
 
@@ -114,8 +113,8 @@ public class SynonymsManager {
         return bundle.getResource(resourcePath);
     }
 
-    protected synchronized Map<String, Synonyms> initializeSynonymsCache(String dataType) {
-        HashMap<String, Synonyms> result = new HashMap<String, Synonyms>();
+    protected synchronized Map<INodeType, Synonyms> initializeSynonymsCache(String dataType) {
+        HashMap<INodeType, Synonyms> result = new HashMap<INodeType, Synonyms>();
 
         List<URL> urlList = resources.get(dataType);
         if (urlList != null) {
@@ -131,14 +130,14 @@ public class SynonymsManager {
         return result;
     }
 
-    protected Map<String, Synonyms> loadSynonyms(InputStream stream) throws IOException {
-        Map<String, Synonyms> result = new HashMap<String, Synonyms>();
+    protected Map<INodeType, Synonyms> loadSynonyms(InputStream stream) throws IOException {
+        Map<INodeType, Synonyms> result = new HashMap<INodeType, Synonyms>();
 
         Properties properties = new Properties();
         properties.load(stream);
 
         for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
-            Pair<String, Synonyms> pair = parseSynonyms(propertyEntry);
+            Pair<INodeType, Synonyms> pair = parseSynonyms(propertyEntry);
 
             result.put(pair.getKey(), pair.getValue());
         }
@@ -146,7 +145,7 @@ public class SynonymsManager {
         return result;
     }
 
-    protected Pair<String, Synonyms> parseSynonyms(Entry<Object, Object> propertyEntry) {
+    protected Pair<INodeType, Synonyms> parseSynonyms(Entry<Object, Object> propertyEntry) {
         // convert to string
         String keyPart = propertyEntry.getKey().toString();
         String valuePart = propertyEntry.getValue().toString();
@@ -157,16 +156,21 @@ public class SynonymsManager {
         // get subtype, property and class
         Matcher matcher = SYNONYM_KEY_PATTERN.matcher(keyPart);
         if (matcher.matches()) {
-            String subType = matcher.group(SUBTYPE_GROUP_INDEX);
+            String nodeTypeLine = matcher.group(NODETYPE_GROUP_INDEX);
             String propertyName = matcher.group(PROPERTY_GROUP_INDEX);
             String clazz = matcher.group(CLASS_GROUP_INDEX);
 
-            subType = subType == null ? ALL_SUBTYPES : subType;
             SynonymType synonymsType = clazz == null ? SynonymType.UNKOWN : SynonymType.findByClass(clazz);
 
             Synonyms synonyms = new Synonyms(propertyName, synonymsType, headers);
 
-            return new ImmutablePair<String, Synonyms>(subType, synonyms);
+            try {
+                INodeType nodeType = NodeTypeManager.getInstance().getType(nodeTypeLine);
+
+                return new ImmutablePair<INodeType, Synonyms>(nodeType, synonyms);
+            } catch (Exception e) {
+                LOGGER.error(e);
+            }
         }
 
         LOGGER.error("Synonyms key <" + keyPart + "> doesn't match pattern");
@@ -174,20 +178,16 @@ public class SynonymsManager {
         return null;
     }
 
-    public Synonyms getSynonyms(INodeType nodeType) {
-        return getSynonyms(nodeType, ALL_SUBTYPES);
-    }
-
-    public Synonyms getSynonyms(INodeType nodeType, String subType) {
-        Map<String, Synonyms> subTypeSynonyms = synonymsCache.get(nodeType);
+    public Synonyms getSynonyms(String synonymsType, INodeType nodeType) {
+        Map<INodeType, Synonyms> subTypeSynonyms = synonymsCache.get(synonymsType);
 
         if (subTypeSynonyms == null) {
-            subTypeSynonyms = initializeSynonymsCache(nodeType.getId());
+            subTypeSynonyms = initializeSynonymsCache(synonymsType);
 
-            synonymsCache.put(nodeType, subTypeSynonyms);
+            synonymsCache.put(synonymsType, subTypeSynonyms);
         }
 
-        return subTypeSynonyms.get(subType);
+        return subTypeSynonyms.get(nodeType);
     }
 
     protected Map<String, List<URL>> getResources() {
