@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.statistics.template;
 
-
 /**
  * TODO Purpose of
  * <p>
@@ -25,9 +24,12 @@ package org.amanzi.awe.statistics.template;
 public class Threshold {
     private Number thresholdValue;
     private Condition condition;
-    public Threshold(){
-        
+    private static final String TEMPLATE_FORMAT = "Threshold[alert %s %s]";
+
+    public Threshold() {
+
     }
+
     /**
      * @param thresholdValue
      * @param condition
@@ -36,6 +38,7 @@ public class Threshold {
         this.thresholdValue = thresholdValue;
         this.condition = condition;
     }
+
     /**
      * @param thresholdValue
      * @param condition
@@ -72,9 +75,10 @@ public class Threshold {
     public void setCondition(Condition condition) {
         this.condition = condition;
     }
+
     @Override
     public String toString() {
-        return String.format("Threshold[alert %s %s]", condition.getText(),thresholdValue);
+        return String.format(TEMPLATE_FORMAT, condition.getText(), thresholdValue);
     }
 
 }

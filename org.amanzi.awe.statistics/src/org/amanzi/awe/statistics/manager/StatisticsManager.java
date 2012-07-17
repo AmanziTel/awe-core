@@ -13,16 +13,19 @@
 
 package org.amanzi.awe.statistics.manager;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.scripting.JRubyRuntimeWrapper;
-import org.amanzi.awe.scripting.utils.ScriptingException;
+import org.amanzi.awe.scripting.exceptions.ScriptingException;
+import org.amanzi.awe.statistics.StatisticsPlugin;
 import org.amanzi.awe.statistics.engine.KpiBasedHeader;
+import org.amanzi.awe.statistics.entities.impl.AbstractFlaggedEntity;
 import org.amanzi.awe.statistics.entities.impl.AggregatedStatistics;
 import org.amanzi.awe.statistics.entities.impl.Dimension;
 import org.amanzi.awe.statistics.entities.impl.StatisticsCell;
@@ -43,7 +46,8 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.ITimelineModel;
+import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -57,11 +61,12 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
  * @since 1.0.0
  */
 public class StatisticsManager {
-    private EntityFactory factory = EntityFactory.getInstance();
+
     /*
      * logger
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsManager.class);
+
     /*
      * constants
      */
@@ -73,10 +78,16 @@ public class StatisticsManager {
      * statistics manager singleton instance
      */
     private static StatisticsManager statisticsManager;
-
+    /*
+     * entity factory
+     */
+    private EntityFactory factory = EntityFactory.getInstance();
+    /*
+     * used models
+     */
     private StatisticsModel currentStatisticsModel;
-    private ITimelineModel aggregatedModel;
-
+    private IDriveModel aggregatedModel;
+    private Map<String, File> availableTemplates;
     private StatisticsUtils utils = StatisticsUtils.getInstance();
     private JRubyRuntimeWrapper runtime;
 
@@ -99,8 +110,10 @@ public class StatisticsManager {
     }
 
     /**
+     * build statistics.
+     * 
      * @param template statistics template
-     * @param parentModel model which implements {@link ITimelineModel} interface
+     * @param parentModel model which implements {@link IDriveModel} interface
      * @param propertyName property which should be aggregated
      * @param period period for aggregation
      * @throws DatabaseException
@@ -109,11 +122,13 @@ public class StatisticsManager {
      * @throws DuplicateNodeNameException
      * @throws ScriptingException
      */
-    public AggregatedStatistics processStatistics(Template template, ITimelineModel parentModel, String propertyName,
-            Period period, JRubyRuntimeWrapper runtime, IProgressMonitor monitor) throws DatabaseException,
-            IllegalNodeDataException, UnableToModifyException, DuplicateNodeNameException, ScriptingException {
+    public AggregatedStatistics processStatistics(String templateName, IDriveModel parentModel, String propertyName, Period period,
+            IProgressMonitor monitor) throws DatabaseException, IllegalNodeDataException, UnableToModifyException,
+            DuplicateNodeNameException, ScriptingException {
         LOGGER.info("Process statistics calculation");
-        this.runtime = runtime;
+        getAllScripts();
+        this.runtime = StatisticsPlugin.getDefault().getRuntimeWrapper();
+        Template template = (Template)runtime.executeScript(availableTemplates.get(templateName));
         try {
             currentStatisticsModel = new StatisticsModel(parentModel.getRootNode(), "template");
         } catch (DatabaseException e) {
@@ -129,6 +144,8 @@ public class StatisticsManager {
     }
 
     /**
+     * build statistics.
+     * 
      * @param timeLevel
      * @param networkLevel
      * @param template
@@ -158,7 +175,7 @@ public class StatisticsManager {
 
         } else {
             try {
-                return buildLowerLevel(timeLevel, networkLevel, template, monitor);
+                return buildLowestLevel(timeLevel, networkLevel, template, monitor);
             } catch (IllegalNodeDataException e) {
                 LOGGER.error("Exception during low level statistics calculation", e);
             }
@@ -167,6 +184,8 @@ public class StatisticsManager {
     }
 
     /**
+     * Recursively create statistics for each underline {@link Period}.
+     * 
      * @param template
      * @param timeLevel
      * @param networkLevel
@@ -202,7 +221,6 @@ public class StatisticsManager {
                     if (!uRow.isSummaryNode()) {
                         Long uPeriod = uRow.getTimestamp();
                         if (uPeriod >= currentStartTime && uPeriod < nextStartTime) {
-                            // monitor increment
                             StatisticsRow newRow = findOrCreateRow(group, currentStartTime, period);
                             newRow.addSourceRow(uRow);
                             List<TemplateColumn> columns = template.getColumns();
@@ -245,6 +263,131 @@ public class StatisticsManager {
                 nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
             } while (currentStartTime < currentStatisticsModel.getMaxTimestamp());
         }
+        monitor.worked(1);
+        return statistics;
+    }
+
+    /**
+     * build lowest level statistics. Lowest level it is a level which hasn't underline
+     * {@link Period}
+     * 
+     * @param timeLevel
+     * @param networkLevel
+     * @param template
+     * @param monitor
+     * @return
+     * @throws IllegalNodeDataException
+     * @throws DatabaseException
+     * @throws DuplicateNodeNameException
+     * @throws ScriptingException
+     * @throws UnableToModifyException
+     */
+    @SuppressWarnings("unchecked")
+    private AggregatedStatistics buildLowestLevel(StatisticsLevel timeLevel, StatisticsLevel networkLevel, Template template,
+            IProgressMonitor monitor) throws DatabaseException, IllegalNodeDataException, DuplicateNodeNameException,
+            ScriptingException, UnableToModifyException {
+        final String task = "Building stats for " + timeLevel.getName() + "/" + networkLevel;
+        LOGGER.debug(task);
+        monitor.subTask(task);
+        AggregatedStatistics statistics = networkLevel.createAggregatedStatistics(timeLevel);
+        Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
+
+        String hash = createScriptForTemplate(template);
+        long noUsedNodes = 0;
+        Period period = Period.findById(timeLevel.getName());
+        long currentStartTime = period.getStartTime(currentStatisticsModel.getMinTimestamp());
+        long nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
+        long count = 0;
+        do {
+            long startForPeriod = System.currentTimeMillis();
+            String debugInfo = "currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
+                    + currentStatisticsModel.getMaxTimestamp();
+            LOGGER.debug(debugInfo);
+            if (monitor.isCanceled()) {
+                break;
+            }
+
+            Iterable<IDataElement> elements = aggregatedModel.findAllElementsByTimestampPeriod(currentStartTime, nextStartTime);
+            long cellCalcTime = 0L;
+            long startFindGroup = 0L;
+            for (IDataElement element : elements) {
+                count++;
+                boolean isUsed = false;
+                IDataElement locationNode = aggregatedModel.getLocation(element);
+
+                String script = String.format(EVALUATE, element.get("id"), hash);
+                HashMap<Object, Object> result;
+                result = (HashMap<Object, Object>)runtime.executeScript(script);
+
+                // Node networkNode = findNetworkNode(node, networkLevel);
+                // TODO use key property instead of key node name for
+                // non-correlated datasets
+                // String keyProperty = dsService.getKeyProperty(node);
+                StatisticsGroup group;
+                startFindGroup = System.currentTimeMillis();
+                // if (networkNode != null) {
+                // group = findOrCreateGroup(statistics, networkNode);
+                // } else {
+                String defaultValue = networkLevel.equals(DATASET_NAME) ? aggregatedModel.getName() : UNKNOW_NAME;
+                group = findOrCreateGroup(statistics, networkLevel.getName(), defaultValue);
+                // }
+                startFindGroup = System.currentTimeMillis() - startFindGroup;
+                // add summary row first
+                StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
+                StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
+                long startCalcTime = System.currentTimeMillis();
+                for (Object key : result.keySet()) {
+                    TemplateColumn column = template.getColumnByName(key.toString());
+
+                    StatisticsCell cell = findOrCreateCell(row, column);
+                    StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
+                    Object object = result.get(key);
+                    Number value = null;
+                    if (object instanceof Number) {
+                        value = (Number)object;
+                    } else if (object instanceof String) {
+                        try {
+                            value = new DecimalFormat(DECIMAL_FORMAT).parse((String)object);
+                        } catch (ParseException e) {
+                            LOGGER.error("can't parse value " + value);
+                        }
+                    }
+                    if (cell.updateValue(value)) {
+
+                        isUsed = true;
+                        cell.addSingleSource(element);
+                        if (locationNode != null) {
+                            updateBBox(locationNode, cell);
+                            updateBBox(locationNode, row);
+                            updateBBox(locationNode, group);
+                        }
+                    }
+                    if (summaryCell.updateValue(value)) {
+                        isUsed = true;
+                        summaryCell.addSingleSource(element);
+                        if (locationNode != null) {
+                            updateBBox(locationNode, summaryCell);
+                            updateBBox(locationNode, summaryRow);
+                        }
+                    }
+                    checkThreshold(group, summaryRow, row, column, cell, summaryCell);
+                }
+                cellCalcTime += (System.currentTimeMillis() - startCalcTime);
+                if (isUsed) {
+                    noUsedNodes++;
+                }
+            }
+
+            currentStartTime = nextStartTime;
+            nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
+            debugInfo = "Total no. of nodes processed: " + count + "\tCalc time for period="
+                    + (System.currentTimeMillis() - startForPeriod) + "\tTime to update cells: " + cellCalcTime
+                    + "\tTime to find a group:" + startFindGroup;
+            LOGGER.debug(debugInfo);
+        } while (currentStartTime < currentStatisticsModel.getMaxTimestamp());
+        currentStatisticsModel.setUsedNodes(noUsedNodes);
+        currentStatisticsModel.setTotalNodes(count);
+        updateFlags(statistics);
         monitor.worked(1);
         return statistics;
     }
@@ -317,131 +460,6 @@ public class StatisticsManager {
             }
         }
 
-    }
-
-    /**
-     * @param timeLevel
-     * @param networkLevel
-     * @param template
-     * @param monitor
-     * @return
-     * @throws IllegalNodeDataException
-     * @throws DatabaseException
-     * @throws DuplicateNodeNameException
-     * @throws ScriptingException
-     * @throws UnableToModifyException
-     */
-    @SuppressWarnings("unchecked")
-    private AggregatedStatistics buildLowerLevel(StatisticsLevel timeLevel, StatisticsLevel networkLevel, Template template,
-            IProgressMonitor monitor) throws DatabaseException, IllegalNodeDataException, DuplicateNodeNameException,
-            ScriptingException, UnableToModifyException {
-        final String task = "Building stats for " + timeLevel.getName() + "/" + networkLevel;
-        LOGGER.debug(task);
-        monitor.subTask(task);
-        AggregatedStatistics statistics = networkLevel.createAggregatedStatistics(timeLevel);
-        Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
-
-        String hash = createScriptForTemplate(template);
-        long noUsedNodes = 0;
-        Period period = Period.findById(timeLevel.getName());
-        long currentStartTime = period.getStartTime(currentStatisticsModel.getMinTimestamp());
-        long nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
-        long count = 0;
-        do {
-            long startForPeriod = System.currentTimeMillis();
-            String debugInfo = "currentStartTime=" + currentStartTime + "\tnextStartTime=" + nextStartTime + "\tendTime="
-                    + currentStatisticsModel.getMaxTimestamp();
-            LOGGER.debug(debugInfo);
-            if (monitor.isCanceled()) {
-                break;
-            }
-
-            Iterable<IDataElement> elements = aggregatedModel.findAllElementsByTimestampPeriod(currentStartTime, nextStartTime);
-            long cellCalcTime = 0L;
-            long startFindGroup = 0L;
-            for (IDataElement element : elements) {
-                count++;
-                boolean isUsed = false;
-                // Node locationNode = node.hasRelationship(GeoNeoRelationshipTypes.LOCATION,
-                // Direction.OUTGOING) ? node
-                // .getSingleRelationship(GeoNeoRelationshipTypes.LOCATION,
-                // Direction.OUTGOING).getOtherNode(node) : null;
-
-                String script = String.format(EVALUATE, element.get("id"), hash);
-                HashMap<Object, Object> result;
-                result = (HashMap<Object, Object>)runtime.executeScript(script);
-
-                // Node networkNode = findNetworkNode(node, networkLevel);
-                // TODO use key property instead of key node name for
-                // non-correlated datasets
-                // String keyProperty = dsService.getKeyProperty(node);
-                StatisticsGroup group;
-                startFindGroup = System.currentTimeMillis();
-                // if (networkNode != null) {
-                // group = findOrCreateGroup(statistics, networkNode);
-                // } else {
-                String defaultValue = networkLevel.equals(DATASET_NAME) ? aggregatedModel.getName() : UNKNOW_NAME;
-                group = findOrCreateGroup(statistics, networkLevel.getName(), defaultValue);
-                // }
-                startFindGroup = System.currentTimeMillis() - startFindGroup;
-                // add summary row first
-                StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
-                StatisticsRow row = findOrCreateRow(group, currentStartTime, period);
-                long startCalcTime = System.currentTimeMillis();
-                for (Object key : result.keySet()) {
-                    TemplateColumn column = template.getColumnByName(key.toString());
-
-                    StatisticsCell cell = findOrCreateCell(row, column);
-                    StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
-                    Object object = result.get(key);
-                    Number value = null;
-                    if (object instanceof Number) {
-                        value = (Number)object;
-                    } else if (object instanceof String) {
-                        try {
-                            value = new DecimalFormat(DECIMAL_FORMAT).parse((String)object);
-                        } catch (ParseException e) {
-                            LOGGER.error("can't parse value " + value);
-                        }
-                    }
-                    if (cell.updateValue(value)) {
-
-                        isUsed = true;
-                        cell.addSingleSource(element);
-                        // if (locationNode != null) {
-                        // NeoUtils.updateBBox(locationNode, cell.getNode());
-                        // NeoUtils.updateBBox(locationNode, row.getNode());
-                        // NeoUtils.updateBBox(locationNode, group.getNode());
-                        // }
-                    }
-                    if (summaryCell.updateValue(value)) {
-                        isUsed = true;
-                        summaryCell.addSingleSource(element);
-                        // if (locationNode != null) {
-                        // NeoUtils.updateBBox(locationNode, summaryCell.getNode());
-                        // NeoUtils.updateBBox(locationNode, summaryRow.getNode());
-                        // }
-                    }
-                    checkThreshold(group, summaryRow, row, column, cell, summaryCell);
-                }
-                cellCalcTime += (System.currentTimeMillis() - startCalcTime);
-                if (isUsed) {
-                    noUsedNodes++;
-                }
-            }
-
-            currentStartTime = nextStartTime;
-            nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
-            debugInfo = "Total no. of nodes processed: " + count + "\tCalc time for period="
-                    + (System.currentTimeMillis() - startForPeriod) + "\tTime to update cells: " + cellCalcTime
-                    + "\tTime to find a group:" + startFindGroup;
-            LOGGER.debug(debugInfo);
-        } while (currentStartTime < currentStatisticsModel.getMaxTimestamp());
-        currentStatisticsModel.setUsedNodes(noUsedNodes);
-        currentStatisticsModel.setTotalNodes(count);
-        updateFlags(statistics);
-        monitor.worked(1);
-        return statistics;
     }
 
     /**
@@ -571,11 +589,42 @@ public class StatisticsManager {
      * @param currentStartDate
      * @return
      */
-    public static long getNextStartDate(Period period, long endDate, long currentStartDate) {
+    public long getNextStartDate(Period period, long endDate, long currentStartDate) {
         long nextStartDate = period.addPeriod(currentStartDate);
         if (!period.equals(Period.HOURLY) && (nextStartDate > endDate)) {
             nextStartDate = endDate;
         }
         return nextStartDate;
+    }
+
+    /**
+     * Updates BBox from location node
+     * 
+     * @param locationNode node with coordinates
+     * @param nodeToUpdate node which BBox is updated
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    private void updateBBox(IDataElement locationNode, AbstractFlaggedEntity nodeToUpdate) throws IllegalNodeDataException,
+            DatabaseException {
+        Double lat = (Double)locationNode.get(DriveModel.LATITUDE);
+        Double lon = (Double)locationNode.get(DriveModel.LONGITUDE);
+        if (lat != null && lon != null) {
+            ReferencedEnvelope re = new ReferencedEnvelope(lon, lon, lat, lat, null);
+            nodeToUpdate.updateBbox(re);
+        }
+    }
+
+    /**
+     * get available file Scripts
+     * 
+     * @return
+     */
+    public Collection<String> getAllScripts() {
+        if (availableTemplates != null) {
+            return availableTemplates.keySet();
+        }
+        availableTemplates = StatisticsPlugin.getDefault().getAllScripts();
+        return availableTemplates.keySet();
     }
 }

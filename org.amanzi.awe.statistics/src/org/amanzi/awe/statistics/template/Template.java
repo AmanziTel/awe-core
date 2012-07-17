@@ -17,11 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.amanzi.awe.statistics.engine.IAggregationFunction;
 import org.amanzi.awe.statistics.engine.IStatisticsHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -77,14 +75,6 @@ public class Template {
         this.templateName = name;
     }
 
-    public Template(String name, Template baseTemplate) {
-        // TODO
-    }
-
-    public Template(Node templateNode) {
-        // TODO
-    }
-
     public void add(IStatisticsHeader header, AggregationFunctions function, String name) {
         columns.add(new TemplateColumn(header, function, name));
     }
@@ -99,10 +89,6 @@ public class Template {
 
     public void add(TemplateColumn column) {
         columns.add(column);
-    }
-
-    public void remove(IStatisticsHeader header, IAggregationFunction function) {
-        // TODO
     }
 
     public void clearAll() {

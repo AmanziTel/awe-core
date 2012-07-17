@@ -14,18 +14,33 @@
 package org.amanzi.awe.statistics.ui.view;
 
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.amanzi.awe.statistics.enumeration.Period;
+import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.ui.Messages;
 import org.amanzi.awe.statistics.ui.StatisticsPlugin;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -77,6 +92,7 @@ public class StatisticsView extends ViewPart {
     private Button bExport;
     private Button bChartView;
     private TableViewer tableViewer;
+
     /*
      * composites
      */
@@ -85,13 +101,59 @@ public class StatisticsView extends ViewPart {
     private Composite topControlsComposite;
     private Composite bottomControlsComposite;
 
+    private Map<String, IDriveModel> datasets = new HashMap<String, IDriveModel>();
+    /*
+     * statistics manager
+     */
+    private StatisticsManager statisticsManager = StatisticsManager.getInstance();
+
     @Override
     public void createPartControl(Composite parent) {
         LOGGER.info("Create statistics view");
         createComposites(parent);
         createComponents();
+        layoutComponents();
         fillComponents();
         addListeners();
+    }
+
+    /**
+     * fill components
+     */
+    private void fillComponents() {
+        updateDatasets();
+        Collection<String> templates = statisticsManager.getAllScripts();
+        cTemplate.setItems(templates.toArray(new String[templates.size()]));
+    }
+
+    /**
+     * update dataset combobox
+     */
+    private void updateDatasets() {
+        Iterable<IDriveModel> datasets;
+        try {
+            datasets = ProjectModel.getCurrentProjectModel().findAllDriveModels();
+        } catch (AWEException e) {
+            LOGGER.error("can't get all drive models because of", e);
+            return;
+        }
+        for (IDriveModel model : datasets) {
+            this.datasets.put(model.getName(), model);
+        }
+        cDataset.setItems(this.datasets.keySet().toArray(new String[this.datasets.size()]));
+    }
+
+    /**
+     * update available periods
+     */
+    private void updateAvailablePeriods() {
+        String dataset = cDataset.getText();
+        IDriveModel model = datasets.get(dataset);
+        long start = model.getMinTimestamp();
+        long end = model.getMaxTimestamp();
+
+        Collection<String> periods = Period.getAvailablePeriods(start, end);
+        cPeriod.setItems(periods.toArray(new String[periods.size()]));
     }
 
     /**
@@ -105,6 +167,8 @@ public class StatisticsView extends ViewPart {
             public void widgetSelected(SelectionEvent e) {
                 setEnabled(true, lTemplate, cTemplate);
                 setDateTimes();
+                updateAvailablePeriods();
+                updatePropertiesList();
             }
 
             @Override
@@ -148,6 +212,50 @@ public class StatisticsView extends ViewPart {
                 widgetDefaultSelected(e);
             }
         });
+        bBuild.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseUp(MouseEvent e) {
+                final String templateName = cTemplate.getText();
+                final IDriveModel model = datasets.get(cDataset.getText());
+                final String property = cAggreagation.getText();
+                final Period period = Period.findById(cPeriod.getText());
+                Job job = new Job("Statistics calculation for model " + model.getName() + " by property " + property + " period "
+                        + period.getId() + " and template " + templateName) {
+
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        try {
+                            statisticsManager.processStatistics(templateName, model, property, period, monitor);
+                        } catch (Exception e) {
+                            LOGGER.error("can't build statistics because of", e);
+                            return Status.CANCEL_STATUS;
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                job.schedule();
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+            }
+        });
+    }
+
+    /**
+     * update properties list
+     */
+    protected void updatePropertiesList() {
+        IDriveModel model = datasets.get(cDataset.getText());
+
+        // TODO KV: make sure about node type
+        String[] properties = model.getAllPropertyNames(DriveNodeTypes.M);
+        cAggreagation.setItems(properties);
     }
 
     /**
@@ -156,9 +264,9 @@ public class StatisticsView extends ViewPart {
     private void setDateTimes() {
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
-        /*
-         * TODO KV: initialize with dataset timestamp values
-         */
+        IDriveModel model = datasets.get(cDataset.getText());
+        start.setTimeInMillis(model.getMinTimestamp());
+        end.setTimeInMillis(model.getMaxTimestamp());
         dDateStart.setDate(start.get(Calendar.YEAR), start.get(Calendar.MONTH), start.get(Calendar.DATE));
         dTimeStart.setHours(start.get(Calendar.HOUR_OF_DAY));
         dTimeStart.setSeconds(start.get(Calendar.SECOND));
@@ -237,7 +345,7 @@ public class StatisticsView extends ViewPart {
     /**
      * put components to composites
      */
-    private void fillComponents() {
+    private void layoutComponents() {
         LOGGER.info("layout and fill components");
         Control[] topControls = {lDataset, cDataset, bRefreshDatasets, lTemplate, cTemplate, lAggregation, cAggreagation, bBuild};
         Control[] bottomControls = {lPeriod, cPeriod, lStartTime, dDateStart, dTimeStart, bResetStart, lEndTime, dDateEnd,
@@ -251,10 +359,6 @@ public class StatisticsView extends ViewPart {
             control.setLayoutData(gridData);
         }
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-        // cDataset.add("Hello");
-        // cAggreagation.add("ololo");
-        // cTemplate.add("hi");
-        // cPeriod.add(Period.HOURLY.getId());
         tableViewer.getTable().setLayoutData(gridData);
         tableViewer.setLabelProvider(new StatisticsLabelProvider());
         tableViewer.setContentProvider(new StatisticsContentProvider());
@@ -299,7 +403,6 @@ public class StatisticsView extends ViewPart {
     }
 
     /**
-     * TODO Purpose of StatisticsView
      * <p>
      * label provider for statistics table
      * </p>
@@ -339,7 +442,6 @@ public class StatisticsView extends ViewPart {
     }
 
     /**
-     * TODO Purpose of StatisticsView
      * <p>
      * Statistics Table content Provider
      * </p>

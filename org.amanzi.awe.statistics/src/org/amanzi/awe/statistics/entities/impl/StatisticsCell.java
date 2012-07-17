@@ -26,7 +26,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -182,5 +181,4 @@ public class StatisticsCell extends AbstractFlaggedEntity implements IAggregated
         this.function = function;
     }
 
-   
 }

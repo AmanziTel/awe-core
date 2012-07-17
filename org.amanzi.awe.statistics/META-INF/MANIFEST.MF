@@ -1,11 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Statistic
-Bundle-SymbolicName: org.amanzi.awe.statistics
+Bundle-SymbolicName: org.amanzi.awe.statistics;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.statistics.enumeration,
+Export-Package: org.amanzi.awe.statistics.entities.impl,
+ org.amanzi.awe.statistics.enumeration,
+ org.amanzi.awe.statistics.exceptions,
+ org.amanzi.awe.statistics.factory,
+ org.amanzi.awe.statistics.manager,
  org.amanzi.awe.statistics.model,
- org.amanzi.awe.statistics.service
+ org.amanzi.awe.statistics.service,
+ org.amanzi.awe.statistics.utils
 Require-Bundle: org.amanzi.neo.services.impl;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.awe.scripting;bundle-version="1.0.0"
+Bundle-Activator: org.amanzi.awe.statistics.StatisticsPlugin
+Bundle-ActivationPolicy: lazy
