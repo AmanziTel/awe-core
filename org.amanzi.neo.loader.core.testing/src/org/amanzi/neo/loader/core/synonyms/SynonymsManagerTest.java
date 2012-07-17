@@ -15,12 +15,20 @@ package org.amanzi.neo.loader.core.synonyms;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.loader.core.internal.Activator;
+import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -37,6 +45,9 @@ import org.junit.Test;
  */
 public class SynonymsManagerTest extends AbstractMockitoTest {
 
+    /** int SYNONYMBS_NUMBER field */
+    private static final int SYNONYMBS_NUMBER = 5;
+
     /** String NETWORK_SYNONYMS field */
     private static final String NETWORK_SYNONYMS = "synonyms/network.synonyms";
 
@@ -45,6 +56,29 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     private static final String N2N_SYNONYMS = "synonyms/n2n.synonyms";
 
     private static final String DEFAULT_SUB_TYPE = "subtype";
+
+    private static final Class<Integer> DEFAULT_CLASS = Integer.class;
+
+    private static final String DEFAULT_PROPERTY = "property";
+
+    private static final String KEY_WITH_SUBTYPE = DEFAULT_SUB_TYPE + "." + DEFAULT_PROPERTY;
+
+    private static final String KEY_WITHOUT_SUBTYPE = DEFAULT_PROPERTY;
+
+    private static final String KEY_WITH_SUBTYPE_AND_CLASS = KEY_WITH_SUBTYPE + "@" + DEFAULT_CLASS.getSimpleName();
+
+    private static final String KEY_WITHOUT_SUBTYPE_BUT_WITH_CLASS = KEY_WITHOUT_SUBTYPE + "@" + DEFAULT_CLASS.getSimpleName();
+
+    private static final String SYNONYMS_LINE_WITH_SUBTYPE = KEY_WITH_SUBTYPE_AND_CLASS + "=synonym1, synonym2, synonym3";
+
+    private static final String SYNONYMS_LINE_WITHOUT_SUBTYPE = KEY_WITHOUT_SUBTYPE_BUT_WITH_CLASS
+            + "=synonym4, synonym5, synonym6";
+
+    private static final String SYNONYMS_LINE_WITHOUT_CLASS = KEY_WITH_SUBTYPE + "=synonym7, synonym8, synonym9";
+
+    private static final String SYNONYMS_LINE_WITHOUT_CLASS_AND_SUBTYPE = KEY_WITHOUT_SUBTYPE + "=synonym10, synonym11, synonym12";
+
+    private static final String SYNONYM_BASE = "synonym";
 
     private static final INodeType DEFAULT_TYPE = new INodeType() {
 
@@ -152,7 +186,7 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckActivityWhenFilesFound() {
+    public void testCheckActivityWhenFilesFound() throws Exception {
         IConfigurationElement resource = generateResouceElement(LOADER_PLUGIN_ID, NETWORK_SYNONYMS);
 
         when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {resource});
@@ -165,6 +199,113 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
         verify(synonymsManager).loadSynonyms(any(InputStream.class));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCheckActivityOnLoadSynonyms() throws Exception {
+        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
+
+        synonymsManager = spy(new SynonymsManager(registry));
+
+        doReturn(new ImmutablePair<String, Synonyms>(new String(), new Synonyms(StringUtils.EMPTY, ArrayUtils.EMPTY_STRING_ARRAY)))
+                .when(synonymsManager).parseSynonyms(any(Entry.class));
+
+        String[] lines = {SYNONYMS_LINE_WITH_SUBTYPE, SYNONYMS_LINE_WITHOUT_SUBTYPE, SYNONYMS_LINE_WITHOUT_CLASS,
+                SYNONYMS_LINE_WITHOUT_CLASS_AND_SUBTYPE};
+
+        synonymsManager.loadSynonyms(getSynonymsStream(lines));
+
+        verify(synonymsManager, times(lines.length)).parseSynonyms(any(Entry.class));
+    }
+
+    @Test
+    public void testCheckParsingFullStatisticsLine() throws Exception {
+        String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
+
+        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITH_SUBTYPE_AND_CLASS, getSynonymsLine(synonymsArray));
+
+        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
+
+        synonymsManager = spy(new SynonymsManager(registry));
+
+        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
+
+        assertEquals("unexpected subtype", DEFAULT_SUB_TYPE, result.getKey());
+
+        Synonyms synonyms = result.getValue();
+
+        assertNotNull("synonyms should not be null", synonyms);
+        assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
+        assertEquals("unexpected class", DEFAULT_CLASS, synonyms.getSynonymType().getSynonymClass());
+        assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
+    }
+
+    @Test
+    public void testCheckParsingStatisticsLineWithoutSubType() throws Exception {
+        String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
+
+        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITHOUT_SUBTYPE_BUT_WITH_CLASS,
+                getSynonymsLine(synonymsArray));
+
+        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
+
+        synonymsManager = spy(new SynonymsManager(registry));
+
+        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
+
+        assertEquals("unexpected subtype", "[ALL]", result.getKey());
+
+        Synonyms synonyms = result.getValue();
+
+        assertNotNull("synonyms should not be null", synonyms);
+        assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
+        assertEquals("unexpected class", DEFAULT_CLASS, synonyms.getSynonymType().getSynonymClass());
+        assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
+    }
+
+    @Test
+    public void testCheckParsingStatisticsLineWithoutClass() throws Exception {
+        String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
+
+        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITH_SUBTYPE, getSynonymsLine(synonymsArray));
+
+        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
+
+        synonymsManager = spy(new SynonymsManager(registry));
+
+        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
+
+        assertEquals("unexpected subtype", DEFAULT_SUB_TYPE, result.getKey());
+
+        Synonyms synonyms = result.getValue();
+
+        assertNotNull("synonyms should not be null", synonyms);
+        assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
+        assertEquals("unexpected class", SynonymType.UNKOWN, synonyms.getSynonymType());
+        assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
+    }
+
+    @Test
+    public void testCheckParsingStatisticsLineWithoutSubTypeAndClass() throws Exception {
+        String[] synonymsArray = getSynonyms(SYNONYM_BASE, SYNONYMBS_NUMBER);
+
+        Entry<Object, Object> entry = new ImmutablePair<Object, Object>(KEY_WITHOUT_SUBTYPE, getSynonymsLine(synonymsArray));
+
+        when(registry.getConfigurationElementsFor("org.amanzi.loaderSynonyms")).thenReturn(new IConfigurationElement[] {});
+
+        synonymsManager = spy(new SynonymsManager(registry));
+
+        Pair<String, Synonyms> result = synonymsManager.parseSynonyms(entry);
+
+        assertEquals("unexpected subtype", "[ALL]", result.getKey());
+
+        Synonyms synonyms = result.getValue();
+
+        assertNotNull("synonyms should not be null", synonyms);
+        assertEquals("unexpected property", DEFAULT_PROPERTY, synonyms.getPropertyName());
+        assertEquals("unexpected class", SynonymType.UNKOWN, synonyms.getSynonymType());
+        assertTrue("unexpected synonyms", Arrays.equals(synonymsArray, synonyms.getPossibleHeaders()));
+    }
+
     private IConfigurationElement generateResouceElement(String pluginId, String path) {
         IConfigurationElement element = mock(IConfigurationElement.class);
         IContributor contributor = mock(IContributor.class);
@@ -174,5 +315,27 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
         when(element.getAttribute("synonymsFile")).thenReturn(path);
 
         return element;
+    }
+
+    private InputStream getSynonymsStream(String... lines) {
+        StringBuilder input = new StringBuilder();
+        for (String line : lines) {
+            input.append(line).append("\n");
+        }
+
+        return IOUtils.toInputStream(input);
+    }
+
+    private String[] getSynonyms(String base, int number) {
+        String[] result = new String[number];
+        for (int i = 0; i < number; i++) {
+            result[i] = base + i;
+        }
+
+        return result;
+    }
+
+    private String getSynonymsLine(String[] synonyms) {
+        return StringUtils.join(synonyms, ",");
     }
 }

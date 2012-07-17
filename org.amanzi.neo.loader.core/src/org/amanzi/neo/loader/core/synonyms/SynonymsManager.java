@@ -20,9 +20,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -46,6 +53,16 @@ public class SynonymsManager {
     private static final String SYNONYMS_FILE_ATTRIBUTE = "synonymsFile";
 
     private static final String ALL_SUBTYPES = "[ALL]";
+
+    private static final String HEADERS_SEPARATOR = ",";
+
+    private static final Pattern SYNONYM_KEY_PATTERN = Pattern.compile("(([a-zA-Z]+)\\.)?([a-zA-Z_]+){1}(@([a-zA-Z]+))?");
+
+    private static final int SUBTYPE_GROUP_INDEX = 2;
+
+    private static final int PROPERTY_GROUP_INDEX = 3;
+
+    private static final int CLASS_GROUP_INDEX = 5;
 
     private static class SynonymsManagerInstanceHolder {
         private static volatile SynonymsManager INSTANCE = new SynonymsManager();
@@ -114,7 +131,46 @@ public class SynonymsManager {
         return result;
     }
 
-    protected Map<String, Synonyms> loadSynonyms(InputStream stream) {
+    protected Map<String, Synonyms> loadSynonyms(InputStream stream) throws IOException {
+        Map<String, Synonyms> result = new HashMap<String, Synonyms>();
+
+        Properties properties = new Properties();
+        properties.load(stream);
+
+        for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
+            Pair<String, Synonyms> pair = parseSynonyms(propertyEntry);
+
+            result.put(pair.getKey(), pair.getValue());
+        }
+
+        return result;
+    }
+
+    protected Pair<String, Synonyms> parseSynonyms(Entry<Object, Object> propertyEntry) {
+        // convert to string
+        String keyPart = propertyEntry.getKey().toString();
+        String valuePart = propertyEntry.getValue().toString();
+
+        // get headers
+        String[] headers = valuePart.split(HEADERS_SEPARATOR);
+
+        // get subtype, property and class
+        Matcher matcher = SYNONYM_KEY_PATTERN.matcher(keyPart);
+        if (matcher.matches()) {
+            String subType = matcher.group(SUBTYPE_GROUP_INDEX);
+            String propertyName = matcher.group(PROPERTY_GROUP_INDEX);
+            String clazz = matcher.group(CLASS_GROUP_INDEX);
+
+            subType = subType == null ? ALL_SUBTYPES : subType;
+            SynonymType synonymsType = clazz == null ? SynonymType.UNKOWN : SynonymType.findByClass(clazz);
+
+            Synonyms synonyms = new Synonyms(propertyName, synonymsType, headers);
+
+            return new ImmutablePair<String, Synonyms>(subType, synonyms);
+        }
+
+        LOGGER.error("Synonyms key <" + keyPart + "> doesn't match pattern");
+
         return null;
     }
 

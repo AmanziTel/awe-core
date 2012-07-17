@@ -26,7 +26,27 @@ import java.util.Arrays;
 public class Synonyms {
 
     public enum SynonymType {
-        UNKOWN, STRING, INTEGER, DOUBLE, BOOLEAN;
+        UNKOWN(null), STRING(String.class), INTEGER(Integer.class), DOUBLE(Double.class), BOOLEAN(Boolean.class), LONG(Long.class);
+
+        private Class< ? > clazz;
+
+        private SynonymType(Class< ? > clazz) {
+            this.clazz = clazz;
+        }
+
+        public Class< ? > getSynonymClass() {
+            return clazz;
+        }
+
+        public static SynonymType findByClass(String clazz) {
+            for (SynonymType singleType : values()) {
+                if ((singleType.clazz != null) && singleType.clazz.getSimpleName().equals(clazz)) {
+                    return singleType;
+                }
+            }
+
+            return null;
+        }
     }
 
     private final SynonymType synonymType;
