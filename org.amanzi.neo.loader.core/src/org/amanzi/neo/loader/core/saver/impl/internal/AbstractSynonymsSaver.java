@@ -294,6 +294,7 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
 
         if (synonym != null) {
             result = createPropertyFromSynonym(synonym, header);
+            synonymsList.remove(synonym);
         } else if (addNonMappedHeaders) {
             result = new UndefinedProperty(header);
         } else {
