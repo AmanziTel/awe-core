@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.Plugin;
 import org.jcodings.specific.UTF8Encoding;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -54,7 +55,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
     private static final String SCRIPTS_FOLDER = "awe-scripts";
     private static final String RUBY_SCRIPT_FOLDER = "/ruby";
-
+    private static final String COMMON_SCRIPTS_FOLDER = "/common";
+    private static final String PLUGIN_ID = "org.amanzi.awe.scripting";
     /**
      * wrapper for runtime instance
      */
@@ -65,6 +67,38 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * initialize plugin
      */
     protected abstract void initPlugin();
+
+    /**
+     * initialize runtime with required scripts from ruby/common folder
+     * 
+     * @param runtime
+     * @throws ScriptingException
+     * @throws IOException
+     */
+    protected void initDefaultScript(Bundle bundle, JRubyRuntimeWrapper runtime) throws ScriptingException, IOException {
+        URL workspaceName = bundle.getEntry(RUBY_SCRIPT_FOLDER + COMMON_SCRIPTS_FOLDER);
+        if (workspaceName == null) {
+            LOGGER.info("nothing to initialize in bundle " + bundle.getSymbolicName());
+            return;
+        }
+        URL scripts = FileLocator.toFileURL(workspaceName);
+        File scriptsFolder = new File(scripts.getPath());
+        for (File script : scriptsFolder.listFiles()) {
+            LOGGER.info("Initialize  bundle " + bundle.getSymbolicName() + " with script " + script.getName());
+            runtime.executeScript(script);
+        }
+    }
+
+    @Override
+    public void start(BundleContext context) throws ScriptingException {
+        try {
+            super.start(context);
+            manager.initWorkspace();
+        } catch (Exception e) {
+            LOGGER.error("error when trying to initialize default ruby scripts", e);
+            throw new ScriptingException(e);
+        }
+    }
 
     /**
      * get list of project folder content
@@ -93,7 +127,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             URL workspaceName = context.getBundle().getEntry(RUBY_SCRIPT_FOLDER);
             URL workspaceLocator = FileLocator.toFileURL(workspaceName);
             LOGGER.info("Start workspace initializing");
-            manager.initWorkspace();
             LOGGER.info("Start file copying");
             manager.copySources(workspaceLocator);
         } catch (IOException e) {
@@ -117,7 +150,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @return
      */
     public Map<String, File> getAllScripts() {
-        return manager.getAllWorkspaceScripts();
+        return manager.getAllWorkspaceScripts(ScriptingManager.FILE_FILTER_TO_LOAD);
     }
 
     /**
@@ -140,6 +173,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
             runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
+            initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
+            initDefaultScript(getBundle(), runtimeWrapper);
         } catch (Exception e) {
             LOGGER.error("Error in runtime initialisation", e);
             throw new ScriptingException(e);
@@ -176,12 +211,20 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static class ScriptingManager {
         private File scriptsFolder;
         private static final String SCRIPT_NAME_FORMAT = "%s:%s";
-        private static final FileFilter FILE_FILTER = new FileFilter() {
+        private static final FileFilter ALL_RUBY_FILES = new FileFilter() {
 
             @Override
             public boolean accept(File pathname) {
                 final String name = pathname.getName();
                 return name.endsWith(".rb") || name.endsWith(".t");
+            }
+        };
+        private static final FileFilter FILE_FILTER_TO_LOAD = new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                final String name = pathname.getName();
+                return name.endsWith(".t");
             }
         };
 
@@ -213,7 +256,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                 String createScriptFolder = scriptsFolder.getAbsolutePath() + File.separator + scriptFolderName;
                 destination = new File(createScriptFolder);
                 FileUtils.forceMkdir(destination);
-                FileUtils.copyDirectory(source, destination, FILE_FILTER);
+                FileUtils.copyDirectory(source, destination, ALL_RUBY_FILES);
             }
         }
 
@@ -229,12 +272,12 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * 
          * @return
          */
-        public Map<String, File> getAllWorkspaceScripts() {
+        public Map<String, File> getAllWorkspaceScripts(FileFilter filter) {
             File projectFolder = new File(WORKSPACE_FOLDER + File.separator + SCRIPTS_FOLDER);
             File[] modules = projectFolder.listFiles();
             Map<String, File> fileList = new HashMap<String, File>();
             for (File module : modules) {
-                File[] scripts = module.listFiles();
+                File[] scripts = module.listFiles(filter);
                 if (scripts.length > NumberUtils.INTEGER_ZERO) {
                     for (File script : scripts) {
                         fileList.put(String.format(SCRIPT_NAME_FORMAT, module.getName(), script.getName()), script);

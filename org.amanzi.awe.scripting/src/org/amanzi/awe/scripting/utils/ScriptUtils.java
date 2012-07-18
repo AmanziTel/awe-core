@@ -99,11 +99,11 @@ public class ScriptUtils {
     }
 
     /**
-     * @param absolutePath
+     * @param scripts
      * @return
      * @throws Exception
      */
-    public List<String> makeLoadPath(String absolutePath) throws ScriptingException {
+    public List<String> makeLoadPath(String path) throws ScriptingException {
         try {
             getJRubyHome();
             getJrubyVersion();
@@ -113,9 +113,14 @@ public class ScriptUtils {
         }
 
         List<String> loadPath = new ArrayList<String>();
-        if (absolutePath != null) {
-            loadPath.add(absolutePath);
-        }
+        // if (scripts != null) {
+        // for (File file : scripts) {
+        // loadPath.add(file.getAbsolutePath());
+        // }
+        // }
+        // loadPath.add(".");
+        // loadPath.add(scripts.iterator().next().getParentFile().getParentFile().getAbsolutePath());
+        loadPath.add(path);
         return loadPath;
     }
 

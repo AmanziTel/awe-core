@@ -47,7 +47,7 @@ public class AbstractScriptingPluginTests extends AbstractTest {
     private static final String SCRIPT_ID_SEPARATOR = ":";
     private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
     private static final String PROJECT_FOLDER = "awe-scripts";
-    private static final String TEST_SCRIPT_NAME = "testScript.rb";
+    private static final String TEST_SCRIPT_NAME = "testScript.t";
     private static final double EXPECTED_NUMBER_RESULT = 5.0;
     private static final String NETVIEW_MODULE_NAME = "netview:";
     private static final String AQMA_MODULE_NAME = "aqma:";
@@ -123,10 +123,12 @@ public class AbstractScriptingPluginTests extends AbstractTest {
         String projectName = AQMA_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
         Assert.assertEquals("Not expected count of files", TestActivator.getDefault().getScriptsForProject(projectName).size(),
                 modules.get(NumberUtils.INTEGER_ZERO).listFiles().length);
+
     }
 
     @Test
     public void testGetAllScripts() throws IOException {
+        restoreWS();
         Map<String, File> scripts = TestActivator.getDefault().getAllScripts();
         Assert.assertEquals(scripts.size(), allFiles.size());
     }

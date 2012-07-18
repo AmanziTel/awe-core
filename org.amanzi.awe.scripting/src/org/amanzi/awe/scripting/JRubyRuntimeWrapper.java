@@ -110,6 +110,7 @@ public class JRubyRuntimeWrapper {
             IRubyObject object = runtime.evalScriptlet(script);
             return defineJavaObject(object);
         } catch (Exception e) {
+            LOGGER.error("Can't execute script " + script + "because of", e);
             throw new ScriptingException("Can't execute script " + script + "because of", e);
         }
 
