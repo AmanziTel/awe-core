@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -22,6 +23,7 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.commons.lang3.BooleanUtils;
 
 /**
  * TODO Purpose of
@@ -39,12 +41,12 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
 
         private final String propertyName;
 
-        public Property(String propertyName, String headerName) {
+        public Property(final String propertyName, final String headerName) {
             this.propertyName = propertyName;
             this.headerName = headerName;
         }
 
-        protected String getValue(IMappedStringData data) {
+        protected String getValue(final IMappedStringData data) {
             return data.get(headerName);
         }
 
@@ -67,68 +69,166 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
         }
 
         @Override
-        protected Object parse(IMappedStringData data) {
+        protected Object parse(final IMappedStringData data) {
             return null;
         }
 
     }
 
-    private static final class DoubleProperty extends Property<Double> {
+    protected static final class DoubleProperty extends Property<Double> {
 
         /**
          * @param headerName
          * @param isReusable
          */
-        public DoubleProperty(String headerName, String propertyName) {
+        public DoubleProperty(final String headerName, final String propertyName) {
             super(headerName, propertyName);
         }
 
         @Override
-        protected Double parse(IMappedStringData data) {
+        protected Double parse(final IMappedStringData data) {
             return Double.parseDouble(getValue(data));
         }
 
     }
 
-    private static final class IntegerProperty extends Property<Integer> {
+    protected static final class StringProperty extends Property<String> {
+
+        /**
+         * @param propertyName
+         * @param headerName
+         */
+        public StringProperty(final String propertyName, final String headerName) {
+            super(propertyName, headerName);
+        }
+
+        @Override
+        protected String parse(final IMappedStringData data) {
+            return getValue(data);
+        }
+
+    }
+
+    protected static final class BooleanProperty extends Property<Boolean> {
+
+        /**
+         * @param propertyName
+         * @param headerName
+         */
+        public BooleanProperty(final String propertyName, final String headerName) {
+            super(propertyName, headerName);
+        }
+
+        @Override
+        protected Boolean parse(final IMappedStringData data) {
+            return BooleanUtils.toBooleanObject(getValue(data));
+        }
+
+    }
+
+    protected static final class LongProperty extends Property<Long> {
 
         /**
          * @param headerName
          * @param isReusable
          */
-        public IntegerProperty(String headerName, String propertyName) {
+        public LongProperty(final String headerName, final String propertyName) {
             super(headerName, propertyName);
         }
 
         @Override
-        protected Integer parse(IMappedStringData data) {
+        protected Long parse(final IMappedStringData data) {
+            return Long.parseLong(getValue(data));
+        }
+
+    }
+
+    protected static final class IntegerProperty extends Property<Integer> {
+
+        /**
+         * @param headerName
+         * @param isReusable
+         */
+        public IntegerProperty(final String headerName, final String propertyName) {
+            super(headerName, propertyName);
+        }
+
+        @Override
+        protected Integer parse(final IMappedStringData data) {
             return Integer.parseInt(getValue(data));
         }
 
     }
 
-    private static final class UndefinedProperty extends Property<String> {
+    protected static final class UndefinedProperty extends Property<Object> {
+
+        private Property< ? > currentProperty = null;
 
         /**
          * @param headerName
          * @param isReusable
          */
-        public UndefinedProperty(String headerName) {
+        public UndefinedProperty(final String headerName) {
             super(headerName, headerName);
         }
 
         @Override
-        protected String parse(IMappedStringData data) {
-            return getValue(data);
+        protected Object parse(final IMappedStringData data) {
+            Object result = null;
+
+            if (currentProperty == null) {
+                result = initializeProperty(data);
+            }
+
+            if (result == null) {
+                try {
+                    result = currentProperty.parse(data);
+                } catch (NumberFormatException e) {
+                    result = initializeProperty(data);
+                }
+            }
+
+            return result;
         }
 
+        private Object initializeProperty(final IMappedStringData data) {
+            Object result = null;
+
+            // try double
+            currentProperty = new IntegerProperty(getPropertyName(), getPropertyName());
+            try {
+                result = currentProperty.parse(data);
+            } catch (NumberFormatException e1) {
+                // try long
+                currentProperty = new LongProperty(getPropertyName(), getPropertyName());
+                try {
+                    result = currentProperty.parse(data);
+                } catch (NumberFormatException e2) {
+                    // try integer
+                    currentProperty = new DoubleProperty(getPropertyName(), getPropertyName());
+                    try {
+                        result = currentProperty.parse(data);
+                    } catch (NumberFormatException e3) {
+                        currentProperty = new BooleanProperty(getPropertyName(), getPropertyName());
+
+                        result = currentProperty.parse(data);
+                        if (result == null) {
+                            currentProperty = new StringProperty(getPropertyName(), getPropertyName());
+                            result = currentProperty.parse(data);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 
     protected static final Property< ? > SKIPPED_PROPERTY = new SkippedProperty();
 
     private final Map<INodeType, Map<String, Property< ? >>> headers = new HashMap<INodeType, Map<String, Property< ? >>>();
 
-    private final Map<INodeType, Synonyms> notHandledSynonyms = new HashMap<INodeType, Synonyms>();
+    private final Map<INodeType, List<Synonyms>> notHandledSynonyms = new HashMap<INodeType, List<Synonyms>>();
 
     private final SynonymsManager synonymsManager;
 
@@ -136,7 +236,8 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
         synonymsManager = SynonymsManager.getInstance();
     }
 
-    protected Map<String, Object> getElementProperties(INodeType nodeType, IMappedStringData data, boolean addNonMappedHeaders) {
+    protected Map<String, Object> getElementProperties(final INodeType nodeType, final IMappedStringData data,
+            final boolean addNonMappedHeaders) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         Map<String, Property< ? >> properties = headers.get(nodeType);
@@ -147,16 +248,19 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
         }
 
         for (Entry<String, String> dataEntry : data.entrySet()) {
-            String propertyName = dataEntry.getKey();
+            String headerName = dataEntry.getKey();
 
-            Property< ? > property = properties.get(propertyName);
+            Property< ? > property = properties.get(headerName);
             if (property == null) {
-                property = createProperty();
+                property = createProperty(nodeType, headerName, addNonMappedHeaders);
 
-                properties.put(propertyName, property);
+                properties.put(headerName, property);
             }
 
-            result.put(property.getPropertyName(), property.parse(data));
+            Object value = property.parse(data);
+            if (value != null) {
+                result.put(property.getPropertyName(), property.parse(data));
+            }
         }
 
         return result;
@@ -166,10 +270,58 @@ public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration
         return synonymsManager;
     }
 
-    protected Property< ? > createProperty() {
-        return null;
+    protected Property< ? > createProperty(final INodeType nodeType, final String header, final boolean addNonMappedHeaders) {
+        List<Synonyms> synonymsList = notHandledSynonyms.get(nodeType);
+
+        if (synonymsList == null) {
+            synonymsList = getSynonymsManager().getSynonyms(getSynonymsType(), nodeType);
+
+            notHandledSynonyms.put(nodeType, synonymsList);
+        }
+
+        Synonyms synonym = null;
+
+        check_synonyms: for (Synonyms singleSynonym : synonymsList) {
+            for (String pattern : singleSynonym.getPossibleHeaders()) {
+                if (header.matches(pattern)) {
+                    synonym = singleSynonym;
+                    break check_synonyms;
+                }
+            }
+        }
+
+        Property< ? > result = null;
+
+        if (synonym != null) {
+            result = createPropertyFromSynonym(synonym, header);
+        } else if (addNonMappedHeaders) {
+            result = new UndefinedProperty(header);
+        } else {
+            result = SKIPPED_PROPERTY;
+        }
+
+        return result;
     }
 
-    protected abstract String getDatasetType();
+    private Property< ? > createPropertyFromSynonym(final Synonyms synonym, final String header) {
+        String propertyName = synonym.getPropertyName();
+
+        switch (synonym.getSynonymType()) {
+        case BOOLEAN:
+            return new BooleanProperty(propertyName, header);
+        case DOUBLE:
+            return new DoubleProperty(propertyName, header);
+        case INTEGER:
+            return new IntegerProperty(propertyName, header);
+        case LONG:
+            return new LongProperty(propertyName, header);
+        case STRING:
+            return new StringProperty(propertyName, header);
+        default:
+            return new UndefinedProperty(header);
+        }
+    }
+
+    protected abstract String getSynonymsType();
 
 }
