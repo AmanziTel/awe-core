@@ -1,18 +1,17 @@
-#network 
-network.city.name@string = City,Town,Ort,SIT_City
+city.name@String = City,Town,Ort,SIT_City
 
-network.msc.name@string = MSC,MSC_NAME,MSC Name
+msc.name@String = MSC,MSC_NAME,MSC Name
 
-network.bsc.name@string = BSC,BSC_NAME,RNC,BSC Name
+bsc.name@String = BSC,BSC_NAME,RNC,BSC Name
 
-network.site.name@string = Site,Name,Site Name,SiteName,SITE_ID,SiteID,RSITE
-network.site.lat@double = latitude,y_wert.*,SIT.*Y,northing,lat.*,Latitude,Lat
-network.site.lon@double = longitude,x_wert.*,SIT.*X,easting,lon.*,Longitude,Long
+site.name@String = Site,Name,Site Name,SiteName,SITE_ID,SiteID,RSITE
+site.lat@Double = latitude,y_wert.*,SIT.*Y,northing,lat.*,Latitude,Lat
+site.lon@Double = longitude,x_wert.*,SIT.*X,easting,lon.*,Longitude,Long
 
-network.sector.name@string = Sector,SectorName,Cell,BTS_Name,CELL_NAME,GSM Sector ID,CellIdentity,cell name,Cell Name,sector_id,BS_NO
-network.sector.ci@integer = CI,CI_s,CellId,CellIdentity
-network.sector.lac@integer = LAC,LAC_s,La_lacId
-network.sector.beamwidth@double = .*beamwidth.*,beam,hbw
-network.sector.azimuth@double = .*azimuth.*,bearing
-network.sector.ncc@integer = ncc
-network.sector.bcc@integer = bcc
+sector.name@String = Sector,SectorName,Cell,BTS_Name,CELL_NAME,GSM Sector ID,CellIdentity,cell name,Cell Name,sector_id,BS_NO
+sector.ci@Integer = CI,CI_s,CellId,CellIdentity
+sector.lac@Integer = LAC,LAC_s,La_lacId
+sector.beamwidth@Double = .*beamwidth.*,beam,hbw
+sector.azimuth@Double = .*azimuth.*,bearing
+sector.ncc@Integer = ncc
+sector.bcc@Integer = bcc

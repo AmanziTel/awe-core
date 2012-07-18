@@ -33,7 +33,7 @@ import org.apache.commons.lang3.BooleanUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractSynonymsSaver extends AbstractSaver<IConfiguration, IMappedStringData> {
+public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends AbstractSaver<T, IMappedStringData> {
 
     protected static abstract class Property<C extends Object> {
 

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.impl.MappedStringData;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver.BooleanProperty;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver.DoubleProperty;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver.IntegerProperty;
@@ -60,7 +61,7 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
         }
     }
 
-    public class TestAbstractSynonymsSaver extends AbstractSynonymsSaver {
+    public class TestAbstractSynonymsSaver extends AbstractSynonymsSaver<IConfiguration> {
 
         @Override
         public void save(final IMappedStringData dataElement) {

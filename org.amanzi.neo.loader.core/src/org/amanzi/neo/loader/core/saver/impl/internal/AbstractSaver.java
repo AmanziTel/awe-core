@@ -46,7 +46,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
     }
 
     @Override
-    public void init(C configuration) {
+    public void init(final C configuration) {
         this.configuration = configuration;
     }
 
@@ -65,7 +65,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         return configuration;
     }
 
-    protected void addProcessedModel(IModel model) {
+    protected void addProcessedModel(final IModel model) {
         this.processedModels.add(model);
     }
 
