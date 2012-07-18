@@ -114,7 +114,7 @@ public class StatisticsService extends AbstractService {
         }
         Node statisticsRoot = createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS_MODEL);
         try {
-            setAnyProperty(parent, NAME, name);
+            setAnyProperty(statisticsRoot, NAME, name);
         } catch (IllegalNodeDataException e) {
             LOGGER.error("unexpected exception");
             /*
@@ -305,6 +305,10 @@ public class StatisticsService extends AbstractService {
      * @return
      */
     public Object getNodeProperty(Node node, String propertyName) {
+        if (node == null) {
+            LOGGER.error("rootNode can't be null");
+            return null;
+        }
         return node.getProperty(propertyName, null);
     }
 

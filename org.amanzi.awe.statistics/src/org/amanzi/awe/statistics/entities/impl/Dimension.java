@@ -104,7 +104,7 @@ public class Dimension extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsLevel createStatisticsLevel(String name) throws DuplicateNodeNameException, DatabaseException,
+    public StatisticsLevel createLevel(String name) throws DuplicateNodeNameException, DatabaseException,
             IllegalNodeDataException {
         loadChildIfNecessary();
         if (levels.containsKey(name)) {

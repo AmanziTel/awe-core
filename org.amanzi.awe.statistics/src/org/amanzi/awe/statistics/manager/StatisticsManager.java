@@ -34,6 +34,7 @@ import org.amanzi.awe.statistics.entities.impl.StatisticsLevel;
 import org.amanzi.awe.statistics.entities.impl.StatisticsRow;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.Period;
+import org.amanzi.awe.statistics.exceptions.StatisticsException;
 import org.amanzi.awe.statistics.exceptions.UnableToModifyException;
 import org.amanzi.awe.statistics.factory.EntityFactory;
 import org.amanzi.awe.statistics.model.StatisticsModel;
@@ -95,6 +96,7 @@ public class StatisticsManager {
      * can't be created directly Just through getInstance.
      */
     private StatisticsManager() {
+
     }
 
     /**
@@ -123,24 +125,27 @@ public class StatisticsManager {
      * @throws ScriptingException
      */
     public AggregatedStatistics processStatistics(String templateName, IDriveModel parentModel, String propertyName, Period period,
-            IProgressMonitor monitor) throws DatabaseException, IllegalNodeDataException, UnableToModifyException,
-            DuplicateNodeNameException, ScriptingException {
+            IProgressMonitor monitor) throws StatisticsException {
         LOGGER.info("Process statistics calculation");
         getAllScripts();
-        this.runtime = StatisticsPlugin.getDefault().getRuntimeWrapper();
-        Template template = (Template)runtime.executeScript(availableTemplates.get(templateName));
+        Template template;
         try {
-            currentStatisticsModel = new StatisticsModel(parentModel.getRootNode(), "template");
-        } catch (DatabaseException e) {
+            this.runtime = StatisticsPlugin.getDefault().getRuntimeWrapper();
+            template = (Template)runtime.executeScript(availableTemplates.get(templateName));
+            currentStatisticsModel = new StatisticsModel(parentModel.getRootNode(), template.getTemplateName());
+
+            aggregatedModel = parentModel;
+            Dimension timeDimension = currentStatisticsModel.getDimension(DimensionTypes.TIME);
+            Dimension networkDimension = currentStatisticsModel.getDimension(DimensionTypes.NETWORK);
+            StatisticsLevel networkLevel = findOrCreateLevel(networkDimension, propertyName);
+            StatisticsLevel timeLevel = timeDimension.getLevel(period.getId());
+            AggregatedStatistics statistics = buildStatistics(timeLevel, networkLevel, template, monitor);
+            return statistics;
+        } catch (Exception e) {
             LOGGER.error("Can't instantiate statistics model ", e);
+            throw new StatisticsException(e);
         }
-        aggregatedModel = parentModel;
-        Dimension timeDimension = currentStatisticsModel.getDimension(DimensionTypes.TIME);
-        Dimension networkDimension = currentStatisticsModel.getDimension(DimensionTypes.NETWORK);
-        StatisticsLevel networkLevel = networkDimension.getLevel(propertyName);
-        StatisticsLevel timeLevel = timeDimension.getLevel(period.getId());
-        AggregatedStatistics statistics = buildStatistics(timeLevel, networkLevel, template, monitor);
-        return statistics;
+
     }
 
     /**
@@ -613,6 +618,25 @@ public class StatisticsManager {
             ReferencedEnvelope re = new ReferencedEnvelope(lon, lon, lat, lat, null);
             nodeToUpdate.updateBbox(re);
         }
+    }
+
+    /**
+     * find or create level with levelName;
+     * 
+     * @param dimension
+     * @param levelName
+     * @return
+     * @throws DuplicateNodeNameException
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    private StatisticsLevel findOrCreateLevel(Dimension dimension, String levelName) throws DuplicateNodeNameException,
+            DatabaseException, IllegalNodeDataException {
+        StatisticsLevel level = dimension.getLevel(levelName);
+        if (level == null) {
+            dimension.createLevel(levelName);
+        }
+        return level;
     }
 
     /**

@@ -14,14 +14,14 @@
 package org.amanzi.awe.statistics.exceptions;
 
 /**
+ * TODO Purpose of
  * <p>
- * exception for throwing when node can't be modified
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class UnableToModifyException extends StatisticsException {
+public class StatisticsException extends Exception {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 1L;
@@ -29,30 +29,29 @@ public class UnableToModifyException extends StatisticsException {
     /**
      * 
      */
-    public UnableToModifyException() {
-        super();
-    }
-
-    /**
-     * @param message
-     * @param cause
-     */
-    public UnableToModifyException(String message, Throwable cause) {
-        super(message, cause);
+    public StatisticsException() {
     }
 
     /**
      * @param message
      */
-    public UnableToModifyException(String message) {
+    public StatisticsException(String message) {
         super(message);
     }
 
     /**
      * @param cause
      */
-    public UnableToModifyException(Throwable cause) {
+    public StatisticsException(Throwable cause) {
         super(cause);
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public StatisticsException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

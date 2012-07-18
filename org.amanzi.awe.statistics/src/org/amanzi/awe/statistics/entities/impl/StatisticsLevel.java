@@ -155,7 +155,7 @@ public class StatisticsLevel extends AbstractEntity {
      */
     public StatisticsLevel getSourceLevel() throws DatabaseException {
         Iterable<Node> sources = statisticService.getSources(rootNode);
-        if (sources == null) {
+        if (!sources.iterator().hasNext()) {
             return null;
         }
         return new StatisticsLevel(parentNode, sources.iterator().next());

@@ -73,12 +73,14 @@ public class StatisticsModel extends AbstractStatisticsModel {
         }
         this.parentNode = parentNode;
         this.name = (String)templateName;
-        rootNode = statisticService.findStatistic(parentNode, name);
+        rootNode = statisticService.findStatistic(this.parentNode, name);
         if (rootNode == null) {
             rootNode = statisticService.createStatisticsModelRoot(parentNode, name, false);
         }
-        usedNodes = (Long)statisticService.getNodeProperty(rootNode, NODES_USED);
-        totalNodes = (Long)statisticService.getNodeProperty(rootNode, TOTAL_NODES);
+        Long nodes = (Long)statisticService.getNodeProperty(rootNode, NODES_USED);
+        usedNodes = nodes == null ? 0 : nodes;
+        nodes = (Long)statisticService.getNodeProperty(rootNode, TOTAL_NODES);
+        totalNodes = nodes == null ? 0 : nodes;
         LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
         minTimestamp = (Long)this.parentNode.getProperty(DriveModel.MIN_TIMESTAMP);
         maxTimestamp = (Long)this.parentNode.getProperty(DriveModel.MAX_TIMESTAMP);
@@ -110,12 +112,12 @@ public class StatisticsModel extends AbstractStatisticsModel {
      */
     public Iterable<Dimension> getAllDimensions() throws DatabaseException {
         Iterable<Node> dimensions = statisticService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD);
-        List<Dimension> dimensionsList = new ArrayList<Dimension>();
-        if (dimensions == null) {
-            return dimensionsList;
+        if (!dimensions.iterator().hasNext()) {
+            return null;
         }
+        List<Dimension> dimensionsList = new ArrayList<Dimension>();
         for (Node dimension : dimensions) {
-            dimensionsList.add(factory.createDimension(this, dimension));
+            dimensionsList.add(new Dimension(rootNode, dimension));
         }
         return dimensionsList;
     }
@@ -128,12 +130,14 @@ public class StatisticsModel extends AbstractStatisticsModel {
     private void initDefaultDimensions() throws DatabaseException {
         Dimension timeModel;
         try {
-            timeModel = factory.createDimension(this, DimensionTypes.TIME);
+            timeModel = new Dimension(rootNode, DimensionTypes.TIME);
             Period highestPeriod = Period.getHighestPeriod(minTimestamp, maxTimestamp);
             createTimeLevels(timeModel, highestPeriod);
             factory.createDimension(this, DimensionTypes.NETWORK);
         } catch (IllegalNodeDataException e) {
             LOGGER.error("cann't intialize default Dimensions because of", e);
+        } catch (DuplicateNodeNameException e) {
+            LOGGER.error("cann'initialize default time levels", e);
         }
 
     }
@@ -147,23 +151,24 @@ public class StatisticsModel extends AbstractStatisticsModel {
      * @throws IllegalNodeDataException
      */
     public Dimension getDimension(DimensionTypes type) throws DatabaseException, IllegalNodeDataException {
-        return factory.createDimension(this, type);
+        return new Dimension(rootNode, type);
     }
 
     /**
      * initialize period chain
      * 
-     * @param timeModel
+     * @param timeDimension
      * @throws DatabaseException
+     * @throws DuplicateNodeNameException
      */
-    private Period createTimeLevels(Dimension timeModel, Period period) throws DatabaseException {
+    private Period createTimeLevels(Dimension timeDimension, Period period) throws DatabaseException, DuplicateNodeNameException {
         StatisticsLevel level;
         try {
-            level = timeModel.getLevel(period.getId());
+            level = timeDimension.createLevel(period.getId());
             Period underlinePeriod = period.getUnderlyingPeriod();
             if (period.getUnderlyingPeriod() != null) {
-                createTimeLevels(timeModel, underlinePeriod);
-                level.addSourceLevel(timeModel.getLevel(underlinePeriod.getId()));
+                createTimeLevels(timeDimension, underlinePeriod);
+                level.addSourceLevel(timeDimension.getLevel(underlinePeriod.getId()));
             }
         } catch (IllegalNodeDataException e) {
             LOGGER.error("can't create time level because of", e);

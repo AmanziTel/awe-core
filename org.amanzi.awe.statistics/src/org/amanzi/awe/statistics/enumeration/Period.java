@@ -302,10 +302,8 @@ public enum Period {
     public static Collection<String> getAvailablePeriods(long startTime, long endTime) {
         List<String> periods = new ArrayList<String>();
         long time = (startTime - endTime) / (1000 * 60);
-        if ((time / 60) < 1) {
-            periods.add(QUATER_HOUR.getId());
-        }
-        if ((time = time / 60) >= 1) {
+
+        if ((time = time / 60) >= 0) {
             periods.add(HOURLY.getId());
             if ((time = time / 24) >= 1) {
                 periods.add(DAILY.getId());

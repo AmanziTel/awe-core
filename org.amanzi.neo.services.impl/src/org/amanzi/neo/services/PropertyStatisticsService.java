@@ -77,7 +77,7 @@ public class PropertyStatisticsService extends AbstractService {
      * @since 1.0.0
      */
     public enum StatisticsRelationships implements RelationshipType {
-        STATISTICS;
+        PROPERTY_STATISTICS;
     }
 
     /**
@@ -177,7 +177,7 @@ public class PropertyStatisticsService extends AbstractService {
         }
         // if exist relationship and statistics not changed then
         // throw DuplicateStatisticsException
-        if (rootNode.getRelationships(StatisticsRelationships.STATISTICS, Direction.OUTGOING).iterator().hasNext()
+        if (rootNode.getRelationships(StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING).iterator().hasNext()
                 && vault.isStatisticsChanged() == false) {
             LOGGER.error("DuplicateStatisticsException: for this rootNode already exists statistics");
             throw new DuplicateStatisticsException("for this rootNode already exists statistics");
@@ -210,8 +210,8 @@ public class PropertyStatisticsService extends AbstractService {
 
         Transaction tx = graphDb.beginTx();
         try {
-            if (rootNode.getRelationships(StatisticsRelationships.STATISTICS, Direction.OUTGOING).iterator().hasNext()) {
-                Relationship statisticsRelationship = rootNode.getSingleRelationship(StatisticsRelationships.STATISTICS,
+            if (rootNode.getRelationships(StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING).iterator().hasNext()) {
+                Relationship statisticsRelationship = rootNode.getSingleRelationship(StatisticsRelationships.PROPERTY_STATISTICS,
                         Direction.OUTGOING);
 
                 Node rootStaticticsNode = statisticsRelationship.getEndNode();
@@ -282,7 +282,7 @@ public class PropertyStatisticsService extends AbstractService {
                 if (StatisticsNodeTypes.VAULT.getId().equals(getNodeType(rootNode))) {
                     rootNode.createRelationshipTo(vaultNode, DatasetRelationTypes.CHILD);
                 } else {
-                    rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.STATISTICS);
+                    rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.PROPERTY_STATISTICS);
                 }
                 vaultNode.setProperty(NAME, vault.getType());
                 vaultNode.setProperty(COUNT, vault.getCount());
@@ -324,10 +324,10 @@ public class PropertyStatisticsService extends AbstractService {
         }
 
         IVault result;
-        if (!rootNode.hasRelationship(StatisticsRelationships.STATISTICS, Direction.OUTGOING)) {
+        if (!rootNode.hasRelationship(StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING)) {
             return new StatisticsVault();
         }
-        Node vaultNode = rootNode.getSingleRelationship(StatisticsRelationships.STATISTICS, Direction.OUTGOING).getEndNode();
+        Node vaultNode = rootNode.getSingleRelationship(StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING).getEndNode();
         try {
             result = loadSubVault(vaultNode);
         } catch (LoadVaultException e) {
