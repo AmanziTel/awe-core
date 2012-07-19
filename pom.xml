@@ -7,7 +7,7 @@
     <tycho-version>0.15.0</tycho-version>
     <awe-core-version>0.13.4</awe-core-version>
     <awe-scripting-version>1.0.0.qualifier</awe-scripting-version>
-    <awe-statistics-version>0.9.0.qualifier</awe-statistics-version>
+    <awe-statistics-version>1.0.0.qualifier</awe-statistics-version>
   </properties>
 
   <groupId>org.amanzi</groupId>
