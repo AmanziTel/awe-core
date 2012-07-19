@@ -27,6 +27,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+        org.amanzi.awe.scripting.ScriptingTests.class,
         org.amanzi.awe.ui.AWEUITests.class,
         org.amanzi.neo.db.testing.DbTestSuite.class, 
         org.amanzi.neo.CoreTestsSuite.class,

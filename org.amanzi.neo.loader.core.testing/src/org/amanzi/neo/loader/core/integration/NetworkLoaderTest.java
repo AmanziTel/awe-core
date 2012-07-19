@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.integration;
 
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.junit.Before;
+import org.junit.Ignore;
 
 /**
  * TODO Purpose of
@@ -24,6 +25,7 @@ import org.junit.Before;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+@Ignore
 public class NetworkLoaderTest extends AbstractIntegrationTest {
 
     @Before

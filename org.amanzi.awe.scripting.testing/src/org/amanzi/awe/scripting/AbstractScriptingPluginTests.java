@@ -49,17 +49,17 @@ public class AbstractScriptingPluginTests extends AbstractTest {
     private static final String PROJECT_FOLDER = "awe-scripts";
     private static final String TEST_SCRIPT_NAME = "testScript.t";
     private static final double EXPECTED_NUMBER_RESULT = 5.0;
-    private static final String NETVIEW_MODULE_NAME = "netview:";
-    private static final String AQMA_MODULE_NAME = "aqma:";
+    private static final String TEST1_MODULE_NAME = "test2:";
+    private static final String TEST2_MODULE_NAME = "test1:";
 
     @BeforeClass
-    public static void init() {
-        Enumeration<String> projectScripts = Platform.getBundle(TestActivator.ID).getEntryPaths(SCRIPT_ROOT);
+    public static void init() throws IOException {
+        Enumeration<URL> projectScripts = Platform.getBundle(TestActivator.ID).findEntries(SCRIPT_ROOT, "*", false);
         allFiles = new ArrayList<File>();
         modules = new ArrayList<File>();
         while (projectScripts.hasMoreElements()) {
-            String path = projectScripts.nextElement();
-            File file = new File(path);
+            URL path = FileLocator.resolve(projectScripts.nextElement());
+            File file = new File(path.getFile());
             modules.add(file);
             allFiles.addAll(Arrays.asList(file.listFiles()));
         }
@@ -106,7 +106,7 @@ public class AbstractScriptingPluginTests extends AbstractTest {
 
     @Test
     public void testSimpleScriptExecution() throws FileNotFoundException, ScriptingException {
-        Object value = TestActivator.getDefault().getRuntimeWrapper().executeScriptByName(NETVIEW_MODULE_NAME + TEST_SCRIPT_NAME);
+        Object value = TestActivator.getDefault().getRuntimeWrapper().executeScriptByName(TEST1_MODULE_NAME + TEST_SCRIPT_NAME);
         Assert.assertNotNull("Not null value excepted", value);
         Assert.assertEquals("5.0 value expected", EXPECTED_NUMBER_RESULT, value);
     }
@@ -120,7 +120,7 @@ public class AbstractScriptingPluginTests extends AbstractTest {
 
     @Test
     public void testGetScriptsForProjectifExist() throws IOException {
-        String projectName = AQMA_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
+        String projectName = TEST2_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
         Assert.assertEquals("Not expected count of files", TestActivator.getDefault().getScriptsForProject(projectName).size(),
                 modules.get(NumberUtils.INTEGER_ZERO).listFiles().length);
 

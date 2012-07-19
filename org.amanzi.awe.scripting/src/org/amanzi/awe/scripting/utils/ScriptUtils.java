@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -113,13 +113,6 @@ public class ScriptUtils {
         }
 
         List<String> loadPath = new ArrayList<String>();
-        // if (scripts != null) {
-        // for (File file : scripts) {
-        // loadPath.add(file.getAbsolutePath());
-        // }
-        // }
-        // loadPath.add(".");
-        // loadPath.add(scripts.iterator().next().getParentFile().getParentFile().getAbsolutePath());
         loadPath.add(path);
         return loadPath;
     }

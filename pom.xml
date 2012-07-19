@@ -19,6 +19,11 @@
       <layout>p2</layout>
       <url>http://download.eclipse.org/releases/indigo</url>
     </repository>		
+    <repository>
+      <id>radrails</id>
+      <layout>p2</layout>
+      <url>http://download.aptana.com/studio3/plugin/install</url>
+    </repository>
   </repositories>
 
   <profiles>
@@ -30,6 +35,7 @@
       <modules>
         <module>org.amanzi.awe.filters</module>
         <module>org.amanzi.awe.libs</module>
+	<module>org.amanzi.awe.scripting.testing</module>
         <module>org.amanzi.awe.ui.testing</module>
         <module>org.amanzi.neo.db.testing</module>
         <module>org.amanzi.neo.core.testing</module>
@@ -83,6 +89,7 @@
   <modules>
      <module>org.amanzi.awe.filters</module>
      <module>org.amanzi.awe.libs</module>
+     <module>org.amanzi.awe.scripting</module>
      <module>org.amanzi.awe.ui</module>
      <module>org.amanzi.log4j</module>
      <module>org.amanzi.neo.db</module>
@@ -92,6 +99,7 @@
      <module>org.amanzi.neo.models.impl</module>
      <module>org.amanzi.neo.providers</module>
      <module>org.amanzi.neo.services</module>
+     <module>org.jruby</module>
      <module>org.neo4j</module>
   </modules>
   
@@ -104,48 +112,48 @@
         <extensions>true</extensions>
       </plugin>
       <plugin>
-	    <groupId>org.eclipse.tycho</groupId>
-	    <artifactId>target-platform-configuration</artifactId>
-	    <version>${tycho-version}</version>
-	    <configuration>		  
-	      <environments>
-	        <environment>
-	          <os>linux</os>
-	          <ws>gtk</ws>
-	          <arch>x86_64</arch>
-	        </environment>
-	        <environment>
-	          <os>linux</os>
-	          <ws>gtk</ws>
-	          <arch>x86</arch>
-            </environment>
-	        <environment>
-	          <os>macosx</os>
-	          <ws>carbon</ws>
-	          <arch>x86</arch>
-	        </environment>
-	        <environment>
-	          <os>macosx</os>
-              <ws>cocoa</ws>
-	          <arch>x86</arch>
-	        </environment>
-	        <environment>
-	          <os>macosx</os>
-	          <ws>cocoa</ws>
-	          <arch>x86_64</arch>
-	        </environment>
-	        <environment>
-	          <os>win32</os>
-	          <ws>win32</ws>
-	          <arch>x86</arch>
-	        </environment>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>		  
+          <environments>
             <environment>
-	          <os>win32</os>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86_64</arch>
+             </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>carbon</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>cocoa</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>cocoa</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
               <ws>win32</ws>
-	          <arch>x86_64</arch>
-	        </environment>
-	      </environments>
-	    </configuration>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86_64</arch>
+            </environment>
+          </environments>
+        </configuration>
       </plugin>
     </plugins>
   </build>
