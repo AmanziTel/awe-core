@@ -103,7 +103,6 @@
      <module>org.amanzi.neo.models.impl</module>
      <module>org.amanzi.neo.providers</module>
      <module>org.amanzi.neo.services</module>
-     <module>org.jruby</module>
      <module>org.neo4j</module>
   </modules>
   
