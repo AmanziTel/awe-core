@@ -552,3 +552,8 @@ java.lang.NullPointerException
 2012-07-18 18:23:00,790 [ INFO] Initialize  bundle org.amanzi.awe.scripting with script annotations.rb 
 2012-07-18 18:23:00,796 [ INFO] nothing to initialize in bundle org.amanzi.awe.scripting.testing 
 2012-07-18 18:23:00,810 [ INFO] project folder /ruby doesn't exist 
+2012-07-19 13:06:11,355 [ INFO] Log4j was successfully initialized 
+2012-07-19 13:06:13,483 [ INFO] Initialize  bundle org.amanzi.awe.scripting with script annotations.rb 
+2012-07-19 13:06:13,488 [ INFO] nothing to initialize in bundle org.amanzi.awe.scripting.testing 
+2012-07-19 13:06:13,505 [ INFO] project folder /ruby doesn't exist 
+2012-07-19 13:20:36,958 [ INFO] Log4j was successfully initialized 

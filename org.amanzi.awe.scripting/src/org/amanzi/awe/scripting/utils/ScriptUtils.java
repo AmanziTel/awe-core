@@ -113,13 +113,6 @@ public class ScriptUtils {
         }
 
         List<String> loadPath = new ArrayList<String>();
-        // if (scripts != null) {
-        // for (File file : scripts) {
-        // loadPath.add(file.getAbsolutePath());
-        // }
-        // }
-        // loadPath.add(".");
-        // loadPath.add(scripts.iterator().next().getParentFile().getParentFile().getAbsolutePath());
         loadPath.add(path);
         return loadPath;
     }
