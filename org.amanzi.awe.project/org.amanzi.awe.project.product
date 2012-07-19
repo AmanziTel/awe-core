@@ -48,10 +48,10 @@ For more information and support visit http://www.amanzitel.com/page/AWE
 
    <features>
       <feature id="org.amanzi.awe.feature"/>
-      <feature id="org.eclipse.rcp" version="3.7.2.v20120120-1424-9DB5FmnFq5JCf1UA38R-kz0S0272"/>
+      <feature id="org.eclipse.rcp"/>
       <feature id="net.refractions.udig-feature"/>
-      <feature id="org.amanzi.awe.scripting.feature" version="1.0.0.qualifier"/>
-      <feature id="org.amanzi.awe.statistics.feature" version="1.0.0.qualifier"/>
+      <feature id="org.amanzi.awe.scripting.feature"/>
+      <feature id="org.amanzi.awe.statistics.feature"/>
    </features>
 
    <configurations>
