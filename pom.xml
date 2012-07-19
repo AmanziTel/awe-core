@@ -96,6 +96,7 @@
      <module>org.amanzi.awe.filters</module>
      <module>org.amanzi.awe.libs</module>
      <module>org.amanzi.awe.scripting</module>
+     <module>org.amanzi.awe.statistics</module>
      <module>org.amanzi.awe.ui</module>
      <module>org.amanzi.log4j</module>
      <module>org.amanzi.neo.db</module>
