@@ -5,7 +5,7 @@
   <parent>
     <artifactId>awe-scripting</artifactId>
     <groupId>org.amanzi</groupId>
-    <version>${awe-scripting-version}</version>
+    <version>${awe-core-version}</version>
   </parent>
   <groupId>org.amanzi</groupId>
   <artifactId>org.amanzi.awe.scripting</artifactId>
