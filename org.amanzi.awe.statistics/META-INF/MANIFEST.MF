@@ -8,3 +8,4 @@ Export-Package: org.amanzi.awe.statistics.enumeration,
  org.amanzi.awe.statistics.model,
  org.amanzi.awe.statistics.service
 Require-Bundle: org.amanzi.neo.services.impl;bundle-version="1.0.0";visibility:=reexport
+Eclipse-ExtensibleAPI: true

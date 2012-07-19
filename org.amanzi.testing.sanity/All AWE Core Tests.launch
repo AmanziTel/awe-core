@@ -18,6 +18,7 @@
 <listEntry value="=org.amanzi.awe.ui/src"/>
 <listEntry value="=org.amanzi.awe.scripting/src"/>
 <listEntry value="=org.amanzi.neo.core/src"/>
+<listEntry value="=org.amanzi.awe.statistics/src"/>
 <listEntry value="=org.amanzi.neo.services/src"/>
 </listAttribute>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/pde-junit"/>

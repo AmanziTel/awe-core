@@ -5,7 +5,7 @@
 
   <properties>
     <tycho-version>0.15.0</tycho-version>
-    <awe-core-version>0.13.3</awe-core-version>
+    <awe-core-version>0.13.4</awe-core-version>
     <awe-scripting-version>1.0.0.qualifier</awe-scripting-version>
     <awe-statistics-version>0.9.0.qualifier</awe-statistics-version>
   </properties>
@@ -38,6 +38,7 @@
         <module>org.amanzi.awe.filters</module>
         <module>org.amanzi.awe.libs</module>
 	<module>org.amanzi.awe.scripting.testing</module>
+	<module>org.amanzi.awe.statistics.testing</module>
         <module>org.amanzi.awe.ui.testing</module>
         <module>org.amanzi.neo.db.testing</module>
         <module>org.amanzi.neo.core.testing</module>
@@ -86,6 +87,7 @@
 	<module>org.amanzi.awe.scripting.feature</module>
 	<module>org.amanzi.awe.statistics.feature</module>
         <module>org.amanzi.awe.ui.udig</module>
+	<module>org.amanzi.awe.views.statistics</module>
       </modules>
     </profile>
   </profiles>
@@ -103,6 +105,7 @@
      <module>org.amanzi.neo.models.impl</module>
      <module>org.amanzi.neo.providers</module>
      <module>org.amanzi.neo.services</module>
+     <module>org.amanzi.neo.services.impl</module>
      <module>org.neo4j</module>
   </modules>
   
