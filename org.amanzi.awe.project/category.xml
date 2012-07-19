@@ -3,5 +3,13 @@
    <feature url="features/org.amanzi.awe.feature_1.0.0.jar" id="org.amanzi.awe.feature" version="1.0.0">
       <category name="org.amanzi.awe.category"/>
    </feature>
+   <feature url="features/org.amanzi.awe.scripting.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.scripting.feature" version="1.0.0.qualifier">
+      <category name="org.amanzi.awe.scripting"/>
+   </feature>
+   <feature url="features/org.amanzi.awe.statistics.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.statistics.feature" version="1.0.0.qualifier">
+      <category name="org.amanzi.awe.statistics"/>
+   </feature>
    <category-def name="org.amanzi.awe.category" label="General AWE Feature"/>
+   <category-def name="org.amanzi.awe.scripting" label="AWE Scripting Framework"/>
+   <category-def name="org.amanzi.awe.statistics" label="AWE Statistics Engine"/>
 </site>
