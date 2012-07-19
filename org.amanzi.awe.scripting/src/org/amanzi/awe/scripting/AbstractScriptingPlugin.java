@@ -186,7 +186,9 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws ScriptingException
      */
     public JRubyRuntimeWrapper getRuntimeWrapper() throws ScriptingException {
-        initRuntime();
+        if (runtimeWrapper == null) {
+            initRuntime();
+        }
         return runtimeWrapper;
     }
 
