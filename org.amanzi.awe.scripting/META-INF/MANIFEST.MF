@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Scripting
+Bundle-SymbolicName: org.amanzi.awe.scripting
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.jruby;bundle-version="1.7.0";visibility:=reexport,
+ org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport,
+ org.eclipse.core.resources;bundle-version="3.7.100";visibility:=reexport
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.awe.scripting,
+ org.amanzi.awe.scripting.exceptions,
+ org.amanzi.awe.scripting.utils
+Import-Package: org.apache.commons.lang
