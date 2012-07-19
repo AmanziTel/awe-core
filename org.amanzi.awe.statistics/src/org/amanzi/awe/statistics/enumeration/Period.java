@@ -13,8 +13,11 @@
 
 package org.amanzi.awe.statistics.enumeration;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * <p>
@@ -287,6 +290,32 @@ public enum Period {
      */
     public int getUnderlyingPeriodCalendarField() {
         return underlyingPeriodCalendarField;
+    }
+
+    /**
+     * get available periods for current time range
+     * 
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public static Collection<String> getAvailablePeriods(long startTime, long endTime) {
+        List<String> periods = new ArrayList<String>();
+        long time = (startTime - endTime) / (1000 * 60);
+
+        if ((time = time / 60) >= 0) {
+            periods.add(HOURLY.getId());
+            if ((time = time / 24) >= 1) {
+                periods.add(DAILY.getId());
+                if ((time / 7) >= 1) {
+                    periods.add(WEEKLY.getId());
+                }
+                if ((time = time / 30) >= 1) {
+                    periods.add(MONTHLY.getId());
+                }
+            }
+        }
+        return periods;
     }
 
     /**

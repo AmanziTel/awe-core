@@ -16,9 +16,12 @@ package org.amanzi.awe.statistics.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.statistics.entities.impl.Dimension;
+import org.amanzi.awe.statistics.entities.impl.StatisticsLevel;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
+import org.amanzi.awe.statistics.factory.EntityFactory;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -43,8 +46,15 @@ public class StatisticsModel extends AbstractStatisticsModel {
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsModel.class);
 
+    private static final String NODES_USED = "used_nodes";
+    private static final String TOTAL_NODES = "total_nodes";
     private Long maxTimestamp;
     private Long minTimestamp;
+    private EntityFactory factory = EntityFactory.getInstance();
+
+    private long totalNodes;
+
+    private long usedNodes;
 
     /**
      * create new statistics if not exist .else initialize existed.
@@ -63,14 +73,18 @@ public class StatisticsModel extends AbstractStatisticsModel {
         }
         this.parentNode = parentNode;
         this.name = (String)templateName;
-        rootNode = statisticService.findStatistic(parentNode, name);
+        rootNode = statisticService.findStatistic(this.parentNode, name);
         if (rootNode == null) {
             rootNode = statisticService.createStatisticsModelRoot(parentNode, name, false);
         }
+        Long nodes = (Long)statisticService.getNodeProperty(rootNode, NODES_USED);
+        usedNodes = nodes == null ? 0 : nodes;
+        nodes = (Long)statisticService.getNodeProperty(rootNode, TOTAL_NODES);
+        totalNodes = nodes == null ? 0 : nodes;
         LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
         minTimestamp = (Long)this.parentNode.getProperty(DriveModel.MIN_TIMESTAMP);
         maxTimestamp = (Long)this.parentNode.getProperty(DriveModel.MAX_TIMESTAMP);
-        initDimension();
+        initDimensions();
     }
 
     /**
@@ -78,7 +92,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
      * 
      * @throws DatabaseException
      */
-    private void initDimension() throws DatabaseException {
+    private void initDimensions() throws DatabaseException {
 
         if (minTimestamp == null || maxTimestamp == null) {
             LOGGER.info("missing required parametrs");
@@ -98,10 +112,10 @@ public class StatisticsModel extends AbstractStatisticsModel {
      */
     public Iterable<Dimension> getAllDimensions() throws DatabaseException {
         Iterable<Node> dimensions = statisticService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD);
-        List<Dimension> dimensionsList = new ArrayList<Dimension>();
-        if (dimensions == null) {
-            return dimensionsList;
+        if (!dimensions.iterator().hasNext()) {
+            return null;
         }
+        List<Dimension> dimensionsList = new ArrayList<Dimension>();
         for (Node dimension : dimensions) {
             dimensionsList.add(new Dimension(rootNode, dimension));
         }
@@ -119,9 +133,11 @@ public class StatisticsModel extends AbstractStatisticsModel {
             timeModel = new Dimension(rootNode, DimensionTypes.TIME);
             Period highestPeriod = Period.getHighestPeriod(minTimestamp, maxTimestamp);
             createTimeLevels(timeModel, highestPeriod);
-            new Dimension(rootNode, DimensionTypes.NETWORK);
+            factory.createDimension(this, DimensionTypes.NETWORK);
         } catch (IllegalNodeDataException e) {
             LOGGER.error("cann't intialize default Dimensions because of", e);
+        } catch (DuplicateNodeNameException e) {
+            LOGGER.error("cann'initialize default time levels", e);
         }
 
     }
@@ -141,17 +157,18 @@ public class StatisticsModel extends AbstractStatisticsModel {
     /**
      * initialize period chain
      * 
-     * @param timeModel
+     * @param timeDimension
      * @throws DatabaseException
+     * @throws DuplicateNodeNameException
      */
-    private Period createTimeLevels(Dimension timeModel, Period period) throws DatabaseException {
+    private Period createTimeLevels(Dimension timeDimension, Period period) throws DatabaseException, DuplicateNodeNameException {
         StatisticsLevel level;
         try {
-            level = timeModel.getLevel(period.getId());
+            level = timeDimension.createLevel(period.getId());
             Period underlinePeriod = period.getUnderlyingPeriod();
             if (period.getUnderlyingPeriod() != null) {
-                createTimeLevels(timeModel, underlinePeriod);
-                level.addSourceLevel(timeModel.getLevel(underlinePeriod.getId()));
+                createTimeLevels(timeDimension, underlinePeriod);
+                level.addSourceLevel(timeDimension.getLevel(underlinePeriod.getId()));
             }
         } catch (IllegalNodeDataException e) {
             LOGGER.error("can't create time level because of", e);
@@ -176,5 +193,47 @@ public class StatisticsModel extends AbstractStatisticsModel {
      */
     public Long getMinTimestamp() {
         return minTimestamp;
+    }
+
+    /**
+     * set cound of used nodes
+     * 
+     * @param noUsedNodes
+     */
+    public void setUsedNodes(long noUsedNodes) {
+        try {
+            statisticService.setAnyProperty(rootNode, NODES_USED, noUsedNodes);
+            usedNodes = noUsedNodes;
+        } catch (Exception e) {
+            LOGGER.error("cann't set nodes_used property because of", e);
+        }
+    }
+
+    /**
+     * set total nodes count
+     * 
+     * @param count
+     */
+    public void setTotalNodes(long count) {
+        try {
+            statisticService.setAnyProperty(rootNode, TOTAL_NODES, count);
+            totalNodes = count;
+        } catch (Exception e) {
+            LOGGER.error("cann't set total_nodes property because of", e);
+        }
+    }
+
+    /**
+     * @return Returns the totalNodes.
+     */
+    public long getTotalNodes() {
+        return totalNodes;
+    }
+
+    /**
+     * @return Returns the usedNodes.
+     */
+    public long getUsedNodes() {
+        return usedNodes;
     }
 }

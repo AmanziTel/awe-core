@@ -26,7 +26,6 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -115,7 +114,7 @@ public class StatisticsService extends AbstractService {
         }
         Node statisticsRoot = createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS_MODEL);
         try {
-            setAnyProperty(parent, NAME, name);
+            setAnyProperty(statisticsRoot, NAME, name);
         } catch (IllegalNodeDataException e) {
             LOGGER.error("unexpected exception");
             /*
@@ -174,8 +173,6 @@ public class StatisticsService extends AbstractService {
             IllegalNodeDataException {
         LOGGER.info("create StatisticsLevel model node . parent:" + parent + " name:" + name);
         return findOrCreateNode(parent, NAME, name, StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate, Boolean.FALSE);
-        // return findOrCreateNamedNode(parent, name, DatasetRelationTypes.CHILD,
-        // StatisticsNodeTypes.LEVEL, isNeedToSearchDuplicate);
     }
 
     /**
@@ -219,52 +216,20 @@ public class StatisticsService extends AbstractService {
     }
 
     /**
-     * try to create new s_group node. if isNeedToSearchDuplicate is true and node is already exist
-     * - {@link DatabaseException} will be thrown
+     * create and add new entity to CHILD-NEXT chain. if isNeedToSearchDuplicate is true - searching
+     * duplicated nodes in chain first, if duplicate founded throw DatabaseException
      * 
      * @param rootNode
+     * @param type
      * @param name
      * @param isNeedToSearchDuplicate
      * @return
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public Node createSGroup(Node rootNode, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
+    public Node createEntity(Node rootNode, INodeType type, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
             IllegalNodeDataException {
-        return findOrCreateNode(rootNode, NAME, name, StatisticsNodeTypes.S_GROUP, isNeedToSearchDuplicate, Boolean.TRUE);
-    }
-
-    /**
-     * create S_ROW node and added it to child->next chain
-     * 
-     * @param rootNode
-     * @param timestamp
-     * @param isNeedToSearchDuplicate
-     * @return
-     * @throws DatabaseException
-     * @throws IllegalNodeDataException
-     */
-    public Node createSRow(Node rootNode, Long timestamp, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
-            IllegalNodeDataException {
-        Node sRow = findOrCreateNode(rootNode, NAME, name, StatisticsNodeTypes.S_ROW, isNeedToSearchDuplicate, Boolean.TRUE);
-        if (timestamp != null) {
-            setAnyProperty(sRow, DriveModel.TIMESTAMP, timestamp);
-        }
-        return sRow;
-    }
-
-    /**
-     * try to create new s_cell node. if isNeedToSearchDuplicate is true and node is already exist -
-     * {@link DatabaseException} will be thrown
-     * 
-     * @param parentSrow S_ROW root of branch s_cell will belongs to
-     * @param name name of S_CELL
-     * @param isNeedToSearchDuplicate - if need to search duplicate
-     * @return
-     */
-    public Node createSCell(Node parentSrow, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
-            IllegalNodeDataException {
-        return findOrCreateNode(parentSrow, NAME, name, StatisticsNodeTypes.S_CELL, isNeedToSearchDuplicate, Boolean.TRUE);
+        return findOrCreateNode(rootNode, NAME, name, type, isNeedToSearchDuplicate, Boolean.TRUE);
     }
 
     /**
@@ -340,6 +305,10 @@ public class StatisticsService extends AbstractService {
      * @return
      */
     public Object getNodeProperty(Node node, String propertyName) {
+        if (node == null) {
+            LOGGER.error("rootNode can't be null");
+            return null;
+        }
         return node.getProperty(propertyName, null);
     }
 

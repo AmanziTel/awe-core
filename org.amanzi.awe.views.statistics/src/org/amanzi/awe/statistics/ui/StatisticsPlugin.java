@@ -55,5 +55,4 @@ public class StatisticsPlugin extends AbstractUIPlugin {
     public static ImageDescriptor getImageDescriptor(String imageFilePath) {
         return imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
     }
-
 }

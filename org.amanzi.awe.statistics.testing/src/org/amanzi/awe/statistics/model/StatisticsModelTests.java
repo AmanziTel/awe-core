@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.statistics.entities.impl.Dimension;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
@@ -38,7 +39,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsModelTests extends AbstractStatisticsModelTests {
+public class StatisticsModelTests extends AbstractModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {

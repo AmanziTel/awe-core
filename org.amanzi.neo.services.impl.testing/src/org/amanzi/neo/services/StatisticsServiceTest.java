@@ -193,12 +193,12 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 				(PropertyStatistics) Mockito.any(), (Node) Mockito.any());
 
 		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
-				StatisticsRelationships.STATISTICS, Direction.OUTGOING);
+				StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING);
 		Assert.assertTrue("not create StatisticsRelationships.STATISTICS",
 				hasStatisticsRelationships);
 
 		Node propVaultNode = referenceNode.getSingleRelationship(
-				StatisticsRelationships.STATISTICS, Direction.OUTGOING)
+				StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING)
 				.getEndNode();
 		checkVaultNode(propVaultNode, PROPERTIES, StatisticsVault.class, 0, 1);
 
@@ -268,7 +268,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		try {
 			Node statNode = graphDatabaseService.createNode();
 			referenceNode.createRelationshipTo(statNode,
-					StatisticsRelationships.STATISTICS);
+					StatisticsRelationships.PROPERTY_STATISTICS);
 			tx.success();
 		} finally {
 			tx.finish();
@@ -332,12 +332,12 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 				(PropertyStatistics) Mockito.any(), (Node) Mockito.any());
 
 		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
-				StatisticsRelationships.STATISTICS, Direction.OUTGOING);
+				StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING);
 		Assert.assertTrue("not create StatisticsRelationships.STATISTICS",
 				hasStatisticsRelationships);
 
 		Node propVaultNode = referenceNode.getSingleRelationship(
-				StatisticsRelationships.STATISTICS, Direction.OUTGOING)
+				StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING)
 				.getEndNode();
 		checkVaultNode(propVaultNode, PROPERTIES, StatisticsVault.class, 0, 2);
 
@@ -406,7 +406,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 				(PropertyStatistics) Mockito.any(), (Node) Mockito.any());
 
 		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
-				StatisticsRelationships.STATISTICS, Direction.OUTGOING);
+				StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING);
 		Assert.assertFalse("not delete StatisticsRelationships.STATISTICS",
 				hasStatisticsRelationships);
 	}
@@ -530,7 +530,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
 		service.saveVault(referenceNode, propVault);
 		Node vaultNode = referenceNode.getSingleRelationship(
-				StatisticsRelationships.STATISTICS, Direction.OUTGOING)
+				StatisticsRelationships.PROPERTY_STATISTICS, Direction.OUTGOING)
 				.getEndNode();
 		tx = graphDatabaseService.beginTx();
 		try {

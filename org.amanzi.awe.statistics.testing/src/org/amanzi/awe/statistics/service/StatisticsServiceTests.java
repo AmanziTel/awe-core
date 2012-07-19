@@ -192,42 +192,17 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
     }
 
     @Test
-    public void testCreateSRowIfNotExist() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testCreateSRowIfNotExist started");
-        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
-        Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
-        Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
-        Node existed = srows.next();
-        Assert.assertEquals("Unexpected timestamp found", existed.getProperty(DriveModel.TIMESTAMP), timestamp);
-        Assert.assertEquals("Unexpected type found", existed.getProperty(DatasetService.TYPE), StatisticsNodeTypes.S_ROW.getId());
-    }
-
-    @Test(expected = DatabaseException.class)
-    public void testCreateSRowIfExist() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testCreateSRowIfExist started");
-        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        Node statRoot = createStatisticsRoot(datasetNode);
-        Node periodH = createLevelNode(statRoot, Period.HOURLY.getId());
-        Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
-        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
-    }
-
-    @Test
-    public void testCreateSCellIfNotExist() throws DatabaseException, IllegalNodeDataException {
+    public void testCreateEntity() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testCreateSCell started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
         Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
         Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
+        statisticsService.createEntity(periodH, StatisticsNodeTypes.S_ROW, timestamp.toString(), true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
         Node existedSrow = srows.next();
-        statisticsService.createSCell(existedSrow, SCELL_NAME, true);
+        statisticsService.createEntity(existedSrow, StatisticsNodeTypes.S_CELL, SCELL_NAME, true);
         Iterator<Node> scells = datasetService.getChildrenChainTraverser(existedSrow).iterator();
         Node existedSCell = scells.next();
         Assert.assertEquals("Unexpected name found", existedSCell.getProperty(DatasetService.NAME), SCELL_NAME);
@@ -243,11 +218,11 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
         Node dimension = createDimensionNode(statRoot, DimensionTypes.TIME);
         Node periodH = createLevelNode(dimension, Period.HOURLY.getId());
         Long timestamp = (long)(Math.random() * 100000);
-        statisticsService.createSRow(periodH, timestamp, timestamp.toString(), true);
+        statisticsService.createEntity(periodH, StatisticsNodeTypes.S_ROW, timestamp.toString(), true);
         Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
         Node existedSrow = srows.next();
-        statisticsService.createSCell(existedSrow, SCELL_NAME, true);
-        statisticsService.createSCell(existedSrow, SCELL_NAME, true);
+        statisticsService.createEntity(existedSrow, StatisticsNodeTypes.S_CELL, timestamp.toString(), true);
+        statisticsService.createEntity(existedSrow, StatisticsNodeTypes.S_CELL, timestamp.toString(), true);
     }
 
     @Test
