@@ -16,8 +16,6 @@ package org.amanzi.neo.services;
 import java.awt.Color;
 
 import org.amanzi.testing.AbstractAWEDBTest;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * Abstract class for tests on NeoServices and Models
@@ -26,25 +24,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public abstract class AbstractNeoServiceTest extends AbstractAWEDBTest {
-    
-    /**
-     * Cleans up all relationships from ReferenceNode
-     */
-    protected void cleanUpReferenceNode() throws Exception {
-        Transaction tx = graphDatabaseService.beginTx();
-        try {
-            for (Relationship relationship : graphDatabaseService.getReferenceNode().getRelationships()) {
-                relationship.delete();
-            }
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();            
-            throw e;
-        } finally {
-            tx.finish();
-        }
-    }
-    
+
     protected int[] getColorArray(Color color) {
         if (color != null) {
             return new int[] {color.getRed(), color.getGreen(), color.getBlue()};

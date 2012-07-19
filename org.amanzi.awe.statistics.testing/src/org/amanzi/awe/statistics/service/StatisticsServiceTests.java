@@ -24,7 +24,6 @@ import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
 import org.amanzi.log4j.LogStarter;
-import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
@@ -34,6 +33,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -54,7 +54,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsServiceTests extends AbstractNeoServiceTest {
+public class StatisticsServiceTests extends AbstractAWEDBTest {
 
     private static Logger LOGGER = Logger.getLogger(StatisticsServiceTests.class);
     private static final String DATASET_NAME = "dataset";
@@ -64,7 +64,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     private static Node datasetNode = null;
     private Node projectNode;
     private StatisticsService statisticsService;
-    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+    private final DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
     private static final int ARRAYS_SIZE = 5;
 
     @BeforeClass

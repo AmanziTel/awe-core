@@ -23,6 +23,7 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -59,6 +60,24 @@ public abstract class AbstractAWEDBTest {
     protected static void stopDb() {
         DatabaseManagerFactory.getDatabaseManager().shutdown();
         graphDatabaseService = null;
+    }
+
+    /**
+     * Cleans up all relationships from ReferenceNode
+     */
+    protected void cleanUpReferenceNode() throws Exception {
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+            for (Relationship relationship : graphDatabaseService.getReferenceNode().getRelationships()) {
+                relationship.delete();
+            }
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw e;
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
