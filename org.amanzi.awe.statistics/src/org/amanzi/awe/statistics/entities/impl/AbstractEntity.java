@@ -43,7 +43,7 @@ public abstract class AbstractEntity {
     /*
      * service instantiation
      */
-    public static void setStatisticsService(StatisticsService service) {
+     static void setStatisticsService(StatisticsService service) {
         statisticService = service;
     }
 

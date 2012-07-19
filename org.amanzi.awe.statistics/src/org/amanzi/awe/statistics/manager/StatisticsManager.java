@@ -324,18 +324,11 @@ public class StatisticsManager {
                 HashMap<Object, Object> result;
                 result = (HashMap<Object, Object>)runtime.executeScript(script);
 
-                // Node networkNode = findNetworkNode(node, networkLevel);
-                // TODO use key property instead of key node name for
-                // non-correlated datasets
-                // String keyProperty = dsService.getKeyProperty(node);
+                // TODO implement keyNodes support
                 StatisticsGroup group;
                 startFindGroup = System.currentTimeMillis();
-                // if (networkNode != null) {
-                // group = findOrCreateGroup(statistics, networkNode);
-                // } else {
                 String defaultValue = networkLevel.equals(DATASET_NAME) ? aggregatedModel.getName() : UNKNOW_NAME;
                 group = findOrCreateGroup(statistics, networkLevel.getName(), defaultValue);
-                // }
                 startFindGroup = System.currentTimeMillis() - startFindGroup;
                 // add summary row first
                 StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
@@ -634,7 +627,7 @@ public class StatisticsManager {
             DatabaseException, IllegalNodeDataException {
         StatisticsLevel level = dimension.getLevel(levelName);
         if (level == null) {
-            dimension.createLevel(levelName);
+            level = dimension.createLevel(levelName);
         }
         return level;
     }
@@ -651,4 +644,5 @@ public class StatisticsManager {
         availableTemplates = StatisticsPlugin.getDefault().getAllScripts();
         return availableTemplates.keySet();
     }
+
 }

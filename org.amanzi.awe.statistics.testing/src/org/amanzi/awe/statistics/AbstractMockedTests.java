@@ -21,8 +21,10 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.statistics.entities.impl.AbstractEntityTest;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
+import org.amanzi.awe.statistics.model.AbstractModelTest;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.model.IDataElement;
@@ -60,6 +62,8 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
         statisticsService = getMockedService();
         initMockedParentNode();
         initMockedStatisticsRootModel();
+        AbstractEntityTest.initServices();
+        AbstractModelTest.initServices();
     }
 
     /**

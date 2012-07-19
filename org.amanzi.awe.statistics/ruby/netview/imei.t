@@ -1,4 +1,4 @@
-load 'netview/formulas.rb'
+load 'netview/geoptima_formulas.rb'
 template 'Geoptima IMEI template' do |t|
   t.metadata :type=>:dataset,:drive_type=>:geoptima
   $MODELS.each_with_index do |e,i|

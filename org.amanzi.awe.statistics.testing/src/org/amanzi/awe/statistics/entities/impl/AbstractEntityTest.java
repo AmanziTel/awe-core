@@ -11,10 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.entities;
+package org.amanzi.awe.statistics.entities.impl;
 
 import org.amanzi.awe.statistics.AbstractMockedTests;
-import org.amanzi.awe.statistics.entities.impl.AbstractEntity;
 import org.junit.Before;
 
 /**
@@ -30,6 +29,13 @@ public class AbstractEntityTest extends AbstractMockedTests {
     @Before
     public void setUp() {
         super.setUp();
+    }
+
+    /**
+     * init services
+     */
+    public static void initServices() {
         AbstractEntity.setStatisticsService(statisticsService);
     }
+
 }

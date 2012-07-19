@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.entities.impl;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import org.amanzi.awe.statistics.entities.IAggregatedStatisticsEntity;
@@ -77,7 +78,7 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * 
      * @return
      */
-    public Iterable<T> getAllChild() {
+    public Collection<T> getAllChild() {
         loadChildIfNecessary();
         return childs.values();
     }

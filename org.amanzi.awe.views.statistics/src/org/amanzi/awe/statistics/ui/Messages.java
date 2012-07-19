@@ -46,6 +46,7 @@ public class Messages extends NLS {
     public static String statisticsViewLabel_EXPORT;
     public static String statisticsViewLabel_CHART_VIEW;
     public static String PATH_TO_REFRESH_BUTTON_IMG;
+    public static String PATH_TO_EMPTY_FILTER_IMG;
 
     private Messages() {
     }

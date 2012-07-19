@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.entities;
+package org.amanzi.awe.statistics.entities.impl;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

@@ -71,7 +71,7 @@ public class StatisticsGroup extends AbstractStorageEntity<StatisticsRow> implem
     }
 
     /**
-     * create summury row
+     * create summary row
      * 
      * @return
      * @throws IllegalNodeDataException

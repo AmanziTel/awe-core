@@ -235,4 +235,5 @@ public class StatisticsUtils {
     public void setDefFormat(String defFormat) {
         this.defFormat = defFormat;
     }
+
 }

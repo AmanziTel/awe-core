@@ -26,6 +26,12 @@ public class AbstractModelTest extends AbstractMockedTests {
     @Before
     public void setUp() {
         super.setUp();
+    }
+
+    /**
+     * init services
+     */
+    public static void initServices() {
         StatisticsModel.setStatisticsService(statisticsService);
     }
 }
