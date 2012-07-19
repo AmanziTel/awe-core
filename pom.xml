@@ -5,7 +5,9 @@
 
   <properties>
     <tycho-version>0.15.0</tycho-version>
-    <awe-core-version>0.13.2</awe-core-version>
+    <awe-core-version>0.13.3</awe-core-version>
+    <awe-scripting-version>1.0.0.qualifier</awe-scripting-version>
+    <awe-statistics-version>0.9.0.qualifier</awe-statistics-version>
   </properties>
 
   <groupId>org.amanzi</groupId>
@@ -81,6 +83,8 @@
 	<module>org.amanzi.awe</module>
 	<module>org.amanzi.awe.feature</module>
         <module>org.amanzi.awe.project</module>
+	<module>org.amanzi.awe.scripting.feature</module>
+	<module>org.amanzi.awe.statistics.feature</module>
         <module>org.amanzi.awe.ui.udig</module>
       </modules>
     </profile>
