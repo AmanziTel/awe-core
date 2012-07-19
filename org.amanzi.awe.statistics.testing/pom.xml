@@ -9,7 +9,7 @@
 		<version>${awe-core-version}</version>
 	</parent>
 	<groupId>org.amanzi</groupId>
-	<artifactId>rg.amanzi.awe.statistics.testing</artifactId>
+	<artifactId>org.amanzi.awe.statistics.testing</artifactId>
 	<version>1.0.0.qualifier</version>
 	<packaging>eclipse-test-plugin</packaging>
 
