@@ -73,15 +73,25 @@ public class AbstractScriptingPluginTests extends AbstractTest {
     @Test
     public void testProjectScriptFolderCreated() {
         File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+        boolean isExist = false;
+        for (File module : modules) {
+            isExist = false;
+            for (File file : projectFolder.listFiles()) {
+                if (file.getName().equals(module.getName())) {
+                    isExist = true;
+                }
+            }
+            if (!isExist) {
+                Assert.fail("some modules not exists in workspace");
+            }
+        }
         Assert.assertTrue("Destination folder and source folder have different structure",
-                projectFolder.listFiles().length == modules.size());
+                projectFolder.listFiles().length >= modules.size());
     }
 
     @Test
     public void testProjectScriptFolderContainsAllScripts() {
         File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
-        Assert.assertTrue("Destination folder and source folder have different structure",
-                projectFolder.listFiles().length == modules.size());
         List<File> destinationRbFiles = new ArrayList<File>();
         for (File destProject : projectFolder.listFiles()) {
             destinationRbFiles.addAll(Arrays.asList(destProject.listFiles()));
