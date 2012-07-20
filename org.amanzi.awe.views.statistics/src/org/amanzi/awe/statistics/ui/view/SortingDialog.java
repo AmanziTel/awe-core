@@ -1,3 +1,16 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
 package org.amanzi.awe.statistics.ui.view;
 
 import java.util.ArrayList;
@@ -44,6 +57,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 
+/**
+ * sorting table dialog TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author Vladislav_Kondratenko
+ * @since 1.0.0
+ */
 public class SortingDialog extends Shell {
     private static final Image sortAscImage = StatisticsPlugin.getImageDescriptor("icons/Asc.png").createImage();
     private static final Image sortDescImage = StatisticsPlugin.getImageDescriptor("icons/Desc.png").createImage();
