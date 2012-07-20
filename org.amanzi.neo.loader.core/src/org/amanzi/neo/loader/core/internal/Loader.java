@@ -45,7 +45,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
     private final List<ISaver<C, D>> savers = new ArrayList<ISaver<C, D>>();
 
     @Override
-    public void init(C configuration) throws LoaderException {
+    public void init(final C configuration) throws LoaderException {
         parser.init(configuration);
 
         try {
@@ -58,7 +58,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
     }
 
     @Override
-    public void run(IProgressMonitor monitor) throws ModelException {
+    public void run(final IProgressMonitor monitor) throws ModelException {
         parser.setProgressMonitor(monitor);
 
         try {
@@ -74,25 +74,28 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
         }
     }
 
-    public void setValidator(IValidator<C> validator) {
+    @Override
+    public void setValidator(final IValidator<C> validator) {
         this.validator = validator;
     }
 
-    public void setParser(IParser<C, D> parser) {
+    @Override
+    public void setParser(final IParser<C, D> parser) {
         this.parser = parser;
     }
 
-    public void addSaver(ISaver<C, D> saver) {
+    @Override
+    public void addSaver(final ISaver<C, D> saver) {
         this.savers.add(saver);
     }
 
     @Override
-    public IValidationResult validate(C configuration) {
+    public IValidationResult validate(final C configuration) {
         return validator.validate(configuration);
     }
 
     @Override
-    public boolean isAppropriate(List<File> filesToLoad) {
+    public boolean isAppropriate(final List<File> filesToLoad) {
         IValidationResult result = validator.appropriate(filesToLoad);
 
         switch (result.getResult()) {

@@ -16,11 +16,17 @@ package org.amanzi.neo.loader.ui.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.internal.Loader;
+import org.amanzi.neo.loader.core.parser.IParser;
+import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.core.validator.IValidator;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -65,6 +71,12 @@ public class LoaderContext {
 
     protected static final String REFERENCE_ID = "refId";
 
+    protected static final String PARSER_ATTRIBUTE = "parser";
+
+    protected static final String VALIDATOR_ATTRIBUTE = "validator";
+
+    protected static final String SAVER_CHILDREN = "savers";
+
     private static class LoaderContextHandler {
         private static volatile LoaderContext INSTANCE = new LoaderContext();
     }
@@ -107,14 +119,7 @@ public class LoaderContext {
     protected <T extends IConfiguration> ILoaderWizard<T> createLoaderWizard(final String id) throws CoreException {
         LOGGER.info("Creating LoaderWizard <" + id + ">.");
 
-        IConfigurationElement wizardElement = null;
-
-        for (IConfigurationElement element : registry.getConfigurationElementsFor(LOADER_WIZARD_EXTENSION_ID)) {
-            if (id.equals(element.getAttribute(ID_ATTRIBUTE))) {
-                wizardElement = element;
-                break;
-            }
-        }
+        IConfigurationElement wizardElement = findConfgiruationElement(LOADER_WIZARD_EXTENSION_ID, id);
 
         if (wizardElement != null) {
             ILoaderWizard<T> result = (ILoaderWizard<T>)wizardElement.createExecutableExtension(CLASS_ATTRIBUTE);
@@ -149,7 +154,10 @@ public class LoaderContext {
 
         for (IConfigurationElement loaderPageElement : loaderPageElements) {
             ILoaderPage<T> page = initializeLoaderPage(loaderPageElement);
-            result.add(page);
+
+            if (page != null) {
+                result.add(page);
+            }
         }
 
         return result;
@@ -173,13 +181,122 @@ public class LoaderContext {
 
             if (loader != null) {
                 result.addLoader(loader);
+            } else {
+                LOGGER.error("No Loader found by ID <" + loaderId + ">");
+            }
+        }
+
+        if (result.getLoaders().isEmpty()) {
+            LOGGER.error("No Loaders was found for Page");
+            return null;
+        }
+
+        return result;
+    }
+
+    protected <T extends IConfiguration, D extends IData> ILoader<T, D> createLoader(final String loaderId) throws CoreException {
+        LOGGER.info("Creating Loader <" + loaderId + ">");
+
+        IConfigurationElement loaderElement = findConfgiruationElement(LOADER_EXTENSION_ID, loaderId);
+        ILoader<T, D> result = createLoader();
+
+        String parserId = loaderElement.getAttribute(PARSER_ATTRIBUTE);
+        if (!StringUtils.isEmpty(parserId)) {
+            IParser<T, D> parser = createParser(parserId);
+            if (parser != null) {
+                result.setParser(parser);
+            } else {
+                LOGGER.error("Cannot instantiate parser <" + parserId + ">.");
+                return null;
+            }
+        } else {
+            LOGGER.error("No parserId provided for Loader <" + loaderId + ">.");
+            return null;
+        }
+
+        String validatorId = loaderElement.getAttribute(VALIDATOR_ATTRIBUTE);
+        if (!StringUtils.isEmpty(validatorId)) {
+            IValidator<T> validator = createValidator(validatorId);
+            if (validator != null) {
+                result.setValidator(validator);
+            } else {
+                LOGGER.error("Cannot instantiate validator <" + validatorId + ">.");
+                return null;
+            }
+        } else {
+            LOGGER.error("No validatorId provided for Loader <" + loaderId + ">.");
+            return null;
+        }
+
+        List<ISaver<T, D>> savers = new ArrayList<ISaver<T, D>>();
+
+        for (IConfigurationElement saverElement : loaderElement.getChildren(SAVER_CHILDREN)) {
+            String saverId = saverElement.getAttribute(REFERENCE_ID);
+            if (!StringUtils.isEmpty(saverId)) {
+                ISaver<T, D> saver = createSaver(saverId);
+                if (saver != null) {
+                    savers.add(saver);
+                } else {
+                    LOGGER.error("Cannot instantiate saver <" + saverId + ">.");
+                }
+            } else {
+                LOGGER.error("No saverId provided for Loader <" + loaderId + ">.");
+                return null;
+            }
+        }
+
+        if (savers.isEmpty()) {
+            LOGGER.error("No Savers initialized for Loader <" + loaderId + ">.");
+            return null;
+        } else {
+            for (ISaver<T, D> saver : savers) {
+                result.addSaver(saver);
             }
         }
 
         return result;
     }
 
-    protected <T extends IConfiguration> ILoader<T, ? > createLoader(final String loaderId) {
+    protected <T extends IConfiguration, D extends IData> ILoader<T, D> createLoader() {
+        return new Loader<T, D>();
+    }
+
+    protected <T extends IConfiguration> IValidator<T> createValidator(final String validatorId) throws CoreException {
+        LOGGER.info("Creating Validator <" + validatorId + ">");
+        return createElement(VALIDATOR_EXTENSION_ID, validatorId);
+    }
+
+    protected <T extends IConfiguration, D extends IData> ISaver<T, D> createSaver(final String saverId) throws CoreException {
+        LOGGER.info("Creating Saver <" + saverId + ">");
+        return createElement(SAVER_EXTENSION_ID, saverId);
+    }
+
+    protected <T extends IConfiguration, D extends IData> IParser<T, D> createParser(final String parserId) throws CoreException {
+        LOGGER.info("Creating Parser <" + parserId + ">");
+        return createElement(PARSER_EXTENSION_ID, parserId);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T extends Object> T createElement(final String extensionPoint, final String id) throws CoreException {
+        IConfigurationElement element = findConfgiruationElement(extensionPoint, id);
+
+        if (element != null) {
+            return (T)element.createExecutableExtension(CLASS_ATTRIBUTE);
+        }
+
         return null;
+    }
+
+    protected IConfigurationElement findConfgiruationElement(final String extensionPoint, final String id) {
+        IConfigurationElement result = null;
+
+        for (IConfigurationElement element : registry.getConfigurationElementsFor(extensionPoint)) {
+            if (id.equals(element.getAttribute(ID_ATTRIBUTE))) {
+                result = element;
+                break;
+            }
+        }
+
+        return result;
     }
 }

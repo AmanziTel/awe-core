@@ -18,7 +18,10 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.parser.IParser;
+import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
+import org.amanzi.neo.loader.core.validator.IValidator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -34,12 +37,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface ILoader<C extends IConfiguration, D extends IData> {
 
-    public abstract void init(C configuration) throws LoaderException;
+    void init(C configuration) throws LoaderException;
 
-    public abstract void run(IProgressMonitor monitor) throws ModelException;
+    void run(IProgressMonitor monitor) throws ModelException;
 
-    public abstract IValidationResult validate(C configuration);
+    IValidationResult validate(C configuration);
 
-    public abstract boolean isAppropriate(List<File> filesToLoad);
+    boolean isAppropriate(List<File> filesToLoad);
 
+    void setValidator(final IValidator<C> validator);
+
+    void setParser(final IParser<C, D> parser);
+
+    void addSaver(final ISaver<C, D> saver);
 }

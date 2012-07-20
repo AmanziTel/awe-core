@@ -13,5 +13,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Eclipse-ExtensibleAPI: true
 Export-Package: org.amanzi.neo.loader.core,
- org.amanzi.neo.loader.core.internal
+ org.amanzi.neo.loader.core.internal,
+ org.amanzi.neo.loader.core.parser,
+ org.amanzi.neo.loader.core.saver,
+ org.amanzi.neo.loader.core.validator
 
