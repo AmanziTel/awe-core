@@ -6,11 +6,12 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.neo.loader.core.internal.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.providers;bundle-version="1.0.0",
- org.amanzi.awe.libs;bundle-version="1.0.0",
+ org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.core;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Eclipse-ExtensibleAPI: true
-Export-Package: org.amanzi.neo.loader.core.internal
+Export-Package: org.amanzi.neo.loader.core,
+ org.amanzi.neo.loader.core.internal
 

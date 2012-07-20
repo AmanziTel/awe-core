@@ -13,9 +13,9 @@
 
 package org.amanzi.neo.loader.ui.handler;
 
+import org.amanzi.neo.loader.ui.impl.internal.LoaderContext;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
-import org.amanzi.neo.loader.ui.wizard.impl.internal.LoaderContext;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -53,7 +53,7 @@ public class LoaderWizardHandler extends AbstractHandler {
     public Object execute(final ExecutionEvent event) throws ExecutionException {
         String wizardId = event.getParameter(LOADER_WIZARD_ID);
         if (wizardId != null) {
-            ILoaderWizard wizard = loaderContext.getLoaderWizard(wizardId);
+            ILoaderWizard< ? > wizard = loaderContext.getLoaderWizard(wizardId);
 
             if (wizard != null) {
                 IWorkbenchWindow window = getWorkbenchWindow(event);

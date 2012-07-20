@@ -16,8 +16,9 @@ package org.amanzi.neo.loader.ui.handler;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.ui.impl.internal.LoaderContext;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
-import org.amanzi.neo.loader.ui.wizard.impl.internal.LoaderContext;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -46,7 +47,7 @@ public class LoaderWizardHandlerTest extends AbstractMockitoTest {
 
     private ExecutionEvent event;
 
-    private ILoaderWizard wizard;
+    private ILoaderWizard<IConfiguration> wizard;
 
     private LoaderWizardHandler handler;
 
@@ -61,6 +62,7 @@ public class LoaderWizardHandlerTest extends AbstractMockitoTest {
     /**
      * @throws java.lang.Exception
      */
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
         wizard = mock(ILoaderWizard.class);

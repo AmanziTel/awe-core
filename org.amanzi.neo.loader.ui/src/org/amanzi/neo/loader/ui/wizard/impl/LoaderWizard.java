@@ -13,11 +13,8 @@
 
 package org.amanzi.neo.loader.ui.wizard.impl;
 
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
-import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.ui.IWorkbench;
+import org.amanzi.neo.loader.core.ISingleFileConfiguration;
+import org.amanzi.neo.loader.ui.wizard.impl.internal.AbstractLoaderWizard;
 
 /**
  * TODO Purpose of
@@ -27,24 +24,6 @@ import org.eclipse.ui.IWorkbench;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoaderWizard extends Wizard implements ILoaderWizard {
-
-    @Override
-    public void init(final IWorkbench workbench, final IStructuredSelection selection) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public boolean performFinish() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public void addLoaderPage(final ILoaderPage loaderPage) {
-        // TODO Auto-generated method stub
-
-    }
+public class LoaderWizard extends AbstractLoaderWizard<ISingleFileConfiguration> {
 
 }

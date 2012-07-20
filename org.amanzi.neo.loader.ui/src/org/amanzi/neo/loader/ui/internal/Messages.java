@@ -31,6 +31,8 @@ public class Messages extends NLS {
     public static String LoaderWizardHandler_NoWizardIdError;
     public static String LoaderWizardHandler_NoWizardByIdError;
 
+    public static String LoadNetworkPage_PageName;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -11,13 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page;
+package org.amanzi.neo.loader.core;
 
+import java.io.File;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
-import org.eclipse.jface.wizard.IWizardPage;
+import org.amanzi.neo.loader.core.validator.IValidationResult;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -26,10 +29,17 @@ import org.eclipse.jface.wizard.IWizardPage;
  * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
+ * @param <C>
+ * @param <D>
  */
-public interface ILoaderPage<T extends IConfiguration> extends IWizardPage {
+public interface ILoader<C extends IConfiguration, D extends IData> {
 
-    public void addLoader(ILoader<T, ? > loader);
+    public abstract void init(C configuration) throws LoaderException;
 
-    public List<ILoader<T, ? >> getLoaders();
+    public abstract void run(IProgressMonitor monitor) throws ModelException;
+
+    public abstract IValidationResult validate(C configuration);
+
+    public abstract boolean isAppropriate(List<File> filesToLoad);
+
 }

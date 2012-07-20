@@ -11,16 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.impl.network;
+package org.amanzi.neo.loader.ui.wizard.impl.internal;
 
-import java.util.List;
-
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.ISingleFileConfiguration;
-import org.amanzi.neo.loader.ui.internal.Messages;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
-import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.widgets.Composite;
+import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.IWorkbench;
 
 /**
  * TODO Purpose of
@@ -30,31 +28,23 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoadNetworkPage extends WizardPage implements ILoaderPage<ISingleFileConfiguration> {
-
-    /**
-     * @param pageName
-     */
-    protected LoadNetworkPage() {
-        super(Messages.LoadNetworkPage_PageName);
-    }
+public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wizard implements ILoaderWizard<T> {
 
     @Override
-    public void addLoader(final ILoader<ISingleFileConfiguration, ? > loader) {
+    public void init(final IWorkbench workbench, final IStructuredSelection selection) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void createControl(final Composite parent) {
-        // TODO Auto-generated method stub
-
+    public void addLoaderPage(final ILoaderPage<T> loaderPage) {
+        addPage(loaderPage);
     }
 
     @Override
-    public List<ILoader<ISingleFileConfiguration, ? >> getLoaders() {
+    public boolean performFinish() {
         // TODO Auto-generated method stub
-        return null;
+        return false;
     }
 
 }

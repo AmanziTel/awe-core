@@ -28,7 +28,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     org.amanzi.neo.loader.ui.handler.LoaderWizardHandlerTest.class,
-    org.amanzi.neo.loader.ui.wizard.impl.internal.LoaderContextTest.class
+    org.amanzi.neo.loader.ui.impl.internal.LoaderContextTest.class
 })
 public class LoaderUITestSuite {
 

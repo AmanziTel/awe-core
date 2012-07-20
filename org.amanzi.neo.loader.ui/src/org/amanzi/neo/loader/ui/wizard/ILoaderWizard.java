@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.ui.wizard;
 
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.eclipse.ui.IImportWizard;
 
@@ -24,8 +25,10 @@ import org.eclipse.ui.IImportWizard;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ILoaderWizard extends IImportWizard {
+public interface ILoaderWizard<T extends IConfiguration> extends IImportWizard {
 
-    public void addLoaderPage(ILoaderPage loaderPage);
+    void addLoaderPage(ILoaderPage<T> loaderPage);
+
+    void setWindowTitle(String title);
 
 }

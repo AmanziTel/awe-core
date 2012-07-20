@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.exception.impl.SaverInitializationException;
 import org.amanzi.neo.loader.core.parser.IParser;
@@ -35,7 +36,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class Loader<C extends IConfiguration, D extends IData> {
+public final class Loader<C extends IConfiguration, D extends IData> implements ILoader<C, D> {
 
     private IValidator<C> validator;
 
@@ -43,6 +44,7 @@ public final class Loader<C extends IConfiguration, D extends IData> {
 
     private final List<ISaver<C, D>> savers = new ArrayList<ISaver<C, D>>();
 
+    @Override
     public void init(C configuration) throws LoaderException {
         parser.init(configuration);
 
@@ -55,6 +57,7 @@ public final class Loader<C extends IConfiguration, D extends IData> {
         }
     }
 
+    @Override
     public void run(IProgressMonitor monitor) throws ModelException {
         parser.setProgressMonitor(monitor);
 
@@ -83,10 +86,12 @@ public final class Loader<C extends IConfiguration, D extends IData> {
         this.savers.add(saver);
     }
 
+    @Override
     public IValidationResult validate(C configuration) {
         return validator.validate(configuration);
     }
 
+    @Override
     public boolean isAppropriate(List<File> filesToLoad) {
         IValidationResult result = validator.appropriate(filesToLoad);
 
