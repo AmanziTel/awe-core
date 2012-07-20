@@ -19,5 +19,30 @@
             synonymsFile="synonyms/network.synonyms">
       </synonyms>
    </extension>
+   <extension
+         point="org.amanzi.savers">
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
+            id="org.amanzi.saver.NetworkSaver">
+      </saver>
+   </extension>
+   <extension
+         point="org.amanzi.validators">
+      <validator
+            class="org.amanzi.neo.loader.core.validator.impl.network.NetworkValidator"
+            id="org.amanzi.validator.NetworkCSVValidator">
+      </validator>
+   </extension>
+   <extension
+         point="org.amanzi.loaders">
+      <loader
+            id="org.amanzi.loader.NetworkCSVLoader"
+            parser="org.amanzi.parser.CSVParser"
+            validator="org.amanzi.validator.NetworkCSVValidator">
+         <savers
+               saver="org.amanzi.saver.NetworkSaver">
+         </savers>
+      </loader>
+   </extension>
 
 </plugin>

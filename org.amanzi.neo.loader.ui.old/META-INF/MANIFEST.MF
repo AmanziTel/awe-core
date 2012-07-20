@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ui
-Bundle-SymbolicName: org.amanzi.neo.loader.ui;singleton:=true
+Bundle-SymbolicName: org.amanzi.neo.loader.ui.old;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.loader.core.old;bundle-version="1.0.0";visibility:=reexport,
