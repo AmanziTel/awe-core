@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.amanzi.awe.statistics.entities.impl.StatisticsCell;
+import org.amanzi.awe.statistics.entities.impl.StatisticsGroup;
+import org.amanzi.awe.statistics.entities.impl.StatisticsRow;
 import org.amanzi.awe.statistics.ui.Messages;
 import org.amanzi.awe.statistics.ui.StatisticsPlugin;
-import org.amanzi.awe.statistics.ui.view.table.StatisticsAggregationFilter;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsComparator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -157,6 +159,7 @@ public class SortingDialog extends Shell {
                     }
                 }
                 tableViewer.setFilters(new ViewerFilter[] {new StatisticsAggregationFilter(selection)});
+                tableViewer.getTable().getShell().notifyListeners(TableListenersType.UPDATE_BUTTON, null);
                 close();
             }
 
@@ -468,6 +471,34 @@ public class SortingDialog extends Shell {
 
         private String clearTextFromSpecialChars(String filter) {
             return filter.toLowerCase();
+        }
+    }
+
+    /**
+     * aggregation filter
+     * <p>
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private static class StatisticsAggregationFilter extends ViewerFilter {
+        private Collection<String> values;
+
+        /**
+         * @param start
+         * @param end
+         */
+        public StatisticsAggregationFilter(Collection<String> selection) {
+            this.values = selection;
+        }
+
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            StatisticsCell[] cells = (StatisticsCell[])element;
+            StatisticsRow row = cells[0].getParent();
+            StatisticsGroup group = row.getParent();
+            return values.contains(group.getName());
         }
     }
 }

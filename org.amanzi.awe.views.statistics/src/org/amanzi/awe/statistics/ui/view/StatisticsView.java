@@ -459,9 +459,6 @@ public class StatisticsView extends ViewPart {
         }
         table.setSortDirection(sortDirection);
         table.setSortColumn(currentColumn);
-        // if (colNum == 0 || (isAdditionalColumnNecessary() && colNum == 1)) {
-        // currentColumn.setImage(deselectedFilter);
-        // }
         ((StatisticsComparator)tableViewer.getComparator()).update(colNum, sortDirection, isAdditionalColumnNecessary());
         tableViewer.refresh();
     }
