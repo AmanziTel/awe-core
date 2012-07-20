@@ -42,7 +42,6 @@ public class TestActivator extends AbstractScriptingPlugin {
         try {
             super.start(context);
             initPlugin(this);
-            initScriptManager(context);
         } catch (Exception e) {
             LOGGER.error("Activator starting problem ", e);
             throw new ScriptingException(e);
