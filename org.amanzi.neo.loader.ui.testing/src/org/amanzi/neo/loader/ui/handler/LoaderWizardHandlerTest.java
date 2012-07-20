@@ -21,8 +21,10 @@ import org.amanzi.neo.loader.ui.wizard.impl.internal.LoaderContext;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.junit.Before;
@@ -112,5 +114,24 @@ public class LoaderWizardHandlerTest extends AbstractMockitoTest {
     @Test(expected = ExecutionException.class)
     public void testCheckExceptionWhenNoWizardById() throws Exception {
         handler.execute(event);
+    }
+
+    @Test
+    public void testCheckWorkbenchWindowNotNull() throws Exception {
+        IEvaluationContext context = mock(IEvaluationContext.class);
+        when(context.getVariable(ISources.ACTIVE_WORKBENCH_WINDOW_NAME)).thenReturn(window);
+
+        event = new ExecutionEvent(null, new HashMap<String, String>(), null, context);
+
+        doCallRealMethod().when(handler).getWorkbenchWindow(event);
+
+        assertNotNull("workbench window cannot be null", handler.getWorkbenchWindow(event));
+    }
+
+    @Test
+    public void testCheckDialogNotNull() throws Exception {
+        doCallRealMethod().when(handler).createDialog(shell, wizard);
+
+        assertNotNull("workbench window cannot be null", handler.createDialog(shell, wizard));
     }
 }

@@ -79,6 +79,16 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="wizardId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.wizards/wizard/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

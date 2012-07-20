@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.loader.ui.wizard.impl.internal;
 
+import java.util.List;
+
+import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -30,6 +33,14 @@ public class LoaderContext {
     protected static final String LOADER_WIZARD_EXTENSION_ID = "org.amanzi.loader.wizards";
 
     protected static final String LOADER_PAGE_EXTENSION_ID = "org.amanzi.loader.pages";
+
+    protected static final String LOADER_EXTENSION_ID = "org.amanzi.loaders";
+
+    protected static final String SAVER_EXTENSION_ID = "org.amanzi.savers";
+
+    protected static final String PARSER_EXTENSION_ID = "org.amanzi.parsers";
+
+    protected static final String VALIDATOR_EXTENSION_ID = "org.amanzi.validators";
 
     private static class LoaderContextHandler {
         private static volatile LoaderContext INSTANCE = new LoaderContext();
@@ -50,6 +61,22 @@ public class LoaderContext {
     }
 
     public ILoaderWizard getLoaderWizard(final String id) {
+        ILoaderWizard result = createLoaderWizard(id);
+
+        List<ILoaderPage> pages = createLoaderPages(id);
+
+        for (ILoaderPage page : pages) {
+            result.addLoaderPage(page);
+        }
+
+        return result;
+    }
+
+    protected ILoaderWizard createLoaderWizard(final String id) {
+        return null;
+    }
+
+    protected List<ILoaderPage> createLoaderPages(final String id) {
         return null;
     }
 }

@@ -12,5 +12,5 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Eclipse-ExtensibleAPI: true
-Export-Package: org.amanzi.neo.loader.core
+Export-Package: org.amanzi.neo.loader.core.internal
 
