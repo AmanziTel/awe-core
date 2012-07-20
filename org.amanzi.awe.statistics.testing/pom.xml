@@ -20,7 +20,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
-					<testSuite>org.amanzi.awe.statistics</testSuite>
+					<testSuite>org.amanzi.awe.statistics.testing</testSuite>
 					<testClass>oorg.amanzi.awe.statistics.StatisticsTestsSuite</testClass>
 				</configuration>
 			</plugin>
