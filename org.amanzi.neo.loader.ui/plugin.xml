@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.amanzi.loader.wizards" name="Loader Wizard" schema="schema/org.amanzi.loader.wizards.exsd"/>
+   <extension-point id="org.amanzi.loader.pages" name="Loader Page" schema="schema/org.amanzi.loader.pages.exsd"/>
+   <extension
+         point="org.amanzi.loader.pages">
+      <page
+            class="org.amanzi.neo.loader.ui.page.impl.network.LoadNetworkPage"
+            description="Load Network Data"
+            title="%LoadNetworkPageTitle">
+         <loaders
+               refId="org.amanzi.loader.NetworkCSVLoader">
+         </loaders>
+      </page>
+   </extension>
+   <extension
+         point="org.amanzi.loader.wizards">
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizard.impl.LoaderWizard"
+            id="org.amanzi.wizards.NetworkLoaderWizard"
+            title="%LoadNetworkWizardTitle">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.command.launchLoader"
+            name="%LaunchLoaderCommand">
+         <commandParameter
+               id="org.amanzi.loader.wizard.id"
+               name="ID of Loader Wizard"
+               optional="false">
+         </commandParameter>
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="org.amanzi.loader.toolbar">
+            <command
+                  commandId="org.amanzi.command.launchLoader"
+                  icon="icons/16/network.png"
+                  style="push"
+                  tooltip="%NetworkLoaderTooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <or>
+                     <with
+                           variable="activeWorkbenchWindow.activePerspective">
+                        <equals
+                              value="org.amanzi.awe.perspective">
+                        </equals>
+                     </with>
+                  </or>
+               </visibleWhen>
+               <parameter
+                     name="org.amanzi.loader.wizard.id"
+                     value="org.amanzi.wizards.NetworkLoaderWizard">
+               </parameter>
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.neo.loader.ui.handler.LoaderWizardHandler"
+            commandId="org.amanzi.command.launchLoader">
+      </handler>
+   </extension>
+</plugin>
