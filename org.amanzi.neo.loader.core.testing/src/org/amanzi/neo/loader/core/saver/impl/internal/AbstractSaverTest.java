@@ -17,9 +17,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.exception.impl.UnderlyingModelException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.FatalException;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,8 +40,12 @@ public class AbstractSaverTest extends AbstractMockitoTest {
 
     public static class TestSaver extends AbstractSaver<IConfiguration, IData> {
 
+        protected TestSaver(IProjectModelProvider projectModelProvider) {
+            super(projectModelProvider);
+        }
+
         @Override
-        public void save(IData dataElement) {
+        protected void saveInModel(IData data) throws ModelException {
         }
 
     }
@@ -46,6 +54,10 @@ public class AbstractSaverTest extends AbstractMockitoTest {
 
     private IConfiguration configuration;
 
+    private IProjectModelProvider projectModelProvider;
+
+    private IProjectModel currentProject;
+
     /**
      * @throws java.lang.Exception
      */
@@ -53,7 +65,10 @@ public class AbstractSaverTest extends AbstractMockitoTest {
     public void setUp() throws Exception {
         configuration = mock(IConfiguration.class);
 
-        saver = spy(new TestSaver());
+        projectModelProvider = mock(IProjectModelProvider.class);
+        when(projectModelProvider.getActiveProjectModel()).thenReturn(currentProject);
+
+        saver = spy(new TestSaver(projectModelProvider));
     }
 
     @Test
@@ -89,9 +104,31 @@ public class AbstractSaverTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckInitialization() {
+    public void testCheckInitialization() throws Exception {
         saver.init(configuration);
 
         assertEquals("unexpected configuration", configuration, saver.getConfiguration());
+    }
+
+    @Test
+    public void testCheckCurrentProjectModelInitialization() throws Exception {
+        saver.init(configuration);
+
+        verify(projectModelProvider).getActiveProjectModel();
+    }
+
+    @Test
+    public void testCheckCurrentProjectModelInitializationResult() throws Exception {
+        saver.init(configuration);
+
+        assertEquals("unexpected current project", currentProject, saver.getCurrentProject());
+    }
+
+    @Test(expected = UnderlyingModelException.class)
+    public void testCheckLoaderExceptionOnSaver() throws Exception {
+        doThrow(new FatalException(new IllegalArgumentException())).when(saver).saveInModel(any(IData.class));
+
+        IData data = mock(IData.class);
+        saver.save(data);
     }
 }

@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.saver;
 
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
  * TODO Purpose of
@@ -26,7 +27,7 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  */
 public interface ISaver<C extends IConfiguration, D extends IData> {
 
-    void init(C configuration);
+    void init(C configuration) throws ModelException;
 
     void save(D dataElement);
 

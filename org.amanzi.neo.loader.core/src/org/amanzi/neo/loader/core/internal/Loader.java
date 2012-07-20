@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
+import org.amanzi.neo.loader.core.exception.impl.SaverInitializationException;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
@@ -45,8 +46,12 @@ public final class Loader<C extends IConfiguration, D extends IData> {
     public void init(C configuration) throws LoaderException {
         parser.init(configuration);
 
-        for (ISaver<C, D> saver : savers) {
-            saver.init(configuration);
+        try {
+            for (ISaver<C, D> saver : savers) {
+                saver.init(configuration);
+            }
+        } catch (ModelException e) {
+            throw new SaverInitializationException(e);
         }
     }
 

@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.lang3.BooleanUtils;
 
 /**
@@ -232,8 +233,9 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
     private final SynonymsManager synonymsManager;
 
-    protected AbstractSynonymsSaver() {
-        synonymsManager = SynonymsManager.getInstance();
+    protected AbstractSynonymsSaver(IProjectModelProvider projectModelProvider, SynonymsManager synonymsManager) {
+        super(projectModelProvider);
+        this.synonymsManager = synonymsManager;
     }
 
     protected Map<String, Object> getElementProperties(final INodeType nodeType, final IMappedStringData data,
@@ -266,15 +268,11 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         return result;
     }
 
-    protected SynonymsManager getSynonymsManager() {
-        return synonymsManager;
-    }
-
     protected Property< ? > createProperty(final INodeType nodeType, final String header, final boolean addNonMappedHeaders) {
         List<Synonyms> synonymsList = notHandledSynonyms.get(nodeType);
 
         if (synonymsList == null) {
-            synonymsList = getSynonymsManager().getSynonyms(getSynonymsType(), nodeType);
+            synonymsList = synonymsManager.getSynonyms(getSynonymsType(), nodeType);
 
             notHandledSynonyms.put(nodeType, synonymsList);
         }

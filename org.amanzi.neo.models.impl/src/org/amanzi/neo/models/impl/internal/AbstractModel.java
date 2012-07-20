@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
@@ -162,4 +164,8 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         return generalNodeProperties;
     }
 
+    @Override
+    public IDataElement asDataElement() {
+        return rootNode == null ? null : new DataElement(rootNode);
+    }
 }

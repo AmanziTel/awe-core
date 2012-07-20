@@ -17,10 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.exception.LoaderException;
+import org.amanzi.neo.loader.core.exception.impl.UnderlyingModelException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 
 /**
@@ -39,15 +43,19 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
 
     private final List<IModel> processedModels = new ArrayList<IModel>();
 
-    /**
-     * 
-     */
-    public AbstractSaver() {
+    private final IProjectModelProvider projectModelProvider;
+
+    private IProjectModel currentProject;
+
+    protected AbstractSaver(IProjectModelProvider projectModelProvider) {
+        this.projectModelProvider = projectModelProvider;
     }
 
     @Override
-    public void init(final C configuration) {
+    public void init(final C configuration) throws ModelException {
         this.configuration = configuration;
+
+        this.currentProject = projectModelProvider.getActiveProjectModel();
     }
 
     @Override
@@ -61,12 +69,27 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         }
     }
 
+    @Override
+    public void save(D data) throws LoaderException {
+        try {
+            saveInModel(data);
+        } catch (ModelException e) {
+            throw new UnderlyingModelException(e);
+        }
+    }
+
+    protected abstract void saveInModel(D data) throws ModelException;
+
     protected C getConfiguration() {
         return configuration;
     }
 
     protected void addProcessedModel(final IModel model) {
         this.processedModels.add(model);
+    }
+
+    protected IProjectModel getCurrentProject() {
+        return currentProject;
     }
 
 }

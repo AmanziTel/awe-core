@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.providers;
 
+import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.internal.IModelProvider;
 
 /**
@@ -26,5 +27,7 @@ import org.amanzi.neo.providers.internal.IModelProvider;
 public interface IProviderContext {
 
     <T extends IModelProvider< ? >> T get(String id) throws ContextException;
+
+    <T extends INodeProperties> T getProperties(String id) throws ContextException;
 
 }

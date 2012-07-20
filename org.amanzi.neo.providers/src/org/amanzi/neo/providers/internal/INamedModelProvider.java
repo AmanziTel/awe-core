@@ -31,4 +31,6 @@ public interface INamedModelProvider<M extends IModel, P extends IModel> extends
     List<M> findAll(P parent) throws ModelException;
 
     M findByName(P parent, String name) throws ModelException;
+
+    M create(P parent, String name) throws ModelException;
 }

@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodetypes.INodeType;
 
@@ -42,4 +43,6 @@ public interface IModel {
      * The method should perform final operations like storing indexes and statistics values.
      */
     void finishUp() throws ModelException;
+
+    IDataElement asDataElement();
 }

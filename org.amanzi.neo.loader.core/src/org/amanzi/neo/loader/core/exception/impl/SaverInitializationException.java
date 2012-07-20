@@ -11,11 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.network;
+package org.amanzi.neo.loader.core.exception.impl;
 
-import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import org.amanzi.neo.loader.core.exception.LoaderException;
+import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
  * TODO Purpose of
@@ -25,16 +24,16 @@ import org.apache.commons.lang3.ArrayUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum NetworkElementType implements INetworkElementType {
-    NETWORK, CITY, MSC, BSC, SITE, SECTOR;
+public class SaverInitializationException extends LoaderException {
 
-    @Override
-    public String getId() {
-        return NodeTypeUtils.getTypeId(this);
-    }
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 4146609528952414496L;
 
-    public static NetworkElementType[] getGeneralNetworkElements() {
-        return ArrayUtils.subarray(values(), NETWORK.ordinal(), values().length);
+    /**
+     * @param e
+     */
+    public SaverInitializationException(ModelException e) {
+        super(e);
     }
 
 }

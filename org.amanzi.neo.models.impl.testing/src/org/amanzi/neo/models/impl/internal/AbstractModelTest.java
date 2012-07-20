@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -176,5 +178,25 @@ public class AbstractModelTest extends AbstractMockitoTest {
                 NodeService.NodeServiceRelationshipType.CHILD, TEST_NODE_NAME);
 
         model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
+    }
+
+    @Test
+    public void testCheckModelAsDataElement() throws Exception {
+        Node rootNode = getNodeMock();
+
+        model.initialize(rootNode);
+
+        assertNotNull("data element cannot be null", model.asDataElement());
+
+        IDataElement result = model.asDataElement();
+
+        assertTrue("unexpected class", result instanceof DataElement);
+
+        assertEquals("unexpected node", rootNode, ((DataElement)result).getNode());
+    }
+
+    @Test
+    public void testCheckModelAsDataElementBeforeInitialization() throws Exception {
+        assertNull("data element should be null", model.asDataElement());
     }
 }

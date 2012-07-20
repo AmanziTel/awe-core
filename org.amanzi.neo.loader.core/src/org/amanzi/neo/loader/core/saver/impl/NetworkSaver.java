@@ -13,10 +13,20 @@
 
 package org.amanzi.neo.loader.core.saver.impl;
 
+import java.util.Map;
+
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.loader.core.IMappedStringData;
+import org.amanzi.neo.loader.core.internal.Activator;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver;
+import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.providers.INetworkModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 
 /**
  * TODO Purpose of
@@ -30,10 +40,53 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
 
     private static final String SYNONYMS_TYPE = "network";
 
-    @Override
-    public void save(final IMappedStringData dataElement) {
-        // TODO Auto-generated method stub
+    private final INetworkModelProvider networkModelProvider;
 
+    private INetworkModel networkModel;
+
+    private final IGeneralNodeProperties generalNodeProperties;
+
+    public NetworkSaver() {
+        this(Activator.getInstance().getProjectModelProvider(), Activator.getInstance().getNetworkModelProvider(), SynonymsManager
+                .getInstance(), Activator.getInstance().getGeneralNodeProperties());
+    }
+
+    protected NetworkSaver(final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider,
+            SynonymsManager synonymsManager, IGeneralNodeProperties generalNodeProperties) {
+        super(projectModelProvider, synonymsManager);
+        this.networkModelProvider = networkModelProvider;
+        this.generalNodeProperties = generalNodeProperties;
+    }
+
+    @Override
+    public void init(IConfiguration configuration) throws ModelException {
+        super.init(configuration);
+
+        networkModel = createNetworkModel(configuration.getDatasetName());
+    }
+
+    @Override
+    protected void saveInModel(final IMappedStringData dataElement) throws ModelException {
+        IDataElement parent = networkModel.asDataElement();
+
+        for (NetworkElementType elementType : NetworkElementType.getGeneralNetworkElements()) {
+            Map<String, Object> properties = getElementProperties(elementType, dataElement, false);
+
+            if (!properties.isEmpty()) {
+                String elementName = (String)properties.remove(generalNodeProperties.getNodeNameProperty());
+                if (elementName != null) {
+                    IDataElement child = networkModel.findElement(elementType, elementName);
+
+                    if (child == null) {
+                        child = networkModel.createElement(elementType, parent, elementName, properties);
+                    }
+
+                    parent = child;
+                } else {
+                    // TODO: error!!!
+                }
+            }
+        }
     }
 
     @Override
@@ -41,8 +94,8 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
         return SYNONYMS_TYPE;
     }
 
-    protected INetworkModel createNetworkModel(final String networkName) {
-        return null;
+    protected INetworkModel createNetworkModel(final String networkName) throws ModelException {
+        return networkModelProvider.create(getCurrentProject(), networkName);
     }
 
 }

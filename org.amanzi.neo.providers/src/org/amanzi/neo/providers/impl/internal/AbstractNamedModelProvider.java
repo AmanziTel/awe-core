@@ -135,8 +135,9 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
         return (M)result;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    protected M create(final P parent, final String name) throws ModelException {
+    public M create(final P parent, final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("create", parent, name));
         }

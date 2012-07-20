@@ -14,6 +14,8 @@
 package org.amanzi.neo.providers.internal;
 
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -42,6 +44,8 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     private static final String NETWORK_MODEL_PROVIDER_ID = "org.amanzi.provider.NetworkModelProvider";
 
+    private static final String GENERAL_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.GeneralNodeProperties";
+
     private static class ProviderContextHolder {
         private static volatile IProviderContext context = new ProviderContextImpl();
     }
@@ -53,6 +57,18 @@ public abstract class AbstractProviderPlugin extends Plugin {
     private <T extends IModelProvider< ? >> T getModelProvider(final String id) {
         try {
             return getContext().get(id);
+        } catch (ContextException e) {
+            logError(e);
+
+            PlatformUI.getWorkbench().close();
+        }
+
+        return null;
+    }
+
+    private <T extends INodeProperties> T getNodeProperties(final String id) {
+        try {
+            return getContext().getProperties(id);
         } catch (ContextException e) {
             logError(e);
 
@@ -80,6 +96,10 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     public INetworkModelProvider getNetworkModelProvider() {
         return getModelProvider(NETWORK_MODEL_PROVIDER_ID);
+    }
+
+    public IGeneralNodeProperties getGeneralNodeProperties() {
+        return getNodeProperties(GENERAL_NODE_PROPERTIES_ID);
     }
 
     public abstract String getPluginId();

@@ -97,6 +97,16 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public synchronized <T extends INodeProperties> T getProperties(final String id) throws ContextException {
+        try {
+            return (T)getNodeProperties(id);
+        } catch (CoreException e) {
+            return null;
+        }
+    }
+
     protected IService getService(final String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 

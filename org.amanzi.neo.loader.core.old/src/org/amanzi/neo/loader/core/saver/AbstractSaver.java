@@ -64,6 +64,10 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
 
     // map for statistics
     public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
+    
+    private IProjectModel currentModel;
+    
+    
 
     /**
      * action threshold for commit

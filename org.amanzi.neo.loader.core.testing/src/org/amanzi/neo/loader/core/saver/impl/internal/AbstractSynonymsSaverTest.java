@@ -30,8 +30,10 @@ import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver.Unde
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeUtils;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +65,14 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
 
     public class TestAbstractSynonymsSaver extends AbstractSynonymsSaver<IConfiguration> {
 
+        /**
+         * @param projectModelProvider
+         * @param synonymsManager
+         */
+        protected TestAbstractSynonymsSaver(IProjectModelProvider projectModelProvider, SynonymsManager synonymsManager) {
+            super(projectModelProvider, synonymsManager);
+        }
+
         @Override
         public void save(final IMappedStringData dataElement) {
         }
@@ -72,11 +82,17 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
             return SYNONYMS_TYPE;
         }
 
+        @Override
+        protected void saveInModel(IMappedStringData data) throws ModelException {
+        }
+
     }
 
     private SynonymsManager synonymsManager;
 
-    private AbstractSynonymsSaver saver;
+    private AbstractSynonymsSaver<IConfiguration> saver;
+
+    private IProjectModelProvider projectModelProvider;
 
     /**
      * @throws java.lang.Exception
@@ -85,8 +101,9 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
     public void setUp() throws Exception {
         synonymsManager = mock(SynonymsManager.class);
 
-        saver = spy(new TestAbstractSynonymsSaver());
-        doReturn(synonymsManager).when(saver).getSynonymsManager();
+        projectModelProvider = mock(IProjectModelProvider.class);
+
+        saver = spy(new TestAbstractSynonymsSaver(projectModelProvider, synonymsManager));
     }
 
     @Test
