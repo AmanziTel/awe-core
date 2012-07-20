@@ -94,6 +94,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         try {
             super.start(context);
             manager.initWorkspace();
+            initScriptManager(context);
         } catch (Exception e) {
             LOGGER.error("error when trying to initialize default ruby scripts", e);
             throw new ScriptingException(e);
@@ -124,7 +125,10 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     public void initScriptManager(BundleContext context) throws IOException {
         try {
+            LOGGER.info("Start scripts processing. for plugin" + context.getBundle().getSymbolicName());
             URL workspaceName = context.getBundle().getEntry(RUBY_SCRIPT_FOLDER);
+            LOGGER.info("Scripts folder founded in" + workspaceName.getPath());
+            LOGGER.info("Start scripts processing.");
             URL workspaceLocator = FileLocator.toFileURL(workspaceName);
             LOGGER.info("Start workspace initializing");
             LOGGER.info("Start file copying");
