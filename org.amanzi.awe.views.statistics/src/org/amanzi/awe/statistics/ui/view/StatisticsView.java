@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.ui.view;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -67,7 +68,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -88,6 +91,8 @@ public class StatisticsView extends ViewPart {
     private static final String ASTERISK = "*";
     private static final String SEPARATOR = "----------";
     private static final String TOTAL_NAME_COLUMN = "Total";
+    private static final int MAX_GROUPS_PER_CHART = 10;
+
     private static Mutex mutexRule = new Mutex();
     /*
      * components
@@ -135,6 +140,7 @@ public class StatisticsView extends ViewPart {
     private AggregatedStatistics statistics;
 
     private Collection<String> groupNames;
+    private ArrayList<String> selection;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -284,6 +290,13 @@ public class StatisticsView extends ViewPart {
             public void mouseDoubleClick(MouseEvent e) {
             }
         });
+        tableViewer.getTable().getShell().addListener(TableListenersType.UPDATE_BUTTON, new Listener() {
+
+            @Override
+            public void handleEvent(Event event) {
+                updateButtons();
+            }
+        });
     }
 
     /**
@@ -312,6 +325,8 @@ public class StatisticsView extends ViewPart {
                         while (groups.hasNext()) {
                             groupNames.add(groups.next().getName());
                         }
+                        selection = new ArrayList<String>(groupNames);
+
                         StatisticsRow row = group.getAllChild().iterator().next();
                         // dispose table
                         final Composite parent = tableViewer.getTable().getParent();
@@ -413,8 +428,11 @@ public class StatisticsView extends ViewPart {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     final TableColumn currentColumn = (TableColumn)e.widget;
-                    if (colNum == (isAdditionalColumnNecessary() ? 1 : 0)) {
-                        // TODO KV: implement sorting dialog;
+                    boolean isAdditionalColumnNecessary = isAdditionalColumnNecessary();
+                    if (colNum == (isAdditionalColumnNecessary ? 1 : 0)) {
+                        SortingDialog dialog = new SortingDialog(tableViewer, groupNames, groupNames, colNum,
+                                isAdditionalColumnNecessary);
+                        dialog.open();
                     } else {
                         updateSorting(table, colNum, currentColumn);
                     }
@@ -686,5 +704,17 @@ public class StatisticsView extends ViewPart {
         calendar.setTimeInMillis(0L);
         calendar.set(dateField.getYear(), dateField.getMonth(), dateField.getDay(), timeField.getHours(), timeField.getMinutes());
         return calendar.getTimeInMillis();
+    }
+
+    /**
+     * Enables and disables report button according to selection
+     */
+    private void updateButtons() {
+        bExport.setEnabled(true);
+        if (selection != null) {
+            bReport.setEnabled(selection.size() < MAX_GROUPS_PER_CHART);
+        } else {
+            bReport.setEnabled(groupNames.size() < MAX_GROUPS_PER_CHART);
+        }
     }
 }

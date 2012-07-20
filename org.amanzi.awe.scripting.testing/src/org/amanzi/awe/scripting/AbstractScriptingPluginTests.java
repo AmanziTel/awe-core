@@ -131,8 +131,14 @@ public class AbstractScriptingPluginTests extends AbstractTest {
     @Test
     public void testGetScriptsForProjectifExist() throws IOException {
         String projectName = TEST2_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
+        File requiredModule = null;
+        for (File module : modules) {
+            if (module.getName().equals(projectName)) {
+                requiredModule = module;
+            }
+        }
         Assert.assertEquals("Not expected count of files", TestActivator.getDefault().getScriptsForProject(projectName).size(),
-                modules.get(NumberUtils.INTEGER_ZERO).listFiles().length);
+                requiredModule.listFiles().length);
 
     }
 

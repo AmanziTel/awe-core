@@ -45,6 +45,14 @@ public class Messages extends NLS {
     public static String statisticsViewLabel_REPORT;
     public static String statisticsViewLabel_EXPORT;
     public static String statisticsViewLabel_CHART_VIEW;
+    public static String sortingDialogLabel_OK;
+    public static String sortingDialogLable_CLOSE;
+    public static String sortingDialogLable_CLEAR;
+    public static String sortingDialogLabel_TEXT_FILTERS;
+    public static String sortingDialogLabel_CLEAR_FILTER;
+    public static String sortingDialogLabel_SORT_A_Z;
+    public static String sortingDialogLabel_SORT_Z_A;
+    public static String sortingDialogLabel_SELECT_ALL;
     public static String PATH_TO_REFRESH_BUTTON_IMG;
     public static String PATH_TO_EMPTY_FILTER_IMG;
 
