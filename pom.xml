@@ -94,6 +94,7 @@
   </profiles>
   
   <modules>
+     <module>org.amanzi.awe.console</module>
      <module>org.amanzi.awe.filters</module>
      <module>org.amanzi.awe.libs</module>
      <module>org.amanzi.awe.scripting</module>
