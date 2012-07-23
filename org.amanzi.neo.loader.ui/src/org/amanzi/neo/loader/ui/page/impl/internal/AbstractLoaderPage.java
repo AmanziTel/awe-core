@@ -95,13 +95,12 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
     protected boolean checkPage() {
         setErrorMessage(null);
 
-        boolean result = true;
         if (getCurrentLoader() == null) {
             setErrorMessage(Messages.AbstractLoaderPage_LoaderNotSelectedError);
-            result = false;
+            return false;
         }
 
-        return check(getCurrentLoader().validate(getConfiguration())) && result;
+        return check(getCurrentLoader().validate(getConfiguration()));
     }
 
     @Override

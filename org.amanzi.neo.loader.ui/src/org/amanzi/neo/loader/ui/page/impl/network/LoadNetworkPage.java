@@ -58,7 +58,9 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
     public void update() {
         ISingleFileConfiguration configuration = getConfiguration();
 
-        configuration.setDatasetName(networkNameCombo.getText());
+        if (networkNameCombo != null) {
+            configuration.setDatasetName(networkNameCombo.getText());
+        }
 
         super.update();
     }

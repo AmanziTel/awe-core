@@ -79,6 +79,8 @@ public class LoaderContext {
 
     protected static final String SAVER_ATTRIBUTE = "saver";
 
+    protected static final String NAME_ATTRIBUTE = "name";
+
     private static class LoaderContextHandler {
         private static volatile LoaderContext INSTANCE = new LoaderContext();
     }
@@ -201,6 +203,13 @@ public class LoaderContext {
 
         IConfigurationElement loaderElement = findConfgiruationElement(LOADER_EXTENSION_ID, loaderId);
         ILoader<T, D> result = createLoader();
+
+        String name = loaderElement.getAttribute(NAME_ATTRIBUTE);
+        if (!StringUtils.isEmpty(name)) {
+            result.setName(name);
+        } else {
+            LOGGER.error("No name provided for Loader <" + loaderId + ">.");
+        }
 
         String parserId = loaderElement.getAttribute(PARSER_ATTRIBUTE);
         if (!StringUtils.isEmpty(parserId)) {
