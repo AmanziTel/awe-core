@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.loader.core.internal;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,12 +90,18 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
     @Override
     public IValidationResult validate(final C configuration) {
-        return validator.validate(configuration);
+        IValidationResult configurationValidation = configuration.isValid();
+
+        if (configurationValidation == IValidationResult.SUCCESS) {
+            return validator.validate(configuration);
+        } else {
+            return configurationValidation;
+        }
     }
 
     @Override
-    public boolean isAppropriate(final List<File> filesToLoad) {
-        IValidationResult result = validator.appropriate(filesToLoad);
+    public boolean isAppropriate(final C configuration) {
+        IValidationResult result = validator.appropriate(configuration);
 
         switch (result.getResult()) {
         case FAIL:

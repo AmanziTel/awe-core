@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.core.validator;
 
-import java.io.File;
-import java.util.List;
-
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 
 /**
@@ -28,7 +25,7 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  */
 public interface IValidator<C extends IConfiguration> {
 
-    IValidationResult appropriate(List<File> filesToLoad);
+    IValidationResult appropriate(C configuration);
 
     IValidationResult validate(C configuration);
 

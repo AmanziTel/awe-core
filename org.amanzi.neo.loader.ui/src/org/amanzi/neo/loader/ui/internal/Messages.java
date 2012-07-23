@@ -28,6 +28,8 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.amanzi.neo.loader.ui.internal.messages"; //$NON-NLS-1$
 
+    public static String AbstractLoaderPage_LoaderNotSelectedError;
+
     public static String LoaderWizardHandler_NoWizardIdError;
     public static String LoaderWizardHandler_NoWizardByIdError;
 

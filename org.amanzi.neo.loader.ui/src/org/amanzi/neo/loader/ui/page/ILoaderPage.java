@@ -32,4 +32,10 @@ public interface ILoaderPage<T extends IConfiguration> extends IWizardPage {
     public void addLoader(ILoader<T, ? > loader);
 
     public List<ILoader<T, ? >> getLoaders();
+
+    ILoader<T, ? > getCurrentLoader();
+
+    void update();
+
+    void autodefineLoader();
 }

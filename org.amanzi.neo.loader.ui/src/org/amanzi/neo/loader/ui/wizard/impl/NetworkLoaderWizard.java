@@ -14,6 +14,9 @@
 package org.amanzi.neo.loader.ui.wizard.impl;
 
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
+import org.amanzi.neo.loader.core.impl.SingleFileConfiguration;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.wizard.impl.internal.AbstractLoaderWizard;
 
 /**
@@ -24,6 +27,16 @@ import org.amanzi.neo.loader.ui.wizard.impl.internal.AbstractLoaderWizard;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoaderWizard extends AbstractLoaderWizard<ISingleFileConfiguration> {
+public class NetworkLoaderWizard extends AbstractLoaderWizard<ISingleFileConfiguration> {
 
+    private ISingleFileConfiguration configuration;
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <C extends IConfiguration> C getConfiguration(final ILoaderPage<C> loaderPage) {
+        if (configuration == null) {
+            configuration = new SingleFileConfiguration();
+        }
+        return (C)configuration;
+    }
 }

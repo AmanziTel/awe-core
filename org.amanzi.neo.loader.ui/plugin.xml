@@ -18,7 +18,7 @@
    <extension
          point="org.amanzi.loader.wizards">
       <wizard
-            class="org.amanzi.neo.loader.ui.wizard.impl.LoaderWizard"
+            class="org.amanzi.neo.loader.ui.wizard.impl.NetworkLoaderWizard"
             id="org.amanzi.wizards.NetworkLoaderWizard"
             title="%LoadNetworkWizardTitle">
       </wizard>

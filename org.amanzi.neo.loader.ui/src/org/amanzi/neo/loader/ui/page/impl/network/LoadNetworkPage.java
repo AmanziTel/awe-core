@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.page.impl.network;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
-import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -33,12 +32,6 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
      */
     public LoadNetworkPage() {
         super(Messages.LoadNetworkPage_PageName);
-    }
-
-    @Override
-    public void createControl(final Composite parent) {
-        // TODO Auto-generated method stub
-
     }
 
 }

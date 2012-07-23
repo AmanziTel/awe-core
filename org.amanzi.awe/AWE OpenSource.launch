@@ -13,7 +13,7 @@
 <booleanAttribute key="clearwslog" value="false"/>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/AWE OpenSource"/>
 <booleanAttribute key="default" value="false"/>
-<stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe.catalog.neo,org.amanzi.awe.catalog.neo.testing,org.amanzi.awe.console,org.amanzi.awe.filters.ui,org.amanzi.awe.neostyle,org.amanzi.awe.render.core,org.amanzi.awe.render.drive,org.amanzi.awe.render.network,org.amanzi.awe.scripting,org.amanzi.awe.scripting.testing,org.amanzi.awe.star.tool,org.amanzi.awe.startup.splash,org.amanzi.awe.statistics,org.amanzi.awe.statistics.testing,org.amanzi.awe.views.drive,org.amanzi.awe.views.explorer,org.amanzi.awe.views.neighbours,org.amanzi.awe.views.network,org.amanzi.awe.views.property,org.amanzi.awe.views.reuse,org.amanzi.awe.views.statistics,org.amanzi.awe.views.tree,org.amanzi.neo.db.testing,org.amanzi.neo.loader.core.old,org.amanzi.neo.loader.core.testing.old,org.amanzi.neo.loader.ui.old,org.amanzi.neo.services.impl,org.amanzi.neo.services.impl.testing,org.amanzi.neo.services.ui,org.amanzi.testing.sanity"/>
+<stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe.console,org.amanzi.awe.scripting,org.amanzi.awe.scripting.testing,org.amanzi.awe.startup.splash,org.amanzi.awe.statistics,org.amanzi.awe.statistics.testing,org.amanzi.awe.views.statistics,org.amanzi.awe.views.tree,org.amanzi.neo.db.testing,org.amanzi.neo.services.impl,org.amanzi.neo.services.ui,org.amanzi.testing.sanity"/>
 <stringAttribute key="featureDefaultLocation" value="workspace"/>
 <stringAttribute key="featurePluginResolution" value="workspace"/>
 <booleanAttribute key="includeOptional" value="true"/>

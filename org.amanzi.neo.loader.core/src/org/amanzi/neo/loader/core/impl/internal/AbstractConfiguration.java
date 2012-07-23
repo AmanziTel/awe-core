@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.impl.internal;
 
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.validator.IValidationResult;
 
 /**
  * TODO Purpose of
@@ -27,13 +28,19 @@ public abstract class AbstractConfiguration implements IConfiguration {
 
     private String datasetName;
 
-    public void setDatasetName(String datasetName) {
+    public void setDatasetName(final String datasetName) {
         this.datasetName = datasetName;
     }
 
     @Override
     public String getDatasetName() {
         return datasetName;
+    }
+
+    @Override
+    public IValidationResult isValid() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

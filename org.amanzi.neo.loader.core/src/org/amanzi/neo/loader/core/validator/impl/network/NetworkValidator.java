@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.core.validator.impl.network;
 
-import java.io.File;
-import java.util.List;
-
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidator;
@@ -31,7 +28,7 @@ import org.amanzi.neo.loader.core.validator.IValidator;
 public class NetworkValidator implements IValidator<IConfiguration> {
 
     @Override
-    public IValidationResult appropriate(final List<File> filesToLoad) {
+    public IValidationResult appropriate(final IConfiguration configuration) {
         // TODO Auto-generated method stub
         return null;
     }

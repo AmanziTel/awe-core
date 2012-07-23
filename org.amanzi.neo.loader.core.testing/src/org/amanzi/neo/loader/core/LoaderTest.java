@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.loader.core;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,44 +151,36 @@ public class LoaderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckActivityOnIsAppropriate() throws Exception {
-        List<File> list = mock(List.class);
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
 
-        when(validator.appropriate(list)).thenReturn(IValidationResult.SUCCESS);
+        loader.isAppropriate(configuration);
 
-        loader.isAppropriate(list);
-
-        verify(validator).appropriate(list);
+        verify(validator).appropriate(configuration);
     }
 
     @Test
     public void testCheckSuccessResultOnIsAppropriate() throws Exception {
-        List<File> list = mock(List.class);
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
 
-        when(validator.appropriate(list)).thenReturn(IValidationResult.SUCCESS);
-
-        boolean result = loader.isAppropriate(list);
+        boolean result = loader.isAppropriate(configuration);
 
         assertTrue("validation result should be true", result);
     }
 
     @Test
     public void testCheckFailResultOnIsAppropriate() throws Exception {
-        List<File> list = mock(List.class);
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.FAIL);
 
-        when(validator.appropriate(list)).thenReturn(IValidationResult.FAIL);
-
-        boolean result = loader.isAppropriate(list);
+        boolean result = loader.isAppropriate(configuration);
 
         assertFalse("validation result should be false", result);
     }
 
     @Test
     public void testCheckUnkonwnResultOnIsAppropriate() throws Exception {
-        List<File> list = mock(List.class);
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.UNKNOWN);
 
-        when(validator.appropriate(list)).thenReturn(IValidationResult.UNKNOWN);
-
-        boolean result = loader.isAppropriate(list);
+        boolean result = loader.isAppropriate(configuration);
 
         assertTrue("validation result should be true", result);
     }

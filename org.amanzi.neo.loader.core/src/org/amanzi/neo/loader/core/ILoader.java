@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.core;
 
-import java.io.File;
-import java.util.List;
-
 import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
@@ -43,7 +40,7 @@ public interface ILoader<C extends IConfiguration, D extends IData> {
 
     IValidationResult validate(C configuration);
 
-    boolean isAppropriate(List<File> filesToLoad);
+    boolean isAppropriate(C configuration);
 
     void setValidator(final IValidator<C> validator);
 
