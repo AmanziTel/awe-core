@@ -27,6 +27,8 @@ public interface IConfiguration {
 
     String getDatasetName();
 
+    void setDatasetName(String datasetName);
+
     IValidationResult isValid();
 
 }

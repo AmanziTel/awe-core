@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.loader.core.IMappedStringData;
-import org.amanzi.neo.loader.core.internal.Activator;
+import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
@@ -47,8 +47,8 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
     private final IGeneralNodeProperties generalNodeProperties;
 
     public NetworkSaver() {
-        this(Activator.getInstance().getProjectModelProvider(), Activator.getInstance().getNetworkModelProvider(), SynonymsManager
-                .getInstance(), Activator.getInstance().getGeneralNodeProperties());
+        this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getNetworkModelProvider(), SynonymsManager
+                .getInstance(), LoaderCorePlugin.getInstance().getGeneralNodeProperties());
     }
 
     protected NetworkSaver(final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider,

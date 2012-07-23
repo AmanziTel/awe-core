@@ -37,6 +37,7 @@
          point="org.amanzi.loaders">
       <loader
             id="org.amanzi.loader.NetworkCSVLoader"
+            name="Network CSV Loader"
             parser="org.amanzi.parser.CSVParser"
             validator="org.amanzi.validator.NetworkCSVValidator">
          <savers

@@ -43,6 +43,8 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
     private final List<ISaver<C, D>> savers = new ArrayList<ISaver<C, D>>();
 
+    private String loaderName;
+
     @Override
     public void init(final C configuration) throws LoaderException {
         parser.init(configuration);
@@ -117,5 +119,15 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
         for (ISaver<C, D> saver : savers) {
             saver.finishUp();
         }
+    }
+
+    @Override
+    public String getName() {
+        return loaderName;
+    }
+
+    @Override
+    public void setName(final String name) {
+        this.loaderName = name;
     }
 }

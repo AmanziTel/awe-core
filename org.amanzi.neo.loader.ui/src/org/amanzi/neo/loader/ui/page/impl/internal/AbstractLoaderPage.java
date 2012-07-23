@@ -51,7 +51,6 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
      */
     protected AbstractLoaderPage(final String pageName) {
         super(pageName);
-        update();
     }
 
     @Override
@@ -60,6 +59,11 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         mainComposite.setLayout(STANDARD_LOADER_PAGE_LAYOUT);
 
         setControl(mainComposite);
+    }
+
+    @Override
+    public Composite getComposite() {
+        return mainComposite;
     }
 
     @Override
@@ -91,12 +95,13 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
     protected boolean checkPage() {
         setErrorMessage(null);
 
+        boolean result = true;
         if (getCurrentLoader() == null) {
             setErrorMessage(Messages.AbstractLoaderPage_LoaderNotSelectedError);
-            return false;
+            result = false;
         }
 
-        return check(getCurrentLoader().validate(getConfiguration()));
+        return check(getCurrentLoader().validate(getConfiguration())) && result;
     }
 
     @Override

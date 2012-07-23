@@ -13,9 +13,14 @@
 
 package org.amanzi.neo.loader.ui.page.impl.network;
 
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -27,6 +32,10 @@ import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
  */
 public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration> {
 
+    private SelectNetworkNameWidget networkNameCombo;
+
+    private SelectLoaderWidget loaderCombo;
+
     /**
      * @param pageName
      */
@@ -34,4 +43,29 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
         super(Messages.LoadNetworkPage_PageName);
     }
 
+    @Override
+    public void createControl(final Composite parent) {
+        super.createControl(parent);
+
+        networkNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForNetwork(this, true, true);
+
+        loaderCombo = WizardFactory.getInstance().getLoaderSelector(this, getLoaders().size() > 1);
+
+        update();
+    }
+
+    @Override
+    public void update() {
+        ISingleFileConfiguration configuration = getConfiguration();
+
+        configuration.setDatasetName(networkNameCombo.getText());
+
+        super.update();
+    }
+
+    @Override
+    public void setCurrentLoader(final ILoader<ISingleFileConfiguration, ? > currentLoader) {
+        super.setCurrentLoader(currentLoader);
+        loaderCombo.updateData();
+    }
 }

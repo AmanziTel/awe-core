@@ -3,11 +3,11 @@ package org.amanzi.neo.loader.core.internal;
 import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
 
-public class Activator extends AbstractProviderPlugin {
+public class LoaderCorePlugin extends AbstractProviderPlugin {
 
     private static final String LOADER_CORE_PLUGIN = "org.amanzi.neo.loader.core";
 
-    private static Activator plugin;
+    private static LoaderCorePlugin plugin;
 
     /*
      * (non-Javadoc)
@@ -16,7 +16,7 @@ public class Activator extends AbstractProviderPlugin {
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         super.start(bundleContext);
-        Activator.plugin = this;
+        LoaderCorePlugin.plugin = this;
     }
 
     /*
@@ -26,7 +26,7 @@ public class Activator extends AbstractProviderPlugin {
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
         super.stop(bundleContext);
-        Activator.plugin = null;
+        LoaderCorePlugin.plugin = null;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class Activator extends AbstractProviderPlugin {
         return LOADER_CORE_PLUGIN;
     }
 
-    public static Activator getInstance() {
+    public static LoaderCorePlugin getInstance() {
         return plugin;
     }
 

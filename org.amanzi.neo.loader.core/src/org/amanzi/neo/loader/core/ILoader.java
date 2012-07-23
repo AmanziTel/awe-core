@@ -47,4 +47,8 @@ public interface ILoader<C extends IConfiguration, D extends IData> {
     void setParser(final IParser<C, D> parser);
 
     void addSaver(final ISaver<C, D> saver);
+
+    String getName();
+
+    void setName(String name);
 }
