@@ -36,6 +36,8 @@ public interface ILoaderPage<T extends IConfiguration> extends IWizardPage {
 
     ILoader<T, ? > getCurrentLoader();
 
+    void setCurrentLoader(ILoader<T, ? > currentLoader);
+
     void update();
 
     void autodefineLoader();

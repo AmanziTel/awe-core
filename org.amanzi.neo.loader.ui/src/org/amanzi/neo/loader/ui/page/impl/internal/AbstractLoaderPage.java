@@ -83,13 +83,14 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
 
     @Override
     public void autodefineLoader() {
-        setCurrentLoader(null);
         for (ILoader<T, ? > loader : loaders) {
             if (loader.isAppropriate(getConfiguration())) {
                 setCurrentLoader(loader);
                 break;
             }
         }
+
+        update();
     }
 
     protected boolean checkPage() {
@@ -108,7 +109,8 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         return currentLoader;
     }
 
-    protected void setCurrentLoader(final ILoader<T, ? > currentLoader) {
+    @Override
+    public void setCurrentLoader(ILoader<T, ? > currentLoader) {
         this.currentLoader = currentLoader;
     }
 

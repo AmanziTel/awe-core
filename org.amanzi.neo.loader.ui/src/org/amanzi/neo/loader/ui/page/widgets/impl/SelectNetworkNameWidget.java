@@ -62,4 +62,8 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget {
 
         getWidget().setText(StringUtils.EMPTY);
     }
+
+    public void setText(String text) {
+        getWidget().setText(text);
+    }
 }

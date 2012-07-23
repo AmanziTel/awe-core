@@ -53,8 +53,8 @@ public final class WizardFactory {
                 networkModelProvider));
     }
 
-    public SelectLoaderWidget getLoaderSelector(final ILoaderPage< ? > loaderPage, final boolean isEnabled) {
-        return initializeWidget(new SelectLoaderWidget(isEnabled, loaderPage, projectModelProvider));
+    public SelectLoaderWidget getLoaderSelector(final ILoaderPage< ? > loaderPage) {
+        return initializeWidget(new SelectLoaderWidget(true, loaderPage, projectModelProvider));
     }
 
     public ResourceSelectorWidget getFileSelector(final ILoaderPage< ? > loaderPage, String... fileExtensions) {

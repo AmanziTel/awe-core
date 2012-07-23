@@ -65,7 +65,7 @@ public class SynonymsManager {
 
     private static final int CLASS_GROUP_INDEX = 5;
 
-    private static final int IS_MANDATORY_GROUP_INDEX = 5;
+    private static final int IS_MANDATORY_GROUP_INDEX = 6;
 
     private static class SynonymsManagerInstanceHolder {
         private static volatile SynonymsManager INSTANCE = new SynonymsManager();
@@ -193,7 +193,7 @@ public class SynonymsManager {
 
                 return new ImmutablePair<INodeType, Synonyms>(nodeType, synonyms);
             } catch (Exception e) {
-                LOGGER.error(e);
+                LOGGER.error("Error on parsing node type", e);
             }
         }
 

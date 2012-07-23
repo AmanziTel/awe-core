@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.validator.impl.network;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
@@ -73,7 +74,7 @@ public class NetworkValidator extends AbstractHeadersValidator<ISingleFileConfig
 
     @Override
     protected List<File> getFilesFromConfiguration(ISingleFileConfiguration configuration) {
-        return null;
+        return Arrays.asList(configuration.getFile());
     }
 
     @Override

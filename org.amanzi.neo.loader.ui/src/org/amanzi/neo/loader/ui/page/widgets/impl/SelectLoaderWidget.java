@@ -22,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -45,6 +47,15 @@ public class SelectLoaderWidget extends AbstractComboWidget implements Selection
     }
 
     @Override
+    protected Combo createWidget(final Composite parent, final int style) {
+        Combo combo = super.createWidget(parent, style);
+
+        combo.addSelectionListener(this);
+
+        return combo;
+    }
+
+    @Override
     public void modifyText(final ModifyEvent e) {
         // do nothing
     }
@@ -57,10 +68,16 @@ public class SelectLoaderWidget extends AbstractComboWidget implements Selection
         updateData();
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void widgetSelected(final SelectionEvent e) {
+        for (ILoader loader : getLoaderPage().getLoaders()) {
+            if (loader.getName().equals(getText())) {
+                getLoaderPage().setCurrentLoader(loader);
+                break;
+            }
+        }
         getLoaderPage().update();
-
     }
 
     @Override

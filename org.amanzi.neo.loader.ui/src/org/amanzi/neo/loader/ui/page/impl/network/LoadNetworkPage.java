@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -56,7 +57,7 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
 
         resourceEditor = WizardFactory.getInstance().getFileSelector(this);
 
-        loaderCombo = WizardFactory.getInstance().getLoaderSelector(this, getLoaders().size() > 1);
+        loaderCombo = WizardFactory.getInstance().getLoaderSelector(this);
 
         update();
     }
@@ -65,7 +66,10 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
     public void autodefineLoader() {
         ISingleFileConfiguration configuration = getConfiguration();
 
-        configuration.setFile(new File(resourceEditor.getFileName()));
+        File file = new File(resourceEditor.getFileName());
+
+        configuration.setFile(file);
+        networkNameCombo.setText(FilenameUtils.getBaseName(resourceEditor.getFileName()));
 
         super.autodefineLoader();
     }

@@ -57,7 +57,7 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
 
                 if (!errors.isEmpty()) {
                     return new ValidationResult(Result.FAIL, Messages.format(Messages.AbstractHeadersValidator_SynonymsFailed,
-                            singleFile.getName(), errors));
+                            singleFile.getName(), errors.toString()));
                 }
             } catch (IOException e) {
                 return new ValidationResult(Result.FAIL, Messages.format(Messages.AbstractHeadersValidator_IOError,
@@ -102,7 +102,7 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
     }
 
     protected String[] getHeadersArray(File file) throws IOException {
-        CSVReader reader = new CSVReader(new FileReader(file));
+        CSVReader reader = new CSVReader(new FileReader(file), '\t');
 
         try {
             return reader.readNext();
