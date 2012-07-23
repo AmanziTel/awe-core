@@ -132,16 +132,30 @@ public class LoaderTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckActivityOnValidation() throws Exception {
+    public void testCheckActivityOnValidationWithSuccessConfiguration() throws Exception {
+        when(configuration.isValid()).thenReturn(IValidationResult.SUCCESS);
+
         loader.validate(configuration);
 
+        verify(configuration).isValid();
         verify(validator).validate(configuration);
     }
 
     @Test
-    public void testCheckResultOnValidation() throws Exception {
-        IValidationResult validationResult = IValidationResult.UNKNOWN;
+    public void testCheckActivityOnValidationWithFailedConfiguration() throws Exception {
+        when(configuration.isValid()).thenReturn(IValidationResult.FAIL);
 
+        loader.validate(configuration);
+
+        verify(configuration).isValid();
+        verify(validator, never()).validate(configuration);
+    }
+
+    @Test
+    public void testCheckResultOnValidation() throws Exception {
+        IValidationResult validationResult = IValidationResult.SUCCESS;
+
+        when(configuration.isValid()).thenReturn(validationResult);
         when(validator.validate(configuration)).thenReturn(validationResult);
 
         IValidationResult result = loader.validate(configuration);
