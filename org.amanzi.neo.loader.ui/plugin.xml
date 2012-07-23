@@ -47,17 +47,6 @@
                   icon="icons/16/network.png"
                   style="push"
                   tooltip="%NetworkLoaderTooltip">
-               <visibleWhen
-                     checkEnabled="false">
-                  <or>
-                     <with
-                           variable="activeWorkbenchWindow.activePerspective">
-                        <equals
-                              value="org.amanzi.awe.perspective">
-                        </equals>
-                     </with>
-                  </or>
-               </visibleWhen>
                <parameter
                      name="org.amanzi.loader.wizard.id"
                      value="org.amanzi.wizards.NetworkLoaderWizard">

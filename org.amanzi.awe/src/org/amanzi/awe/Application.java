@@ -15,7 +15,6 @@ package org.amanzi.awe;
 import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
-import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -43,7 +42,7 @@ public class Application extends UDIGApplication {
              * @see org.eclipse.ui.application.WorkbenchAdvisor#initialize(org.eclipse.ui.application.IWorkbenchConfigurer)
              */
             @Override
-            public void initialize(IWorkbenchConfigurer configurer) {
+            public void initialize(final IWorkbenchConfigurer configurer) {
                 super.initialize(configurer);
                 configurer.setSaveAndRestore(true);
             }
@@ -62,13 +61,11 @@ public class Application extends UDIGApplication {
 
         @Override
         public void postStartup() {
-            AWEEventManager.getManager().fireAWEStartedEvent();
-
             super.postStartup();
         }
 
         @Override
-        public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
+        public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(final IWorkbenchWindowConfigurer configurer) {
             configurer.setShowPerspectiveBar(true);
             return super.createWorkbenchWindowAdvisor(configurer);
         }
