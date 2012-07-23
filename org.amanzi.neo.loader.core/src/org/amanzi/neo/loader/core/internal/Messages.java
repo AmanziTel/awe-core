@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.internal;
+package org.amanzi.neo.loader.core.internal;
 
 import java.text.MessageFormat;
 
@@ -26,23 +26,15 @@ import org.eclipse.osgi.util.NLS;
  * @since 1.0.0
  */
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.amanzi.neo.loader.ui.internal.messages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.amanzi.neo.loader.core.internal.messages"; //$NON-NLS-1$
 
-    public static String AbstractLoaderPage_LoaderNotSelectedError;
+    public static String AbstractConfiguration_EmptyDatasetNameError;
+    public static String AbstractConfiguration_EmptyProjectNameError;
+    public static String SingleFileConfiguration_FileNotExists;
 
-    public static String LoaderWizardHandler_NoWizardIdError;
-    public static String LoaderWizardHandler_NoWizardByIdError;
+    public static String SingleFileConfiguration_LocationIsNotFile;
 
-    public static String LoadNetworkPage_PageName;
-
-    public static String ResourceSelectorWidget_SelectDirectoryTitle;
-
-    public static String ResourceSelectorWidget_SelectFileTitle;
-
-    public static String SelectLoaderWidget_Label;
-
-    public static String SelectNetworkNameWidget_Label;
-
+    public static String SingleFileConfiguration_NullFile;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
@@ -51,7 +43,7 @@ public class Messages extends NLS {
     private Messages() {
     }
 
-    public static String formatString(final String pattern, final Object... parameters) {
-        return MessageFormat.format(pattern, parameters);
+    public static String format(String message, Object... parameters) {
+        return MessageFormat.format(message, parameters);
     }
 }

@@ -13,9 +13,11 @@
 
 package org.amanzi.neo.loader.core.validator.impl.network;
 
-import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
-import org.amanzi.neo.loader.core.validator.IValidator;
+import org.amanzi.neo.loader.core.validator.impl.internal.AbstractValidator;
+import org.amanzi.neo.providers.INetworkModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 
 /**
  * TODO Purpose of
@@ -25,17 +27,19 @@ import org.amanzi.neo.loader.core.validator.IValidator;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NetworkValidator implements IValidator<IConfiguration> {
+public class NetworkValidator extends AbstractValidator<ISingleFileConfiguration> {
+
+    protected NetworkValidator(IProjectModelProvider projectModelProvider, INetworkModelProvider networkModelProvider) {
+
+    }
 
     @Override
-    public IValidationResult appropriate(final IConfiguration configuration) {
-        // TODO Auto-generated method stub
+    protected IValidationResult checkFileContents(ISingleFileConfiguration configuration) {
         return null;
     }
 
     @Override
-    public IValidationResult validate(final IConfiguration configuration) {
-        // TODO Auto-generated method stub
+    protected IValidationResult checkModelExists(ISingleFileConfiguration configuration) {
         return null;
     }
 

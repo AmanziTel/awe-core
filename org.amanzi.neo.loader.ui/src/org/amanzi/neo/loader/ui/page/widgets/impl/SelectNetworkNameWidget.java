@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
+import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractSelectDatasetNameWidget;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -45,7 +46,7 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget {
      */
     protected SelectNetworkNameWidget(final ILoaderPage< ? > loaderPage, final boolean isEditable, final boolean isEnabled,
             final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider) {
-        super(loaderPage, isEditable, isEnabled, projectModelProvider);
+        super(Messages.SelectNetworkNameWidget_Label, loaderPage, isEditable, isEnabled, projectModelProvider);
         this.networkModelProvider = networkModelProvider;
     }
 
@@ -56,7 +57,7 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget {
                 getWidget().add(network.getName());
             }
         } catch (ModelException e) {
-            LOGGER.error("Cannot fill Select Network Name Combobox", e);
+            LOGGER.error("Cannot fill Select Network Name Combobox", e); //$NON-NLS-1$
         }
 
         getWidget().setText(StringUtils.EMPTY);

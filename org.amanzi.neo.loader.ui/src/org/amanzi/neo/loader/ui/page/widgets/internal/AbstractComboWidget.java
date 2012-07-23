@@ -20,6 +20,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 /**
  * TODO Purpose of
@@ -37,18 +38,25 @@ public abstract class AbstractComboWidget extends AbstractPageWidget<Combo> impl
 
     private final boolean isEditable;
 
+    private final String labelText;
+
     /**
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected AbstractComboWidget(final boolean isEditable, final boolean isEnabled, final ILoaderPage< ? > loaderPage,
-            final IProjectModelProvider projectModelProvider) {
+    protected AbstractComboWidget(String labelText, final boolean isEditable, final boolean isEnabled,
+            final ILoaderPage< ? > loaderPage, final IProjectModelProvider projectModelProvider) {
         super(isEnabled, loaderPage, projectModelProvider);
         this.isEditable = isEditable;
+        this.labelText = labelText;
     }
 
     @Override
     protected Combo createWidget(final Composite parent, final int style) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setLayoutData(getLabelLayout());
+        label.setText(labelText);
+
         Combo combo = new Combo(parent, style);
 
         combo.addModifyListener(this);

@@ -33,9 +33,9 @@ public abstract class AbstractSelectDatasetNameWidget extends AbstractComboWidge
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected AbstractSelectDatasetNameWidget(final ILoaderPage< ? > loaderPage, final boolean isEditable, final boolean isEnabled,
-            final IProjectModelProvider projectModelProvider) {
-        super(isEditable, isEnabled, loaderPage, projectModelProvider);
+    protected AbstractSelectDatasetNameWidget(String labelText, final ILoaderPage< ? > loaderPage, final boolean isEditable,
+            final boolean isEnabled, final IProjectModelProvider projectModelProvider) {
+        super(labelText, isEditable, isEnabled, loaderPage, projectModelProvider);
     }
 
     @Override

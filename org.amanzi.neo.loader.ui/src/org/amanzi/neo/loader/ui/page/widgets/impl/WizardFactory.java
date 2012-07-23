@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.ui.page.widgets.impl;
 
 import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.ResourceType;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -54,6 +55,10 @@ public final class WizardFactory {
 
     public SelectLoaderWidget getLoaderSelector(final ILoaderPage< ? > loaderPage, final boolean isEnabled) {
         return initializeWidget(new SelectLoaderWidget(isEnabled, loaderPage, projectModelProvider));
+    }
+
+    public ResourceSelectorWidget getFileSelector(final ILoaderPage< ? > loaderPage, String... fileExtensions) {
+        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, loaderPage, projectModelProvider, fileExtensions));
     }
 
     protected static <T extends AbstractPageWidget< ? >> T initializeWidget(final T widget) {

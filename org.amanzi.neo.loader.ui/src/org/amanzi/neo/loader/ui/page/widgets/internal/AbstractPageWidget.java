@@ -16,6 +16,8 @@ package org.amanzi.neo.loader.ui.page.widgets.internal;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -66,6 +68,10 @@ public abstract class AbstractPageWidget<C extends Composite> {
 
     protected C getWidget() {
         return widget;
+    }
+
+    protected static GridData getLabelLayout() {
+        return new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
     }
 
 }

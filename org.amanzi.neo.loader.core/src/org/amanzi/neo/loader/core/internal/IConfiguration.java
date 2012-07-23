@@ -31,4 +31,8 @@ public interface IConfiguration {
 
     IValidationResult isValid();
 
+    String getProjectName();
+
+    void setProjectName(String projectName);
+
 }

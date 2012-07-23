@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractComboWidget;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -40,7 +41,7 @@ public class SelectLoaderWidget extends AbstractComboWidget implements Selection
      */
     protected SelectLoaderWidget(final boolean isEnabled, final ILoaderPage< ? > loaderPage,
             final IProjectModelProvider projectModelProvider) {
-        super(false, isEnabled, loaderPage, projectModelProvider);
+        super(Messages.SelectLoaderWidget_Label, false, isEnabled, loaderPage, projectModelProvider);
     }
 
     @Override
