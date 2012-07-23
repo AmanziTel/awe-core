@@ -13,11 +13,22 @@
 
 package org.amanzi.neo.loader.core.validator.impl.network;
 
+import java.io.File;
+import java.util.List;
+
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
+import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
+import org.amanzi.neo.loader.core.internal.Messages;
+import org.amanzi.neo.loader.core.saver.impl.NetworkSaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
-import org.amanzi.neo.loader.core.validator.impl.internal.AbstractValidator;
+import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
+import org.amanzi.neo.loader.core.validator.ValidationResult;
+import org.amanzi.neo.loader.core.validator.impl.internal.AbstractHeadersValidator;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -27,20 +38,47 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NetworkValidator extends AbstractValidator<ISingleFileConfiguration> {
+public class NetworkValidator extends AbstractHeadersValidator<ISingleFileConfiguration> {
+
+    private static final Logger LOGGER = Logger.getLogger(NetworkValidator.class);
+
+    private final INetworkModelProvider networkModelProvider;
+
+    private final IProjectModelProvider projectModelProvider;
 
     protected NetworkValidator(IProjectModelProvider projectModelProvider, INetworkModelProvider networkModelProvider) {
-
+        super();
+        this.networkModelProvider = networkModelProvider;
+        this.projectModelProvider = projectModelProvider;
     }
 
-    @Override
-    protected IValidationResult checkFileContents(ISingleFileConfiguration configuration) {
-        return null;
+    public NetworkValidator() {
+        this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getNetworkModelProvider());
     }
 
     @Override
     protected IValidationResult checkModelExists(ISingleFileConfiguration configuration) {
+        LOGGER.info("Validating Configuration to load Network"); //$NON-NLS-1$
+        try {
+            IProjectModel currentProject = projectModelProvider.getActiveProjectModel();
+            if (networkModelProvider.findByName(currentProject, configuration.getDatasetName()) != null) {
+                return new ValidationResult(Result.FAIL, Messages.format(Messages.NetworkValidator_DuplicatedNetworkName,
+                        configuration.getDatasetName()));
+            }
+        } catch (ModelException e) {
+            LOGGER.error("Database error on Network Validation", e); //$NON-NLS-1$
+        }
+        return IValidationResult.SUCCESS;
+    }
+
+    @Override
+    protected List<File> getFilesFromConfiguration(ISingleFileConfiguration configuration) {
         return null;
+    }
+
+    @Override
+    protected String getSynonyms() {
+        return NetworkSaver.SYNONYMS_TYPE;
     }
 
 }

@@ -55,17 +55,20 @@ public class Synonyms {
 
     private final String[] possibleHeaders;
 
+    private final boolean isMandatory;
+
     /**
      * 
      */
-    public Synonyms(String propertyName, SynonymType synonymType, String[] possibleHeaders) {
+    public Synonyms(String propertyName, SynonymType synonymType, boolean isMandatory, String[] possibleHeaders) {
         this.propertyName = propertyName;
         this.synonymType = synonymType;
         this.possibleHeaders = Arrays.copyOf(possibleHeaders, possibleHeaders.length);
+        this.isMandatory = isMandatory;
     }
 
     public Synonyms(String propertyName, String[] possibleHeaders) {
-        this(propertyName, SynonymType.UNKOWN, possibleHeaders);
+        this(propertyName, SynonymType.UNKOWN, false, possibleHeaders);
     }
 
     /**
@@ -87,6 +90,10 @@ public class Synonyms {
      */
     public String[] getPossibleHeaders() {
         return possibleHeaders;
+    }
+
+    public boolean isMandatory() {
+        return isMandatory;
     }
 
 }

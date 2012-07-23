@@ -145,7 +145,8 @@ public class NetworkSaverTest extends AbstractMockitoTest {
     private List<Synonyms> getSynonyms(NetworkElementType type) {
         List<Synonyms> result = new ArrayList<Synonyms>();
 
-        result.add(new Synonyms(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), SynonymType.STRING, new String[] {NAME_VALUE}));
+        result.add(new Synonyms(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), SynonymType.STRING, Boolean.FALSE,
+                new String[] {NAME_VALUE}));
 
         return result;
     }

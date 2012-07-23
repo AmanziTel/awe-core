@@ -29,7 +29,12 @@ public class Messages extends NLS {
     private static final String BUNDLE_NAME = "org.amanzi.neo.loader.core.internal.messages"; //$NON-NLS-1$
 
     public static String AbstractConfiguration_EmptyDatasetNameError;
-    public static String AbstractConfiguration_EmptyProjectNameError;
+
+    public static String AbstractHeadersValidator_IOError;
+
+    public static String AbstractHeadersValidator_SynonymsFailed;
+
+    public static String NetworkValidator_DuplicatedNetworkName;
     public static String SingleFileConfiguration_FileNotExists;
 
     public static String SingleFileConfiguration_LocationIsNotFile;

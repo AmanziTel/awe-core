@@ -32,8 +32,6 @@ public abstract class AbstractConfiguration implements IConfiguration {
 
     private String datasetName;
 
-    private String projectName;
-
     @Override
     public void setDatasetName(final String datasetName) {
         this.datasetName = datasetName;
@@ -50,28 +48,10 @@ public abstract class AbstractConfiguration implements IConfiguration {
 
         if (StringUtils.isEmpty(datasetName)) {
             result = new ValidationResult(Result.FAIL, Messages.AbstractConfiguration_EmptyDatasetNameError);
-        } else if (StringUtils.isEmpty(projectName)) {
-            result = new ValidationResult(Result.FAIL, Messages.AbstractConfiguration_EmptyProjectNameError);
         }
 
         return result;
 
-    }
-
-    /**
-     * @return Returns the projectName.
-     */
-    @Override
-    public String getProjectName() {
-        return projectName;
-    }
-
-    /**
-     * @param projectName The projectName to set.
-     */
-    @Override
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
     }
 
 }
