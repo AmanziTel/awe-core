@@ -504,7 +504,7 @@ public class LoaderContextTest extends AbstractMockitoTest {
         for (int i = 0; i < savers.length; i++) {
             savers[i] = mock(IConfigurationElement.class);
 
-            when(savers[i].getAttribute(LoaderContext.REFERENCE_ID)).thenReturn(saverIds[i]);
+            when(savers[i].getAttribute(LoaderContext.SAVER_ATTRIBUTE)).thenReturn(saverIds[i]);
         }
 
         when(result.getChildren(LoaderContext.SAVER_CHILDREN)).thenReturn(savers);

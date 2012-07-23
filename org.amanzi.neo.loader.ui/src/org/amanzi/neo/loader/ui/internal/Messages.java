@@ -26,7 +26,7 @@ import org.eclipse.osgi.util.NLS;
  * @since 1.0.0
  */
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.amanzi.neo.loader.ui.handler.messages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.amanzi.neo.loader.ui.internal.messages"; //$NON-NLS-1$
 
     public static String LoaderWizardHandler_NoWizardIdError;
     public static String LoaderWizardHandler_NoWizardByIdError;

@@ -61,7 +61,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
      * @param graphDb
      * @param generalNodeProperties
      */
-    protected PropertyStatisticsService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties,
+    public PropertyStatisticsService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties,
             final INodeService nodeService, final IPropertyStatisticsNodeProperties statisticsNodeProperties) {
         super(graphDb, generalNodeProperties);
 
@@ -92,7 +92,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return result;
     }
 
-    protected NodeTypeVault loadNodeTypeVault(Node nodeTypeVaultNode) throws ServiceException, NodeTypeNotExistsException {
+    protected NodeTypeVault loadNodeTypeVault(final Node nodeTypeVaultNode) throws ServiceException, NodeTypeNotExistsException {
         String nodeTypeId = nodeService.getNodeName(nodeTypeVaultNode);
         INodeType nodeType = NodeTypeManager.getInstance().getType(nodeTypeId);
 
@@ -107,7 +107,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return vault;
     }
 
-    protected PropertyVault loadPropertyVault(Node propertyVaultNode) throws ServiceException {
+    protected PropertyVault loadPropertyVault(final Node propertyVaultNode) throws ServiceException {
         String propertyName = nodeService.getNodeName(propertyVaultNode);
 
         PropertyVault vault = new PropertyVault(propertyName);
@@ -127,7 +127,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return vault;
     }
 
-    protected void saveStatisticsVault(Node node, StatisticsVault vault) throws ServiceException {
+    protected void saveStatisticsVault(final Node node, final StatisticsVault vault) throws ServiceException {
         if (vault.isChanged()) {
             updateStatisticsInfo(node, vault);
 
@@ -139,7 +139,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         }
     }
 
-    protected void saveNodeTypeVault(Node statisticsNode, NodeTypeVault vault) throws ServiceException {
+    protected void saveNodeTypeVault(final Node statisticsNode, final NodeTypeVault vault) throws ServiceException {
         Node nodeTypeVault = updateNodeTypeVault(statisticsNode, vault);
 
         for (PropertyVault propertyVault : vault.getAllPropertyVaults()) {
@@ -149,7 +149,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         }
     }
 
-    protected void savePropertyStatistics(Node nodeTypeVault, PropertyVault vault) throws ServiceException {
+    protected void savePropertyStatistics(final Node nodeTypeVault, final PropertyVault vault) throws ServiceException {
         Node propertyVault = getChildVaultNode(nodeTypeVault, vault.getPropertyName());
 
         if (propertyVault == null) {
@@ -159,7 +159,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         updatePropertyVault(propertyVault, vault);
     }
 
-    protected void updatePropertyVault(Node propertyVault, PropertyVault vault) throws ServiceException {
+    protected void updatePropertyVault(final Node propertyVault, final PropertyVault vault) throws ServiceException {
         nodeService.updateProperty(propertyVault, statisticsNodeProperties.getClassProperty(), vault.getClassName());
 
         int size = nodeService.getNodeProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(),
@@ -212,7 +212,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         nodeService.updateProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(), values.size());
     }
 
-    protected Node updateNodeTypeVault(Node statisticsNode, NodeTypeVault vault) throws ServiceException {
+    protected Node updateNodeTypeVault(final Node statisticsNode, final NodeTypeVault vault) throws ServiceException {
         Node vaultNode = getChildVaultNode(statisticsNode, vault.getNodeType().getId());
 
         if (vaultNode == null) {
@@ -224,11 +224,11 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return vaultNode;
     }
 
-    protected void updateStatisticsInfo(Node node, StatisticsVault vault) throws ServiceException {
+    protected void updateStatisticsInfo(final Node node, final StatisticsVault vault) throws ServiceException {
         nodeService.updateProperty(node, statisticsNodeProperties.getCountProperty(), vault.getCount());
     }
 
-    protected StatisticsVault loadStatisticsVault(Node node) throws ServiceException, NodeTypeNotExistsException {
+    protected StatisticsVault loadStatisticsVault(final Node node) throws ServiceException, NodeTypeNotExistsException {
         StatisticsVault vault = new StatisticsVault();
 
         vault.setCount(getCount(node, false));
@@ -241,7 +241,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return vault;
     }
 
-    protected Node getStatisticsNode(Node datasetNode) throws ServiceException {
+    protected Node getStatisticsNode(final Node datasetNode) throws ServiceException {
         Node result = nodeService.getSingleChild(datasetNode, PropertyStatisticsNodeType.PROPERTY_STATISTICS,
                 PropertyStatisticsRelationshipType.PROPERTY_STATISTICS);
 
@@ -253,20 +253,20 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return result;
     }
 
-    private Node getChildVaultNode(Node parentVaultNode, String name) throws ServiceException {
+    private Node getChildVaultNode(final Node parentVaultNode, final String name) throws ServiceException {
         return nodeService.getChildByName(parentVaultNode, name, PropertyStatisticsNodeType.STATISTICS_VAULT);
     }
 
-    private Node createChildVaultNode(Node parentVaultNode, String name) throws ServiceException {
+    private Node createChildVaultNode(final Node parentVaultNode, final String name) throws ServiceException {
         return nodeService.createNode(parentVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
                 NodeServiceRelationshipType.CHILD, name);
     }
 
-    private int getCount(Node node, boolean shouldExist) throws ServiceException {
+    private int getCount(final Node node, final boolean shouldExist) throws ServiceException {
         return nodeService.getNodeProperty(node, statisticsNodeProperties.getCountProperty(), shouldExist ? null : 0, shouldExist);
     }
 
-    private Iterator<Node> getChildren(Node node) throws ServiceException {
+    private Iterator<Node> getChildren(final Node node) throws ServiceException {
         return nodeService.getChildren(node, PropertyStatisticsNodeType.STATISTICS_VAULT);
     }
 

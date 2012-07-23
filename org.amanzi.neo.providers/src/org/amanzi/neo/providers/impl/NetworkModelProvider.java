@@ -46,7 +46,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
      * @param indexModelProvider
      * @param propertyStatisticsModelProvider
      */
-    protected NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+    public NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
             final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
             final IGeoNodeProperties geoNodeProperties) {
         super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties);

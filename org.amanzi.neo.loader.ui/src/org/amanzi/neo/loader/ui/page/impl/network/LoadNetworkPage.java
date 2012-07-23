@@ -13,13 +13,9 @@
 
 package org.amanzi.neo.loader.ui.page.impl.network;
 
-import java.util.List;
-
-import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
-import org.eclipse.jface.wizard.WizardPage;
+import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -30,31 +26,19 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoadNetworkPage extends WizardPage implements ILoaderPage<ISingleFileConfiguration> {
+public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration> {
 
     /**
      * @param pageName
      */
-    protected LoadNetworkPage() {
+    public LoadNetworkPage() {
         super(Messages.LoadNetworkPage_PageName);
-    }
-
-    @Override
-    public void addLoader(final ILoader<ISingleFileConfiguration, ? > loader) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void createControl(final Composite parent) {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public List<ILoader<ISingleFileConfiguration, ? >> getLoaders() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

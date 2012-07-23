@@ -44,7 +44,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     private static final String NETWORK_MODEL_PROVIDER_ID = "org.amanzi.provider.NetworkModelProvider";
 
-    private static final String GENERAL_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.GeneralNodeProperties";
+    private static final String GENERAL_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.generalnodeproperties";
 
     private static class ProviderContextHolder {
         private static volatile IProviderContext context = new ProviderContextImpl();

@@ -77,6 +77,8 @@ public class LoaderContext {
 
     protected static final String SAVER_CHILDREN = "savers";
 
+    protected static final String SAVER_ATTRIBUTE = "saver";
+
     private static class LoaderContextHandler {
         private static volatile LoaderContext INSTANCE = new LoaderContext();
     }
@@ -231,7 +233,7 @@ public class LoaderContext {
         List<ISaver<T, D>> savers = new ArrayList<ISaver<T, D>>();
 
         for (IConfigurationElement saverElement : loaderElement.getChildren(SAVER_CHILDREN)) {
-            String saverId = saverElement.getAttribute(REFERENCE_ID);
+            String saverId = saverElement.getAttribute(SAVER_ATTRIBUTE);
             if (!StringUtils.isEmpty(saverId)) {
                 ISaver<T, D> saver = createSaver(saverId);
                 if (saver != null) {

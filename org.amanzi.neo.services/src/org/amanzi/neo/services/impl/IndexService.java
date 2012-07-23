@@ -32,7 +32,7 @@ public class IndexService extends AbstractService implements IIndexService {
      * @param graphDb
      * @param generalNodeProperties
      */
-    protected IndexService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties) {
+    public IndexService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties) {
         super(graphDb, generalNodeProperties);
         // TODO Auto-generated constructor stub
     }

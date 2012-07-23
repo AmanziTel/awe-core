@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="org.amanzi.loaders" name="Loaders" schema="schema/org.amanzi.neo.loader.ui.loaders.exsd"/>
+   <extension-point id="org.amanzi.loader.wizards" name="Extension describe wizard" schema="schema/org.amanzi.neo.loader.ui.wizards.exsd"/>
+   <extension-point id="org.amanzi.loader.pages" name="Extension describe pages" schema="schema/org.amanzi.neo.loader.ui.pages.exsd"/>
+   <extension-point id="org.amanzi.loader.validators" name="Validator for Loaders" schema="schema/org.amanzi.neo.loader.ui.validators.exsd"/>
+   <extension
+         point="org.amanzi.loader.validators">
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.NetworkValidator"
+            id="org.amanzi.awe.validator.network">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.NeighboursValidator"
+            id="org.amanzi.awe.validator.neighbours">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.TrafficValidator"
+            id="org.amanzi.awe.validator.traffic">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.SeparationConstraintValidator"
+            id="org.amanzi.awe.validator.separation">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.AntennaOptimizationConstraintValidator"
+            id="org.amanzi.awe.validator.antenna_optimization">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.AntennaValidator"
+            id="org.amanzi.awe.validator.antenna">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator"
+            id="org.amanzi.awe.validator.interference_matrix">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.SelectionValidator"
+            id="org.amanzi.awe.validator.selection">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.TRXValidator"
+            id="org.amanzi.awe.validator.trx">
+      </validator>
+   </extension>
+   <extension
+         point="org.amanzi.loaders">
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.NetworkConfiguration"
+            name="Physical Network Configuration Loader"
+            page="org.amanzi.awe.pages.networkConfiguration"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.NetworkSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Neighbours Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.neighbours">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.NeighboursSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Network Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.NetworkSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Antenna Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.AntennaParser"
+            validator="org.amanzi.awe.validator.antenna">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Antenna Patterns Loader"
+            page="org.amanzi.awe.pages.directory"
+            parser="org.amanzi.neo.loader.core.parser.AntennaParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Antenna Optimization Constraints Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.antenna_optimization">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Selection Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.selection">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.SelectionSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Separation Constraint Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.separation">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.SeparationConstraintSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Traffic Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.traffic">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.TrafficSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="TRX Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.trx">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.TRXSaver">
+         </savers>
+      </loader>
+   </extension>
+   
+   <extension
+         point="org.amanzi.loader.wizards">
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationWizard"
+            id="org.amanzi.awe.wizard.networkConfiguration"
+            title="Load Network Configuration">
+      </wizard>
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizards.NetworkLoaderWizard"
+            id="org.amanzi.awe.wizard.network"
+            title="Load Network Data">
+      </wizard>
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizards.AntennaPatternsLoaderWizard"
+            id="org.amanzi.awe.wizard.directory"
+            title="Load Antenna Patterns">
+      </wizard>
+   </extension>
+   
+   <extension
+         point="org.amanzi.loader.pages">
+      <page
+            class="org.amanzi.neo.loader.ui.wizards.NetworkLoaderPage"
+            description="Load Physical Configuration"
+            id="org.amanzi.awe.pages.networkConfiguration"
+            isMain="true"
+            priority="0"
+            title="Load Network data"
+            wizard="org.amanzi.awe.wizard.networkConfiguration">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.wizards.NetworkLoaderPage"
+            description="Load Network data from CSV"
+            id="org.amanzi.awe.pages.network"
+            isMain="true"
+            priority="0"
+            title="Load Network data"
+            wizard="org.amanzi.awe.wizard.network">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.wizards.AntennaPatternsLoaderPage"
+            description="Load files from directory"
+            id="org.amanzi.awe.pages.directory"
+            isMain="true"
+            priority="0"
+            title="Load Antenna Patterns"
+            wizard="org.amanzi.awe.wizard.directory">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.neo.loader.ui.handlers.LoaderWizardHandler"
+            commandId="org.amanzi.loader.launchWizard">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.loader.launchWizard"
+            name="Launch loader Wizard">
+         <commandParameter
+               id="org.amanzi.loader.wizard"
+               name="Wizard ID"
+               optional="false">
+         </commandParameter>
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="org.amanzi.awe.loader.toolbar">
+            <command
+                  commandId="org.amanzi.loader.launchWizard"
+                  icon="icons/16/network.png"
+                  id="org.amanzi.awe.menu.loadNetwork"
+                  style="push"
+                  tooltip="Load Network Data">
+               <parameter
+                     name="org.amanzi.loader.wizard"
+                     value="org.amanzi.awe.wizard.networkConfiguration">
+               </parameter>
+               <visibleWhen checkEnabled="false">
+               <or>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective"/>
+                  </with>
+               </or>
+            </visibleWhen>
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   
+   
+   
+</plugin>

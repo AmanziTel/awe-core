@@ -26,6 +26,9 @@
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.PropertyStatisticsNodeProperties">
             </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.PropertyStatisticsNodeProperties">
+            </nodePropertiesReference>
          </parameters>
       </service>
       <service
