@@ -62,10 +62,11 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
     private static final DatasetTypes DATASET_TYPE = DatasetTypes.DRIVE;
     private static final String SCELL_NAME = "scell name";
     private static Node datasetNode = null;
+    private static final String LEVEL_NAME = "level";
+    private static final int ARRAYS_SIZE = 5;
     private Node projectNode;
     private StatisticsService statisticsService;
     private final DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-    private static final int ARRAYS_SIZE = 5;
 
     @BeforeClass
     public static final void beforeClass() {
@@ -116,6 +117,21 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
         statisticsService.createStatisticsModelRoot(datasetNode, STATISTIC_ROOT_NAME, false);
     }
 
+    @Test(expected = DatabaseException.class)
+    public void testCreateStatisticModelRootIfDuplicateFounded() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testCreateStatisticModelRoot started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        createStatisticsRoot(datasetNode);
+        statisticsService.createStatisticsModelRoot(datasetNode, STATISTIC_ROOT_NAME, true);
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCreateStatisticModelRootIfIncorrectName() throws DatabaseException {
+        LOGGER.info("testCreateStatisticModelRoot started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        statisticsService.createStatisticsModelRoot(datasetNode, null, true);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testFindStatisticModelIfParentNull() throws DatabaseException {
         LOGGER.info("testFindStatisticModelIfParentNull started");
@@ -145,6 +161,30 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
         LOGGER.info("testAddSourceIfOneOfParameterNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         statisticsService.addSource(null, null);
+    }
+
+    @Test
+    public void testFindStatisticsLevelNode() {
+        LOGGER.info("testFindStatisticsLevelNode started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statisticsNode = createStatisticsRoot(datasetNode);
+        Node expectedLevelOne = createLevelNode(statisticsNode, LEVEL_NAME + NumberUtils.INTEGER_ZERO);
+        Node expectedLevelTwo = createLevelNode(statisticsNode, LEVEL_NAME + NumberUtils.INTEGER_ONE);
+        Node existedLevelOne = statisticsService.findStatisticsLevelNode(statisticsNode, LEVEL_NAME + NumberUtils.INTEGER_ZERO);
+        Node existedLevelTwo = statisticsService.findStatisticsLevelNode(statisticsNode, LEVEL_NAME + NumberUtils.INTEGER_ONE);
+        Assert.assertEquals("Unnexpected levels", expectedLevelOne, existedLevelOne);
+        Assert.assertEquals("Unnexpected levels", expectedLevelTwo, existedLevelTwo);
+
+    }
+
+    @Test
+    public void testcreateStatisticsLevel() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testcreateStatisticsLevel started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statisticsNode = createStatisticsRoot(datasetNode);
+        Node level = statisticsService.createStatisticsLevelNode(statisticsNode, LEVEL_NAME, false);
+        Assert.assertNotNull(level);
+        Assert.assertEquals(level.getProperty(StatisticsService.NAME), LEVEL_NAME);
     }
 
     @Test
@@ -226,7 +266,57 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
     }
 
     @Test
-    public void testgetFirstRelationTraverser() throws DatabaseException, IllegalNodeDataException {
+    public void testCreateAggregatedStatistics() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testCreateAggregatedStatistics started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node firstLevel = createLevelNode(statRoot, LEVEL_NAME + NumberUtils.INTEGER_ONE);
+        Node secondLevel = createLevelNode(statRoot, LEVEL_NAME + NumberUtils.INTEGER_ZERO);
+        String statName = LEVEL_NAME + NumberUtils.INTEGER_ONE + "," + LEVEL_NAME + NumberUtils.INTEGER_ZERO;
+        Node aggregated = statisticsService.createAggregatedStatistics(firstLevel, secondLevel, statName);
+        Assert.assertNotNull("Unexpected result", aggregated);
+        Assert.assertEquals(statName, aggregated.getProperty(StatisticsService.NAME));
+    }
+
+    @Test
+    public void testFindAggregatedStatistics() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testFindAggregatedStatistics started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node firstLevel = createLevelNode(statRoot, LEVEL_NAME + NumberUtils.INTEGER_ONE);
+        Node secondLevel = createLevelNode(statRoot, LEVEL_NAME + NumberUtils.INTEGER_ZERO);
+        String statName = LEVEL_NAME + NumberUtils.INTEGER_ONE + "," + LEVEL_NAME + NumberUtils.INTEGER_ZERO;
+        Node aggregated = datasetService.createNode(StatisticsNodeTypes.STATISTICS);
+        datasetService.setAnyProperty(aggregated, StatisticsService.NAME, statName);
+        datasetService.createRelationship(firstLevel, aggregated, DatasetRelationTypes.CHILD);
+        datasetService.createRelationship(secondLevel, aggregated, DatasetRelationTypes.CHILD);
+        Node founded = statisticsService.findAggregatedStatistics(firstLevel, secondLevel);
+        Assert.assertNotNull("Unexpected result", founded);
+        Assert.assertEquals(aggregated, founded);
+    }
+
+    @Test
+    public void testFindAggregatedStatisticsIfNotFound() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testFindAggregatedStatistics started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node firstLevel = createLevelNode(statRoot, LEVEL_NAME + NumberUtils.INTEGER_ONE);
+        Node secondLevel = createLevelNode(statRoot, LEVEL_NAME + NumberUtils.INTEGER_ZERO);
+        Node founded = statisticsService.findAggregatedStatistics(firstLevel, secondLevel);
+        Assert.assertNull("Unexpected result", founded);
+    }
+
+    @Test
+    public void testGetType() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testFindAggregatedStatistics started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        String type = statisticsService.getType(statRoot);
+        Assert.assertEquals("Unexpected result", StatisticsNodeTypes.STATISTICS_MODEL.getId(), type);
+    }
+
+    @Test
+    public void testGetFirstRelationTraverser() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetAllPeriods started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statRoot = createStatisticsRoot(datasetNode);
@@ -327,8 +417,24 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
     }
 
     @Test
+    public void testGetNodeIfNotExist() {
+        LOGGER.info("testGetNodeProperty started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Object nodeProperty = statisticsService.getNodeProperty(datasetNode, DriveModel.END);
+        Assert.assertNull(nodeProperty);
+    }
+
+    @Test
+    public void testGetNodeIfNodeNull() {
+        LOGGER.info("testGetNodeProperty started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Object nodeProperty = statisticsService.getNodeProperty(null, DriveModel.END);
+        Assert.assertNull(nodeProperty);
+    }
+
+    @Test
     public void testRemoveNodeProperty() throws DatabaseException, IllegalNodeDataException {
-        LOGGER.info("testRemoveNodeProperty started");
+        LOGGER.info("testRemoveNodeProperty stagetChildrenChainTraverserrted");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         statisticsService.removeNodeProperty(datasetNode, DriveModel.MIN_TIMESTAMP);
         Assert.assertFalse(datasetNode.hasProperty(DriveModel.MIN_TIMESTAMP));
@@ -346,6 +452,26 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
         LOGGER.info("testRemoveNodePropertyIfNodeIsNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         statisticsService.removeNodeProperty(null, STATISTIC_ROOT_NAME);
+    }
+
+    @Test
+    public void testGetChildrenChainTraverser() {
+        LOGGER.info("testGetChildrenChainTraverser started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        List<Node> nodes = createChildNextChain(datasetNode, ARRAYS_SIZE, StatisticsNodeTypes.LEVEL);
+        Iterable<Node> founded = statisticsService.getChildrenChainTraverser(datasetNode);
+
+        for (Node found : founded) {
+            boolean isExist = false;
+            for (Node node : nodes) {
+                if (node.equals(found)) {
+                    isExist = true;
+                }
+            }
+            if (!isExist) {
+                Assert.fail("node " + found + " not found");
+            }
+        }
     }
 
     /**

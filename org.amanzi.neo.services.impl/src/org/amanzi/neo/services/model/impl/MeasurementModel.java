@@ -125,12 +125,18 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
             throw new IllegalArgumentException("Node type is null.");
         }
 
+        Long timestamp = (Long)params.get(TIMESTAMP);
+        if (timestamp != null) {
+            updateTimestamp(timestamp);
+        }
         Node m = datasetService.createNode(nodeType);
-        datasetService.addLocationChild(m, fileNode);
+        datasetService.addChild(fileNode, m, null);
+        if (isNeedToCreateLocation) {
+            addLocation(new DataElement(m), params);
+        }
         indexNode(m);
         datasetService.setProperties(m, params);
         indexProperty(primaryType, params); // TODO: ??????????
-
         count++;
         Map<String, Object> prop = new HashMap<String, Object>();
         prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
@@ -259,16 +265,16 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
     }
 
     @Override
-    public IDataElement addLocation(String filename, Map<String, Object> params) throws AWEException {
-        if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
+    public IDataElement addLocation(IDataElement parent, Map<String, Object> params) throws AWEException {
+        if ((parent == null)) {
             throw new IllegalArgumentException("Filename is null or empty.");
         }
         if (params == null) {
             throw new IllegalArgumentException("Parameters map is null.");
         }
-        Node fileNode = ((DataElement)findFile(new File(filename).getName())).getNode();
-        if (fileNode == null) {
-            throw new IllegalArgumentException("File node " + filename + " not found.");
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("File node " + parent + " not found.");
         }
 
         Double latitude = (Double)params.get(LATITUDE);
@@ -277,8 +283,7 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
 
         if ((latitude != null) && (latitude != 0) && (longitude != null) && (longitude != 0) && (timestamp != null)
                 && (timestamp != 0L)) {
-            updateTimestamp(timestamp);
-            return createLocationNode(new DataElement(fileNode), latitude, longitude, timestamp);
+            return createLocationNode(new DataElement(parentNode), latitude, longitude, timestamp);
         }
         return null;
     }

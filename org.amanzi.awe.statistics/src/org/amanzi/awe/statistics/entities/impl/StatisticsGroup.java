@@ -59,14 +59,11 @@ public class StatisticsGroup extends AbstractStorageEntity<StatisticsRow> implem
      */
     public StatisticsRow addRow(Long timestamp, String name) throws DuplicateNodeNameException, DatabaseException,
             IllegalNodeDataException {
-        loadChildIfNecessary();
-        if (childs.containsKey(name)) {
-            LOGGER.error("s_row with timestamp." + timestamp + "is already exists");
-            throw new DuplicateNodeNameException();
-        }
+        LOGGER.info("Start adding row process");
         StatisticsRow newRow = createChildWithName(name, StatisticsNodeTypes.S_ROW);
         newRow.setTimestamp(timestamp);
         childs.put(name, newRow);
+        LOGGER.info("Added succesefull");
         return newRow;
     }
 

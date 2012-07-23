@@ -105,21 +105,28 @@ public class StatisticsService extends AbstractService {
             LOGGER.error("parentNode is null");
             throw new IllegalArgumentException("parentNode can't be null");
         }
-        if (isNeedToSearchDuplicate) {
-            Node finded = findFirstRelationshipNode(parent, NAME, name, StatisticsRelationshipTypes.STATISTICS);
-            if (finded != null) {
-                LOGGER.error("Statistics model root with name " + name + " is already exists");
-                throw new DatabaseException("Statistics model root with name " + name + " is already exists");
-            }
+        if (name == null || name.isEmpty()) {
+            LOGGER.error("name can't be null or empty");
+            throw new DatabaseException("illegal node name ");
         }
-        Node statisticsRoot = createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS_MODEL);
+        Node statisticsRoot;
         try {
+            if (isNeedToSearchDuplicate) {
+                Node finded = findFirstRelationshipNode(parent, NAME, name, StatisticsRelationshipTypes.STATISTICS);
+                if (finded != null) {
+                    LOGGER.error("Statistics model root with name " + name + " is already exists");
+                    throw new DatabaseException("Statistics model root with name " + name + " is already exists");
+                }
+            }
+            statisticsRoot = createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS_MODEL);
             setAnyProperty(statisticsRoot, NAME, name);
-        } catch (IllegalNodeDataException e) {
-            LOGGER.error("unexpected exception");
+        } catch (Exception e) {
             /*
              * cann't be thrown
              */
+            LOGGER.error("unexpected exception");
+            throw new DatabaseException(e);
+
         }
         return statisticsRoot;
     }
@@ -184,10 +191,6 @@ public class StatisticsService extends AbstractService {
      */
     public Node findAggregatedStatistics(Node firstLevel, Node secondLevel) {
         Iterable<Node> firstLevelChilds = datasetService.getChildrenTraverser(firstLevel);
-        Iterable<Node> secondLevelChilds = datasetService.getChildrenTraverser(secondLevel);
-        if (firstLevelChilds == null || secondLevelChilds == null) {
-            return null;
-        }
         for (Node aggregated : firstLevelChilds) {
             for (Relationship rel : aggregated.getRelationships(Direction.INCOMING, DatasetRelationTypes.CHILD)) {
                 if (rel.getOtherNode(aggregated).equals(secondLevel)) {

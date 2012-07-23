@@ -466,7 +466,7 @@ public class StatisticsView extends ViewPart {
     /**
      * run statistics preparation process in new job with execution rule. this method should be
      * invoked each time when you want to rebuild statistics, and this method should be the first,
-     * others job with {@link Mutex} rule will wait untill this process will be finished
+     * others job with {@link Mutex} rule will wait until this process will be finished
      * 
      * @param templateName
      * @param model
