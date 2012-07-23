@@ -512,6 +512,7 @@ public class MultiPropertyIndex<E extends Object> {
                     root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
                 }
             }
+            tx.success();
         } catch (Exception e) {
             tx.failure();
         } finally {

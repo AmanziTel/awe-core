@@ -24,7 +24,9 @@ import junit.framework.Assert;
 import org.amanzi.awe.statistics.AbstractMockedTests;
 import org.amanzi.awe.statistics.entities.impl.StatisticsGroup;
 import org.amanzi.awe.statistics.entities.impl.StatisticsRow;
+import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -43,7 +45,6 @@ public class StatisticsGroupTests extends AbstractMockedTests {
      * logger initialization
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsGroupTests.class);
-
 
     @Test
     public void testGetSRowIfNotFounded() throws DatabaseException, IllegalNodeDataException {
@@ -68,5 +69,33 @@ public class StatisticsGroupTests extends AbstractMockedTests {
         when(statisticsService.getChildrenChainTraverser(eq(sGroup))).thenReturn(rows);
         StatisticsRow row = group.findChildByName(SROW_NAME);
         Assert.assertEquals("Unexpected root node", srow, row.getRootNode());
+    }
+
+    @Test(expected = DuplicateNodeNameException.class)
+    public void testAddRowIfFound() throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testAddRowIfFound started ");
+        Node sGroup = getMockedGroup(SGROUP_NAME);
+        Node srow = getMockedSrow(Long.MIN_VALUE, SROW_NAME);
+        Node level = getMockedLevel(FIRST_LEVEL_NAME, Boolean.TRUE);
+        StatisticsGroup group = new StatisticsGroup(level, sGroup);
+        List<Node> rows = new ArrayList<Node>();
+        rows.add(srow);
+        when(statisticsService.getChildrenChainTraverser(eq(sGroup))).thenReturn(rows);
+        group.addRow(Long.MIN_VALUE, SROW_NAME);
+    }
+
+    @Test
+    public void testAddRow() throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testAddRowIfFound started ");
+        Node sGroup = getMockedGroup(SGROUP_NAME);
+        Node srow = getMockedSrow(Long.MIN_VALUE, SROW_NAME);
+        Node level = getMockedLevel(FIRST_LEVEL_NAME, Boolean.TRUE);
+        StatisticsGroup group = new StatisticsGroup(level, sGroup);
+        List<Node> rows = new ArrayList<Node>();
+        rows.add(srow);
+        when(statisticsService.getChildrenChainTraverser(eq(sGroup))).thenReturn(null);
+        when(statisticsService.createEntity(eq(sGroup), eq(StatisticsNodeTypes.S_ROW), eq(SROW_NAME), eq(Boolean.FALSE)))
+                .thenReturn(srow);
+        group.addRow(Long.MIN_VALUE, SROW_NAME);
     }
 }

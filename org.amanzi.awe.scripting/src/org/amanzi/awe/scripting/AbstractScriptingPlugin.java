@@ -54,9 +54,10 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
     private static final String SCRIPTS_FOLDER = "awe-scripts";
-    private static final String RUBY_SCRIPT_FOLDER = "/ruby";
-    private static final String COMMON_SCRIPTS_FOLDER = "/common";
+    private static final String RUBY_SCRIPT_FOLDER = "ruby";
+    private static final String COMMON_SCRIPTS_FOLDER = "common";
     private static final String PLUGIN_ID = "org.amanzi.awe.scripting";
+    private static final String PATH_SEPARATOR = "/";
     /**
      * wrapper for runtime instance
      */
@@ -76,7 +77,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws IOException
      */
     protected void initDefaultScript(Bundle bundle, JRubyRuntimeWrapper runtime) throws ScriptingException, IOException {
-        URL workspaceName = bundle.getEntry(RUBY_SCRIPT_FOLDER + COMMON_SCRIPTS_FOLDER);
+        URL workspaceName = bundle.getEntry(RUBY_SCRIPT_FOLDER + PATH_SEPARATOR + COMMON_SCRIPTS_FOLDER);
         if (workspaceName == null) {
             LOGGER.info("nothing to initialize in bundle " + bundle.getSymbolicName());
             return;
@@ -201,7 +202,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @return
      */
     private ClassLoader getClassLoader() {
-        return this.getClass().getClassLoader();
+        return getClass().getClassLoader();
     }
 
     /**
@@ -250,7 +251,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         public void copySources(URL rubyScriptingFolder) throws IOException {
             File rubyFolder = new File(rubyScriptingFolder.getPath());
             for (File source : rubyFolder.listFiles()) {
-                if (!source.isDirectory()) {
+                if (!source.isDirectory() || source.getName().equals(COMMON_SCRIPTS_FOLDER)) {
                     continue;
                 }
                 String scriptFolderName = source.getAbsolutePath();

@@ -35,7 +35,7 @@ public class Nemo2xSaver extends AbstractMappedDataSaver<IDriveModel, NemoConfig
         DriveModel model = getDriveModel(file);
         Map<String, Object> values = getDataElementProperties(model, eventId, dataElement, true, false);
         if (GPS_EVENT.equals(eventId)) {
-            locationParentNode = model.addLocation(file.getName(), values);
+            // locationParentNode = model.addLocation(file.getName(), values);
         } else if (locationParentNode != null) {
             model.addMeasurement(locationParentNode, values);
         }

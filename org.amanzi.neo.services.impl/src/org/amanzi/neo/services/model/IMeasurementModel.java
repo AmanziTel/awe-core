@@ -170,7 +170,7 @@ public interface IMeasurementModel extends IRenderableModel, IDistributionalMode
      * @param params
      * @throws AWEException
      */
-    public IDataElement addLocation(String filename, Map<String, Object> params) throws AWEException;
+    public IDataElement addLocation(IDataElement parent, Map<String, Object> params) throws AWEException;
 
     /**
      * Get all measurements from database for current drive model
