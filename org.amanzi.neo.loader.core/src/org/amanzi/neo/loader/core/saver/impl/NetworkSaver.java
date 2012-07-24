@@ -70,10 +70,11 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
         IDataElement parent = networkModel.asDataElement();
 
         for (NetworkElementType elementType : NetworkElementType.getGeneralNetworkElements()) {
-            Map<String, Object> properties = getElementProperties(elementType, dataElement, false);
+            Map<String, Object> properties = getElementProperties(elementType, dataElement,
+                    elementType == NetworkElementType.SECTOR);
 
             if (!properties.isEmpty()) {
-                String elementName = (String)properties.remove(generalNodeProperties.getNodeNameProperty());
+                String elementName = (String)properties.get(generalNodeProperties.getNodeNameProperty());
                 if (elementName != null) {
                     IDataElement child = networkModel.findElement(elementType, elementName);
 

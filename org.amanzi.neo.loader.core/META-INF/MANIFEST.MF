@@ -7,7 +7,8 @@ Bundle-Activator: org.amanzi.neo.loader.core.internal.LoaderCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport,
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.core;bundle-version="1.0.0",
+ org.amanzi.neo.db;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .

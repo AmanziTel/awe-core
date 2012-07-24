@@ -25,6 +25,7 @@ import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidator;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -36,6 +37,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @since 1.0.0
  */
 public final class Loader<C extends IConfiguration, D extends IData> implements ILoader<C, D> {
+
+    private static final Logger LOGGER = Logger.getLogger(Loader.class);
 
     private IValidator<C> validator;
 
@@ -60,6 +63,8 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
     @Override
     public void run(final IProgressMonitor monitor) throws ModelException {
+        long timeBefore = System.currentTimeMillis();
+
         parser.setProgressMonitor(monitor);
 
         try {
@@ -73,6 +78,9 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
         } finally {
             finishUp();
         }
+
+        LOGGER.info("Loading time = " + (System.currentTimeMillis() - timeBefore));
+
     }
 
     @Override

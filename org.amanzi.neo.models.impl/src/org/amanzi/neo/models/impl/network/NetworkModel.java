@@ -111,23 +111,17 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         IDataElement result = null;
 
-        // check duplication
-        if ((findElement(elementType, name) == null) && (parent instanceof DataElement)) {
-            try {
-                Node parentNode = ((DataElement)parent).getNode();
-                Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
-                        properties);
+        try {
+            Node parentNode = ((DataElement)parent).getNode();
+            Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
 
-                getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
+            getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
 
-                properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
-                getPropertyStatisticsModel().indexElement(elementType, properties);
+            getPropertyStatisticsModel().indexElement(elementType, properties);
 
-                result = new DataElement(node);
-            } catch (ServiceException e) {
-                processException("An error occured on creating new Network Element", e);
-            }
-
+            result = new DataElement(node);
+        } catch (ServiceException e) {
+            processException("An error occured on creating new Network Element", e);
         }
 
         if (LOGGER.isDebugEnabled()) {

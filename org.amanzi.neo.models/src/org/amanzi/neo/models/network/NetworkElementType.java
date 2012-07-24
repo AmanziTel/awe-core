@@ -28,13 +28,16 @@ import org.apache.commons.lang3.ArrayUtils;
 public enum NetworkElementType implements INetworkElementType {
     NETWORK, CITY, MSC, BSC, SITE, SECTOR;
 
+    private static NetworkElementType[] GENERAL_NETWORK_ELEMENT = ArrayUtils.subarray(values(), NETWORK.ordinal() + 1,
+            values().length);
+
     @Override
     public String getId() {
         return NodeTypeUtils.getTypeId(this);
     }
 
     public static NetworkElementType[] getGeneralNetworkElements() {
-        return ArrayUtils.subarray(values(), NETWORK.ordinal() + 1, values().length);
+        return GENERAL_NETWORK_ELEMENT;
     }
 
 }
