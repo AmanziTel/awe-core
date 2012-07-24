@@ -53,8 +53,6 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     private static final INetworkElementType DEFAULT_ELEMENT_TYPE = NetworkElementType.SITE;
 
-    private static final String DEFAULT_KEY = "some index key";
-
     private INodeService nodeService;
 
     private IPropertyStatisticsModel statisticsModel;
@@ -89,37 +87,33 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
         parentElement = mock(DataElement.class);
         when(parentElement.getNode()).thenReturn(parentNode);
-
-        when(indexModel.getIndexKey(rootNode, DEFAULT_ELEMENT_TYPE)).thenReturn(DEFAULT_KEY);
     }
 
     @Test
     public void testCheckActivityOnFindElementExistingInIndex() throws Exception {
-        when(indexModel.getSingleNode(DEFAULT_KEY, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
+        when(indexModel.getSingleNode(DEFAULT_ELEMENT_TYPE, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
                 .thenReturn(elementNode);
 
         networkModel.findElement(DEFAULT_ELEMENT_TYPE, DEFAULT_ELEMENT_NAME);
 
-        verify(indexModel).getIndexKey(rootNode, DEFAULT_ELEMENT_TYPE);
-        verify(indexModel).getSingleNode(DEFAULT_KEY, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+        verify(indexModel).getSingleNode(DEFAULT_ELEMENT_TYPE, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
         verifyNoMoreInteractions(nodeService);
     }
 
     @Test
     public void testCheckActivityOnFindElementNotExistingInIndex() throws Exception {
-        when(indexModel.getSingleNode(DEFAULT_KEY, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
+        when(indexModel.getSingleNode(DEFAULT_ELEMENT_TYPE, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
                 .thenReturn(null);
 
         networkModel.findElement(DEFAULT_ELEMENT_TYPE, DEFAULT_ELEMENT_NAME);
 
-        verify(indexModel).getIndexKey(rootNode, DEFAULT_ELEMENT_TYPE);
-        verify(indexModel).getSingleNode(DEFAULT_KEY, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+        verify(indexModel).getSingleNode(DEFAULT_ELEMENT_TYPE, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
         verifyNoMoreInteractions(nodeService);
     }
 
     @Test
     public void testCheckResultOnFindElementExistingInIndex() throws Exception {
-        when(indexModel.getSingleNode(DEFAULT_KEY, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
+        when(indexModel.getSingleNode(DEFAULT_ELEMENT_TYPE, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
                 .thenReturn(elementNode);
 
         IDataElement result = networkModel.findElement(DEFAULT_ELEMENT_TYPE, DEFAULT_ELEMENT_NAME);
@@ -130,7 +124,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckResultOnFindElementNotExistingInIndex() throws Exception {
-        when(indexModel.getSingleNode(DEFAULT_KEY, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
+        when(indexModel.getSingleNode(DEFAULT_ELEMENT_TYPE, GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME))
                 .thenReturn(null);
 
         IDataElement result = networkModel.findElement(DEFAULT_ELEMENT_TYPE, DEFAULT_ELEMENT_NAME);

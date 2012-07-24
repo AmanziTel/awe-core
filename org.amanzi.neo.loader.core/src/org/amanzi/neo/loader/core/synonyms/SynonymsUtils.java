@@ -32,7 +32,7 @@ public final class SynonymsUtils {
 
     }
 
-    public static boolean checkHeaders(Synonyms synonym, String[] headers) {
+    public static boolean checkHeaders(final Synonyms synonym, final String[] headers) {
         boolean found = false;
         check_synonyms: for (String possibleHeader : synonym.getPossibleHeaders()) {
 
@@ -47,7 +47,7 @@ public final class SynonymsUtils {
         return found;
     }
 
-    public static Synonyms findAppropriateSynonym(String header, List<Synonyms> synonymsList) {
+    public static Synonyms findAppropriateSynonym(final String header, final List<Synonyms> synonymsList) {
         Synonyms synonym = null;
 
         check_synonyms: for (Synonyms singleSynonym : synonymsList) {

@@ -64,8 +64,6 @@ public abstract class AbstractDatasetModelProvider<M extends IModel, P extends I
 
         model.setIndexModel(indexModel);
         model.setPropertyStatisticsModel(statisticsModel);
-
-        model.initializeIndexes();
     }
 
     protected IGeoNodeProperties getGeoNodeProperties() {

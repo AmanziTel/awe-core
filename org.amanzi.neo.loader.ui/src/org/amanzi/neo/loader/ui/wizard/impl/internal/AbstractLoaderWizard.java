@@ -20,6 +20,7 @@ import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -36,7 +37,7 @@ import org.eclipse.ui.IWorkbench;
  */
 public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wizard implements ILoaderWizard<T> {
 
-    private class LoadJob extends Job {
+    private final class LoadJob extends Job {
 
         /**
          * @param name
@@ -46,7 +47,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         }
 
         @Override
-        protected IStatus run(IProgressMonitor monitor) {
+        protected IStatus run(final IProgressMonitor monitor) {
             for (IWizardPage page : getPages()) {
                 if (page instanceof ILoaderPage) {
                     try {
@@ -57,11 +58,12 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 }
             }
 
-            return null;
+            return Status.OK_STATUS;
         }
 
         @SuppressWarnings("unchecked")
-        private <C extends IConfiguration> void runLoader(IWizardPage page, IProgressMonitor monitor) throws ModelException {
+        private <C extends IConfiguration> void runLoader(final IWizardPage page, final IProgressMonitor monitor)
+                throws ModelException {
             ILoaderPage<C> loaderPage = (ILoaderPage<C>)page;
 
             ILoader<C, ? > loader = loaderPage.getCurrentLoader();

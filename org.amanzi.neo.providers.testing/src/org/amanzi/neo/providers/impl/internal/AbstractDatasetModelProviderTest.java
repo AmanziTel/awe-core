@@ -114,11 +114,4 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
         verify(model).setIndexModel(indexModel);
         verify(model).setPropertyStatisticsModel(statisitcsModel);
     }
-
-    @Test
-    public void testCheckIndexesInitializedOnPostInitialization() throws Exception {
-        provider.postInitialize(model);
-
-        verify(model).initializeIndexes();
-    }
 }

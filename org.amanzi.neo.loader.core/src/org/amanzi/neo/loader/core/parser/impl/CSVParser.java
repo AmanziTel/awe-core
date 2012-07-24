@@ -52,14 +52,14 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
     }
 
     @Override
-    public void init(ISingleFileConfiguration configuration) throws LoaderException {
+    public void init(final ISingleFileConfiguration configuration) throws LoaderException {
         super.init(configuration);
         csvReader = initializeCSVReader(getReader(), configuration.getFile());
 
         headersParsed = false;
     }
 
-    protected CSVReader initializeCSVReader(InputStreamReader reader, File file) {
+    protected CSVReader initializeCSVReader(final InputStreamReader reader, final File file) {
         return new CSVReader(reader, CSVUtils.getSeparator(file));
     }
 
@@ -67,17 +67,21 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
         return csvReader;
     }
 
-    protected IMappedStringData convertToMappedData(String[] headers, String[] values) {
-        MappedStringData result = new MappedStringData();
+    protected IMappedStringData convertToMappedData(final String[] headers, final String[] values) {
+        MappedStringData result = null;
 
-        for (int i = 0; i < headers.length; i++) {
-            String value = null;
+        if (values != null) {
+            result = new MappedStringData();
 
-            if (i < values.length) {
-                value = values[i];
+            for (int i = 0; i < headers.length; i++) {
+                String value = null;
+
+                if (i < values.length) {
+                    value = values[i];
+                }
+
+                result.put(headers[i], value);
             }
-
-            result.put(headers[i], value);
         }
 
         return result;

@@ -15,7 +15,9 @@ package org.amanzi.neo.providers.impl;
 
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.IndexModel;
+import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
@@ -41,9 +43,19 @@ public class IndexModelProvider extends AbstractModelProvider<IndexModel, IIndex
     }
 
     @Override
-    public IIndexModel getIndexModel(final IModel model) {
-        // TODO Auto-generated method stub
-        return null;
+    public IIndexModel getIndexModel(final IModel model) throws ModelException {
+        IKey key = new NameKey(model.getName());
+
+        IndexModel result = getFromCache(key);
+        if (result == null) {
+            if (model instanceof AbstractModel) {
+                result = initializeFromNode(((AbstractModel)model).getRootNode());
+
+                addToCache(result, key);
+            }
+        }
+
+        return result;
     }
 
     @Override

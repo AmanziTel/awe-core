@@ -21,7 +21,6 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
-import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,25 +36,7 @@ import org.neo4j.graphdb.Node;
  */
 public class AbstractDatasetModelTest extends AbstractMockitoTest {
 
-    private static final String PROPERTY_NAME = "propertyName";
-
-    private static final INodeType TYPE_1 = new INodeType() {
-
-        @Override
-        public String getId() {
-            return "type 1";
-        }
-    };
-
-    private static final INodeType TYPE_2 = new INodeType() {
-
-        @Override
-        public String getId() {
-            return "type 2";
-        }
-    };
-
-    public static class TestDatasetModel extends AbstractDatasetModel {
+   public static class TestDatasetModel extends AbstractDatasetModel {
 
         /**
          * @param nodeService
@@ -77,13 +58,6 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
             // TODO Auto-generated method stub
             return null;
         }
-
-        @Override
-        public void initializeIndexes() {
-            // TODO Auto-generated method stub
-
-        }
-
     }
 
     private IIndexModel indexModel;
@@ -117,54 +91,5 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
 
         verify(indexModel).finishUp();
         verify(statisticsModel).finishUp();
-    }
-
-    @Test
-    public void testCheckActivityOnRegisteringMultiPropertyIndexes() throws Exception {
-        model.registerMultiPropertyIndexes(TYPE_1, PROPERTY_NAME);
-
-        verify(indexModel).getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCheckActivityOnFinishUpForIndexes() throws Exception {
-        MultiPropertyIndex<Object> index = mock(MultiPropertyIndex.class);
-        when(indexModel.getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME)).thenReturn(index);
-
-        model.registerMultiPropertyIndexes(TYPE_1, PROPERTY_NAME);
-        model.finishUp();
-
-        verify(index).finishUp();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCheckActivityOnIndexNode() throws Exception {
-        MultiPropertyIndex<Object> index = mock(MultiPropertyIndex.class);
-        when(indexModel.getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME)).thenReturn(index);
-
-        model.registerMultiPropertyIndexes(TYPE_1, PROPERTY_NAME);
-
-        Node node = getNodeMock();
-
-        model.index(TYPE_1, node);
-
-        verify(index).add(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCheckActivityOnIndexNodeWithWrongType() throws Exception {
-        MultiPropertyIndex<Object> index = mock(MultiPropertyIndex.class);
-        when(indexModel.getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME)).thenReturn(index);
-
-        model.registerMultiPropertyIndexes(TYPE_2, PROPERTY_NAME);
-
-        Node node = getNodeMock();
-
-        model.index(TYPE_1, node);
-
-        verifyNoMoreInteractions(index);
     }
 }

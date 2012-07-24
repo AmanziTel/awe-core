@@ -13,19 +13,13 @@
 
 package org.amanzi.neo.models.impl.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
-import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -43,8 +37,6 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
 
     private final IGeoNodeProperties geoNodeProperties;
 
-    private final Map<INodeType, MultiPropertyIndex< ? >> indexMap = new HashMap<INodeType, MultiPropertyIndex< ? >>();
-
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -59,10 +51,6 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
     public void finishUp() throws ModelException {
         assert indexModel != null;
         assert propertyStatisticsModel != null;
-
-        for (MultiPropertyIndex< ? > index : indexMap.values()) {
-            index.finishUp();
-        }
 
         indexModel.finishUp();
         propertyStatisticsModel.finishUp();
@@ -86,22 +74,7 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         return indexModel;
     }
 
-    protected void registerMultiPropertyIndexes(final INodeType nodeType, final String... propertyNames) {
-        indexMap.put(nodeType, indexModel.getMultiPropertyIndex(nodeType, getRootNode(), propertyNames));
-    }
-
-    protected void index(final INodeType nodeType, final Node node) {
-        MultiPropertyIndex< ? > index = indexMap.get(nodeType);
-
-        if (index != null) {
-            index.add(node);
-        }
-    }
-
     protected IGeoNodeProperties getGeoNodeProperties() {
         return geoNodeProperties;
     }
-
-    public abstract void initializeIndexes();
-
 }

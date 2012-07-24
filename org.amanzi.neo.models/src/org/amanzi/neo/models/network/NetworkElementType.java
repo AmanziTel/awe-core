@@ -34,7 +34,7 @@ public enum NetworkElementType implements INetworkElementType {
     }
 
     public static NetworkElementType[] getGeneralNetworkElements() {
-        return ArrayUtils.subarray(values(), NETWORK.ordinal(), values().length);
+        return ArrayUtils.subarray(values(), NETWORK.ordinal() + 1, values().length);
     }
 
 }

@@ -15,6 +15,7 @@ package org.amanzi.neo.providers;
 
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.providers.internal.IModelProvider;
 
 /**
@@ -27,6 +28,6 @@ import org.amanzi.neo.providers.internal.IModelProvider;
  */
 public interface IIndexModelProvider extends IModelProvider<IIndexModel> {
 
-    IIndexModel getIndexModel(IModel model);
+    IIndexModel getIndexModel(IModel model) throws ModelException;
 
 }

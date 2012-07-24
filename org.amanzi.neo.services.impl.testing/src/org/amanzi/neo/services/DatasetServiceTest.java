@@ -91,11 +91,13 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
      * @param type
      * @param driveType
      */
-    private void setPropertyToDatasetNode(Node datasetNode, String name, DatasetTypes type, DriveTypes driveType) {
+    private void setPropertyToDatasetNode(final Node datasetNode, final String name, final DatasetTypes type,
+            final DriveTypes driveType) {
         datasetNode.setProperty(DatasetService.NAME, name);
         datasetNode.setProperty(DatasetService.TYPE, type.getId());
-        if (driveType != null)
+        if (driveType != null) {
             datasetNode.setProperty(DatasetService.DRIVE_TYPE, driveType.name());
+        }
     }
 
     /**
@@ -127,12 +129,12 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
      * @param driveType
      * @return datasetNode
      */
-    private Node initDatasetNode(String name, DatasetTypes type, DriveTypes driveType) {
+    private Node initDatasetNode(final String name, final DatasetTypes type, final DriveTypes driveType) {
         Node datasetNode = null;
         Transaction tx = graphDatabaseService.beginTx();
         try {
             datasetNode = graphDatabaseService.createNode();
-            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.CHILD);
             setPropertyToDatasetNode(datasetNode, name, type, driveType);
 
             tx.success();
@@ -420,7 +422,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
 
         Node actualDataset = service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
-        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
         String actualName = (String)actualDataset.getProperty(DatasetService.NAME);
@@ -539,7 +541,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
 
         Node actualDataset = service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
-        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
         String actualName = (String)actualDataset.getProperty(DatasetService.NAME);
@@ -660,7 +662,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
             DuplicateNodeNameException, DatabaseException {
         Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
-        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
         String actualName = (String)actualDataset.getProperty(DatasetService.NAME);
@@ -803,7 +805,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
 
         Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
-        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
         String actualName = (String)actualDataset.getProperty(DatasetService.NAME);
@@ -1516,9 +1518,9 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
         Node[][] nodes = getComplexChain(parent);
 
         // check on nodes that have no children has no children:
-        for (int i = 0; i < nodes.length; i++) {
-            for (int j = 1; j < nodes[i].length; j++) {
-                Iterable<Node> traverser = service.getChildrenChainTraverser(nodes[i][j]);
+        for (Node[] node : nodes) {
+            for (int j = 1; j < node.length; j++) {
+                Iterable<Node> traverser = service.getChildrenChainTraverser(node[j]);
                 // traverser not null,
                 Assert.assertNotNull(traverser);
                 // !iterator.hasNext()
@@ -1542,13 +1544,13 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
         Node[][] nodes = getComplexChain(parent);
 
         // check that valid parent is returned
-        for (int i = 0; i < nodes.length; i++) {
+        for (Node[] node : nodes) {
             try {
-                Assert.assertEquals(parent, service.getParent(nodes[i][0], true));
-                Assert.assertTrue(chainExists(parent, nodes[i][0]));
-                for (int j = 1; j < nodes[i].length; j++) {
-                    Assert.assertEquals(nodes[i][0], service.getParent(nodes[i][j], true));
-                    Assert.assertTrue(chainExists(nodes[i][0], nodes[i][j]));
+                Assert.assertEquals(parent, service.getParent(node[0], true));
+                Assert.assertTrue(chainExists(parent, node[0]));
+                for (int j = 1; j < node.length; j++) {
+                    Assert.assertEquals(node[0], service.getParent(node[j], true));
+                    Assert.assertTrue(chainExists(node[0], node[j]));
                 }
             } catch (DatabaseException e) {
                 LOGGER.error("could not get parent", e);
@@ -1567,10 +1569,10 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
             Node lastChild = service.getLastChild(parent);
             Assert.assertEquals(nodes[nodes.length - 1][0], lastChild);
             Assert.assertTrue(chainExists(parent, lastChild));
-            for (int i = 0; i < nodes.length; i++) {
-                lastChild = service.getLastChild(nodes[i][0]);
-                Assert.assertEquals(nodes[i][nodes[i].length - 1], lastChild);
-                Assert.assertTrue(chainExists(nodes[i][0], lastChild));
+            for (Node[] node : nodes) {
+                lastChild = service.getLastChild(node[0]);
+                Assert.assertEquals(node[node.length - 1], lastChild);
+                Assert.assertTrue(chainExists(node[0], lastChild));
             }
         } catch (DatabaseException e) {
             LOGGER.error("could not get last child", e);
@@ -1601,8 +1603,8 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
         }
 
         // test traverser on every high level child
-        for (int i = 0; i < nodes.length; i++) {
-            traverser = service.getChildrenChainTraverser(nodes[i][0]);
+        for (Node[] node2 : nodes) {
+            traverser = service.getChildrenChainTraverser(node2[0]);
             // traverser not null,
             Assert.assertNotNull(traverser);
             prevNode = null;
@@ -1615,7 +1617,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
                 }
                 prevNode = node;
                 // check that node is in the chain
-                Assert.assertTrue(chainExists(nodes[i][0], node));
+                Assert.assertTrue(chainExists(node2[0], node));
             }
         }
     }
@@ -1833,7 +1835,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
         }
     }
 
-    private boolean chainExists(Node parent, Node child) {
+    private boolean chainExists(final Node parent, final Node child) {
         Iterator<Relationship> it = parent.getRelationships(DatasetRelationTypes.CHILD, Direction.OUTGOING).iterator();
 
         Node prevNode = null, node = null;
@@ -1872,7 +1874,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
         return child;
     }
 
-    private Node[][] getComplexChain(Node parentNode) {
+    private Node[][] getComplexChain(final Node parentNode) {
 
         Node[][] nodes = new Node[10][5];
 

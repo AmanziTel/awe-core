@@ -75,9 +75,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         IDataElement result = null;
 
-        String indexKey = getIndexModel().getIndexKey(getRootNode(), elementType);
-
-        Node elementNode = getIndexModel().getSingleNode(indexKey, getGeneralNodeProperties().getNodeNameProperty(), elementName);
+        Node elementNode = getIndexModel()
+                .getSingleNode(elementType, getGeneralNodeProperties().getNodeNameProperty(), elementName);
 
         if (elementNode != null) {
             result = new DataElement(elementNode);
@@ -119,6 +118,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
                 Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
                         properties);
 
+                getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
+
                 result = new DataElement(node);
             } catch (ServiceException e) {
                 processException("An error occured on creating new Network Element", e);
@@ -137,11 +138,5 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public IDataElement replaceChild(final IDataElement child, final IDataElement newParent) throws ModelException {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    public void initializeIndexes() {
-        // TODO Auto-generated method stub
-
     }
 }
