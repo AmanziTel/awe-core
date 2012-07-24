@@ -123,17 +123,14 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         return result;
     }
 
-    protected IDataElement createSector(final IDataElement parent, final String name, final String lac, final String ci,
+    protected IDataElement createSector(final IDataElement parent, final String name, final Integer lac, final Integer ci,
             final Map<String, Object> properties) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("createSector", parent, name, lac, ci, properties));
         }
 
         // validate input
-        if (StringUtils.isEmpty(lac)) {
-            throw new ParameterInconsistencyException(networkNodeProperties.getLACProperty(), lac);
-        }
-        if (StringUtils.isEmpty(ci)) {
+        if (ci == null) {
             throw new ParameterInconsistencyException(networkNodeProperties.getCIProperty(), ci);
         }
 
@@ -141,7 +138,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         if (result != null) {
             getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getCIProperty(), ci);
-            getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getLACProperty(), lac);
+            if (lac != null) {
+                getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getLACProperty(), lac);
+            }
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -204,8 +203,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         IDataElement result = null;
 
         if (elementType == NetworkElementType.SECTOR) {
-            String ci = (String)properties.get(networkNodeProperties.getCIProperty());
-            String lac = (String)properties.get(networkNodeProperties.getLACProperty());
+            Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
+            Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
             result = createSector(parent, name, lac, ci, properties);
         } else if (elementType == NetworkElementType.SITE) {
             Double lat = (Double)properties.get(getGeoNodeProperties().getLatitideProperty());
