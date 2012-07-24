@@ -122,4 +122,5 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         mainGISModel = model;
         addGISModel(mainGISModel);
     }
+
 }

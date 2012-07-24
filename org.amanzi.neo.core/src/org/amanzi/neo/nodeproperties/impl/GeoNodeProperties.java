@@ -37,6 +37,8 @@ public class GeoNodeProperties implements IGeoNodeProperties {
 
     private static final String MAX_LONGITUDE = "max_lon";
 
+    private static final String CRS = "crs";
+
     @Override
     public String getLatitideProperty() {
         return LATITUDE_PROPERTY;
@@ -65,6 +67,11 @@ public class GeoNodeProperties implements IGeoNodeProperties {
     @Override
     public String getMaxLongitudeProperty() {
         return MAX_LONGITUDE;
+    }
+
+    @Override
+    public String getCRSProperty() {
+        return CRS;
     }
 
 }

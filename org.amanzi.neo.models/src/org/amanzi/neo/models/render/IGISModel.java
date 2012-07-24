@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.render;
 
 import org.amanzi.neo.models.IModel;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -28,4 +29,8 @@ public interface IGISModel extends IModel {
     void updateBounds(double latitude, double longitude);
 
     void setSourceModel(IRenderableModel sourceModel);
+
+    CoordinateReferenceSystem getCRS();
+
+    IRenderableModel getSourceModel();
 }

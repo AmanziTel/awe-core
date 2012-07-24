@@ -15,6 +15,7 @@ package org.amanzi.neo.models.render.impl;
 
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
+import org.amanzi.neo.models.impl.internal.util.CRSWrapper;
 import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -22,7 +23,12 @@ import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.log4j.Logger;
+import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -33,6 +39,8 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public class GISModel extends AbstractNamedModel implements IGISModel {
+
+    private static final Logger LOGGER = Logger.getLogger(GISModel.class);
 
     private double minLatitude;
 
@@ -46,6 +54,10 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     private IRenderableModel sourceModel;
 
+    private CoordinateReferenceSystem crs;
+
+    private String crsCode;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -58,12 +70,30 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     }
 
     @Override
+    public void initialize(final Node rootNode) throws ModelException {
+        super.initialize(rootNode);
+
+        try {
+            maxLatitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMaxLatitudeProperty(), null, true);
+            minLatitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLatitudeProperty(), null, true);
+            maxLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMaxLongitudeProperty(), null, true);
+            minLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLongitudeProperty(), null, true);
+
+            String crsCodeValue = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCRSProperty(), null, true);
+            setCRS(crsCodeValue);
+        } catch (ServiceException e) {
+            processException("Cannot get GIS-related properties from Node", e);
+        }
+    }
+
+    @Override
     public void finishUp() throws ModelException {
         try {
             getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
             getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);
             getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLatitudeProperty(), minLatitude);
             getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
+            getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
         } catch (ServiceException e) {
             processException("Error on updating GIS Model", e);
         }
@@ -75,6 +105,11 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         maxLatitude = Math.max(latitude, maxLatitude);
         minLongitude = Math.min(longitude, minLongitude);
         maxLongitude = Math.max(longitude, maxLongitude);
+
+        if (getCRS() == null) {
+            CRSWrapper wrapper = CRSWrapper.fromLocation(latitude, longitude, getName());
+            setCRS(wrapper.getEpsg());
+        }
     }
 
     @Override
@@ -90,7 +125,29 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     @Override
     public void setSourceModel(final IRenderableModel sourceModel) {
         this.sourceModel = sourceModel;
+    }
 
+    @Override
+    public CoordinateReferenceSystem getCRS() {
+        return crs;
+    }
+
+    protected String getCRSCode() {
+        return crsCode;
+    }
+
+    protected void setCRS(final String crsCode) {
+        try {
+            this.crsCode = crsCode;
+            crs = CRS.decode(crsCode);
+        } catch (FactoryException e) {
+            LOGGER.error("Cannot determinate CRS", e);
+        }
+    }
+
+    @Override
+    public IRenderableModel getSourceModel() {
+        return sourceModel;
     }
 
 }

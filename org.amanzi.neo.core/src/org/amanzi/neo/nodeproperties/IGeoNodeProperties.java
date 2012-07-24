@@ -35,4 +35,6 @@ public interface IGeoNodeProperties extends INodeProperties {
 
     String getMaxLongitudeProperty();
 
+    String getCRSProperty();
+
 }
