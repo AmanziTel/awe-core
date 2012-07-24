@@ -13,10 +13,16 @@
 
 package org.amanzi.neo.loader.ui.wizard.impl.internal;
 
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IWorkbench;
 
@@ -30,9 +36,44 @@ import org.eclipse.ui.IWorkbench;
  */
 public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wizard implements ILoaderWizard<T> {
 
+    private class LoadJob extends Job {
+
+        /**
+         * @param name
+         */
+        public LoadJob() {
+            super("Loading data");
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            for (IWizardPage page : getPages()) {
+                if (page instanceof ILoaderPage) {
+                    try {
+                        runLoader(page, monitor);
+                    } catch (ModelException e) {
+
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        private <C extends IConfiguration> void runLoader(IWizardPage page, IProgressMonitor monitor) throws ModelException {
+            ILoaderPage<C> loaderPage = (ILoaderPage<C>)page;
+
+            ILoader<C, ? > loader = loaderPage.getCurrentLoader();
+
+            loader.init(getConfiguration(loaderPage));
+            loader.run(monitor);
+        }
+
+    }
+
     @Override
     public void init(final IWorkbench workbench, final IStructuredSelection selection) {
-        // TODO Auto-generated method stub
 
     }
 
@@ -43,8 +84,9 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
 
     @Override
     public boolean performFinish() {
-        // TODO Auto-generated method stub
-        return false;
+        Job loadDataJob = new LoadJob();
+        loadDataJob.schedule();
+        return true;
     }
 
 }

@@ -26,6 +26,7 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.internal.Messages;
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
+import org.amanzi.neo.loader.core.synonyms.SynonymsUtils;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.ValidationResult;
@@ -43,7 +44,7 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public abstract class AbstractHeadersValidator<T extends IConfiguration> extends AbstractValidator<T> {
 
-    private final Map<INodeType, Map<String, String[]>> mandatorySynonyms = new HashMap<INodeType, Map<String, String[]>>();
+    private final Map<INodeType, List<Synonyms>> mandatorySynonyms = new HashMap<INodeType, List<Synonyms>>();
 
     protected AbstractHeadersValidator() {
         loadSynonyms();
@@ -77,23 +78,12 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
 
         String[] headers = getHeadersArray(file);
 
-        for (Entry<INodeType, Map<String, String[]>> entry : mandatorySynonyms.entrySet()) {
+        for (Entry<INodeType, List<Synonyms>> entry : mandatorySynonyms.entrySet()) {
             INodeType nodeType = entry.getKey();
 
-            for (Entry<String, String[]> synonym : entry.getValue().entrySet()) {
-                boolean found = false;
-
-                check_synonyms: for (String possibleHeader : synonym.getValue()) {
-                    for (String header : headers) {
-                        if (header.matches(possibleHeader)) {
-                            found = true;
-                            break check_synonyms;
-                        }
-                    }
-                }
-
-                if (!found) {
-                    failedSynonyms.add(nodeType.getId() + "." + synonym.getKey()); //$NON-NLS-1$
+            for (Synonyms synonym : entry.getValue()) {
+                if (!SynonymsUtils.checkHeaders(synonym, headers)) {
+                    failedSynonyms.add(nodeType.getId() + "." + synonym.getPropertyName()); //$NON-NLS-1$
                 }
             }
         }
@@ -113,15 +103,15 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
 
     private void loadSynonyms() {
         for (Entry<INodeType, List<Synonyms>> synonymsEntry : SynonymsManager.getInstance().getSynonyms(getSynonyms()).entrySet()) {
-            Map<String, String[]> nodeTypeMap = new HashMap<String, String[]>();
+            List<Synonyms> synonymsList = new ArrayList<Synonyms>();
 
             for (Synonyms synonym : synonymsEntry.getValue()) {
                 if (synonym.isMandatory()) {
-                    nodeTypeMap.put(synonym.getPropertyName(), synonym.getPossibleHeaders());
+                    synonymsList.add(synonym);
                 }
             }
 
-            mandatorySynonyms.put(synonymsEntry.getKey(), nodeTypeMap);
+            mandatorySynonyms.put(synonymsEntry.getKey(), synonymsList);
         }
     }
 

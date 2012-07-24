@@ -22,6 +22,7 @@ import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
+import org.amanzi.neo.loader.core.synonyms.SynonymsUtils;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.lang3.BooleanUtils;
@@ -277,16 +278,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             notHandledSynonyms.put(nodeType, synonymsList);
         }
 
-        Synonyms synonym = null;
-
-        check_synonyms: for (Synonyms singleSynonym : synonymsList) {
-            for (String pattern : singleSynonym.getPossibleHeaders()) {
-                if (header.matches(pattern)) {
-                    synonym = singleSynonym;
-                    break check_synonyms;
-                }
-            }
-        }
+        Synonyms synonym = SynonymsUtils.findAppropriateSynonym(header, synonymsList);
 
         Property< ? > result = null;
 
