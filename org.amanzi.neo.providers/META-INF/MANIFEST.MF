@@ -7,7 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.models.impl;bundle-version="1.0.0",
  org.amanzi.neo.models;bundle-version="1.0.0";visibility:=reexport,
  org.eclipse.ui;bundle-version="3.7.0",
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.neo.providers,
  org.amanzi.neo.providers.internal
 Eclipse-ExtensibleAPI: true

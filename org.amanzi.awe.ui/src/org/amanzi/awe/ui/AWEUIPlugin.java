@@ -3,13 +3,13 @@ package org.amanzi.awe.ui;
 import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
 
-public class Activator extends AbstractProviderPlugin {
+public class AWEUIPlugin extends AbstractProviderPlugin {
 
     private static final String PLUGIN_ID = "org.amanzi.awe.ui";
 
-    private static Activator instance;
+    private static AWEUIPlugin instance;
 
-    public Activator() {
+    public AWEUIPlugin() {
 
     }
 
@@ -33,7 +33,7 @@ public class Activator extends AbstractProviderPlugin {
         super.stop(bundleContext);
     }
 
-    public static Activator getDefault() {
+    public static AWEUIPlugin getDefault() {
         return instance;
     }
 

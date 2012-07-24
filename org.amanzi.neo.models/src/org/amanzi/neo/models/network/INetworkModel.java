@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
 
@@ -29,7 +30,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @since 1.0.0
  */
 
-public interface INetworkModel extends IPropertyStatisticalModel {
+public interface INetworkModel extends IPropertyStatisticalModel, IRenderableModel {
 
     public interface INetworkElementType extends INodeType {
 

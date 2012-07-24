@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.render;
 
 import org.amanzi.neo.models.IModel;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -41,4 +42,6 @@ public interface IGISModel extends IModel {
     double getMinLongitude();
 
     double getMaxLongitude();
+
+    ReferencedEnvelope getBounds();
 }

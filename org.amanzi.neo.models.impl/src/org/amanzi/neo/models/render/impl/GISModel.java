@@ -24,6 +24,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
@@ -180,6 +181,11 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     @Override
     public double getMaxLongitude() {
         return maxLongitude;
+    }
+
+    @Override
+    public ReferencedEnvelope getBounds() {
+        return new ReferencedEnvelope(minLongitude, maxLongitude, minLatitude, maxLatitude, crs);
     }
 
 }

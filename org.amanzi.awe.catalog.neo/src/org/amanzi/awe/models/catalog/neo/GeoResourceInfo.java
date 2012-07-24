@@ -14,6 +14,7 @@ package org.amanzi.awe.models.catalog.neo;
 
 import net.refractions.udig.catalog.IGeoResourceInfo;
 
+import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.neo.models.render.IGISModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -35,7 +36,7 @@ public class GeoResourceInfo extends IGeoResourceInfo {
             @Override
             public ImageData getImageData() {
                 if (imageData == null) {
-                    imageData = IconManager.getInstance().getImage(sourceModel.getType()).getImageData();
+                    imageData = IconManager.getInstance().getImage(sourceModel.getSourceModel().getType()).getImageData();
                 }
                 return imageData;
             }

@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.ui.project;
 
-import org.amanzi.awe.ui.Activator;
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -40,7 +40,7 @@ public class ProjectChangedListener implements IAWEEventListenter {
      * 
      */
     public ProjectChangedListener() {
-        this(Activator.getDefault().getProjectModelProvider());
+        this(AWEUIPlugin.getDefault().getProjectModelProvider());
     }
 
     protected ProjectChangedListener(IProjectModelProvider projectModelProvider) {
