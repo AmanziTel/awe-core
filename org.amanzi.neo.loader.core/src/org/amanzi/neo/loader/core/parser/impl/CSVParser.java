@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.parser.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -53,13 +54,13 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
     @Override
     public void init(ISingleFileConfiguration configuration) throws LoaderException {
         super.init(configuration);
-        csvReader = initializeCSVReader(getReader());
+        csvReader = initializeCSVReader(getReader(), configuration.getFile());
 
         headersParsed = false;
     }
 
-    protected CSVReader initializeCSVReader(InputStreamReader reader) {
-        return new CSVReader(reader);
+    protected CSVReader initializeCSVReader(InputStreamReader reader, File file) {
+        return new CSVReader(reader, CSVUtils.getSeparator(file));
     }
 
     protected CSVReader getCSVReader() {

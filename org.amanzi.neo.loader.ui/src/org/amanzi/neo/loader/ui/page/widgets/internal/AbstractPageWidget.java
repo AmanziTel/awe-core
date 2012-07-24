@@ -13,9 +13,14 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.internal;
 
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -26,7 +31,11 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractPageWidget<C extends Composite> {
+public abstract class AbstractPageWidget<C extends Composite, E extends IAbstractPageEventListener> {
+
+    public interface IAbstractPageEventListener {
+
+    }
 
     private final Composite parent;
 
@@ -34,17 +43,17 @@ public abstract class AbstractPageWidget<C extends Composite> {
 
     private C widget;
 
-    private final ILoaderPage< ? > loaderPage;
-
     private final boolean isEnabled;
 
-    protected AbstractPageWidget(final boolean isEnabled, final ILoaderPage< ? > loaderPage,
-            final IProjectModelProvider projectModelProvider) {
-        this.parent = loaderPage.getComposite();
-        this.loaderPage = loaderPage;
-        this.isEnabled = isEnabled;
+    private final List<E> listeners = new ArrayList<E>();
 
+    protected AbstractPageWidget(final boolean isEnabled, final Composite parent, E listener,
+            final IProjectModelProvider projectModelProvider) {
+        this.parent = parent;
+        this.isEnabled = isEnabled;
         this.activeProject = projectModelProvider.getActiveProjectModel();
+
+        addListener(listener);
     }
 
     public void initializeWidget() {
@@ -60,12 +69,20 @@ public abstract class AbstractPageWidget<C extends Composite> {
         return activeProject;
     }
 
-    protected ILoaderPage< ? > getLoaderPage() {
-        return loaderPage;
-    }
-
     protected C getWidget() {
         return widget;
+    }
+
+    protected static GridData getLabelLayout() {
+        return new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+    }
+
+    public void addListener(E listener) {
+        listeners.add(listener);
+    }
+
+    protected List<E> getListeners() {
+        return listeners;
     }
 
 }

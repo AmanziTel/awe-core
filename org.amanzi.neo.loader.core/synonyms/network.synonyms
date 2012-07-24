@@ -4,13 +4,13 @@ msc.name@String = MSC,MSC_NAME,MSC Name
 
 bsc.name@String = BSC,BSC_NAME,RNC,BSC Name
 
-site.name@String = Site,Name,Site Name,SiteName,SITE_ID,SiteID,RSITE
-site.lat@Double = latitude,y_wert.*,SIT.*Y,northing,lat.*,Latitude,Lat
-site.lon@Double = longitude,x_wert.*,SIT.*X,easting,lon.*,Longitude,Long
+site.name@String! = Site,Name,Site Name,SiteName,SITE_ID,SiteID,RSITE
+site.lat@Double! = latitude,((?i)y_wert.*),SIT.*Y,northing,lat.*,Latitude,Lat
+site.lon@Double! = longitude,((?i)x_wert.*),SIT.*X,easting,lon.*,Longitude,Long
 
-sector.name@String = Sector,SectorName,Cell,BTS_Name,CELL_NAME,GSM Sector ID,CellIdentity,cell name,Cell Name,sector_id,BS_NO
-sector.ci@Integer = CI,CI_s,CellId,CellIdentity
-sector.lac@Integer = LAC,LAC_s,La_lacId
+sector.name@String! = Sector,SectorName,Cell,BTS_Name,CELL_NAME,GSM Sector ID,CellIdentity,cell name,Cell Name,sector_id,BS_NO
+sector.ci@Integer! = CI,CI_s,CellId,CellIdentity
+sector.lac@Integer! = LAC,LAC_s,La_lacId
 sector.beamwidth@Double = .*beamwidth.*,beam,hbw
 sector.azimuth@Double = .*azimuth.*,bearing
 sector.ncc@Integer = ncc

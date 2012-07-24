@@ -13,11 +13,19 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
+import java.util.List;
+
+import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.ResourceType;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget.ISelectNetworkListener;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -46,17 +54,24 @@ public final class WizardFactory {
         return WizardFactoryHolder.INSTANCE;
     }
 
-    public SelectNetworkNameWidget getDatasetNameSelectorForNetwork(final ILoaderPage< ? > loaderPage, final boolean isEditable,
-            final boolean isEnabled) {
-        return initializeWidget(new SelectNetworkNameWidget(loaderPage, isEditable, isEnabled, projectModelProvider,
+    public SelectNetworkNameWidget getDatasetNameSelectorForNetwork(Composite parent, ISelectNetworkListener listener,
+            final boolean isEditable, final boolean isEnabled) {
+        return initializeWidget(new SelectNetworkNameWidget(parent, listener, isEditable, isEnabled, projectModelProvider,
                 networkModelProvider));
     }
 
-    public SelectLoaderWidget getLoaderSelector(final ILoaderPage< ? > loaderPage, final boolean isEnabled) {
-        return initializeWidget(new SelectLoaderWidget(isEnabled, loaderPage, projectModelProvider));
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T extends IConfiguration> SelectLoaderWidget<T> getLoaderSelector(Composite parent, ISelectLoaderListener listener,
+            List<ILoader<T, ? >> loaders) {
+        return initializeWidget(new SelectLoaderWidget(true, parent, listener, loaders, projectModelProvider));
     }
 
-    protected static <T extends AbstractPageWidget< ? >> T initializeWidget(final T widget) {
+    public ResourceSelectorWidget getFileSelector(Composite parent, IResourceSelectorListener listener, String... fileExtensions) {
+        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
+                fileExtensions));
+    }
+
+    protected static <T extends AbstractPageWidget< ? , ? >> T initializeWidget(final T widget) {
         widget.initializeWidget();
         return widget;
     }

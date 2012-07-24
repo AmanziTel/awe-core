@@ -18,7 +18,6 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -35,10 +34,4 @@ public interface ILoaderPage<T extends IConfiguration> extends IWizardPage {
     public List<ILoader<T, ? >> getLoaders();
 
     ILoader<T, ? > getCurrentLoader();
-
-    void update();
-
-    void autodefineLoader();
-
-    Composite getComposite();
 }

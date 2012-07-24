@@ -11,11 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
-
-import java.io.File;
-
-import org.amanzi.neo.loader.core.internal.IConfiguration;
+package org.amanzi.neo.loader.core.validator;
 
 /**
  * TODO Purpose of
@@ -25,10 +21,28 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ISingleFileConfiguration extends IConfiguration {
+public class ValidationResult implements IValidationResult {
 
-    File getFile();
+    private final Result result;
 
-    void setFile(File file);
+    private final String message;
+
+    /**
+     * 
+     */
+    public ValidationResult(Result result, String message) {
+        this.result = result;
+        this.message = message;
+    }
+
+    @Override
+    public Result getResult() {
+        return result;
+    }
+
+    @Override
+    public String getMessages() {
+        return message;
+    }
 
 }

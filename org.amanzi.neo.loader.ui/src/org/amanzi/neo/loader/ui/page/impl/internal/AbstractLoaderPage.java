@@ -61,8 +61,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         setControl(mainComposite);
     }
 
-    @Override
-    public Composite getComposite() {
+    protected Composite getMainComposite() {
         return mainComposite;
     }
 
@@ -76,20 +75,19 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         return loaders;
     }
 
-    @Override
-    public void update() {
+    protected void update() {
         setPageComplete(checkPage());
     }
 
-    @Override
-    public void autodefineLoader() {
-        setCurrentLoader(null);
+    protected void autodefineLoader() {
         for (ILoader<T, ? > loader : loaders) {
             if (loader.isAppropriate(getConfiguration())) {
                 setCurrentLoader(loader);
                 break;
             }
         }
+
+        update();
     }
 
     protected boolean checkPage() {
@@ -108,7 +106,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         return currentLoader;
     }
 
-    protected void setCurrentLoader(final ILoader<T, ? > currentLoader) {
+    protected void setCurrentLoader(ILoader<T, ? > currentLoader) {
         this.currentLoader = currentLoader;
     }
 

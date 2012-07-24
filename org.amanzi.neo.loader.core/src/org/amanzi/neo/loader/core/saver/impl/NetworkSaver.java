@@ -17,8 +17,8 @@ import java.util.Map;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.loader.core.IMappedStringData;
-import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -38,7 +38,7 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  */
 public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
 
-    private static final String SYNONYMS_TYPE = "network";
+    public static final String SYNONYMS_TYPE = "network";
 
     private final INetworkModelProvider networkModelProvider;
 
@@ -47,8 +47,8 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
     private final IGeneralNodeProperties generalNodeProperties;
 
     public NetworkSaver() {
-        this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getNetworkModelProvider(), SynonymsManager
-                .getInstance(), LoaderCorePlugin.getInstance().getGeneralNodeProperties());
+        this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getNetworkModelProvider(),
+                SynonymsManager.getInstance(), LoaderCorePlugin.getInstance().getGeneralNodeProperties());
     }
 
     protected NetworkSaver(final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider,

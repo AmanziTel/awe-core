@@ -290,7 +290,7 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
     private List<Synonyms> createSynonyms(final boolean useDefault) {
         List<Synonyms> result = new ArrayList<Synonyms>();
         for (SynonymType type : SynonymType.values()) {
-            result.add(new Synonyms(useDefault ? PROPERTY_NAME : type.toString(), type, getPossibleHeaders(type)));
+            result.add(new Synonyms(useDefault ? PROPERTY_NAME : type.toString(), type, Boolean.FALSE, getPossibleHeaders(type)));
         }
 
         return result;

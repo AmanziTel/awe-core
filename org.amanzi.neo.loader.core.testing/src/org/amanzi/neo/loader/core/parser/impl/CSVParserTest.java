@@ -15,12 +15,14 @@ package org.amanzi.neo.loader.core.parser.impl;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -47,6 +49,8 @@ public class CSVParserTest extends AbstractMockitoTest {
     private static final String[] VALUES_3 = {"value7", "value8"};
 
     private static final String[][] CSV_DATA = {HEADERS, VALUES, VALUES_2, VALUES_3};
+
+    private static final String FILE_CONTENT = "header1\theeader2\theader3";
 
     /**
      * TODO Purpose of
@@ -78,6 +82,9 @@ public class CSVParserTest extends AbstractMockitoTest {
     @Before
     public void setUp() throws Exception {
         File file = File.createTempFile("cp1", "file");
+        FileWriter writer = new FileWriter(file);
+        IOUtils.write(FILE_CONTENT, writer);
+        IOUtils.closeQuietly(writer);
 
         configuration = mock(ISingleFileConfiguration.class);
         when(configuration.getFile()).thenReturn(file);
@@ -94,12 +101,12 @@ public class CSVParserTest extends AbstractMockitoTest {
     public void testCheckActionsOnInitialization() throws Exception {
         parser.init(configuration);
 
-        verify(parser).initializeCSVReader(any(InputStreamReader.class));
+        verify(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
     }
 
     @Test
     public void testCheckCSVReaderActionsOnParsing() throws Exception {
-        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class));
+        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
         parser.init(configuration);
 
         while (parser.hasNext()) {
@@ -111,7 +118,7 @@ public class CSVParserTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckCountOfParsing() throws Exception {
-        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class));
+        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
         parser.init(configuration);
 
         int count = 0;
@@ -125,7 +132,7 @@ public class CSVParserTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckResultOfParsing() throws Exception {
-        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class));
+        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
         parser.init(configuration);
 
         int count = 0;

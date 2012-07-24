@@ -13,13 +13,14 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.internal;
 
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 /**
  * TODO Purpose of
@@ -29,7 +30,9 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractComboWidget extends AbstractPageWidget<Combo> implements ModifyListener {
+public abstract class AbstractComboWidget<E extends IAbstractPageEventListener> extends AbstractPageWidget<Combo, E>
+        implements
+            ModifyListener {
 
     private static final int EDITABLE_COMBO_STYLE = SWT.DROP_DOWN;
 
@@ -37,18 +40,25 @@ public abstract class AbstractComboWidget extends AbstractPageWidget<Combo> impl
 
     private final boolean isEditable;
 
+    private final String labelText;
+
     /**
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected AbstractComboWidget(final boolean isEditable, final boolean isEnabled, final ILoaderPage< ? > loaderPage,
-            final IProjectModelProvider projectModelProvider) {
-        super(isEnabled, loaderPage, projectModelProvider);
+    protected AbstractComboWidget(String labelText, final boolean isEditable, final boolean isEnabled, final Composite parent,
+            final E listener, final IProjectModelProvider projectModelProvider) {
+        super(isEnabled, parent, listener, projectModelProvider);
         this.isEditable = isEditable;
+        this.labelText = labelText;
     }
 
     @Override
     protected Combo createWidget(final Composite parent, final int style) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setLayoutData(getLabelLayout());
+        label.setText(labelText);
+
         Combo combo = new Combo(parent, style);
 
         combo.addModifyListener(this);
