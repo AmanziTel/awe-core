@@ -177,11 +177,28 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
             runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
-            initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
-            initDefaultScript(getBundle(), runtimeWrapper);
+            initRuntimeWithDefaultScripts();
         } catch (Exception e) {
             LOGGER.error("Error in runtime initialisation", e);
             throw new ScriptingException(e);
+        }
+    }
+
+    /**
+     * @param runtime
+     * @throws ScriptingException
+     */
+    private void initRuntimeWithDefaultScripts() throws ScriptingException {
+
+        URL scripts;
+        try {
+            scripts = FileLocator.toFileURL(Platform.getBundle(PLUGIN_ID).getEntry("neo4j"));
+            File file = new File(scripts.getPath() + "/lib/neo4j.rb");
+            runtimeWrapper.executeScript(file);
+            initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
+            initDefaultScript(getBundle(), runtimeWrapper);
+        } catch (Exception e) {
+            throw new ScriptingException("Unable to initialize runtime with default scripts", e);
         }
     }
 

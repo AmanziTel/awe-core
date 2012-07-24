@@ -22,23 +22,24 @@ import org.eclipse.osgi.util.NLS;
  * <p>
  * Messages for plug-in.
  * </p>
+ * 
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
 public class Messages extends NLS {
-    
+
     private static final String BUNDLE_NAME = Messages.class.getName();
 
-    private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
-    
-    //For Call Time Periods
-    public static String CTP_HOURLY;
-    public static String CTP_DAILY;
-    public static String CTP_WEEKLY;
-    public static String CTP_MONTHLY;
-    public static String CTP_YEARLY;
-    public static String CTP_TOTAL;
-    
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
+
+    // For Call Time Periods
+    public static String ctrHourly;
+    public static String ctrDaily;
+    public static String ctrWeekly;
+    public static String ctrMonthly;
+    public static String ctrYearly;
+    public static String ctrTotal;
+
     /**
      * Constructor.
      */
@@ -49,17 +50,17 @@ public class Messages extends NLS {
      * @return the resourceBundle
      */
     public static ResourceBundle getResourceBundle() {
-        return resourceBundle;
+        return BUNDLE;
     }
-    
+
     /**
      * Get formatted string
-     *
+     * 
      * @param key String
      * @param args Object...
      * @return String
      */
-    public static String getFormattedString(String key, Object ... args) {
+    public static String getFormattedString(String key, Object... args) {
         return MessageFormat.format(key, (Object[])args);
     }
 

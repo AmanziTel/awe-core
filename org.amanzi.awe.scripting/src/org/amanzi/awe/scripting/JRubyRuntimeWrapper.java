@@ -15,12 +15,15 @@ package org.amanzi.awe.scripting;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Set;
 
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jruby.Ruby;
+import org.jruby.RubyHash;
 import org.jruby.RubyNumeric;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -128,9 +131,23 @@ public class JRubyRuntimeWrapper {
             unwrapped = ((JavaProxy)object).unwrap();
         } else if (object instanceof RubyNumeric) {
             unwrapped = ((RubyNumeric)object).getDoubleValue();
+        } else if (object instanceof RubyHash) {
+            unwrapped = convertToHashMap(((RubyHash)object));
         } else {
             unwrapped = object.asString().getValue();
         }
         return unwrapped;
+    }
+
+    /**
+     * @param entrySet
+     * @return
+     */
+    private HashMap<Object, Object> convertToHashMap(RubyHash rubyMap) {
+        HashMap<Object, Object> map = new HashMap<Object, Object>();
+        for (Object key : rubyMap.keySet()) {
+            map.put(key, rubyMap.get(key));
+        }
+        return map;
     }
 }
