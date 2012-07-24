@@ -22,7 +22,6 @@ import java.util.Set;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * TODO Purpose of
@@ -45,13 +44,12 @@ public class StatisticsVault implements IPropertyStatistics {
     }
 
     @Override
-    public void indexProperty(final INodeType nodeType, final String property, final Object value) throws ServiceException {
+    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
         assert nodeType != null;
-        assert !StringUtils.isEmpty(property);
-        assert value != null;
+        assert properties != null;
 
         NodeTypeVault vault = getNodeTypeVaule(nodeType);
-        vault.indexProperty(property, value);
+        vault.indexElement(properties);
 
         count++;
         isChanged = true;
@@ -116,11 +114,11 @@ public class StatisticsVault implements IPropertyStatistics {
         this.isChanged = isChanged;
     }
 
-    public void setCount(int count) {
+    public void setCount(final int count) {
         this.count = count;
     }
 
-    public void addNodeTypeVault(NodeTypeVault nodeTypeVault) {
+    public void addNodeTypeVault(final NodeTypeVault nodeTypeVault) {
         nodeTypeVaults.put(nodeTypeVault.getNodeType(), nodeTypeVault);
     }
 

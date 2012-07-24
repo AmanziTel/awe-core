@@ -16,7 +16,9 @@ package org.amanzi.neo.services.impl.statistics.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
@@ -70,7 +72,7 @@ public class NodeTypeVaultTest extends AbstractMockitoTest {
         int previousCount = nodeTypeVault.getCount();
 
         for (int i = 0; i < TEST_NUMBER_OF_PROPERTIES; i++) {
-            nodeTypeVault.indexProperty(TEST_PROPERTY, TEST_VALUE);
+            nodeTypeVault.indexElement(getTestPropertyMap());
         }
 
         assertEquals("Count increased incorrect", previousCount + TEST_NUMBER_OF_PROPERTIES, nodeTypeVault.getCount());
@@ -82,7 +84,7 @@ public class NodeTypeVaultTest extends AbstractMockitoTest {
 
         nodeTypeVault.setChanged(false);
 
-        nodeTypeVault.indexProperty(TEST_PROPERTY, TEST_VALUE);
+        nodeTypeVault.indexElement(getTestPropertyMap());
 
         assertTrue("statistics should be changed", nodeTypeVault.isChanged());
     }
@@ -91,16 +93,14 @@ public class NodeTypeVaultTest extends AbstractMockitoTest {
     public void testCheckActivityOnIndexProperty() throws ServiceException {
         spyVault();
 
-        nodeTypeVault.indexProperty(TEST_PROPERTY, TEST_VALUE);
+        nodeTypeVault.indexElement(getTestPropertyMap());
 
         verify(propertyVault).index(TEST_VALUE);
     }
 
     @Test
     public void testCheckActivityOnGetProperties() throws ServiceException {
-        for (String name : PROPERTY_NAMES) {
-            nodeTypeVault.indexProperty(name, TEST_VALUE);
-        }
+        nodeTypeVault.indexElement(getTestPropertyMap(PROPERTY_NAMES));
 
         Set<String> result = nodeTypeVault.getPropertyNames();
 
@@ -135,4 +135,21 @@ public class NodeTypeVaultTest extends AbstractMockitoTest {
         when(nodeTypeVault.getPropertyVault(TEST_PROPERTY)).thenReturn(propertyVault);
     }
 
+    private Map<String, Object> getTestPropertyMap() {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        result.put(TEST_PROPERTY, TEST_VALUE);
+
+        return result;
+    }
+
+    private Map<String, Object> getTestPropertyMap(final String[] names) {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        for (String name : names) {
+            result.put(name, TEST_VALUE);
+        }
+
+        return result;
+    }
 }

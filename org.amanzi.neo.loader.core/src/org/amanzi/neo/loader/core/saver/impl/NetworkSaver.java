@@ -52,14 +52,14 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
     }
 
     protected NetworkSaver(final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider,
-            SynonymsManager synonymsManager, IGeneralNodeProperties generalNodeProperties) {
+            final SynonymsManager synonymsManager, final IGeneralNodeProperties generalNodeProperties) {
         super(projectModelProvider, synonymsManager);
         this.networkModelProvider = networkModelProvider;
         this.generalNodeProperties = generalNodeProperties;
     }
 
     @Override
-    public void init(IConfiguration configuration) throws ModelException {
+    public void init(final IConfiguration configuration) throws ModelException {
         super.init(configuration);
 
         networkModel = createNetworkModel(configuration.getDatasetName());
@@ -95,7 +95,10 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
     }
 
     protected INetworkModel createNetworkModel(final String networkName) throws ModelException {
-        return networkModelProvider.create(getCurrentProject(), networkName);
+        INetworkModel model = networkModelProvider.create(getCurrentProject(), networkName);
+        addProcessedModel(model);
+
+        return model;
     }
 
 }

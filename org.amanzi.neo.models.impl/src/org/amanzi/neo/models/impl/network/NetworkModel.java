@@ -120,6 +120,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
                 getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
 
+                properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
+                getPropertyStatisticsModel().indexElement(elementType, properties);
+
                 result = new DataElement(node);
             } catch (ServiceException e) {
                 processException("An error occured on creating new Network Element", e);

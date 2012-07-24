@@ -74,6 +74,10 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         return indexModel;
     }
 
+    protected IPropertyStatisticsModel getPropertyStatisticsModel() {
+        return propertyStatisticsModel;
+    }
+
     protected IGeoNodeProperties getGeoNodeProperties() {
         return geoNodeProperties;
     }

@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.models.impl.statistics;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -183,9 +186,19 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
     public void testCheckActivityOnIndex() throws Exception {
         initializeStatistics();
 
-        model.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+        Map<String, Object> properties = getTestPropertyMap();
 
-        verify(vault).indexProperty(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+        model.indexElement(TEST_NODE_TYPE, properties);
+
+        verify(vault).indexElement(TEST_NODE_TYPE, properties);
+    }
+
+    private Map<String, Object> getTestPropertyMap() {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        result.put(TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+
+        return result;
     }
 
     private Node initializeStatistics() throws ServiceException, ModelException, NodeTypeNotExistsException {

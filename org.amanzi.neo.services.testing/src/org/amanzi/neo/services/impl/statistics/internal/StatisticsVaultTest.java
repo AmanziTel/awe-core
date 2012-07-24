@@ -14,7 +14,9 @@
 package org.amanzi.neo.services.impl.statistics.internal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -72,7 +74,7 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
         int previousCount = statisticsVault.getCount();
 
         for (int i = 0; i < TEST_NUMBER_OF_PROPERTIES; i++) {
-            statisticsVault.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY, TEST_VALUE);
+            statisticsVault.indexElement(TEST_NODE_TYPE, getTestPropertyMap());
         }
 
         assertEquals("Count increased incorrect", previousCount + TEST_NUMBER_OF_PROPERTIES, statisticsVault.getCount());
@@ -87,9 +89,10 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckActivityOnIndexProperty() throws ServiceException {
-        statisticsVault.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY, TEST_VALUE);
+        Map<String, Object> properties = getTestPropertyMap();
+        statisticsVault.indexElement(TEST_NODE_TYPE, properties);
 
-        verify(nodeTypeVault).indexProperty(TEST_PROPERTY, TEST_VALUE);
+        verify(nodeTypeVault).indexElement(properties);
     }
 
     @Test
@@ -111,7 +114,7 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
     public void testCheckIsChanged() throws ServiceException {
         statisticsVault.setChanged(false);
 
-        statisticsVault.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY, TEST_VALUE);
+        statisticsVault.indexElement(TEST_NODE_TYPE, getTestPropertyMap());
 
         assertTrue("statistics should be changed", statisticsVault.isChanged());
     }
@@ -130,4 +133,11 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
         verify(nodeTypeVault).getValueCount(TEST_PROPERTY, TEST_VALUE);
     }
 
+    private Map<String, Object> getTestPropertyMap() {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        result.put(TEST_PROPERTY, TEST_VALUE);
+
+        return result;
+    }
 }
