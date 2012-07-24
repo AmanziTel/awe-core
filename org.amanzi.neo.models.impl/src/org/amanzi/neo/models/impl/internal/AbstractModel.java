@@ -21,6 +21,7 @@ import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
@@ -31,6 +32,7 @@ import org.amanzi.neo.services.impl.NodeService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -73,7 +75,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         this.parentNode = parentNode;
 
         try {
-            rootNode = nodeService.createNode(parentNode, nodeType, NodeService.NodeServiceRelationshipType.CHILD, name);
+            rootNode = nodeService.createNode(parentNode, nodeType, getRelationTypeToParent(), name);
         } catch (ServiceException e) {
             processException("Error on initializing new node for Model", e);
         }
@@ -167,5 +169,14 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     @Override
     public IDataElement asDataElement() {
         return rootNode == null ? null : new DataElement(rootNode);
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return this instanceof IRenderableModel;
+    }
+
+    protected RelationshipType getRelationTypeToParent() {
+        return NodeService.NodeServiceRelationshipType.CHILD;
     }
 }

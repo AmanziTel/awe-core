@@ -95,17 +95,17 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         return result;
     }
 
-    protected IDataElement createSite(final IDataElement parent, final String name, final Double lat, final Double lon,
+    protected IDataElement createSite(final IDataElement parent, final String name, final Double latitude, final Double longitude,
             final Map<String, Object> properties) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("createSite", parent, name, lat, lon, properties));
+            LOGGER.debug(getStartLogStatement("createSite", parent, name, latitude, longitude, properties));
         }
 
         // validate input
-        if (lat == null) {
+        if (latitude == null) {
             throw new ParameterInconsistencyException(getGeoNodeProperties().getLatitideProperty());
         }
-        if (lon == null) {
+        if (longitude == null) {
             throw new ParameterInconsistencyException(getGeoNodeProperties().getLongitudeProperty());
         }
 
@@ -114,6 +114,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         if (result != null) {
             getIndexModel().indexInMultiProperty(NetworkElementType.SITE, result.getNode(), Double.class,
                     getGeoNodeProperties().getLatitideProperty(), getGeoNodeProperties().getLongitudeProperty());
+            getMainGIS().updateBounds(latitude, longitude);
         }
 
         if (LOGGER.isDebugEnabled()) {

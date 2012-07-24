@@ -19,6 +19,7 @@ import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.providers.IGISModelProvider;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
 import org.amanzi.neo.services.INodeService;
@@ -45,8 +46,9 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
          * @param propertyStatisticsModelProvider
          */
         protected TestDatasetModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-                final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider) {
-            super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, null);
+                final IIndexModelProvider indexModelProvider,
+                final IPropertyStatisticsModelProvider propertyStatisticsModelProvider, final IGISModelProvider gisModelProvider) {
+            super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, null, gisModelProvider);
         }
 
         @Override
@@ -78,6 +80,8 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
 
     private IPropertyStatisticsModel statisitcsModel;
 
+    private IGISModelProvider gisModelProvider;
+
     /**
      * @throws java.lang.Exception
      */
@@ -90,7 +94,9 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
         indexModel = mock(IIndexModel.class);
         statisitcsModel = mock(IPropertyStatisticsModel.class);
 
-        provider = new TestDatasetModelProvider(null, null, indexModelProvider, propertyStatisticsModelProvider);
+        gisModelProvider = mock(IGISModelProvider.class);
+
+        provider = new TestDatasetModelProvider(null, null, indexModelProvider, propertyStatisticsModelProvider, gisModelProvider);
     }
 
     @Test

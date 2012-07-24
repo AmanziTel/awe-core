@@ -21,6 +21,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.providers.IGISModelProvider;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
@@ -49,8 +50,10 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
      */
     public NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
             final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
-            final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties) {
-        super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties);
+            final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties,
+            final IGISModelProvider gisModelProvider) {
+        super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties,
+                gisModelProvider);
         this.networkNodeProperties = networkNodeProperties;
     }
 

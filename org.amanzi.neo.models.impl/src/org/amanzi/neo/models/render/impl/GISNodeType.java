@@ -11,7 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties;
+package org.amanzi.neo.models.render.impl;
+
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -21,18 +24,12 @@ package org.amanzi.neo.nodeproperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IGeoNodeProperties extends INodeProperties {
+public enum GISNodeType implements INodeType {
+    GIS;
 
-    String getLatitideProperty();
-
-    String getLongitudeProperty();
-
-    String getMinLatitudeProperty();
-
-    String getMaxLatitudeProperty();
-
-    String getMinLongitudeProperty();
-
-    String getMaxLongitudeProperty();
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
+    }
 
 }

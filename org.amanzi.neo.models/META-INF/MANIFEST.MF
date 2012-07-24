@@ -10,6 +10,7 @@ Export-Package: org.amanzi.neo.dto,
  org.amanzi.neo.models.exceptions,
  org.amanzi.neo.models.network,
  org.amanzi.neo.models.project,
+ org.amanzi.neo.models.render,
  org.amanzi.neo.models.statistics
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.7.0";visibility:=reexport,
  org.amanzi.awe.filters;bundle-version="1.0.0",

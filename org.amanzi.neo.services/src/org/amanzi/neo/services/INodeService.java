@@ -59,8 +59,12 @@ public interface INodeService extends IService {
      * @param child
      * @return
      * @throws ServiceException in case 'parent' property node found
+     * @deprecated
      */
+    @Deprecated
     Node getParent(Node child) throws ServiceException;
+
+    Node getParent(Node child, RelationshipType relationshipType) throws ServiceException;
 
     Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException;
 

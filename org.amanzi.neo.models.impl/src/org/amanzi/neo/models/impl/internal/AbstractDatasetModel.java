@@ -13,8 +13,13 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -29,13 +34,17 @@ import org.amanzi.neo.services.INodeService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel {
+public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel, IRenderableModel {
 
     private IIndexModel indexModel;
 
     private IPropertyStatisticsModel propertyStatisticsModel;
 
     private final IGeoNodeProperties geoNodeProperties;
+
+    private final List<IGISModel> gisModels = new ArrayList<IGISModel>();
+
+    private IGISModel mainGISModel;
 
     /**
      * @param nodeService
@@ -54,6 +63,10 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
 
         indexModel.finishUp();
         propertyStatisticsModel.finishUp();
+
+        for (IGISModel gisModel : gisModels) {
+            gisModel.finishUp();
+        }
     }
 
     /**
@@ -80,5 +93,33 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
 
     protected IGeoNodeProperties getGeoNodeProperties() {
         return geoNodeProperties;
+    }
+
+    @Override
+    public IGISModel getMainGIS() {
+        return mainGISModel;
+    }
+
+    @Override
+    public List<IGISModel> getAllGIS() {
+        return gisModels;
+    }
+
+    protected void updateLocation(final double latitude, final double longitude) {
+        for (IGISModel gis : getAllGIS()) {
+            gis.updateBounds(latitude, longitude);
+        }
+    }
+
+    @Override
+    public void addGISModel(final IGISModel model) {
+        if (!gisModels.contains(model)) {
+            gisModels.add(model);
+        }
+    }
+
+    public void setMainGISModel(final IGISModel model) {
+        mainGISModel = model;
+        addGISModel(mainGISModel);
     }
 }

@@ -11,7 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties;
+package org.amanzi.neo.providers;
+
+import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
+import org.amanzi.neo.providers.internal.INamedModelProvider;
 
 /**
  * TODO Purpose of
@@ -21,18 +25,5 @@ package org.amanzi.neo.nodeproperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IGeoNodeProperties extends INodeProperties {
-
-    String getLatitideProperty();
-
-    String getLongitudeProperty();
-
-    String getMinLatitudeProperty();
-
-    String getMaxLatitudeProperty();
-
-    String getMinLongitudeProperty();
-
-    String getMaxLongitudeProperty();
-
+public interface IGISModelProvider extends INamedModelProvider<IGISModel, IRenderableModel> {
 }

@@ -6,6 +6,9 @@
       <nodetype
             class="org.amanzi.neo.models.impl.project.ProjectModelNodeType">
       </nodetype>
+      <nodetype
+      		class="org.amanzi.neo.models.render.impl.GISNodeType">
+      </nodetype>
    </extension>
 
 </plugin>

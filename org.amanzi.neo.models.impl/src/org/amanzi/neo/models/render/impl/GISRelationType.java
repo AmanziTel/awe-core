@@ -11,16 +11,18 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.render;
+package org.amanzi.neo.models.render.impl;
+
+import org.neo4j.graphdb.RelationshipType;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IGisModel {
-
+public enum GISRelationType implements RelationshipType {
+    GIS;
 }
