@@ -88,12 +88,12 @@ public class StatisticsComparator extends ViewerComparator {
      * @return
      */
     private int comparePeriods(int result, StatisticsRow row1, StatisticsRow row2) {
-        if (row1.isSummaryNode()) {
-            if (!row2.isSummaryNode()) {
+        if (row1.isSummaryRow()) {
+            if (!row2.isSummaryRow()) {
                 result = 1;
             }
         } else {
-            if (!row2.isSummaryNode()) {
+            if (!row2.isSummaryRow()) {
                 Long period1 = row1.getTimestamp();
                 Long period2 = row2.getTimestamp();
                 result = period1 == period2 ? 0 : period1 < period2 ? -1 : 1;

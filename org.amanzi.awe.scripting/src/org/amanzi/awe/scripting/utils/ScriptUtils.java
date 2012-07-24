@@ -113,7 +113,11 @@ public class ScriptUtils {
         }
 
         List<String> loadPath = new ArrayList<String>();
+        String neoRubyGemDir = getPluginRoot(AbstractScriptingPlugin.PLUGIN_ID) + "neo4j";
         loadPath.add(path);
+        loadPath.add(neoRubyGemDir + "/lib");
+        loadPath.add(neoRubyGemDir + "/lib/neo4j");
+        loadPath.add(neoRubyGemDir);
         return loadPath;
     }
 

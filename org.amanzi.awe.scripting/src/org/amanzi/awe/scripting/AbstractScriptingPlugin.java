@@ -56,7 +56,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static final String SCRIPTS_FOLDER = "awe-scripts";
     private static final String RUBY_SCRIPT_FOLDER = "ruby";
     private static final String COMMON_SCRIPTS_FOLDER = "common";
-    private static final String PLUGIN_ID = "org.amanzi.awe.scripting";
+    public static final String PLUGIN_ID = "org.amanzi.awe.scripting";
     private static final String PATH_SEPARATOR = "/";
     /**
      * wrapper for runtime instance

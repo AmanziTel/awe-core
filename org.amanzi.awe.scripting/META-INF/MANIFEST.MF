@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.amanzi.awe.scripting
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.jruby;visibility:=reexport,
  org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport,
- org.eclipse.core.resources;bundle-version="3.7.100";visibility:=reexport
+ org.eclipse.core.resources;bundle-version="3.7.100";visibility:=reexport,
+ org.neo4j;bundle-version="1.8.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.scripting,

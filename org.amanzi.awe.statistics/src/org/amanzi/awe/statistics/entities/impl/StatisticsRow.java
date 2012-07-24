@@ -56,8 +56,8 @@ public class StatisticsRow extends AbstractStorageEntity<StatisticsCell> impleme
      * 
      * @return
      */
-    public boolean isSummaryNode() {
-        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, SUMMARY_NAME);
+    public boolean isSummaryRow() {
+        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_SUMMARY_NAME);
         if (summury == null) {
             return false;
         }
@@ -90,8 +90,9 @@ public class StatisticsRow extends AbstractStorageEntity<StatisticsCell> impleme
      * @throws IllegalNodeDataException
      */
     public void setSummary(boolean isSummary) throws IllegalNodeDataException, DatabaseException {
-        Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode, PROPERTY_SUMMARY_NAME);
-        if (summury != null && isSummary == Boolean.TRUE) {
+        // Boolean summury = (Boolean)statisticService.getNodeProperty(rootNode,
+        // PROPERTY_SUMMARY_NAME);
+        if (isSummary == Boolean.TRUE) {
             statisticService.setAnyProperty(rootNode, PROPERTY_SUMMARY_NAME, isSummary);
         }
     }

@@ -83,9 +83,10 @@ public class EntityFactory {
      * @throws DatabaseException
      * @throws DuplicateNodeNameException
      */
-    public void createScell(StatisticsRow row, TemplateColumn column) throws DuplicateNodeNameException, DatabaseException,
-            IllegalNodeDataException {
+    public StatisticsCell createScell(StatisticsRow row, TemplateColumn column) throws DuplicateNodeNameException,
+            DatabaseException, IllegalNodeDataException {
         StatisticsCell cell = row.addSCell(column.getName());
         cell.setFunction(column.getFunction().newFunction());
+        return cell;
     }
 }
