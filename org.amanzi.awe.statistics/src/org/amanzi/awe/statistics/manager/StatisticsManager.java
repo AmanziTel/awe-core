@@ -319,8 +319,9 @@ public class StatisticsManager {
                 count++;
                 boolean isUsed = false;
                 IDataElement locationNode = aggregatedModel.getLocation(element);
-                String script = String.format(EVALUATE, element.get("id"), hash);
+                String script = String.format(EVALUATE, element.getId(), hash);
 
+                @SuppressWarnings("unchecked")
                 Map<Object, Object> result = (Map<Object, Object>)runtime.executeScript(script);
 
                 // TODO implement keyNodes support

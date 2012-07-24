@@ -45,7 +45,7 @@ import org.neo4j.kernel.Traversal;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsService extends AbstractService {
+public final class StatisticsService extends AbstractService {
     /*
      * logger instantiation
      */
