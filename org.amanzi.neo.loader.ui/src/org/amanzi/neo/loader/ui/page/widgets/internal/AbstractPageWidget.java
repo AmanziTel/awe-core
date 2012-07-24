@@ -85,4 +85,7 @@ public abstract class AbstractPageWidget<C extends Composite, E extends IAbstrac
         return listeners;
     }
 
+    public void finishUp() {
+
+    }
 }

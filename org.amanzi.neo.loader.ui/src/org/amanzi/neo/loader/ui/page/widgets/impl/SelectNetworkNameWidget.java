@@ -13,9 +13,13 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget.ISelectNetworkListener;
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractSelectDatasetNameWidget;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -34,9 +38,9 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISelectNetworkListener> {
+public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISelectNetworkListener> implements IAWEEventListenter {
 
-    public interface ISelectNetworkListener extends IAbstractPageEventListener {
+    public interface ISelectNetworkListener extends AbstractPageWidget.IAbstractPageEventListener {
         void onNetworkChanged();
     }
 
@@ -51,11 +55,13 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISe
      * @param isEnabled
      * @param projectModelProvider
      */
-    protected SelectNetworkNameWidget(final Composite parent, ISelectNetworkListener listener, final boolean isEditable,
+    protected SelectNetworkNameWidget(final Composite parent, final ISelectNetworkListener listener, final boolean isEditable,
             final boolean isEnabled, final IProjectModelProvider projectModelProvider,
             final INetworkModelProvider networkModelProvider) {
         super(Messages.SelectNetworkNameWidget_Label, parent, listener, isEditable, isEnabled, projectModelProvider);
         this.networkModelProvider = networkModelProvider;
+
+        AWEEventManager.getManager().addListener(this, EventStatus.DATA_UPDATED);
     }
 
     @Override
@@ -71,7 +77,7 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISe
         getWidget().setText(StringUtils.EMPTY);
     }
 
-    public void setText(String text) {
+    public void setText(final String text) {
         getWidget().setText(text);
     }
 
@@ -80,5 +86,16 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISe
         for (ISelectNetworkListener listener : getListeners()) {
             listener.onNetworkChanged();
         }
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        fillData();
+    }
+
+    @Override
+    public void finishUp() {
+        AWEEventManager.getManager().removeListener(this);
+        super.finishUp();
     }
 }

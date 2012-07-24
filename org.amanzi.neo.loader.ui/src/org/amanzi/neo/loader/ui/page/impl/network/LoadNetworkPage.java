@@ -106,4 +106,11 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
     public void onLoaderChanged() {
         update();
     }
+
+    @Override
+    public void dispose() {
+        networkNameCombo.finishUp();
+        loaderCombo.finishUp();
+        resourceEditor.finishUp();
+    }
 }

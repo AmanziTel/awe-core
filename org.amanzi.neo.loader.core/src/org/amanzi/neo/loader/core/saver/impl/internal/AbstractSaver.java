@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.saver.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
@@ -26,6 +27,8 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Transaction;
@@ -75,11 +78,19 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         for (IModel model : processedModels) {
             try {
                 model.finishUp();
+
+                if (model.isRenderable()) {
+                    for (IGISModel gisModel : ((IRenderableModel)model).getAllGIS()) {
+                        AWEEventManager.getManager().fireShowOnMapEvent(gisModel);
+                    }
+                }
             } catch (ModelException e) {
                 LOGGER.error("an exception occured on finishing up a saver", e);
             }
         }
         saveTx(true, false);
+
+        AWEEventManager.getManager().fireDataUpdatedEvent();
     }
 
     @Override

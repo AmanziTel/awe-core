@@ -21,8 +21,11 @@ import java.util.Map;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
+import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
+import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.neo.models.render.IGISModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -55,6 +58,8 @@ public final class AWEEventManager {
 
     private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
 
+    private static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
+
     private final Map<EventStatus, List<IAWEEventListenter>> listeners = new HashMap<EventStatus, List<IAWEEventListenter>>();
 
     private final IExtensionRegistry registry;
@@ -63,7 +68,7 @@ public final class AWEEventManager {
         this(Platform.getExtensionRegistry());
     }
 
-    protected AWEEventManager(IExtensionRegistry registry) {
+    protected AWEEventManager(final IExtensionRegistry registry) {
         this.registry = registry;
         initializeExtensionPointListeners();
     }
@@ -72,7 +77,7 @@ public final class AWEEventManager {
         return AWEEventManagerInstanceHandler.instance;
     }
 
-    public synchronized void addListener(IAWEEventListenter listener, EventStatus... statuses) {
+    public synchronized void addListener(final IAWEEventListenter listener, final EventStatus... statuses) {
         assert listener != null;
         assert statuses != null;
 
@@ -90,7 +95,11 @@ public final class AWEEventManager {
         }
     }
 
-    private void fireEvent(IEvent event) {
+    public synchronized void removeListener(final IAWEEventListenter listener) {
+        listeners.remove(listener);
+    }
+
+    private void fireEvent(final IEvent event) {
         List<IAWEEventListenter> eventListeners = listeners.get(event.getStatus());
 
         if (eventListeners != null) {
@@ -104,8 +113,16 @@ public final class AWEEventManager {
         fireEvent(AWE_STARTED_EVENT);
     }
 
-    public synchronized void fireProjectNameChangedEvent(String newProjectName) {
+    public synchronized void fireProjectNameChangedEvent(final String newProjectName) {
         fireEvent(new ProjectNameChangedEvent(newProjectName));
+    }
+
+    public synchronized void fireDataUpdatedEvent() {
+        fireEvent(DATA_UPDATED_EVENT);
+    }
+
+    public synchronized void fireShowOnMapEvent(final IGISModel model) {
+        fireEvent(new ShowGISOnMap(model));
     }
 
     private void initializeExtensionPointListeners() {
@@ -120,7 +137,7 @@ public final class AWEEventManager {
         }
     }
 
-    private void initializeListenerFromElement(IConfigurationElement element) throws CoreException {
+    private void initializeListenerFromElement(final IConfigurationElement element) throws CoreException {
         IAWEEventListenter listener = (IAWEEventListenter)element.createExecutableExtension(CLASS_ATTRIBUTE);
 
         IConfigurationElement[] eventStatusElement = element.getChildren(EVENT_STATUS_CHILD);
@@ -134,7 +151,7 @@ public final class AWEEventManager {
         }
     }
 
-    private EventStatus getEventStatusFromElement(IConfigurationElement element) {
+    private EventStatus getEventStatusFromElement(final IConfigurationElement element) {
         String statusName = element.getAttribute(STATUS_ATTRIBUTE);
 
         return EventStatus.valueOf(statusName);

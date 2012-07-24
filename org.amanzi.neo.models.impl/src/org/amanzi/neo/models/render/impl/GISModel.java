@@ -150,4 +150,36 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         return sourceModel;
     }
 
+    /**
+     * @return Returns the minLatitude.
+     */
+    @Override
+    public double getMinLatitude() {
+        return minLatitude;
+    }
+
+    /**
+     * @return Returns the maxLatitude.
+     */
+    @Override
+    public double getMaxLatitude() {
+        return maxLatitude;
+    }
+
+    /**
+     * @return Returns the minLongitude.
+     */
+    @Override
+    public double getMinLongitude() {
+        return minLongitude;
+    }
+
+    /**
+     * @return Returns the maxLongitude.
+     */
+    @Override
+    public double getMaxLongitude() {
+        return maxLongitude;
+    }
+
 }

@@ -33,4 +33,12 @@ public interface IGISModel extends IModel {
     CoordinateReferenceSystem getCRS();
 
     IRenderableModel getSourceModel();
+
+    double getMinLatitude();
+
+    double getMaxLatitude();
+
+    double getMinLongitude();
+
+    double getMaxLongitude();
 }
