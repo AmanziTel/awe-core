@@ -312,7 +312,17 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             result = createPropertyFromSynonym(synonym, header);
             synonymsList.remove(synonym);
         } else if (addNonMappedHeaders) {
-            result = new UndefinedProperty(header);
+            for (Entry<INodeType, List<Synonyms>> synonymsEntry : synonymsManager.getSynonyms(getSynonymsType()).entrySet()) {
+                if (!synonymsEntry.getKey().equals(nodeType)) {
+                    if (SynonymsUtils.findAppropriateSynonym(header, synonymsEntry.getValue()) != null) {
+                        result = SKIPPED_PROPERTY;
+                        break;
+                    }
+                }
+            }
+            if (result == null) {
+                result = new UndefinedProperty(header);
+            }
         } else {
             result = SKIPPED_PROPERTY;
         }
