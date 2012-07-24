@@ -37,7 +37,7 @@ public interface INetworkModel extends IPropertyStatisticalModel {
 
     IDataElement findElement(INetworkElementType elementType, String elementName) throws ModelException;
 
-    IDataElement findSector(String sectorName, String ci, String lac) throws ModelException;
+    IDataElement findSector(String sectorName, Integer ci, Integer lac) throws ModelException;
 
     IDataElement createElement(INetworkElementType elementType, IDataElement parent, String name, Map<String, Object> properties)
             throws ModelException;

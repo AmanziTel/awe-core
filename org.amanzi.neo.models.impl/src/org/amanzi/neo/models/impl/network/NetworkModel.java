@@ -201,10 +201,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             throw new ParameterInconsistencyException("properties", null);
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("createElement"));
-        }
-
         IDataElement result = null;
 
         if (elementType == NetworkElementType.SECTOR) {
@@ -240,34 +236,37 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     @SuppressWarnings("unchecked")
     @Override
-    public IDataElement findSector(final String sectorName, final String ci, final String lac) throws ModelException {
+    public IDataElement findSector(final String sectorName, final Integer ci, final Integer lac) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("findSector", sectorName, ci, lac));
         }
 
         // validate input
-        if (StringUtils.isEmpty(sectorName) && StringUtils.isEmpty(ci) && StringUtils.isEmpty(lac)) {
+        if (StringUtils.isEmpty(sectorName) && (ci == null) && (lac == null)) {
             throw new ParameterInconsistencyException(getGeneralNodeProperties().getNodeNameProperty(), sectorName);
         }
-        if (StringUtils.isEmpty(lac) && StringUtils.isEmpty(ci)) {
-            throw new ParameterInconsistencyException(networkNodeProperties.getLACProperty(), lac);
-        }
-        if (StringUtils.isEmpty(ci)) {
+        if (lac == null) {
             throw new ParameterInconsistencyException(networkNodeProperties.getCIProperty(), ci);
         }
 
         IDataElement result = null;
 
-        if (StringUtils.isEmpty(lac) || StringUtils.isEmpty(ci)) {
+        if ((ci == null) || (lac == null)) {
             result = findElement(NetworkElementType.SECTOR, sectorName);
         } else {
-            List<Node> ciNodes = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);
-            List<Node> lacNodes = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getLACProperty(), lac);
+            List<Node> ciList = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);
+            List<Node> resultList = null;
 
-            List<Node> resultList = new ArrayList<Node>(CollectionUtils.intersection(ciNodes, lacNodes));
+            if (lac != null) {
+                List<Node> lacNodes = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getLACProperty(), lac);
+
+                resultList = new ArrayList<Node>(CollectionUtils.intersection(ciList, lacNodes));
+            }
 
             if (!resultList.isEmpty()) {
                 result = new DataElement(resultList.get(0));
+            } else if (!ciList.isEmpty()) {
+                result = new DataElement(ciList.get(0));
             }
         }
 

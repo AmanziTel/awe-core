@@ -151,7 +151,7 @@ public class IndexService extends AbstractService implements IIndexService {
             result = new MultiPropertyIndex<T>(key, properties, converter, DEFAULT_MULTIPROPERTY_INDEX_STEP);
             result.initialize(getGraphDb(), node);
 
-            tx.finish();
+            tx.success();
         } catch (Exception e) {
             tx.failure();
             throw new DatabaseException(e);

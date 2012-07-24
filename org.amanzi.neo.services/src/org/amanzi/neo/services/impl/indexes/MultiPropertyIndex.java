@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.amanzi.neo.services.impl.indexes.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -40,6 +41,8 @@ import org.neo4j.kernel.Traversal;
  * @param <E> the type of the property to index, any standard numerical type
  */
 public class MultiPropertyIndex<E extends Object> {
+
+    private static final Logger LOGGER = Logger.getLogger(MultiPropertyIndex.class);
 
     private final String[] properties;
     private GraphDatabaseService neo;
@@ -492,6 +495,7 @@ public class MultiPropertyIndex<E extends Object> {
         try {
             flush();
         } catch (IOException e) {
+            LOGGER.error("Error on flushing MultiPropertyIndexes", e);
         }
         try {
             if (root != null) {
@@ -511,7 +515,9 @@ public class MultiPropertyIndex<E extends Object> {
                     root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
                 }
             }
+            tx.success();
         } catch (Exception e) {
+            LOGGER.error("Error on writing MultiPropertyIndexes to DB", e);
             tx.failure();
         } finally {
             tx.finish();

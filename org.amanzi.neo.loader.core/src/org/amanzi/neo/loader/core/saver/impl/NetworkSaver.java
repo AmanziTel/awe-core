@@ -106,8 +106,8 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
     }
 
     private IDataElement findSector(final String elementName, final Map<String, Object> properties) throws ModelException {
-        String ci = (String)properties.get(networkNodeProperties.getCIProperty());
-        String lac = (String)properties.get(networkNodeProperties.getLACProperty());
+        Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
+        Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
         return networkModel.findSector(elementName, ci, lac);
     }
 
