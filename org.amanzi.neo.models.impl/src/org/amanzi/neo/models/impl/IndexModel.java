@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.models.impl;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
@@ -20,9 +24,11 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IIndexService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
 
 /**
  * TODO Purpose of
@@ -37,6 +43,8 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     private static final Logger LOGGER = Logger.getLogger(IndexModel.class);
 
     private final IIndexService indexService;
+
+    private final Map<Object, MultiPropertyIndex< ? >> indexMap = new HashMap<Object, MultiPropertyIndex< ? >>();
 
     /**
      * @param nodeService
@@ -62,7 +70,9 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
     @Override
     public void finishUp() throws ModelException {
-
+        for (MultiPropertyIndex< ? > index : indexMap.values()) {
+            index.finishUp();
+        }
     }
 
     @Override
@@ -71,10 +81,10 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             LOGGER.debug(getStartLogStatement("getSingleNode", nodeType, propertyName, value));
         }
 
-        try {
-            Index<Node> index = indexService.getIndex(getRootNode(), nodeType);
+        Node result = null;
 
-            return index.get(propertyName, value).getSingle();
+        try {
+            result = getNodeIndexHits(getRootNode(), nodeType, propertyName, value).getSingle();
         } catch (ServiceException e) {
             processException("Exception on searching for a Node in Index", e);
         }
@@ -83,7 +93,14 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             LOGGER.debug(getFinishLogStatement("getSingleNode"));
         }
 
-        return null;
+        return result;
+    }
+
+    protected IndexHits<Node> getNodeIndexHits(final Node node, final INodeType nodeType, final String propertyName,
+            final Object value) throws ServiceException {
+        Index<Node> index = indexService.getIndex(node, nodeType);
+
+        return index.get(propertyName, value);
     }
 
     @Override
@@ -105,9 +122,48 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     }
 
     @Override
-    public void indexInMultiProperty(final INodeType nodeType, final Node node) {
-        // TODO Auto-generated method stub
+    public void indexInMultiProperty(final INodeType nodeType, final Node node, final Class< ? > clazz, final String... properties) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("indexMultiProperty", nodeType, node, properties));
+        }
 
+        MultiPropertyIndex< ? > index = indexMap.get(properties);
+
+        if (index == null) {
+            try {
+                index = indexService.createMultiPropertyIndex(nodeType, getRootNode(), clazz, properties);
+                indexMap.put(properties, index);
+            } catch (ServiceException e) {
+                processException("Error on initializing MultiPropertyIndex", e);
+            }
+        }
+
+        index.add(node);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("indexMultiProperty"));
+        }
+    }
+
+    @Override
+    public Iterator<Node> getNodes(final INodeType nodeType, final String propertyName, final Object value) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getNodes", nodeType, propertyName, value));
+        }
+
+        Iterator<Node> result = null;
+
+        try {
+            result = getNodeIndexHits(getRootNode(), nodeType, propertyName, value).iterator();
+        } catch (ServiceException e) {
+            processException("Exception on searching for a Node in Index", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getNodes"));
+        }
+
+        return result;
     }
 
 }

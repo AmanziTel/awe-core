@@ -27,6 +27,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeoNodeProperties;
+import org.amanzi.neo.nodeproperties.impl.NetworkNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.testing.AbstractMockitoTest;
@@ -77,7 +78,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
         rootNode = getNodeMock();
 
-        networkModel = spy(new NetworkModel(nodeService, GENERAL_NODE_PROPERTIES, GEO_NODE_PROPERTIES));
+        networkModel = spy(new NetworkModel(nodeService, GENERAL_NODE_PROPERTIES, GEO_NODE_PROPERTIES, new NetworkNodeProperties()));
         networkModel.setIndexModel(indexModel);
         networkModel.setPropertyStatisticsModel(statisticsModel);
         doReturn(rootNode).when(networkModel).getRootNode();

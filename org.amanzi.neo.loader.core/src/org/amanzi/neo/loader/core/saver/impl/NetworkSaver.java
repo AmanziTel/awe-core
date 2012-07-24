@@ -25,6 +25,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 
@@ -46,16 +47,21 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
 
     private final IGeneralNodeProperties generalNodeProperties;
 
+    private final INetworkNodeProperties networkNodeProperties;
+
     public NetworkSaver() {
         this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getNetworkModelProvider(),
-                SynonymsManager.getInstance(), LoaderCorePlugin.getInstance().getGeneralNodeProperties());
+                SynonymsManager.getInstance(), LoaderCorePlugin.getInstance().getGeneralNodeProperties(), LoaderCorePlugin
+                        .getInstance().getNetworkNodeProperties());
     }
 
     protected NetworkSaver(final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider,
-            final SynonymsManager synonymsManager, final IGeneralNodeProperties generalNodeProperties) {
+            final SynonymsManager synonymsManager, final IGeneralNodeProperties generalNodeProperties,
+            final INetworkNodeProperties networkNodeProperties) {
         super(projectModelProvider, synonymsManager);
         this.networkModelProvider = networkModelProvider;
         this.generalNodeProperties = generalNodeProperties;
+        this.networkNodeProperties = networkNodeProperties;
     }
 
     @Override
@@ -65,6 +71,7 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
         networkModel = createNetworkModel(configuration.getDatasetName());
     }
 
+    // TODO: shouldn't throw exception
     @Override
     protected void saveInModel(final IMappedStringData dataElement) throws ModelException {
         IDataElement parent = networkModel.asDataElement();
@@ -76,7 +83,15 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
             if (!properties.isEmpty()) {
                 String elementName = (String)properties.get(generalNodeProperties.getNodeNameProperty());
                 if (elementName != null) {
-                    IDataElement child = networkModel.findElement(elementType, elementName);
+                    IDataElement child = null;
+                    switch (elementType) {
+                    case SECTOR:
+                        child = findSector(elementName, properties);
+                        break;
+                    default:
+                        child = findElement(elementType, elementName);
+                        break;
+                    }
 
                     if (child == null) {
                         child = networkModel.createElement(elementType, parent, elementName, properties);
@@ -88,6 +103,16 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
                 }
             }
         }
+    }
+
+    private IDataElement findSector(final String elementName, final Map<String, Object> properties) throws ModelException {
+        String ci = (String)properties.get(networkNodeProperties.getCIProperty());
+        String lac = (String)properties.get(networkNodeProperties.getLACProperty());
+        return networkModel.findSector(elementName, ci, lac);
+    }
+
+    private IDataElement findElement(final NetworkElementType elementType, final String elementName) throws ModelException {
+        return networkModel.findElement(elementType, elementName);
     }
 
     @Override

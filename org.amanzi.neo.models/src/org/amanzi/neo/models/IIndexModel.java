@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.models;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.neo4j.graphdb.Node;
@@ -29,7 +31,9 @@ public interface IIndexModel extends IModel {
 
     Node getSingleNode(INodeType nodeType, String propertyName, Object value) throws ModelException;
 
+    Iterator<Node> getNodes(INodeType nodeType, String propertyName, Object value) throws ModelException;
+
     void index(final INodeType nodeType, final Node node, final String propertyName, Object value) throws ModelException;
 
-    void indexInMultiProperty(final INodeType nodeType, final Node node);
+    void indexInMultiProperty(final INodeType nodeType, final Node node, Class< ? > clazz, String... properties) throws ModelException;
 }

@@ -19,6 +19,7 @@ import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
+import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -38,7 +39,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
         implements
             INetworkModelProvider {
 
-    private IGeoNodeProperties geoNodeProperties;
+    private final INetworkNodeProperties networkNodeProperties;
 
     /**
      * @param nodeService
@@ -48,8 +49,9 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
      */
     public NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
             final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
-            final IGeoNodeProperties geoNodeProperties) {
+            final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties) {
         super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties);
+        this.networkNodeProperties = networkNodeProperties;
     }
 
     @Override
@@ -59,7 +61,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
 
     @Override
     protected NetworkModel createInstance() {
-        return new NetworkModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties());
+        return new NetworkModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties(), networkNodeProperties);
     }
 
     @Override

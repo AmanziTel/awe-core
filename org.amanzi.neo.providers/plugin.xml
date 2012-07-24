@@ -57,6 +57,9 @@
             </providerReference>
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.GeoNodeProperties">
+            </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.NetworkNodeProperties">
             </nodePropertiesReference></parameters>
       </provider>
    </extension>
