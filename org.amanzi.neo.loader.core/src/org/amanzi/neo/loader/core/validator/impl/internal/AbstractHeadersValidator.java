@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.internal.Messages;
+import org.amanzi.neo.loader.core.parser.impl.CSVUtils;
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.loader.core.synonyms.SynonymsUtils;
@@ -31,6 +32,7 @@ import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.ValidationResult;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.commons.io.IOUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -92,12 +94,12 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
     }
 
     protected String[] getHeadersArray(File file) throws IOException {
-        CSVReader reader = new CSVReader(new FileReader(file), '\t');
+        CSVReader reader = new CSVReader(new FileReader(file), CSVUtils.getSeparator(file));
 
         try {
             return reader.readNext();
         } finally {
-            reader.close();
+            IOUtils.closeQuietly(reader);
         }
     }
 
