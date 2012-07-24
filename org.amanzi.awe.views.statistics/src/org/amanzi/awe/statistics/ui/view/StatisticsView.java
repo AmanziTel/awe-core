@@ -362,7 +362,7 @@ public class StatisticsView extends ViewPart {
                         for (StatisticsCell cell : values) {
                             column = new TableColumn(table, SWT.RIGHT);
                             column.setText(cell.getName());
-                            column.setImage(StatisticsPlugin.getImageDescriptor(Messages.PATH_TO_EMPTY_FILTER_IMG).createImage());
+                            column.setImage(StatisticsPlugin.getImageDescriptor(Messages.pathToEmptyFilterImg).createImage());
                             column.setToolTipText(cell.getName());
                             layout.addColumnData(new ColumnWeightData(width, true));
                         }
@@ -522,31 +522,31 @@ public class StatisticsView extends ViewPart {
         /*
          * top controls
          */
-        lDataset = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabel_DATASET);
+        lDataset = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelDataset);
         cDataset = CONTROLS_FACTORY.getCombobox(topControlsComposite);
         bRefreshDatasets = CONTROLS_FACTORY.getButton(topControlsComposite, StringUtils.EMPTY);
-        bRefreshDatasets.setImage(StatisticsPlugin.getImageDescriptor(Messages.PATH_TO_REFRESH_BUTTON_IMG).createImage());
-        lTemplate = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabel_TEMPLATE);
+        bRefreshDatasets.setImage(StatisticsPlugin.getImageDescriptor(Messages.pathToRefreshButtonImg).createImage());
+        lTemplate = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelTemplate);
         cTemplate = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        lAggregation = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabel_AGGREGATION);
+        lAggregation = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelAggregation);
         cAggregation = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        bBuild = CONTROLS_FACTORY.getButton(topControlsComposite, Messages.statisticsViewLabel_BUILD);
+        bBuild = CONTROLS_FACTORY.getButton(topControlsComposite, Messages.statisticsViewLabelBuild);
         /*
          * bottom controls
          */
-        lPeriod = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabel_PERIOD);
+        lPeriod = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelPeriod);
         cPeriod = CONTROLS_FACTORY.getCombobox(bottomControlsComposite);
-        lStartTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabel_START_TIME);
+        lStartTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelStartTime);
         dDateStart = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
         dTimeStart = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        bResetStart = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_RESET_BUTTON);
-        lEndTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabel_END_TIME);
+        bResetStart = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
+        lEndTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelEndTime);
         dDateEnd = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
         dTimeEnd = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        bResetEnd = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_RESET_BUTTON);
-        bReport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_REPORT);
-        bExport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_EXPORT);
-        bChartView = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_CHART_VIEW);
+        bResetEnd = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
+        bReport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelReport);
+        bExport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelExport);
+        bChartView = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelChartView);
         setEnabled(false, mainComposite);
         setEnabled(true, lDataset, cDataset);
     }

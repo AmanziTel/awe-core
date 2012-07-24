@@ -25,7 +25,7 @@ import org.eclipse.osgi.util.NLS;
  * @author Shcharbatsevich_A
  * @since 1.0.0
  */
-public class Messages extends NLS {
+public final class Messages extends NLS {
 
     private static final String BUNDLE_NAME = Messages.class.getName();
 
@@ -34,27 +34,27 @@ public class Messages extends NLS {
     /*
      * labels
      */
-    public static String statisticsViewLabel_DATASET;
-    public static String statisticsViewLabel_BUILD;
-    public static String statisticsViewLabel_AGGREGATION;
-    public static String statisticsViewLabel_TEMPLATE;
-    public static String statisticsViewLabel_START_TIME;
-    public static String statisticsViewLabel_PERIOD;
-    public static String statisticsViewLabel_RESET_BUTTON;
-    public static String statisticsViewLabel_END_TIME;
-    public static String statisticsViewLabel_REPORT;
-    public static String statisticsViewLabel_EXPORT;
-    public static String statisticsViewLabel_CHART_VIEW;
-    public static String sortingDialogLabel_OK;
-    public static String sortingDialogLable_CLOSE;
-    public static String sortingDialogLable_CLEAR;
-    public static String sortingDialogLabel_TEXT_FILTERS;
-    public static String sortingDialogLabel_CLEAR_FILTER;
-    public static String sortingDialogLabel_SORT_A_Z;
-    public static String sortingDialogLabel_SORT_Z_A;
-    public static String sortingDialogLabel_SELECT_ALL;
-    public static String PATH_TO_REFRESH_BUTTON_IMG;
-    public static String PATH_TO_EMPTY_FILTER_IMG;
+    public static String statisticsViewLabelDataset;
+    public static String statisticsViewLabelBuild;
+    public static String statisticsViewLabelAggregation;
+    public static String statisticsViewLabelTemplate;
+    public static String statisticsViewLabelStartTime;
+    public static String statisticsViewLabelPeriod;
+    public static String statisticsViewLabelResetButton;
+    public static String statisticsViewLabelEndTime;
+    public static String statisticsViewLabelReport;
+    public static String statisticsViewLabelExport;
+    public static String statisticsViewLabelChartView;
+    public static String sortingDialogLabelOk;
+    public static String sortingDialogLableClose;
+    public static String sortingDialogLableClear;
+    public static String sortingDialogLabelTextFilters;
+    public static String sortingDialogLabelClearFilter;
+    public static String sortingDialogLabelSortFromAtoZ;
+    public static String sortingDialogLabelSortFromZtoA;
+    public static String sortingDialogLabelSelectAll;
+    public static String pathToRefreshButtonImg;
+    public static String pathToEmptyFilterImg;
 
     private Messages() {
     }

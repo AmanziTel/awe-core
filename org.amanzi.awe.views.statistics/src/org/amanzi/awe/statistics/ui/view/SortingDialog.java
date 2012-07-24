@@ -202,26 +202,26 @@ public class SortingDialog extends Shell {
     private void createComponents() {
         lblSortAsc = new CLabel(this, SWT.LEFT);
         lblSortAsc.setImage(sortDescImage);
-        lblSortAsc.setText(Messages.sortingDialogLabel_SORT_A_Z);
+        lblSortAsc.setText(Messages.sortingDialogLabelSortFromAtoZ);
 
         lblSortDesc = new CLabel(this, SWT.LEFT);
-        lblSortDesc.setText(Messages.sortingDialogLabel_SORT_Z_A);
+        lblSortDesc.setText(Messages.sortingDialogLabelSortFromZtoA);
         lblSortDesc.setImage(sortAscImage);
 
         lblSeparator1 = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
         setLayoutData(lblSeparator1, lblSortDesc);
 
         lblClearFilter = new Label(this, SWT.LEFT);
-        lblClearFilter.setText(Messages.sortingDialogLabel_CLEAR_FILTER);
+        lblClearFilter.setText(Messages.sortingDialogLabelClearFilter);
         lblClearFilter.setEnabled(selection.size() != groups.size());
 
         lblTextFilters = new Label(this, SWT.LEFT);
-        lblTextFilters.setText(Messages.sortingDialogLabel_TEXT_FILTERS);
+        lblTextFilters.setText(Messages.sortingDialogLabelTextFilters);
 
         lblSeparator2 = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
 
         btnSearch = new Button(this, SWT.PUSH);
-        btnSearch.setText(Messages.sortingDialogLable_CLEAR);
+        btnSearch.setText(Messages.sortingDialogLableClear);
         btnSearch.setEnabled(false);
 
         txtSearch = new Text(this, SWT.SINGLE | SWT.BORDER);
@@ -230,10 +230,10 @@ public class SortingDialog extends Shell {
         configureTreeViewer(treeViewer);
 
         btnSave = new Button(this, SWT.PUSH);
-        btnSave.setText(Messages.sortingDialogLabel_OK);
+        btnSave.setText(Messages.sortingDialogLabelOk);
 
         btnClose = new Button(this, SWT.PUSH);
-        btnClose.setText(Messages.sortingDialogLable_CLOSE);
+        btnClose.setText(Messages.sortingDialogLableClose);
 
     }
 
@@ -369,7 +369,7 @@ public class SortingDialog extends Shell {
                 int size = input.size();
                 Object[] elements = new Object[size + NumberUtils.INTEGER_ONE];
                 System.arraycopy(input.toArray(), NumberUtils.INTEGER_ZERO, elements, NumberUtils.INTEGER_ONE, size);
-                elements[0] = Messages.sortingDialogLabel_SELECT_ALL;
+                elements[0] = Messages.sortingDialogLabelSelectAll;
                 return elements;
             }
 
@@ -418,10 +418,10 @@ public class SortingDialog extends Shell {
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 final boolean checked = event.getChecked();
-                if (event.getElement().toString().equals(Messages.sortingDialogLabel_SELECT_ALL)) {
+                if (event.getElement().toString().equals(Messages.sortingDialogLabelSelectAll)) {
                     treeViewer.setSubtreeChecked(event.getElement(), true);
                 } else if (!checked) {
-                    treeViewer.setChecked(Messages.sortingDialogLabel_SELECT_ALL, false);
+                    treeViewer.setChecked(Messages.sortingDialogLabelSelectAll, false);
                     selection.remove(event.getElement());
                 }
             }
@@ -429,7 +429,7 @@ public class SortingDialog extends Shell {
         if (selection != null) {
             treeViewer.setCheckedElements(selection.toArray());
             if (selection.size() == groups.size()) {
-                treeViewer.setChecked(Messages.sortingDialogLabel_SELECT_ALL, true);
+                treeViewer.setChecked(Messages.sortingDialogLabelSelectAll, true);
             }
         }
     }
@@ -484,7 +484,7 @@ public class SortingDialog extends Shell {
             }
             String clearedText = clearTextFromSpecialChars(filter);
             String elem = ((String)element);
-            if (elem.equals(Messages.sortingDialogLabel_SELECT_ALL)) {
+            if (elem.equals(Messages.sortingDialogLabelSelectAll)) {
                 return true;
             }
             return matches(clearedText, elem);

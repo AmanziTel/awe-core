@@ -75,10 +75,18 @@ public class StatisticsManager {
     private static final String DATASET_NAME = "dataset";
     private static final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
     private static final String DECIMAL_FORMAT = "0.#";
+
     /*
      * statistics manager singleton instance
      */
-    private static StatisticsManager statisticsManager;
+
+    private static final class SingletonHolder {
+        public static final StatisticsManager HOLDER_INSTANCE = new StatisticsManager();
+
+        private SingletonHolder() {
+        }
+    }
+
     /*
      * entity factory
      */
@@ -105,10 +113,7 @@ public class StatisticsManager {
      * @return
      */
     public static StatisticsManager getInstance() {
-        if (statisticsManager == null) {
-            statisticsManager = new StatisticsManager();
-        }
-        return statisticsManager;
+        return SingletonHolder.HOLDER_INSTANCE;
     }
 
     /**
@@ -139,8 +144,7 @@ public class StatisticsManager {
             Dimension networkDimension = currentStatisticsModel.getDimension(DimensionTypes.NETWORK);
             StatisticsLevel networkLevel = findOrCreateLevel(networkDimension, propertyName);
             StatisticsLevel timeLevel = timeDimension.getLevel(period.getId());
-            AggregatedStatistics statistics = buildStatistics(timeLevel, networkLevel, template, monitor);
-            return statistics;
+            return buildStatistics(timeLevel, networkLevel, template, monitor);
         } catch (Exception e) {
             LOGGER.error("Can't instantiate statistics model ", e);
             throw new StatisticsException(e);
@@ -173,7 +177,7 @@ public class StatisticsManager {
             final String task = "Building stats for " + timeLevel.getName() + "/" + networkLevel;
             LOGGER.debug(task);
             monitor.subTask(task);
-            AggregatedStatistics statistics = buildHighLevelPeriodStatistics(template, sourceTimeLevel, networkLevel, uStatistics,
+            AggregatedStatistics statistics = buildHighLevelPeriodStatistics(template, timeLevel, networkLevel, uStatistics,
                     monitor);
             updateFlags(statistics);
             return statistics;
@@ -194,7 +198,7 @@ public class StatisticsManager {
      * @param template
      * @param timeLevel
      * @param networkLevel
-     * @param uStatistics
+     * @param lowerStatistics
      * @param monitor
      * @return
      * @throws DatabaseException
@@ -202,14 +206,14 @@ public class StatisticsManager {
      * @throws UnableToModifyException
      */
     private AggregatedStatistics buildHighLevelPeriodStatistics(Template template, StatisticsLevel timeLevel,
-            StatisticsLevel networkLevel, AggregatedStatistics uStatistics, IProgressMonitor monitor) throws DatabaseException,
+            StatisticsLevel networkLevel, AggregatedStatistics lowerStatistics, IProgressMonitor monitor) throws DatabaseException,
             IllegalNodeDataException, UnableToModifyException {
-        AggregatedStatistics statistics = networkLevel.getAggregateStatistics(timeLevel);
+        AggregatedStatistics higherStatistics = networkLevel.getAggregateStatistics(timeLevel);
         Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
         Period period = Period.findById(timeLevel.getName());
-        for (StatisticsGroup lowerGroup : uStatistics.getAllChild()) {
+        for (StatisticsGroup lowerGroup : lowerStatistics.getAllChild()) {
             final String keyProperty = lowerGroup.getName();
-            StatisticsGroup group = findOrCreateGroup(statistics, keyProperty, null);
+            StatisticsGroup higherGroup = findOrCreateGroup(higherStatistics, keyProperty, null);
 
             long currentStartTime = period.getStartTime(currentStatisticsModel.getMinTimestamp());
             long nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
@@ -219,47 +223,44 @@ public class StatisticsManager {
             }
             do {
                 final String debugInfo = "Period " + currentStartTime + " - " + nextStartTime;
-                System.out.println(debugInfo);
                 LOGGER.debug(debugInfo);
-                StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
-                for (StatisticsRow uRow : group.getAllChild()) {
-                    if (!uRow.isSummaryNode()) {
-                        Long uPeriod = uRow.getTimestamp();
-                        if (uPeriod >= currentStartTime && uPeriod < nextStartTime) {
-                            StatisticsRow newRow = findOrCreateRow(group, currentStartTime, period);
-                            newRow.addSourceRow(uRow);
+                StatisticsRow summaryRow = findOrCreateSummaryRow(higherGroup, summaries);
+                for (StatisticsRow lowerRow : lowerGroup.getAllChild()) {
+                    if (!lowerRow.isSummaryRow()) {
+                        Long lowerPeriod = lowerRow.getTimestamp();
+                        if (lowerPeriod >= currentStartTime && lowerPeriod < nextStartTime) {
+                            StatisticsRow newRow = findOrCreateRow(higherGroup, currentStartTime, period);
+                            newRow.addSourceRow(lowerRow);
                             List<TemplateColumn> columns = template.getColumns();
                             for (TemplateColumn column : columns) {
-                                StatisticsCell uCell = uRow.findChildByName(column.getName());
+                                StatisticsCell lowerCell = lowerRow.findChildByName(column.getName());
 
-                                if (uCell != null) {
-                                    StatisticsCell cell = findOrCreateCell(uRow, column);
+                                if (lowerCell != null) {
+                                    StatisticsCell higherCell = findOrCreateCell(newRow, column);
                                     StatisticsCell summaryCell = findOrCreateCell(summaryRow, column);
 
-                                    Number value = uCell.getValue();
-                                    cell.updateValue(value);
-                                    cell.addSourceCell(uCell);
+                                    Number value = lowerCell.getValue();
+                                    higherCell.updateValue(value);
+                                    higherCell.addSourceCell(lowerCell);
 
                                     summaryCell.updateValue(value);
-                                    summaryCell.addSourceCell(uCell);
-                                    double[] uBbox = uCell.getBbox();
+                                    summaryCell.addSourceCell(lowerCell);
+                                    double[] uBbox = lowerCell.getBbox();
                                     if (uBbox != null) {
                                         ReferencedEnvelope ure = new ReferencedEnvelope(uBbox[0], uBbox[1], uBbox[2], uBbox[3],
                                                 null);
-                                        cell.updateBbox(ure);
-                                        uRow.updateBbox(ure);
+                                        higherCell.updateBbox(ure);
+                                        lowerRow.updateBbox(ure);
                                         summaryCell.updateBbox(ure);
                                         summaryRow.updateBbox(ure);
-                                        group.updateBbox(ure);
+                                        higherGroup.updateBbox(ure);
                                     }
-                                    checkThreshold(group, summaryRow, uRow, column, cell, summaryCell);
+                                    checkThreshold(column, higherCell, summaryCell);
                                 }
                             }
 
                         }
                     } else {
-                        System.out.println("SKIP: " + uRow.getName() + "uPeriod=" + timeLevel.getName() + "\tcurrentStartTime="
-                                + currentStartTime + "\tnextStartTime=" + nextStartTime);
                         continue;
                     }
                 }
@@ -269,7 +270,7 @@ public class StatisticsManager {
             } while (currentStartTime < currentStatisticsModel.getMaxTimestamp());
         }
         monitor.worked(1);
-        return statistics;
+        return higherStatistics;
     }
 
     /**
@@ -287,7 +288,6 @@ public class StatisticsManager {
      * @throws ScriptingException
      * @throws UnableToModifyException
      */
-    @SuppressWarnings("unchecked")
     private AggregatedStatistics buildLowestLevel(StatisticsLevel timeLevel, StatisticsLevel networkLevel, Template template,
             IProgressMonitor monitor) throws DatabaseException, IllegalNodeDataException, DuplicateNodeNameException,
             ScriptingException, UnableToModifyException {
@@ -296,8 +296,8 @@ public class StatisticsManager {
         monitor.subTask(task);
         AggregatedStatistics statistics = networkLevel.createAggregatedStatistics(timeLevel);
         Map<String, StatisticsRow> summaries = new HashMap<String, StatisticsRow>();
-
         String hash = createScriptForTemplate(template);
+
         long noUsedNodes = 0;
         Period period = Period.findById(timeLevel.getName());
         long currentStartTime = period.getStartTime(currentStatisticsModel.getMinTimestamp());
@@ -319,16 +319,15 @@ public class StatisticsManager {
                 count++;
                 boolean isUsed = false;
                 IDataElement locationNode = aggregatedModel.getLocation(element);
-
                 String script = String.format(EVALUATE, element.get("id"), hash);
-                HashMap<Object, Object> result;
-                result = (HashMap<Object, Object>)runtime.executeScript(script);
+
+                Map<Object, Object> result = (Map<Object, Object>)runtime.executeScript(script);
 
                 // TODO implement keyNodes support
                 StatisticsGroup group;
                 startFindGroup = System.currentTimeMillis();
-                String defaultValue = networkLevel.equals(DATASET_NAME) ? aggregatedModel.getName() : UNKNOW_NAME;
-                group = findOrCreateGroup(statistics, networkLevel.getName(), defaultValue);
+                String defaultValue = networkLevel.getName().equals(DATASET_NAME) ? aggregatedModel.getName() : UNKNOW_NAME;
+                group = findOrCreateGroup(statistics, element.get(networkLevel.getName()), defaultValue);
                 startFindGroup = System.currentTimeMillis() - startFindGroup;
                 // add summary row first
                 StatisticsRow summaryRow = findOrCreateSummaryRow(group, summaries);
@@ -347,7 +346,7 @@ public class StatisticsManager {
                         try {
                             value = new DecimalFormat(DECIMAL_FORMAT).parse((String)object);
                         } catch (ParseException e) {
-                            LOGGER.error("can't parse value " + value);
+                            LOGGER.error("can't parse value ");
                         }
                     }
                     if (cell.updateValue(value)) {
@@ -368,7 +367,7 @@ public class StatisticsManager {
                             updateBBox(locationNode, summaryRow);
                         }
                     }
-                    checkThreshold(group, summaryRow, row, column, cell, summaryCell);
+                    checkThreshold(column, cell, summaryCell);
                 }
                 cellCalcTime += (System.currentTimeMillis() - startCalcTime);
                 if (isUsed) {
@@ -402,8 +401,8 @@ public class StatisticsManager {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    private void checkThreshold(StatisticsGroup group, StatisticsRow summaryRow, StatisticsRow row, TemplateColumn column,
-            StatisticsCell cell, StatisticsCell summaryCell) throws IllegalNodeDataException, DatabaseException {
+    private void checkThreshold(TemplateColumn column, StatisticsCell cell, StatisticsCell summaryCell)
+            throws IllegalNodeDataException, DatabaseException {
         Threshold threshold = column.getThreshold();
         if (threshold != null) {
             Number thresholdValue = threshold.getThresholdValue();
@@ -430,6 +429,7 @@ public class StatisticsManager {
                         && thresholdValue.doubleValue() < summaryCell.getValue().doubleValue());
                 break;
             default:
+                break;
             }
         }
     }
@@ -522,7 +522,7 @@ public class StatisticsManager {
         StatisticsCell cell = row.findChildByName(column.getName());
         if (cell == null) {
             try {
-                factory.createScell(row, column);
+                cell = factory.createScell(row, column);
             } catch (DuplicateNodeNameException e) {
                 LOGGER.error("Unexpected exteption thrown", e);
             }
@@ -568,15 +568,14 @@ public class StatisticsManager {
      * @return script as string
      */
     private String createScriptForTemplate(Template template) {
-        final String hash_pattern = "\"%s\"=>%s(self),\n";
+        final String HASH_PATTERN = "\"%s\"=>%s(self),\n";
         StringBuffer sb = new StringBuffer("{");
         for (TemplateColumn column : template.getColumns()) {
             KpiBasedHeader header = (KpiBasedHeader)column.getHeader();
-            sb.append(String.format(hash_pattern, header.getName(), header.getKpiName()));
+            sb.append(String.format(HASH_PATTERN, header.getName(), header.getKpiName()));
         }
         sb.append("}\n");
-        String hash = sb.toString();
-        return hash;
+        return sb.toString();
     }
 
     /**

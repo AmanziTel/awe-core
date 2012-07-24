@@ -48,13 +48,15 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
     private static final String DRIVE_MODEL_NAME = "drive";
     private static final String FILE_NAME = "fileName";
     private static final int ARRAY_SIZE = 5;
-    private static final String TEMPLATE_NAME = "netview:call_stats.t";
+    private static final String TEMPLATE_NAME = "netview:imei.t";
     private static final String SIGNAL_STRENGTH_PROPERTY = "signal_strength";
     private static final String CALL_STATUS_PROPERTY = "call_status";
     private static final String TRAFIC_RX_BYTES = "trafficcount_rxbytes";
     private static final String ANSWERING = "answering";
     private static final String PROJECT_NAME = "project";
-    private static final String GPS = "gps";
+    private static final String MODEL = "model";
+    private static final String[] MODELS = {"Desire HD", "NX-A899", "GT-P1000", "GT-S5360", "GT-I8150", "GT-55830", "GT-I9100",
+            "GT-I9210", "GT-N7000", "Galaxy Nexus", "HTC Desire HD A9191"};
     private static Calendar startTime = Calendar.getInstance();
 
     @BeforeClass
@@ -70,7 +72,7 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
 
     @Test
     public void testProcessStatistics() throws StatisticsException {
-        MANAGER.processStatistics(TEMPLATE_NAME, driveModel, GPS, Period.HOURLY, new NullProgressMonitor());
+        MANAGER.processStatistics(TEMPLATE_NAME, driveModel, MODEL, Period.DAILY, new NullProgressMonitor());
     }
 
     /**
@@ -95,11 +97,20 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
         measurement.put(DriveModel.LATITUDE, generateDouble());
         startTime.add(Calendar.DATE, NumberUtils.INTEGER_ONE);
         measurement.put(DriveModel.TIMESTAMP, startTime.getTimeInMillis());
-        measurement.put(GPS, generateDouble());
+        measurement.put(MODEL, getRandomModel());
         measurement.put(CALL_STATUS_PROPERTY, ANSWERING);
         measurement.put(SIGNAL_STRENGTH_PROPERTY, generateDouble());
         measurement.put(TRAFIC_RX_BYTES, generateLong());
         return measurement;
+    }
+
+    /**
+     * @return
+     */
+    private static Object getRandomModel() {
+        int size = MODELS.length;
+        int index = (int)(Math.random() * size);
+        return MODELS[index];
     }
 
     /**
