@@ -29,6 +29,7 @@ import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.render.IGISModel;
@@ -53,8 +54,11 @@ public class NeoCatalogListener implements IAWEEventListenter {
         switch (event.getStatus()) {
         case AWE_STARTED:
         case DATA_UPDATED:
+            updateCatalog();
             break;
         case SHOW_GIS_ON_MAP:
+            ShowGISOnMap showEvent = (ShowGISOnMap)event;
+            showOnMap(showEvent.getModel(), showEvent.getZoom());
             break;
         default:
             break;

@@ -21,6 +21,9 @@
          <eventStatus
                status="SHOW_GIS_ON_MAP">
          </eventStatus>
+         <eventStatus
+               status="AWE_STARTED">
+         </eventStatus>
       </listener>
    </extension>
 </plugin>

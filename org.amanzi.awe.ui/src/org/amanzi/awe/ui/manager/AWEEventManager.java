@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
@@ -96,7 +97,9 @@ public final class AWEEventManager {
     }
 
     public synchronized void removeListener(final IAWEEventListenter listener) {
-        listeners.remove(listener);
+        for (Entry<EventStatus, List<IAWEEventListenter>> listenerEntry : listeners.entrySet()) {
+            listenerEntry.getValue().remove(listener);
+        }
     }
 
     private void fireEvent(final IEvent event) {

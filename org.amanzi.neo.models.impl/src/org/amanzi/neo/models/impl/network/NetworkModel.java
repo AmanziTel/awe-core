@@ -114,7 +114,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         if (result != null) {
             getIndexModel().indexInMultiProperty(NetworkElementType.SITE, result.getNode(), Double.class,
                     getGeoNodeProperties().getLatitideProperty(), getGeoNodeProperties().getLongitudeProperty());
-            getMainGIS().updateBounds(latitude, longitude);
+            updateLocation(latitude, longitude);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -130,15 +130,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             LOGGER.debug(getStartLogStatement("createSector", parent, name, lac, ci, properties));
         }
 
-        // validate input
-        if (ci == null) {
-            throw new ParameterInconsistencyException(networkNodeProperties.getCIProperty(), ci);
-        }
-
         DataElement result = createDefaultElement(NetworkElementType.SECTOR, parent, name, properties);
 
         if (result != null) {
-            getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getCIProperty(), ci);
+            if (ci != null) {
+                getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getCIProperty(), ci);
+            }
             if (lac != null) {
                 getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getLACProperty(), lac);
             }
@@ -247,13 +244,13 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         if (StringUtils.isEmpty(sectorName) && (ci == null) && (lac == null)) {
             throw new ParameterInconsistencyException(getGeneralNodeProperties().getNodeNameProperty(), sectorName);
         }
-        if (lac == null) {
+        if ((ci == null) && StringUtils.isEmpty(sectorName)) {
             throw new ParameterInconsistencyException(networkNodeProperties.getCIProperty(), ci);
         }
 
         IDataElement result = null;
 
-        if ((ci == null) || (lac == null)) {
+        if (!StringUtils.isEmpty(sectorName)) {
             result = findElement(NetworkElementType.SECTOR, sectorName);
         } else {
             List<Node> ciList = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);

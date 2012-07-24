@@ -43,13 +43,13 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     private static final Logger LOGGER = Logger.getLogger(GISModel.class);
 
-    private double minLatitude;
+    private double minLatitude = Double.MAX_VALUE;;
 
-    private double maxLatitude;
+    private double maxLatitude = -Double.MAX_VALUE;
 
-    private double minLongitude;
+    private double minLongitude = Double.MAX_VALUE;
 
-    private double maxLongitude;
+    private double maxLongitude = -Double.MAX_VALUE;
 
     private final IGeoNodeProperties geoNodeProperties;
 
