@@ -14,9 +14,10 @@
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
 import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.internal.AdvancedFileFieldEditor;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
@@ -32,7 +33,11 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ResourceSelectorWidget extends AbstractPageWidget<Composite> implements ModifyListener {
+public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResourceSelectorListener> implements ModifyListener {
+
+    public interface IResourceSelectorListener extends IAbstractPageEventListener {
+        void onResourceChanged();
+    }
 
     protected enum ResourceType {
         FILE, DIRECTORY;
@@ -49,9 +54,9 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite> implem
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected ResourceSelectorWidget(final ResourceType resourceType, final ILoaderPage< ? > loaderPage,
-            final IProjectModelProvider projectModelProvider, String... fileExtensions) {
-        super(true, loaderPage, projectModelProvider);
+    protected ResourceSelectorWidget(final ResourceType resourceType, final Composite parent,
+            final IResourceSelectorListener listener, final IProjectModelProvider projectModelProvider, String... fileExtensions) {
+        super(true, parent, listener, projectModelProvider);
         this.resourceType = resourceType;
         this.fileExtensions = fileExtensions;
     }
@@ -84,7 +89,9 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite> implem
 
     @Override
     public void modifyText(ModifyEvent e) {
-        getLoaderPage().autodefineLoader();
+        for (IResourceSelectorListener listener : getListeners()) {
+            listener.onResourceChanged();
+        }
     }
 
     public String getFileName() {

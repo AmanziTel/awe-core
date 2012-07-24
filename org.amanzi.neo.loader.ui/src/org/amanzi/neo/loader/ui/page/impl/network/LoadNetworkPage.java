@@ -20,8 +20,11 @@ import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget.ISelectNetworkListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.swt.widgets.Composite;
@@ -34,11 +37,15 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration> {
+public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration>
+        implements
+            ISelectLoaderListener,
+            ISelectNetworkListener,
+            IResourceSelectorListener {
 
     private SelectNetworkNameWidget networkNameCombo;
 
-    private SelectLoaderWidget loaderCombo;
+    private SelectLoaderWidget<ISingleFileConfiguration> loaderCombo;
 
     private ResourceSelectorWidget resourceEditor;
 
@@ -53,17 +60,23 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
     public void createControl(final Composite parent) {
         super.createControl(parent);
 
-        networkNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForNetwork(this, true, true);
+        networkNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
 
-        resourceEditor = WizardFactory.getInstance().getFileSelector(this);
+        resourceEditor = WizardFactory.getInstance().getFileSelector(getMainComposite(), this);
 
-        loaderCombo = WizardFactory.getInstance().getLoaderSelector(this);
+        loaderCombo = WizardFactory.getInstance().getLoaderSelector(getMainComposite(), this, getLoaders());
 
         update();
     }
 
     @Override
-    public void autodefineLoader() {
+    public void setCurrentLoader(final ILoader<ISingleFileConfiguration, ? > currentLoader) {
+        super.setCurrentLoader(currentLoader);
+        loaderCombo.updateData();
+    }
+
+    @Override
+    public void onResourceChanged() {
         ISingleFileConfiguration configuration = getConfiguration();
 
         File file = new File(resourceEditor.getFileName());
@@ -71,23 +84,26 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
         configuration.setFile(file);
         networkNameCombo.setText(FilenameUtils.getBaseName(resourceEditor.getFileName()));
 
-        super.autodefineLoader();
+        autodefineLoader();
+
+        if (getCurrentLoader() != null) {
+            loaderCombo.setText(getCurrentLoader().getName());
+        }
     }
 
     @Override
-    public void update() {
+    public void onNetworkChanged() {
         ISingleFileConfiguration configuration = getConfiguration();
 
         if (networkNameCombo != null) {
             configuration.setDatasetName(networkNameCombo.getText());
         }
 
-        super.update();
+        update();
     }
 
     @Override
-    public void setCurrentLoader(final ILoader<ISingleFileConfiguration, ? > currentLoader) {
-        super.setCurrentLoader(currentLoader);
-        loaderCombo.updateData();
+    public void onLoaderChanged() {
+        update();
     }
 }

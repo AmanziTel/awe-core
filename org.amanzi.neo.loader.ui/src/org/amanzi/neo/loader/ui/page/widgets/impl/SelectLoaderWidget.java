@@ -13,12 +13,15 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
+import java.util.List;
+
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractComboWidget;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.amanzi.neo.providers.IProjectModelProvider;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -33,7 +36,15 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SelectLoaderWidget extends AbstractComboWidget implements SelectionListener {
+public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboWidget<ISelectLoaderListener>
+        implements
+            SelectionListener {
+
+    public interface ISelectLoaderListener extends AbstractPageWidget.IAbstractPageEventListener {
+        void onLoaderChanged();
+    }
+
+    private final List<ILoader<T, ? >> loaders;
 
     /**
      * @param isEditable
@@ -41,9 +52,10 @@ public class SelectLoaderWidget extends AbstractComboWidget implements Selection
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected SelectLoaderWidget(final boolean isEnabled, final ILoaderPage< ? > loaderPage,
-            final IProjectModelProvider projectModelProvider) {
-        super(Messages.SelectLoaderWidget_Label, false, isEnabled, loaderPage, projectModelProvider);
+    protected SelectLoaderWidget(final boolean isEnabled, Composite parent, ISelectLoaderListener listener,
+            List<ILoader<T, ? >> loaders, final IProjectModelProvider projectModelProvider) {
+        super(Messages.SelectLoaderWidget_Label, false, isEnabled, parent, listener, projectModelProvider);
+        this.loaders = loaders;
     }
 
     @Override
@@ -62,22 +74,17 @@ public class SelectLoaderWidget extends AbstractComboWidget implements Selection
 
     @Override
     public void fillData() {
-        for (ILoader< ? , ? > loader : getLoaderPage().getLoaders()) {
+        for (ILoader< ? , ? > loader : loaders) {
             getWidget().add(loader.getName());
         }
         updateData();
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void widgetSelected(final SelectionEvent e) {
-        for (ILoader loader : getLoaderPage().getLoaders()) {
-            if (loader.getName().equals(getText())) {
-                getLoaderPage().setCurrentLoader(loader);
-                break;
-            }
+        for (ISelectLoaderListener listener : getListeners()) {
+            listener.onLoaderChanged();
         }
-        getLoaderPage().update();
     }
 
     @Override
@@ -85,9 +92,8 @@ public class SelectLoaderWidget extends AbstractComboWidget implements Selection
         widgetSelected(e);
     }
 
-    @Override
-    public void updateData() {
-        ILoader< ? , ? > loader = getLoaderPage().getCurrentLoader();
-        getWidget().setText(loader == null ? StringUtils.EMPTY : loader.getName());
+    public void setText(String text) {
+        getWidget().setText(text);
     }
+
 }

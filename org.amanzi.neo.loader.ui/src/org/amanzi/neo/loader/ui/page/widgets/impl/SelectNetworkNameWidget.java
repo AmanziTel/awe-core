@@ -14,7 +14,8 @@
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
 import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget.ISelectNetworkListener;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractSelectDatasetNameWidget;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -22,6 +23,8 @@ import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -31,7 +34,11 @@ import org.apache.log4j.Logger;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget {
+public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISelectNetworkListener> {
+
+    public interface ISelectNetworkListener extends IAbstractPageEventListener {
+        void onNetworkChanged();
+    }
 
     private static final Logger LOGGER = Logger.getLogger(SelectNetworkNameWidget.class);
 
@@ -44,9 +51,10 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget {
      * @param isEnabled
      * @param projectModelProvider
      */
-    protected SelectNetworkNameWidget(final ILoaderPage< ? > loaderPage, final boolean isEditable, final boolean isEnabled,
-            final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider) {
-        super(Messages.SelectNetworkNameWidget_Label, loaderPage, isEditable, isEnabled, projectModelProvider);
+    protected SelectNetworkNameWidget(final Composite parent, ISelectNetworkListener listener, final boolean isEditable,
+            final boolean isEnabled, final IProjectModelProvider projectModelProvider,
+            final INetworkModelProvider networkModelProvider) {
+        super(Messages.SelectNetworkNameWidget_Label, parent, listener, isEditable, isEnabled, projectModelProvider);
         this.networkModelProvider = networkModelProvider;
     }
 
@@ -65,5 +73,12 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget {
 
     public void setText(String text) {
         getWidget().setText(text);
+    }
+
+    @Override
+    public void modifyText(final ModifyEvent e) {
+        for (ISelectNetworkListener listener : getListeners()) {
+            listener.onNetworkChanged();
+        }
     }
 }
