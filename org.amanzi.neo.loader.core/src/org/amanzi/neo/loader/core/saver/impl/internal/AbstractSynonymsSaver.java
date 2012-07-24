@@ -39,7 +39,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends AbstractSaver<T, IMappedStringData> {
 
-    protected static abstract class Property<C extends Object> {
+    protected abstract static class Property<C extends Object> {
 
         private final String headerName;
 

@@ -14,10 +14,11 @@
 package org.amanzi.neo.loader.ui.wizard.impl.internal;
 
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
-import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -37,6 +38,8 @@ import org.eclipse.ui.IWorkbench;
  */
 public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wizard implements ILoaderWizard<T> {
 
+    private static final Logger LOGGER = Logger.getLogger(AbstractLoaderWizard.class);
+
     private final class LoadJob extends Job {
 
         /**
@@ -52,8 +55,8 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 if (page instanceof ILoaderPage) {
                     try {
                         runLoader(page, monitor);
-                    } catch (ModelException e) {
-
+                    } catch (LoaderException e) {
+                        LOGGER.error("Error on runing Loader", e);
                     }
                 }
             }
@@ -63,7 +66,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
 
         @SuppressWarnings("unchecked")
         private <C extends IConfiguration> void runLoader(final IWizardPage page, final IProgressMonitor monitor)
-                throws ModelException {
+                throws LoaderException {
             ILoaderPage<C> loaderPage = (ILoaderPage<C>)page;
 
             ILoader<C, ? > loader = loaderPage.getCurrentLoader();

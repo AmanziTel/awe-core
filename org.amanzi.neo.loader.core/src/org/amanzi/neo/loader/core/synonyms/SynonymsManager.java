@@ -68,7 +68,7 @@ public class SynonymsManager {
     private static final int IS_MANDATORY_GROUP_INDEX = 6;
 
     private static class SynonymsManagerInstanceHolder {
-        private static volatile SynonymsManager INSTANCE = new SynonymsManager();
+        private static volatile SynonymsManager instance = new SynonymsManager();
     }
 
     private final Map<String, Map<INodeType, List<Synonyms>>> synonymsCache = new HashMap<String, Map<INodeType, List<Synonyms>>>();
@@ -77,7 +77,7 @@ public class SynonymsManager {
 
     private final Map<String, List<URL>> resources = new HashMap<String, List<URL>>();
 
-    protected SynonymsManager(IExtensionRegistry registry) {
+    protected SynonymsManager(final IExtensionRegistry registry) {
         this.registry = registry;
 
         initializeSynonymsSources();
@@ -88,10 +88,10 @@ public class SynonymsManager {
     }
 
     public static SynonymsManager getInstance() {
-        return SynonymsManagerInstanceHolder.INSTANCE;
+        return SynonymsManagerInstanceHolder.instance;
     }
 
-    protected void initializeSynonymsSources() {
+    private void initializeSynonymsSources() {
         for (IConfigurationElement singleSynonymResource : registry.getConfigurationElementsFor(SYNONYMS_EXTENSION_ID)) {
             URL url = getResource(singleSynonymResource);
             String name = FilenameUtils.getBaseName(url.getFile());
@@ -108,7 +108,7 @@ public class SynonymsManager {
         }
     }
 
-    protected URL getResource(IConfigurationElement resouceElement) {
+    protected URL getResource(final IConfigurationElement resouceElement) {
         String pluginId = resouceElement.getContributor().getName();
         Bundle bundle = Platform.getBundle(pluginId);
 
@@ -117,7 +117,7 @@ public class SynonymsManager {
         return bundle.getResource(resourcePath);
     }
 
-    protected synchronized Map<INodeType, List<Synonyms>> initializeSynonymsCache(String dataType) {
+    protected synchronized Map<INodeType, List<Synonyms>> initializeSynonymsCache(final String dataType) {
         HashMap<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
 
         List<URL> urlList = resources.get(dataType);
@@ -126,14 +126,14 @@ public class SynonymsManager {
                 try {
                     Map<INodeType, List<Synonyms>> synonyms = loadSynonyms(singleURL.openStream());
 
-                    for (INodeType nodeType : synonyms.keySet()) {
-                        List<Synonyms> synonymsList = result.get(nodeType);
+                    for (Entry<INodeType, List<Synonyms>> synonymsEntry : synonyms.entrySet()) {
+                        List<Synonyms> synonymsList = result.get(synonymsEntry);
                         if (synonymsList == null) {
                             synonymsList = new ArrayList<Synonyms>();
 
-                            result.put(nodeType, synonymsList);
+                            result.put(synonymsEntry.getKey(), synonymsList);
                         }
-                        synonymsList.addAll(synonyms.get(nodeType));
+                        synonymsList.addAll(synonymsEntry.getValue());
                     }
 
                 } catch (IOException e) {
@@ -145,7 +145,7 @@ public class SynonymsManager {
         return result;
     }
 
-    protected Map<INodeType, List<Synonyms>> loadSynonyms(InputStream stream) throws IOException {
+    protected Map<INodeType, List<Synonyms>> loadSynonyms(final InputStream stream) throws IOException {
         Map<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
 
         Properties properties = new Properties();
@@ -166,7 +166,7 @@ public class SynonymsManager {
         return result;
     }
 
-    protected Pair<INodeType, Synonyms> parseSynonyms(Entry<Object, Object> propertyEntry) {
+    protected Pair<INodeType, Synonyms> parseSynonyms(final Entry<Object, Object> propertyEntry) {
         // convert to string
         String keyPart = propertyEntry.getKey().toString();
         String valuePart = propertyEntry.getValue().toString();
@@ -202,11 +202,11 @@ public class SynonymsManager {
         return null;
     }
 
-    public List<Synonyms> getSynonyms(String synonymsType, INodeType nodeType) {
+    public List<Synonyms> getSynonyms(final String synonymsType, final INodeType nodeType) {
         return getSynonyms(synonymsType).get(nodeType);
     }
 
-    public Map<INodeType, List<Synonyms>> getSynonyms(String synonymsType) {
+    public Map<INodeType, List<Synonyms>> getSynonyms(final String synonymsType) {
         Map<INodeType, List<Synonyms>> subTypeSynonyms = synonymsCache.get(synonymsType);
 
         if (subTypeSynonyms == null) {

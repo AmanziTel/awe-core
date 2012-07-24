@@ -156,7 +156,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
 
     @Test(expected = DuplicatedModelException.class)
     public void testCheckExceptionOnCreateModelWithExistingName() throws Exception {
-        when(provider.findByName(parent, MODEL_NAME)).thenReturn(parent);
+        doReturn(parent).when(provider).findByName(parent, MODEL_NAME);
 
         provider.create(parent, MODEL_NAME);
     }

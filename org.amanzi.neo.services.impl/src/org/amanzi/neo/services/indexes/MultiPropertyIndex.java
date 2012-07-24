@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.amanzi.neo.services.indexes.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.commons.lang3.ArrayUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -48,9 +50,9 @@ public class MultiPropertyIndex<E extends Object> {
     private final MultiValueConverter<E> converter;
     private Node root;
     private int step;
-    private final ArrayList<IndexLevel> levels = new ArrayList<IndexLevel>();
+    private final List<IndexLevel> levels = new ArrayList<IndexLevel>();
     private int[] originIndices = null;
-    private final ArrayList<Node> nodesToIndex = new ArrayList<Node>();
+    private final List<Node> nodesToIndex = new ArrayList<Node>();
     private final String name;
 
     public abstract class Linearizer<T extends Comparable<T>> {
@@ -120,13 +122,21 @@ public class MultiPropertyIndex<E extends Object> {
      * @author craig
      * @since 1.0.0
      */
-    class IndexLevel {
-        int level = 0;
+    final class IndexLevel {
+        /** String LEVEL_PROPERTY field */
+        private static final String LEVEL_PROPERTY = "level";
+        /** String MAX_PROPERTY field */
+        private static final String MAX_PROPERTY = "max";
+        /** String MIN_PROPERTY field */
+        private static final String MIN_PROPERTY = "min";
+        /** String INDEX_PROPERTY field */
+        private static final String INDEX_PROPERTY = "index";
+        private int level = 0;
         private E stepSize = null;
         private E[] currentValues = null;
-        int[] indices = null;
-        E[] min;
-        E[] max;
+        private int[] indices = null;
+        private final E[] min;
+        private final E[] max;
         private Node indexNode = null;
 
         /**
@@ -159,12 +169,12 @@ public class MultiPropertyIndex<E extends Object> {
         private IndexLevel(final int level, final Node indexNode) throws IOException {
             this.level = level;
             this.stepSize = converter.stepSize(level, step);
-            this.indices = (int[])indexNode.getProperty("index");
-            this.min = converter.deserialize(indexNode.getProperty("min"));
-            this.max = converter.deserialize(indexNode.getProperty("max"));
+            this.indices = (int[])indexNode.getProperty(INDEX_PROPERTY);
+            this.min = converter.deserialize(indexNode.getProperty(MIN_PROPERTY));
+            this.max = converter.deserialize(indexNode.getProperty(MAX_PROPERTY));
             this.currentValues = this.min;
             this.indexNode = indexNode;
-            Integer indexLevel = (Integer)indexNode.getProperty("level", null);
+            Integer indexLevel = (Integer)indexNode.getProperty(LEVEL_PROPERTY, null);
             if (this.level != indexLevel) {
                 throw new IllegalArgumentException("Invalid index node passed for level: " + this.level + " != " + indexLevel);
             }
@@ -172,7 +182,7 @@ public class MultiPropertyIndex<E extends Object> {
 
         private IndexLevel setValues(final E[] values) {
             if (!Arrays.equals(values, currentValues)) {
-                this.currentValues = values;
+                this.currentValues = ArrayUtils.clone(values);
                 int[] newIndices = new int[values.length];
                 for (int i = 0; i < values.length; i++) {
                     newIndices[i] = converter.indexOf(values[i], origin[i], stepSize);
@@ -202,11 +212,11 @@ public class MultiPropertyIndex<E extends Object> {
         private Node makeIndexNode() throws IOException {
             if (indexNode == null) {
                 indexNode = neo.createNode();
-                indexNode.setProperty("index", indices);
+                indexNode.setProperty(INDEX_PROPERTY, indices);
                 indexNode.setProperty("type", "multi_index");
-                indexNode.setProperty("level", level);
-                indexNode.setProperty("min", converter.serialize(min));
-                indexNode.setProperty("max", converter.serialize(max));
+                indexNode.setProperty(LEVEL_PROPERTY, level);
+                indexNode.setProperty(MIN_PROPERTY, converter.serialize(min));
+                indexNode.setProperty(MAX_PROPERTY, converter.serialize(max));
             }
             return indexNode;
         }
@@ -221,7 +231,7 @@ public class MultiPropertyIndex<E extends Object> {
             for (Relationship rel : parentIndex.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD,
                     Direction.OUTGOING)) {
                 Node child = rel.getEndNode();
-                int[] testIndex = (int[])child.getProperty("index");
+                int[] testIndex = (int[])child.getProperty(INDEX_PROPERTY);
                 if (Arrays.equals(testIndex, indices)) {
                     indexNode = child;
                     break;
@@ -231,17 +241,17 @@ public class MultiPropertyIndex<E extends Object> {
 
     }
 
-    public interface MultiValueConverter<E> extends PropertyIndex.ValueConverter<E> {
-        public Object serialize(Object[] data) throws IOException;
+    interface MultiValueConverter<E> extends PropertyIndex.ValueConverter<E> {
+        Object serialize(Object[] data) throws IOException;
 
-        public E[] deserialize(Object buffer) throws IOException;
+        E[] deserialize(Object buffer) throws IOException;
 
         /**
          * @param e
          * @param stepSize
          * @return
          */
-        public E correctOrig(E e, E stepSize);
+        E correctOrig(E e, E stepSize);
 
     }
 
@@ -253,11 +263,8 @@ public class MultiPropertyIndex<E extends Object> {
         @Override
         public Float[] deserialize(final Object buffer) throws IOException {
             float[] data = (float[])buffer;
-            Float[] result = new Float[data.length];
-            for (int i = 0; i < data.length; i++) {
-                result[i] = data[i];
-            }
-            return result;
+
+            return ArrayUtils.toObject(data);
         }
 
         @Override
@@ -283,11 +290,7 @@ public class MultiPropertyIndex<E extends Object> {
         @Override
         public Double[] deserialize(final Object buffer) throws IOException {
             double[] data = (double[])buffer;
-            Double[] result = new Double[data.length];
-            for (int i = 0; i < data.length; i++) {
-                result[i] = data[i];
-            }
-            return result;
+            return ArrayUtils.toObject(data);
         }
 
         @Override
@@ -313,11 +316,7 @@ public class MultiPropertyIndex<E extends Object> {
         @Override
         public Integer[] deserialize(final Object buffer) throws IOException {
             int[] data = (int[])buffer;
-            Integer[] result = new Integer[data.length];
-            for (int i = 0; i < data.length; i++) {
-                result[i] = data[i];
-            }
-            return result;
+            return ArrayUtils.toObject(data);
         }
 
         @Override
@@ -343,11 +342,7 @@ public class MultiPropertyIndex<E extends Object> {
         @Override
         public Long[] deserialize(final Object buffer) throws IOException {
             long[] data = (long[])buffer;
-            Long[] result = new Long[data.length];
-            for (int i = 0; i < data.length; i++) {
-                result[i] = data[i];
-            }
-            return result;
+            return ArrayUtils.toObject(data);
         }
 
         @Override
@@ -370,15 +365,12 @@ public class MultiPropertyIndex<E extends Object> {
      * level, by dividing by 1000L to get from milliseconds to seconds.
      */
     public static class MultiTimeIndexConverter extends MultiLongConverter {
-        public MultiTimeIndexConverter() {
-            super(1000L);
-        }
-    }
+        /** long TIMEINDEX_CLUSTER field */
+        private static final long TIMEINDEX_CLUSTER = 1000L;
 
-    public MultiPropertyIndex(final GraphDatabaseService neo, final String name, final String[] properties,
-            final MultiValueConverter<E> converter, final int step) throws IOException {
-        this(name, properties, converter, step);
-        initialize(neo, null);
+        public MultiTimeIndexConverter() {
+            super(TIMEINDEX_CLUSTER);
+        }
     }
 
     public MultiPropertyIndex(final String name, final String[] properties, final MultiValueConverter<E> converter, final int step)
@@ -386,8 +378,9 @@ public class MultiPropertyIndex<E extends Object> {
         if ((properties == null) || (properties.length < 1) || (properties[0].length() < 1)) {
             throw new IllegalArgumentException("Index properties must be a non-empty array of non-empty strings");
         }
-        this.properties = properties;
-        this.step = (step % 2) == 1 ? step : step + 1;
+        this.properties = ArrayUtils.clone(properties);
+
+        this.step = (step & 1) == 1 ? step : step + 1;
         this.converter = converter;
         this.name = name;
     }

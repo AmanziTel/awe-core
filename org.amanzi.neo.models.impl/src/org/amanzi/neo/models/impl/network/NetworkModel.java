@@ -211,6 +211,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             Double lon = (Double)properties.get(getGeoNodeProperties().getLongitudeProperty());
 
             result = createSite(parent, name, lat, lon, properties);
+        } else {
+            result = createDefaultElement(elementType, parent, name, properties);
         }
 
         if (LOGGER.isDebugEnabled()) {

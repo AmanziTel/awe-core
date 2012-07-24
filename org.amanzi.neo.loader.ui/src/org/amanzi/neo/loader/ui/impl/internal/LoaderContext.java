@@ -82,7 +82,7 @@ public class LoaderContext {
     protected static final String NAME_ATTRIBUTE = "name";
 
     private static class LoaderContextHandler {
-        private static volatile LoaderContext INSTANCE = new LoaderContext();
+        private static volatile LoaderContext instance = new LoaderContext();
     }
 
     private final IExtensionRegistry registry;
@@ -96,7 +96,7 @@ public class LoaderContext {
     }
 
     public static LoaderContext getInstance() {
-        return LoaderContextHandler.INSTANCE;
+        return LoaderContextHandler.instance;
     }
 
     public <T extends IConfiguration> ILoaderWizard<T> getLoaderWizard(final String id) {

@@ -38,7 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 public final class WizardFactory {
 
     private static class WizardFactoryHolder {
-        private static volatile WizardFactory INSTANCE = new WizardFactory();
+        private static volatile WizardFactory instance = new WizardFactory();
     }
 
     private final IProjectModelProvider projectModelProvider;
@@ -51,7 +51,7 @@ public final class WizardFactory {
     }
 
     public static WizardFactory getInstance() {
-        return WizardFactoryHolder.INSTANCE;
+        return WizardFactoryHolder.instance;
     }
 
     public SelectNetworkNameWidget getDatasetNameSelectorForNetwork(Composite parent, ISelectNetworkListener listener,

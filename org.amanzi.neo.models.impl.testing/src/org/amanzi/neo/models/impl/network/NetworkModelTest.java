@@ -52,7 +52,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     private static final String DEFAULT_ELEMENT_NAME = "element name";
 
-    private static final INetworkElementType DEFAULT_ELEMENT_TYPE = NetworkElementType.SITE;
+    private static final INetworkElementType DEFAULT_ELEMENT_TYPE = NetworkElementType.BSC;
 
     private INodeService nodeService;
 
@@ -151,10 +151,10 @@ public class NetworkModelTest extends AbstractMockitoTest {
     @Test
     public void testCheckActivityOnCreatingNewElement() throws Exception {
         Map<String, Object> properties = getProperties();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
 
         networkModel.createElement(DEFAULT_ELEMENT_TYPE, parentElement, DEFAULT_ELEMENT_NAME, properties);
 
-        verify(networkModel).findElement(DEFAULT_ELEMENT_TYPE, DEFAULT_ELEMENT_NAME);
         verify(nodeService).createNode(parentNode, DEFAULT_ELEMENT_TYPE, NodeServiceRelationshipType.CHILD, DEFAULT_ELEMENT_NAME,
                 properties);
     }

@@ -47,7 +47,7 @@ public abstract class AbstractPageWidget<C extends Composite, E extends IAbstrac
 
     private final List<E> listeners = new ArrayList<E>();
 
-    protected AbstractPageWidget(final boolean isEnabled, final Composite parent, E listener,
+    protected AbstractPageWidget(final boolean isEnabled, final Composite parent, final E listener,
             final IProjectModelProvider projectModelProvider) {
         this.parent = parent;
         this.isEnabled = isEnabled;
@@ -77,7 +77,7 @@ public abstract class AbstractPageWidget<C extends Composite, E extends IAbstrac
         return new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
     }
 
-    public void addListener(E listener) {
+    private void addListener(final E listener) {
         listeners.add(listener);
     }
 

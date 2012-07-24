@@ -45,8 +45,8 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
     protected static StatisticsService statisticsService;
     protected static final String PARENT_NAME = "model";
     protected static final String MODEL_NAME = "model";
-    protected static Node parentNode;
-    protected static Node statisticModelNode;
+    protected Node parentNode;
+    protected Node statisticModelNode;
     protected static final int ARRAYS_SIZE = 5;
     protected static final String SCELL_NAME = "scell";
     protected static final String SGROUP_NAME = "sgroup";
@@ -70,7 +70,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param hourly
      * @return
      */
-    protected Node getMockedAggregatedStatistics(String name) {
+    protected Node getMockedAggregatedStatistics(final String name) {
         Node aggregation = getMockedNode();
         when(statisticsService.getNodeProperty(eq(aggregation), eq(DatasetService.NAME))).thenReturn(name);
         when(statisticsService.getType(eq(aggregation))).thenReturn(StatisticsNodeTypes.STATISTICS.getId());
@@ -108,7 +108,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param min
      * @param max
      */
-    protected void mockTimestampParent(Long min, Long max) {
+    protected void mockTimestampParent(final Long min, final Long max) {
         when(parentNode.getProperty(eq(DriveModel.MIN_TIMESTAMP))).thenReturn(min);
         when(parentNode.getProperty(eq(DriveModel.MAX_TIMESTAMP))).thenReturn(max);
     }
@@ -124,7 +124,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param fakeDimensionType
      * @return
      */
-    protected Node getMockedNodeWithNameAndType(String type, String name) {
+    protected Node getMockedNodeWithNameAndType(final String type, final String name) {
         Node dimension = getMockedNode();
         when(statisticsService.getType(eq(dimension))).thenReturn(type);
         when(statisticsService.getNodeProperty(eq(dimension), eq(DatasetService.NAME))).thenReturn(name);
@@ -134,7 +134,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
     /**
      * return mocked dimension node
      */
-    protected Node getMockedDimension(DimensionTypes type) {
+    protected Node getMockedDimension(final DimensionTypes type) {
         return getMockedNodeWithNameAndType(StatisticsNodeTypes.DIMENSION.getId(), type.getId());
     }
 
@@ -144,7 +144,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param name
      * @return
      */
-    protected Node getMockedLevel(String name, boolean mockFoundation) {
+    protected Node getMockedLevel(final String name, final boolean mockFoundation) {
         Node statRoot = getMockedNode();
         if (mockFoundation) {
             when(statisticsService.findStatisticsLevelNode(any(Node.class), eq(name))).thenReturn(statRoot);
@@ -159,7 +159,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * 
      * @return
      */
-    protected Node getMockedGroup(String name) {
+    protected Node getMockedGroup(final String name) {
         Node mockedGroup = getMockedNode();
         when(statisticsService.getNodeProperty(eq(mockedGroup), eq(DatasetService.NAME))).thenReturn(name);
         when(statisticsService.getType(eq(mockedGroup))).thenReturn(StatisticsNodeTypes.S_GROUP.getId());
@@ -172,7 +172,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param timstamp
      * @return
      */
-    protected Node getMockedSrow(Long timstamp, String name) {
+    protected Node getMockedSrow(final Long timstamp, final String name) {
         Node mockedSrow = getMockedNode();
         when(statisticsService.getType(eq(mockedSrow))).thenReturn(StatisticsNodeTypes.S_ROW.getId());
         when(statisticsService.getNodeProperty(eq(mockedSrow), eq(DriveModel.TIMESTAMP))).thenReturn(timstamp);
@@ -186,7 +186,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param name
      * @return
      */
-    protected Node getMockedScell(String name) {
+    protected Node getMockedScell(final String name) {
         Node mockedScell = getMockedNode();
         when(statisticsService.getNodeProperty(eq(mockedScell), eq(DatasetService.NAME))).thenReturn(name);
         when(statisticsService.getType(eq(mockedScell))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
@@ -198,7 +198,7 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
      * @param size
      * @return
      */
-    protected List<IDataElement> generateSources(int size) {
+    protected List<IDataElement> generateSources(final int size) {
         List<IDataElement> dataElements = new ArrayList<IDataElement>();
         for (int i = 0; i < size; i++) {
             Node sourceNode = getMockedNode();

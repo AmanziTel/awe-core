@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.impl.MappedStringData;
@@ -36,6 +37,8 @@ import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -76,6 +79,12 @@ public class NetworkSaverTest extends AbstractMockitoTest {
      */
     @Before
     public void setUp() throws Exception {
+        GraphDatabaseService dbService = mock(GraphDatabaseService.class);
+        DatabaseManagerFactory.getDatabaseManager().setDatabaseService(dbService);
+
+        Transaction tx = mock(Transaction.class);
+        doReturn(tx).when(dbService).beginTx();
+
         configuration = mock(IConfiguration.class);
         when(configuration.getDatasetName()).thenReturn(NETWORK_NAME);
 
@@ -139,6 +148,7 @@ public class NetworkSaverTest extends AbstractMockitoTest {
         saver.save(getData(type));
 
         Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), NAME_VALUE);
 
         verify(networkModel).findElement(type, NAME_VALUE);
         verify(networkModel).createElement(eq(type), eq(networkNode), eq(NAME_VALUE), eq(properties));

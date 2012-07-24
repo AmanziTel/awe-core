@@ -29,9 +29,9 @@ import org.eclipse.jface.wizard.IWizardPage;
  */
 public interface ILoaderPage<T extends IConfiguration> extends IWizardPage {
 
-    public void addLoader(ILoader<T, ? > loader);
+    void addLoader(ILoader<T, ? > loader);
 
-    public List<ILoader<T, ? >> getLoaders();
+    List<ILoader<T, ? >> getLoaders();
 
     ILoader<T, ? > getCurrentLoader();
 }

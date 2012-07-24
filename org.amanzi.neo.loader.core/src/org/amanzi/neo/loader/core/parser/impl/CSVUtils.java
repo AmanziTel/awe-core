@@ -36,7 +36,7 @@ public final class CSVUtils {
 
     private static final Logger LOGGER = Logger.getLogger(CSVUtils.class);
 
-    private static final char[] possibleFieldSepRegexes = new char[] {'\t', ',', ';', ' ', '\n'};
+    private static final char[] POSSIBLE_SEPARATORS = new char[] {'\t', ',', ';', ' ', '\n'};
 
     private static final int MINIMAL_HEADERS_SIZE = 2;
 
@@ -67,7 +67,7 @@ public final class CSVUtils {
             read = new BufferedReader(new FileReader(file));
             while ((line = read.readLine()) != null) {
                 int maxMatch = 0;
-                for (char regex : possibleFieldSepRegexes) {
+                for (char regex : POSSIBLE_SEPARATORS) {
                     String[] fields = line.split(Character.toString(regex));
                     if (fields.length > maxMatch) {
                         maxMatch = fields.length;

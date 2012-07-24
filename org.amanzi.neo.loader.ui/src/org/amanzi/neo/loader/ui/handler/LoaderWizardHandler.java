@@ -79,7 +79,6 @@ public class LoaderWizardHandler extends AbstractHandler {
     }
 
     protected Dialog createDialog(final Shell shell, final IWizard wizard) {
-        Dialog result = new WizardDialog(shell, wizard);
-        return result;
+        return new WizardDialog(shell, wizard);
     }
 }

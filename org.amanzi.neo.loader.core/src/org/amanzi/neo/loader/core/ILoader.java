@@ -19,7 +19,6 @@ import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidator;
-import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -36,7 +35,7 @@ public interface ILoader<C extends IConfiguration, D extends IData> {
 
     void init(C configuration) throws LoaderException;
 
-    void run(IProgressMonitor monitor) throws ModelException;
+    void run(IProgressMonitor monitor) throws LoaderException;
 
     IValidationResult validate(C configuration);
 

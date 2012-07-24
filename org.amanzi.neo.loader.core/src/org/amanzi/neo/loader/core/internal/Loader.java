@@ -62,7 +62,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
     }
 
     @Override
-    public void run(final IProgressMonitor monitor) throws ModelException {
+    public void run(final IProgressMonitor monitor) throws LoaderException {
         long timeBefore = System.currentTimeMillis();
 
         parser.setProgressMonitor(monitor);

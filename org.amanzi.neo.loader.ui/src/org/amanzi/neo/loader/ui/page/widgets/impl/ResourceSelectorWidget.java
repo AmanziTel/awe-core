@@ -73,8 +73,9 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
             fileEditor.setFileExtensions(fileExtensions);
 
             editor = fileEditor;
-
             break;
+            default:
+                break;
         }
 
         editor.getTextControl(parent).addModifyListener(this);

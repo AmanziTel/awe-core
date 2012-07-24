@@ -15,6 +15,8 @@ package org.amanzi.neo.loader.core.synonyms;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 /**
  * TODO Purpose of
  * <p>
@@ -30,7 +32,7 @@ public class Synonyms {
 
         private Class< ? > clazz;
 
-        private SynonymType(Class< ? > clazz) {
+        private SynonymType(final Class< ? > clazz) {
             this.clazz = clazz;
         }
 
@@ -38,7 +40,7 @@ public class Synonyms {
             return clazz;
         }
 
-        public static SynonymType findByClass(String clazz) {
+        public static SynonymType findByClass(final String clazz) {
             for (SynonymType singleType : values()) {
                 if ((singleType.clazz != null) && singleType.clazz.getSimpleName().equals(clazz)) {
                     return singleType;
@@ -60,14 +62,15 @@ public class Synonyms {
     /**
      * 
      */
-    public Synonyms(String propertyName, SynonymType synonymType, boolean isMandatory, String[] possibleHeaders) {
+    public Synonyms(final String propertyName, final SynonymType synonymType, final boolean isMandatory,
+            final String[] possibleHeaders) {
         this.propertyName = propertyName;
         this.synonymType = synonymType;
         this.possibleHeaders = Arrays.copyOf(possibleHeaders, possibleHeaders.length);
         this.isMandatory = isMandatory;
     }
 
-    public Synonyms(String propertyName, String[] possibleHeaders) {
+    public Synonyms(final String propertyName, final String[] possibleHeaders) {
         this(propertyName, SynonymType.UNKOWN, false, possibleHeaders);
     }
 
@@ -89,7 +92,7 @@ public class Synonyms {
      * @return Returns the possibleHeaders.
      */
     public String[] getPossibleHeaders() {
-        return possibleHeaders;
+        return ArrayUtils.clone(possibleHeaders);
     }
 
     public boolean isMandatory() {
