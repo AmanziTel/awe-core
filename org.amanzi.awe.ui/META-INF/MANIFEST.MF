@@ -10,7 +10,8 @@ Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reex
  org.eclipse.ui;bundle-version="3.7.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.ui.events,
+Export-Package: org.amanzi.awe.ui,
+ org.amanzi.awe.ui.events,
  org.amanzi.awe.ui.events.impl,
  org.amanzi.awe.ui.icons,
  org.amanzi.awe.ui.label,

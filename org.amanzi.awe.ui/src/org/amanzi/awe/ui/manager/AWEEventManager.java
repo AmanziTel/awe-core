@@ -26,6 +26,7 @@ import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.models.render.IGISModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -59,7 +60,7 @@ public final class AWEEventManager {
 
     private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
 
-    private static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
+    public static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
 
     private final Map<EventStatus, List<IAWEEventListenter>> listeners = new HashMap<EventStatus, List<IAWEEventListenter>>();
 
@@ -102,30 +103,56 @@ public final class AWEEventManager {
         }
     }
 
-    private void fireEvent(final IEvent event) {
+    private void fireEvent(final IEvent event, final boolean inDisplay) {
         List<IAWEEventListenter> eventListeners = listeners.get(event.getStatus());
 
         if (eventListeners != null) {
             for (IAWEEventListenter singleListener : eventListeners) {
-                singleListener.onEvent(event);
+                if (inDisplay) {
+                    runEventListener(event, singleListener);
+                } else {
+                    singleListener.onEvent(event);
+                }
             }
         }
     }
 
+    private void runEventListener(final IEvent event, final IAWEEventListenter singleListener) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+
+            @Override
+            public void run() {
+                singleListener.onEvent(event);
+            }
+        }, event.isAsync());
+    }
+
     public synchronized void fireAWEStartedEvent() {
-        fireEvent(AWE_STARTED_EVENT);
+        fireEvent(AWE_STARTED_EVENT, true);
     }
 
     public synchronized void fireProjectNameChangedEvent(final String newProjectName) {
-        fireEvent(new ProjectNameChangedEvent(newProjectName));
+        fireEvent(new ProjectNameChangedEvent(newProjectName), true);
     }
 
     public synchronized void fireDataUpdatedEvent() {
-        fireEvent(DATA_UPDATED_EVENT);
+        fireEvent(DATA_UPDATED_EVENT, true);
     }
 
     public synchronized void fireShowOnMapEvent(final IGISModel model) {
-        fireEvent(new ShowGISOnMap(model));
+        fireEvent(new ShowGISOnMap(model), true);
+    }
+
+    public synchronized void fireEventChain(final EventChain eventChain) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+
+            @Override
+            public void run() {
+                for (IEvent event : eventChain.getEvents()) {
+                    fireEvent(event, false);
+                }
+            }
+        }, eventChain.isAsync());
     }
 
     private void initializeExtensionPointListeners() {

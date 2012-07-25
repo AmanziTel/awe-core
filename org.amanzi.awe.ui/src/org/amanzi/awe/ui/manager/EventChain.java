@@ -11,10 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events.impl;
+package org.amanzi.awe.ui.manager;
 
-import org.amanzi.awe.ui.events.EventStatus;
-import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.awe.ui.events.IEvent;
 
 /**
  * TODO Purpose of
@@ -24,13 +26,30 @@ import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DataUpdatedEvent extends AbstractEvent {
+public class EventChain {
+
+    private final boolean isAsync;
+
+    private final List<IEvent> events = new ArrayList<IEvent>();
 
     /**
      * @param status
+     * @param isAsync
      */
-    public DataUpdatedEvent() {
-        super(EventStatus.DATA_UPDATED, true);
+    public EventChain(final boolean isAsync) {
+        this.isAsync = isAsync;
+    }
+
+    public void addEvent(final IEvent event) {
+        events.add(event);
+    }
+
+    public List<IEvent> getEvents() {
+        return events;
+    }
+
+    public boolean isAsync() {
+        return isAsync;
     }
 
 }
