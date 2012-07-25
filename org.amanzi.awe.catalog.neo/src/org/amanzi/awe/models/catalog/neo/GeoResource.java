@@ -22,7 +22,6 @@ import net.refractions.udig.catalog.IGeoResourceInfo;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.models.render.IGISModel;
-import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -95,16 +94,13 @@ public class GeoResource extends IGeoResource {
 
     @Override
     public <T> boolean canResolve(final Class<T> adaptee) {
-        return (((adaptee.isAssignableFrom(IGISModel.class) || adaptee.isAssignableFrom(IRenderableModel.class)) && ((source instanceof IGISModel))) || super
-                .canResolve(adaptee));
+        return ((source instanceof IGISModel) || ((source.canResolve(adaptee)) && super.canResolve(adaptee)));
     }
 
     @Override
     public <T> T resolve(final Class<T> adaptee, final IProgressMonitor monitor) throws IOException {
         if (adaptee.isAssignableFrom(IGISModel.class)) {
             return adaptee.cast(source);
-        } else if (adaptee.isAssignableFrom(IRenderableModel.class)) {
-            return adaptee.cast(source.getSourceModel());
         }
         return super.resolve(adaptee, monitor);
     }

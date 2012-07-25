@@ -36,7 +36,7 @@ public class GeoResourceInfo extends IGeoResourceInfo {
             @Override
             public ImageData getImageData() {
                 if (imageData == null) {
-                    imageData = IconManager.getInstance().getImage(sourceModel.getSourceModel().getType()).getImageData();
+                    imageData = IconManager.getInstance().getImage(sourceModel.getType()).getImageData();
                 }
                 return imageData;
             }

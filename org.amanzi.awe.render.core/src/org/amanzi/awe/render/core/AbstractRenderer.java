@@ -55,12 +55,11 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public abstract class AbstractRenderer<M extends IRenderableModel> extends RendererImpl {
+public abstract class AbstractRenderer extends RendererImpl {
     private static Logger LOGGER = Logger.getLogger(AbstractRenderer.class);
     protected static BaseNeoStyle style;
 
     protected IGISModel model;
-    protected M renderableModel;
 
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
@@ -152,7 +151,6 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
             setStyle(destination);
             // find a resource to render
             model = resource.resolve(IGISModel.class, monitor);
-            renderableModel = resource.resolve(getResolvedClass(), monitor);
             // get rendering bounds and zoom
             setCrsTransforms(resource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -161,7 +159,7 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
             if (bounds_transformed == null) {
                 commonStyle.setScale(Scale.MEDIUM);
             } else if ((data_bounds != null) && (data_bounds.getHeight() > 0) && (data_bounds.getWidth() > 0)) {
-                count = getRenderableElementCount(renderableModel);
+                count = getRenderableElementCount(model);
                 setScaling(bounds_transformed, data_bounds, monitor, count);
             }
             renderElements(destination, bounds_transformed, data_bounds, monitor);
@@ -188,10 +186,10 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
     private void renderElements(final Graphics2D destination, final Envelope bounds_transformed, final Envelope data_bounds,
             final IProgressMonitor monitor) throws NoninvertibleTransformException, ModelException, TransformException {
 
-        for (ILocationElement element : renderableModel.getElements(data_bounds)) {
-            Point point = getPoint(renderableModel, element, bounds_transformed);
+        for (ILocationElement element : model.getElements(data_bounds)) {
+            Point point = getPoint(model, element, bounds_transformed);
             if (point != null) {
-                renderElement(destination, point, element, renderableModel);
+                renderElement(destination, point, element, model);
             } else {
                 continue;
             }
@@ -212,7 +210,7 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
      * @return point or null
      * @throws TransformException
      */
-    protected Point getPoint(final M model, final ILocationElement element, final Envelope bounds_transformed)
+    protected Point getPoint(final IGISModel model, final ILocationElement element, final Envelope bounds_transformed)
             throws TransformException {
 
         Coordinate location = new Coordinate(element.getLongitude(), element.getLatitude());
@@ -235,7 +233,7 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
      * 
      * @param model2
      */
-    protected abstract long getRenderableElementCount(M model);
+    protected abstract long getRenderableElementCount(IGISModel model);
 
     /**
      * render element based on latitude and longitude values;
@@ -382,7 +380,7 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
      * @param point
      * @param element
      */
-    protected abstract void renderElement(Graphics2D destination, Point point, ILocationElement element, M model)
+    protected abstract void renderElement(Graphics2D destination, Point point, ILocationElement element, IGISModel model)
             throws ModelException;
 
     @Override
@@ -452,7 +450,7 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
      * 
      * @return
      */
-    protected abstract Class< ? extends M> getResolvedClass();
+    protected abstract Class< ? extends IRenderableModel> getResolvedClass();
 
     /**
      * calculate average between necessary nodes count and size
@@ -461,7 +459,7 @@ public abstract class AbstractRenderer<M extends IRenderableModel> extends Rende
      * @param resource
      * @return
      */
-    protected double calculateResult(final Envelope dbounds, final M resource) {
+    protected double calculateResult(final Envelope dbounds, final IGISModel resource) {
         return 0d;
     }
 }

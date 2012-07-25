@@ -15,6 +15,7 @@ package org.amanzi.neo.models.render;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -44,8 +45,6 @@ public interface IGISModel extends IModel {
 
     CoordinateReferenceSystem getCRS();
 
-    IRenderableModel getSourceModel();
-
     double getMinLatitude();
 
     double getMaxLatitude();
@@ -56,5 +55,7 @@ public interface IGISModel extends IModel {
 
     ReferencedEnvelope getBounds();
 
-    Iterable<ILocationElement> getElements(Envelope bound);
+    Iterable<ILocationElement> getElements(Envelope bound) throws ModelException;
+
+    boolean canResolve(Class< ? > clazz);
 }

@@ -148,11 +148,6 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         }
     }
 
-    @Override
-    public IRenderableModel getSourceModel() {
-        return sourceModel;
-    }
-
     /**
      * @return Returns the minLatitude.
      */
@@ -191,9 +186,17 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     }
 
     @Override
-    public Iterable<ILocationElement> getElements(final Envelope bound) {
-        // TODO Auto-generated method stub
-        return null;
+    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
+        return sourceModel.getElements(bound);
     }
 
+    @Override
+    public boolean canResolve(final Class< ? > clazz) {
+        return sourceModel.getClass().isAssignableFrom(clazz);
+    }
+
+    @Override
+    public INodeType getType() {
+        return sourceModel.getType();
+    }
 }

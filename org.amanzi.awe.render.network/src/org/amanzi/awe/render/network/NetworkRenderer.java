@@ -31,8 +31,9 @@ import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.INetworkModel.ISectorElement;
 import org.amanzi.neo.models.network.INetworkModel.ISiteElement;
 import org.amanzi.neo.models.network.NetworkElementType;
+import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
-import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
@@ -49,7 +50,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class NetworkRenderer extends AbstractRenderer<INetworkModel> {
+public class NetworkRenderer extends AbstractRenderer {
 
     private static final double FULL_CIRCLE = 360.0;
 
@@ -65,8 +66,8 @@ public class NetworkRenderer extends AbstractRenderer<INetworkModel> {
     }
 
     @Override
-    protected void renderElement(final Graphics2D destination, final Point point, final ILocationElement site,
-            final INetworkModel model) throws ModelException {
+    protected void renderElement(final Graphics2D destination, final Point point, final ILocationElement site, final IGISModel model)
+            throws ModelException {
 
         ISiteElement siteElement = (ISiteElement)site;
 
@@ -178,7 +179,7 @@ public class NetworkRenderer extends AbstractRenderer<INetworkModel> {
     }
 
     @Override
-    protected double calculateResult(final Envelope dbounds, final INetworkModel resource) {
+    protected double calculateResult(final Envelope dbounds, final IGISModel resource) {
 
         return (getRenderableElementCount(resource) / (dbounds.getHeight() * dbounds.getWidth()));
     }
@@ -189,13 +190,12 @@ public class NetworkRenderer extends AbstractRenderer<INetworkModel> {
     }
 
     @Override
-    protected long getRenderableElementCount(final INetworkModel model) {
-        IPropertyStatisticsModel propertyStatistics = model.getPropertyStatistics();
-        return propertyStatistics.getCount(NetworkElementType.SITE);
+    protected long getRenderableElementCount(final IGISModel model) {
+        return 0;
     }
 
     @Override
-    protected Class< ? extends INetworkModel> getResolvedClass() {
+    protected Class< ? extends IRenderableModel> getResolvedClass() {
         return INetworkModel.class;
     }
 
