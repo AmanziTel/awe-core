@@ -38,12 +38,12 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
     /**
      * @param nodeService
      */
-    public AbstractDataModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+    public AbstractDataModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         super(nodeService, generalNodeProperties);
     }
 
     @Override
-    public IDataElement getParentElement(IDataElement childElement) throws ModelException {
+    public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
         assert childElement != null;
 
         if (LOGGER.isDebugEnabled()) {
@@ -55,7 +55,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         try {
             Node childNode = ((DataElement)childElement).getNode();
 
-            Node parentNode = getNodeService().getParent(childNode);
+            Node parentNode = getNodeService().getParent(childNode, getRelationTypeToParent());
 
             result = new DataElement(parentNode);
         } catch (ServiceException e) {
@@ -67,5 +67,10 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         }
 
         return result;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+        return null;
     }
 }

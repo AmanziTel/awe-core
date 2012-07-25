@@ -35,4 +35,6 @@ public interface IDataModel extends IModel {
      */
     IDataElement getParentElement(IDataElement childElement) throws ModelException;
 
+    Iterable<IDataElement> getChildren(IDataElement parentElement) throws ModelException;
+
 }

@@ -13,10 +13,12 @@
 
 package org.amanzi.neo.models.network;
 
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -31,6 +33,20 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 
 public interface INetworkModel extends IPropertyStatisticalModel, IRenderableModel {
+
+    public interface ISectorElement extends IDataElement {
+
+        double getAzimuth();
+
+        double getBeamwidth();
+
+    }
+
+    public interface ISiteElement extends ILocationElement {
+
+        List<ISectorElement> getSectors();
+
+    }
 
     public interface INetworkElementType extends INodeType {
 

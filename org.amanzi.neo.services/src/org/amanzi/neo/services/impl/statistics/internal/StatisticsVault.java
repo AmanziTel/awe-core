@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 
 /**
  * TODO Purpose of
@@ -31,7 +30,7 @@ import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsVault implements IPropertyStatistics {
+public class StatisticsVault {
 
     private int count;
 
@@ -43,7 +42,6 @@ public class StatisticsVault implements IPropertyStatistics {
         isChanged = false;
     }
 
-    @Override
     public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
         assert nodeType != null;
         assert properties != null;
@@ -55,7 +53,6 @@ public class StatisticsVault implements IPropertyStatistics {
         isChanged = true;
     }
 
-    @Override
     public Set<String> getPropertyNames() {
         Set<String> result = new HashSet<String>();
 
@@ -66,27 +63,22 @@ public class StatisticsVault implements IPropertyStatistics {
         return result;
     }
 
-    @Override
     public Set<String> getPropertyNames(final INodeType nodeType) {
         return getNodeTypeVaule(nodeType).getPropertyNames();
     }
 
-    @Override
     public int getCount() {
         return count;
     }
 
-    @Override
     public int getCount(final INodeType nodeType) {
         return getNodeTypeVaule(nodeType).getCount();
     }
 
-    @Override
     public Set<Object> getValues(final INodeType nodeType, final String property) {
         return getNodeTypeVaule(nodeType).getValues(property);
     }
 
-    @Override
     public int getValueCount(final INodeType nodeType, final String property, final Object value) {
         return getNodeTypeVaule(nodeType).getValueCount(property, value);
     }

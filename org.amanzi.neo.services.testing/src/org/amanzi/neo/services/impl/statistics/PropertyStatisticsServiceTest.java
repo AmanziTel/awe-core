@@ -520,7 +520,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
     public void testCheckResultOfLoadStatisticsVault() throws Exception {
         doReturn(vault).when(service).loadStatisticsVault(statNode);
 
-        IPropertyStatistics result = service.loadStatisticsVault(statNode);
+        StatisticsVault result = service.loadStatisticsVault(statNode);
 
         assertNotNull("statistics cannot be null", result);
     }
@@ -530,7 +530,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         doReturn(vault).when(service).loadStatisticsVault(statNode);
         doReturn(statNode).when(service).getStatisticsNode(rootNode);
 
-        IPropertyStatistics result = service.loadStatistics(rootNode);
+        StatisticsVault result = service.loadStatistics(rootNode);
 
         assertEquals("Unexpected statistics", vault, result);
 

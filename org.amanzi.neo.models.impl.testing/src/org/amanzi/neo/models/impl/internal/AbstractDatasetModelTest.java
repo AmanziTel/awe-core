@@ -16,6 +16,7 @@ package org.amanzi.neo.models.impl.internal;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
@@ -25,6 +26,8 @@ import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -36,7 +39,7 @@ import org.neo4j.graphdb.Node;
  */
 public class AbstractDatasetModelTest extends AbstractMockitoTest {
 
-   public static class TestDatasetModel extends AbstractDatasetModel {
+    public static class TestDatasetModel extends AbstractDatasetModel {
 
         /**
          * @param nodeService
@@ -55,6 +58,18 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
 
         @Override
         public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public IPropertyStatisticsModel getPropertyStatistics() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Iterable<ILocationElement> getElements(final Envelope bound) {
             // TODO Auto-generated method stub
             return null;
         }

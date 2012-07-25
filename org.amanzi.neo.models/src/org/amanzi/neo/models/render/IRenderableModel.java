@@ -16,6 +16,9 @@ package org.amanzi.neo.models.render;
 import java.util.List;
 
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -32,5 +35,7 @@ public interface IRenderableModel extends IModel {
     List<IGISModel> getAllGIS();
 
     void addGISModel(IGISModel model);
+
+    Iterable<ILocationElement> getElements(Envelope bound);
 
 }

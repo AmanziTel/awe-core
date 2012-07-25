@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.render;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -26,6 +27,14 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public interface IGISModel extends IModel {
+
+    public interface ILocationElement extends IDataElement {
+
+        double getLatitude();
+
+        double getLongitude();
+
+    }
 
     void updateBounds(double latitude, double longitude);
 

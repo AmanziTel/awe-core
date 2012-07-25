@@ -70,26 +70,24 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
     }
 
     @Override
-    public synchronized void saveStatistics(final Node node, final IPropertyStatistics vault) throws ServiceException {
+    public synchronized void saveStatistics(final Node node, final StatisticsVault vault) throws ServiceException {
         assert node != null;
         assert vault != null;
 
         Node statisticsNode = getStatisticsNode(node);
 
         if (vault instanceof StatisticsVault) {
-            saveStatisticsVault(statisticsNode, (StatisticsVault)vault);
+            saveStatisticsVault(statisticsNode, vault);
         }
     }
 
     @Override
-    public synchronized IPropertyStatistics loadStatistics(final Node rootNode) throws ServiceException, NodeTypeNotExistsException {
+    public synchronized StatisticsVault loadStatistics(final Node rootNode) throws ServiceException, NodeTypeNotExistsException {
         assert rootNode != null;
 
         Node statisticsNode = getStatisticsNode(rootNode);
 
-        IPropertyStatistics result = loadStatisticsVault(statisticsNode);
-
-        return result;
+        return loadStatisticsVault(statisticsNode);
     }
 
     protected NodeTypeVault loadNodeTypeVault(final Node nodeTypeVaultNode) throws ServiceException, NodeTypeNotExistsException {
