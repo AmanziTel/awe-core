@@ -7,9 +7,13 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.label.CommonViewLabelProvider;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
-import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.models.IModel;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -26,7 +30,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Vladislav_Kondratenko
  * @since 0.3
  */
-public class ProjectExplorerView extends ViewPart {
+public class ProjectExplorerView extends ViewPart implements IAWEEventListenter {
     /*
      * ID of this View
      */
@@ -74,6 +78,8 @@ public class ProjectExplorerView extends ViewPart {
 
         getSite().setSelectionProvider(viewer);
         setLayout(parent);
+
+        AWEEventManager.getManager().addListener(this, EventStatus.DATA_UPDATED);
     }
 
     /**
@@ -107,6 +113,7 @@ public class ProjectExplorerView extends ViewPart {
 
     @Override
     public void dispose() {
+        AWEEventManager.getManager().removeListener(this);
         super.dispose();
     }
 
@@ -127,6 +134,21 @@ public class ProjectExplorerView extends ViewPart {
         viewer.refresh();
         viewer.reveal(dataElement);
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        switch (event.getStatus()) {
+        case DATA_UPDATED:
+            updateView();
+            break;
+        default:
+            break;
+        }
+    }
+
+    private void updateView() {
+        viewer.refresh();
     }
 
 }

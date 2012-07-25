@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.providers;
 
+import java.util.List;
+
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.internal.IModelProvider;
@@ -34,5 +36,7 @@ public interface IProjectModelProvider extends IModelProvider<IProjectModel> {
     IProjectModel getActiveProjectModel();
 
     void setActiveProjectModel(IProjectModel projectModel);
+
+    List<IProjectModel> findAll() throws ModelException;
 
 }
