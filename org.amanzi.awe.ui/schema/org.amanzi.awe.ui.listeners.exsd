@@ -83,6 +83,8 @@
                   </enumeration>
                   <enumeration value="SHOW_GIS_ON_MAP">
                   </enumeration>
+                  <enumeration value="AWE_STOPPED">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>

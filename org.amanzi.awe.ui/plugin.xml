@@ -10,6 +10,12 @@
                status="PROJECT_CHANGED">
          </eventStatus>
       </listener>
+      <listener
+            class="org.amanzi.awe.ui.application.ApplicationActivityListener">
+         <eventStatus
+               status="AWE_STOPPED">
+         </eventStatus>
+      </listener>
    </extension>
 
 </plugin>
