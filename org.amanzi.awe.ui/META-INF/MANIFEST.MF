@@ -13,6 +13,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.ui.events,
  org.amanzi.awe.ui.events.impl,
  org.amanzi.awe.ui.icons,
+ org.amanzi.awe.ui.label,
  org.amanzi.awe.ui.listener,
  org.amanzi.awe.ui.manager,
  org.amanzi.awe.ui.util
