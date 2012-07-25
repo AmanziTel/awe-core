@@ -45,11 +45,18 @@ import org.neo4j.kernel.Traversal;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public final class StatisticsService extends AbstractService {
+public class StatisticsService extends AbstractService {
     /*
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsService.class);
+
+    private static final class SingletonHolder {
+        public static final StatisticsService HOLDER_INSTANCE = new StatisticsService();
+
+        private SingletonHolder() {
+        }
+    }
 
     /**
      * reverse traversal
@@ -68,13 +75,8 @@ public final class StatisticsService extends AbstractService {
         }
     }
 
-    static StatisticsService service;
-
     public static StatisticsService getInstance() {
-        if (service == null) {
-            service = new StatisticsService();
-        }
-        return service;
+        return SingletonHolder.HOLDER_INSTANCE;
     }
 
     /**
