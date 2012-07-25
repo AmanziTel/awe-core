@@ -15,8 +15,6 @@ package org.amanzi.neo.dto;
 
 import java.util.Set;
 
-import org.amanzi.neo.nodetypes.INodeType;
-
 /**
  * <p>
  * This interface represents a 'proxy' object between view and database layers.

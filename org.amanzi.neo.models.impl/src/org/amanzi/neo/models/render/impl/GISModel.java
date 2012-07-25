@@ -31,6 +31,8 @@ import org.neo4j.graphdb.RelationshipType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 /**
  * TODO Purpose of
  * <p>
@@ -186,6 +188,12 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     @Override
     public ReferencedEnvelope getBounds() {
         return new ReferencedEnvelope(minLongitude, maxLongitude, minLatitude, maxLatitude, crs);
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

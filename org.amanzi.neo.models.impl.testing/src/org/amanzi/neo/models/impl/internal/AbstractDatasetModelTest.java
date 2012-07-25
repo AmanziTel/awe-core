@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import org.amanzi.awe.filters.IFilter;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -70,6 +71,18 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
 
         @Override
         public Iterable<ILocationElement> getElements(final Envelope bound) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        protected ILocationElement getLocationElement(final Node node) {
             // TODO Auto-generated method stub
             return null;
         }

@@ -18,6 +18,8 @@ import org.amanzi.neo.models.IModel;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 /**
  * TODO Purpose of
  * <p>
@@ -53,4 +55,6 @@ public interface IGISModel extends IModel {
     double getMaxLongitude();
 
     ReferencedEnvelope getBounds();
+
+    Iterable<ILocationElement> getElements(Envelope bound);
 }

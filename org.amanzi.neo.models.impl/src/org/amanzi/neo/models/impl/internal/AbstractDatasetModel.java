@@ -14,17 +14,21 @@
 package org.amanzi.neo.models.impl.internal;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -35,6 +39,22 @@ import org.amanzi.neo.services.INodeService;
  * @since 1.0.0
  */
 public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel, IRenderableModel {
+
+    protected final class LocationIterator extends AbstractDataElementIterator<ILocationElement> {
+
+        /**
+         * @param nodeIterator
+         */
+        public LocationIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected ILocationElement createDataElement(final Node node) {
+            return getLocationElement(node);
+        }
+
+    }
 
     private IIndexModel indexModel;
 
@@ -122,5 +142,12 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         mainGISModel = model;
         addGISModel(mainGISModel);
     }
+
+    @Override
+    public IPropertyStatisticsModel getPropertyStatistics() {
+        return propertyStatisticsModel;
+    }
+
+    protected abstract ILocationElement getLocationElement(Node node);
 
 }

@@ -36,9 +36,9 @@ public interface INetworkModel extends IPropertyStatisticalModel, IRenderableMod
 
     public interface ISectorElement extends IDataElement {
 
-        double getAzimuth();
+        Double getAzimuth();
 
-        double getBeamwidth();
+        Double getBeamwidth();
 
     }
 

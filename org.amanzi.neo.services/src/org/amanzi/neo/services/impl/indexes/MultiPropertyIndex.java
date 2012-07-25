@@ -26,6 +26,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 
@@ -726,21 +727,20 @@ public class MultiPropertyIndex<E extends Object> {
         }
     }
 
-    public Traverser searchTraverser(final E[] min, final E[] max) {
+    public TraversalDescription searchTraverser(final E[] min, final E[] max) {
         try {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
             SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, null);
             // Then we return a traverser using this evaluator
             return Traversal.description().breadthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
-                    .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator)
-                    .traverse(root);
+                    .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
     public Iterable<Node> find(final E[] min, final E[] max) {
-        return searchTraverser(min, max).nodes();
+        return searchTraverser(min, max).traverse(root).nodes();
     }
 
     /**

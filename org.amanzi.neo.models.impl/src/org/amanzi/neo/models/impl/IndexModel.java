@@ -122,12 +122,24 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     }
 
     @Override
-    public void indexInMultiProperty(final INodeType nodeType, final Node node, final Class< ? > clazz, final String... properties) throws ModelException {
+    public void indexInMultiProperty(final INodeType nodeType, final Node node, final Class< ? > clazz, final String... properties)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("indexMultiProperty", nodeType, node, properties));
         }
 
-        MultiPropertyIndex< ? > index = indexMap.get(properties);
+        MultiPropertyIndex< ? > index = getMultiPropertyIndex(nodeType, clazz, properties);
+        index.add(node);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("indexMultiProperty"));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Object> MultiPropertyIndex<T> getMultiPropertyIndex(final INodeType nodeType, final Class<T> clazz,
+            final String... properties) throws ModelException {
+        MultiPropertyIndex<T> index = (MultiPropertyIndex<T>)indexMap.get(properties);
 
         if (index == null) {
             try {
@@ -138,11 +150,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             }
         }
 
-        index.add(node);
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("indexMultiProperty"));
-        }
+        return index;
     }
 
     @Override
@@ -158,6 +166,24 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         } catch (ServiceException e) {
             processException("Exception on searching for a Node in Index", e);
         }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getNodes"));
+        }
+
+        return result;
+    }
+
+    @Override
+    public <T> Iterator<Node> getNodes(final INodeType nodeType, final Class<T> clazz, final T[] min, final T[] max,
+            final String... properties) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getNodes", nodeType, min, max));
+        }
+
+        MultiPropertyIndex<T> index = getMultiPropertyIndex(nodeType, clazz, properties);
+
+        Iterator<Node> result = index.find(min, max).iterator();
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getNodes"));

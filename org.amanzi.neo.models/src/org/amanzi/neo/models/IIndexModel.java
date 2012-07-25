@@ -35,5 +35,9 @@ public interface IIndexModel extends IModel {
 
     void index(final INodeType nodeType, final Node node, final String propertyName, Object value) throws ModelException;
 
-    void indexInMultiProperty(final INodeType nodeType, final Node node, Class< ? > clazz, String... properties) throws ModelException;
+    void indexInMultiProperty(final INodeType nodeType, final Node node, Class< ? > clazz, String... properties)
+            throws ModelException;
+
+    <T extends Object> Iterator<Node> getNodes(final INodeType nodeType, final Class<T> clazz, final T[] min, final T[] max,
+            final String... properties) throws ModelException;
 }
