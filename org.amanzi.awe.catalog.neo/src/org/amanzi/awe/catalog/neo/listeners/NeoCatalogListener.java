@@ -31,7 +31,6 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
-import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.render.IGISModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -117,9 +116,9 @@ public class NeoCatalogListener implements IAWEEventListenter {
      * @throws IOException
      */
     private IGeoResource getResourceForGis(final IService service, final IMap map, final IGISModel gis) throws IOException {
-        if ((service != null) && (getLayerModelPair(map, gis).getLeft() == null)) {
+        if ((service != null) && (getLayerModelPair(map, gis).getRight() == null)) {
             for (IGeoResource iGeoResource : service.resources(null)) {
-                if (iGeoResource.canResolve(IDataModel.class)) {
+                if (iGeoResource.canResolve(IGISModel.class)) {
 
                     IGISModel resolvedElement = iGeoResource.resolve(IGISModel.class, null);
 

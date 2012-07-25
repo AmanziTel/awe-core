@@ -12,6 +12,7 @@
  */
 package org.amanzi.awe.models.catalog.neo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,7 +56,7 @@ public class GeoResource extends IGeoResource {
      */
     private URL getURL(final IService service, final IGISModel source) {
         try {
-            String urlString = service.getIdentifier().toString() + "#" + source.getName();
+            String urlString = service.getIdentifier().toString() + File.separator + "#" + source.getName();
 
             urlString = urlString.replace(" ", "_").replace("\\", "/");
 

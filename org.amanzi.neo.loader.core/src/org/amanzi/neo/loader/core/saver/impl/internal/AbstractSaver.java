@@ -69,6 +69,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
 
         this.currentProject = projectModelProvider.getActiveProjectModel();
 
+        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
         tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
     }
 
