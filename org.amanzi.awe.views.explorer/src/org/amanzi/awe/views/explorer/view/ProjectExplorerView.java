@@ -10,14 +10,7 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.ui.label.CommonViewLabelProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.neo.services.model.IModel;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -25,8 +18,6 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -40,16 +31,7 @@ public class ProjectExplorerView extends ViewPart {
      * ID of this View
      */
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
-    /*
-     * required views id
-     */
-    public static final String PROPERTY_TABLE_VIEW_ID = "org.amanzi.awe.views.property.views.PropertyTableView";
-    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
-    public static final String NODE2NODE_VIEW_ID = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
-    public static final String DRIVE_INUQIER_VIEW_ID = "org.amanzi.awe.views.drive.views.NewDriveInquirerView";
-    public static final String DISTRIBUTION_ANALYSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
 
-    private static final double ZOOM = 0d;
     /*
      * TreeViewer for database Nodes
      */
@@ -90,42 +72,8 @@ public class ProjectExplorerView extends ViewPart {
             }
         });
 
-        viewer.addDoubleClickListener(new IDoubleClickListener() {
-            @Override
-            public void doubleClick(final DoubleClickEvent event) {
-                openModelInViewBySelection(((IStructuredSelection)event.getViewer().getSelection()));
-            }
-        });
-
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(final SelectionChangedEvent event) {
-                openModelInViewBySelection((IStructuredSelection)event.getSelection());
-            }
-        });
-
         getSite().setSelectionProvider(viewer);
         setLayout(parent);
-    }
-
-    /**
-     * Open selected INetworkModel in NetworkTreeView
-     * 
-     * @param selection IStructuredSelection
-     */
-    private void openModelInViewBySelection(final IStructuredSelection selection) {
-        Object selectionObject = selection.getFirstElement();
-        String source = StringUtils.EMPTY;
-        if (selectionObject instanceof INetworkModel) {
-            source = NETWORK_TREE_VIEW_ID;
-        }
-        if (!source.isEmpty()) {
-            try {
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NETWORK_TREE_VIEW_ID);
-            } catch (PartInitException e) {
-            }
-        }
     }
 
     /**
