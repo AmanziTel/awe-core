@@ -13,19 +13,22 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import org.amanzi.awe.filters.IFilter;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
-import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -36,24 +39,6 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class AbstractDatasetModelTest extends AbstractMockitoTest {
-
-    private static final String PROPERTY_NAME = "propertyName";
-
-    private static final INodeType TYPE_1 = new INodeType() {
-
-        @Override
-        public String getId() {
-            return "type 1";
-        }
-    };
-
-    private static final INodeType TYPE_2 = new INodeType() {
-
-        @Override
-        public String getId() {
-            return "type 2";
-        }
-    };
 
     public static class TestDatasetModel extends AbstractDatasetModel {
 
@@ -79,11 +64,28 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
         }
 
         @Override
-        public void initializeIndexes() {
+        public IPropertyStatisticsModel getPropertyStatistics() {
             // TODO Auto-generated method stub
-
+            return null;
         }
 
+        @Override
+        public Iterable<ILocationElement> getElements(final Envelope bound) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        protected ILocationElement getLocationElement(final Node node) {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
 
     private IIndexModel indexModel;
@@ -117,54 +119,5 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
 
         verify(indexModel).finishUp();
         verify(statisticsModel).finishUp();
-    }
-
-    @Test
-    public void testCheckActivityOnRegisteringMultiPropertyIndexes() throws Exception {
-        model.registerMultiPropertyIndexes(TYPE_1, PROPERTY_NAME);
-
-        verify(indexModel).getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCheckActivityOnFinishUpForIndexes() throws Exception {
-        MultiPropertyIndex<Object> index = mock(MultiPropertyIndex.class);
-        when(indexModel.getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME)).thenReturn(index);
-
-        model.registerMultiPropertyIndexes(TYPE_1, PROPERTY_NAME);
-        model.finishUp();
-
-        verify(index).finishUp();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCheckActivityOnIndexNode() throws Exception {
-        MultiPropertyIndex<Object> index = mock(MultiPropertyIndex.class);
-        when(indexModel.getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME)).thenReturn(index);
-
-        model.registerMultiPropertyIndexes(TYPE_1, PROPERTY_NAME);
-
-        Node node = getNodeMock();
-
-        model.index(TYPE_1, node);
-
-        verify(index).add(node);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testCheckActivityOnIndexNodeWithWrongType() throws Exception {
-        MultiPropertyIndex<Object> index = mock(MultiPropertyIndex.class);
-        when(indexModel.getMultiPropertyIndex(TYPE_1, rootNode, PROPERTY_NAME)).thenReturn(index);
-
-        model.registerMultiPropertyIndexes(TYPE_2, PROPERTY_NAME);
-
-        Node node = getNodeMock();
-
-        model.index(TYPE_1, node);
-
-        verifyNoMoreInteractions(index);
     }
 }

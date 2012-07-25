@@ -29,6 +29,16 @@ public class GeoNodeProperties implements IGeoNodeProperties {
 
     private static final String LONGITUDE_PROPERTY = "lon";
 
+    private static final String MIN_LATTIUDE = "min_lat";
+
+    private static final String MAX_LATITUDE = "max_lat";
+
+    private static final String MIN_LONGITUDE = "min_lon";
+
+    private static final String MAX_LONGITUDE = "max_lon";
+
+    private static final String CRS = "crs";
+
     @Override
     public String getLatitideProperty() {
         return LATITUDE_PROPERTY;
@@ -37,6 +47,31 @@ public class GeoNodeProperties implements IGeoNodeProperties {
     @Override
     public String getLongitudeProperty() {
         return LONGITUDE_PROPERTY;
+    }
+
+    @Override
+    public String getMinLatitudeProperty() {
+        return MIN_LATTIUDE;
+    }
+
+    @Override
+    public String getMaxLatitudeProperty() {
+        return MAX_LATITUDE;
+    }
+
+    @Override
+    public String getMinLongitudeProperty() {
+        return MIN_LONGITUDE;
+    }
+
+    @Override
+    public String getMaxLongitudeProperty() {
+        return MAX_LONGITUDE;
+    }
+
+    @Override
+    public String getCRSProperty() {
+        return CRS;
     }
 
 }

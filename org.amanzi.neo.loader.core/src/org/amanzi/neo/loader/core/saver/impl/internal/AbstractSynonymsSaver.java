@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +23,11 @@ import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.synonyms.Synonyms;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
+import org.amanzi.neo.loader.core.synonyms.SynonymsUtils;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * TODO Purpose of
@@ -36,7 +39,7 @@ import org.apache.commons.lang3.BooleanUtils;
  */
 public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends AbstractSaver<T, IMappedStringData> {
 
-    protected static abstract class Property<C extends Object> {
+    protected abstract static class Property<C extends Object> {
 
         private final String headerName;
 
@@ -88,6 +91,11 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
         @Override
         protected Double parse(final IMappedStringData data) {
+            String value = getValue(data);
+
+            if (StringUtils.isEmpty(value)) {
+                return null;
+            }
             return Double.parseDouble(getValue(data));
         }
 
@@ -122,6 +130,11 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
         @Override
         protected Boolean parse(final IMappedStringData data) {
+            String value = getValue(data);
+
+            if (StringUtils.isEmpty(value)) {
+                return null;
+            }
             return BooleanUtils.toBooleanObject(getValue(data));
         }
 
@@ -139,6 +152,11 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
         @Override
         protected Long parse(final IMappedStringData data) {
+            String value = getValue(data);
+
+            if (StringUtils.isEmpty(value)) {
+                return null;
+            }
             return Long.parseLong(getValue(data));
         }
 
@@ -156,6 +174,11 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
         @Override
         protected Integer parse(final IMappedStringData data) {
+            String value = getValue(data);
+
+            if (StringUtils.isEmpty(value)) {
+                return null;
+            }
             return Integer.parseInt(getValue(data));
         }
 
@@ -233,7 +256,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
     private final SynonymsManager synonymsManager;
 
-    protected AbstractSynonymsSaver(IProjectModelProvider projectModelProvider, SynonymsManager synonymsManager) {
+    protected AbstractSynonymsSaver(final IProjectModelProvider projectModelProvider, final SynonymsManager synonymsManager) {
         super(projectModelProvider);
         this.synonymsManager = synonymsManager;
     }
@@ -259,9 +282,13 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
                 properties.put(headerName, property);
             }
 
-            Object value = property.parse(data);
-            if (value != null) {
-                result.put(property.getPropertyName(), property.parse(data));
+            try {
+                Object value = property.parse(data);
+                if (value != null) {
+                    result.put(property.getPropertyName(), value);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("lalllalala");
             }
         }
 
@@ -272,21 +299,12 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         List<Synonyms> synonymsList = notHandledSynonyms.get(nodeType);
 
         if (synonymsList == null) {
-            synonymsList = synonymsManager.getSynonyms(getSynonymsType(), nodeType);
+            synonymsList = new ArrayList<Synonyms>(synonymsManager.getSynonyms(getSynonymsType(), nodeType));
 
             notHandledSynonyms.put(nodeType, synonymsList);
         }
 
-        Synonyms synonym = null;
-
-        check_synonyms: for (Synonyms singleSynonym : synonymsList) {
-            for (String pattern : singleSynonym.getPossibleHeaders()) {
-                if (header.matches(pattern)) {
-                    synonym = singleSynonym;
-                    break check_synonyms;
-                }
-            }
-        }
+        Synonyms synonym = SynonymsUtils.findAppropriateSynonym(header, synonymsList);
 
         Property< ? > result = null;
 
@@ -294,7 +312,17 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             result = createPropertyFromSynonym(synonym, header);
             synonymsList.remove(synonym);
         } else if (addNonMappedHeaders) {
-            result = new UndefinedProperty(header);
+            for (Entry<INodeType, List<Synonyms>> synonymsEntry : synonymsManager.getSynonyms(getSynonymsType()).entrySet()) {
+                if (!synonymsEntry.getKey().equals(nodeType)) {
+                    if (SynonymsUtils.findAppropriateSynonym(header, synonymsEntry.getValue()) != null) {
+                        result = SKIPPED_PROPERTY;
+                        break;
+                    }
+                }
+            }
+            if (result == null) {
+                result = new UndefinedProperty(header);
+            }
         } else {
             result = SKIPPED_PROPERTY;
         }

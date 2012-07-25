@@ -1,18 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Models
-Bundle-SymbolicName: org.amanzi.neo.models
+Bundle-SymbolicName: org.amanzi.neo.models;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.neo.dto,
- org.amanzi.neo.models,
+Export-Package: org.amanzi.neo.models,
  org.amanzi.neo.models.distribution,
  org.amanzi.neo.models.exceptions,
  org.amanzi.neo.models.network,
  org.amanzi.neo.models.project,
+ org.amanzi.neo.models.render,
  org.amanzi.neo.models.statistics
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.7.0";visibility:=reexport,
- org.amanzi.awe.filters;bundle-version="1.0.0",
+ org.amanzi.awe.filters;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.services;bundle-version="1.0.0",
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport
 

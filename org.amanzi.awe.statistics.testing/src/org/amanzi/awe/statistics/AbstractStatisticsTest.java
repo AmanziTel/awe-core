@@ -34,7 +34,7 @@ public abstract class AbstractStatisticsTest extends AbstractTest {
      * 
      * @param monthly
      */
-    protected PeriodRange generatePeriod(Period period) {
+    public static PeriodRange generatePeriod(Period period) {
         PeriodRange range = null;
         Calendar min = Calendar.getInstance();
         Calendar max = Calendar.getInstance();

@@ -7,7 +7,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/neo4j-graph-algo-1.8.M06.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/neo4j-graph-matching-1.8.M06.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/neo4j-jmx-1.8.M06.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/neo4j-kernel-1.8.M06.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/neo4j-kernel-1.8.M06.jar" sourcepath="lib/sources/neo4j-kernel-1.8.M06-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/neo4j-lucene-index-1.8.M06.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/neo4j-udc-1.8.M06.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/scala-library-2.9.1-1.jar"/>

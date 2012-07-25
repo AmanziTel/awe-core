@@ -14,9 +14,8 @@ package org.amanzi.awe.models.catalog.neo;
 
 import net.refractions.udig.catalog.IGeoResourceInfo;
 
-import org.amanzi.neo.services.model.IRenderableModel;
-import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
-import org.amanzi.neo.services.ui.icons.IconManager;
+import org.amanzi.awe.ui.icons.IconManager;
+import org.amanzi.neo.models.render.IGISModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
@@ -24,14 +23,14 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 
 public class GeoResourceInfo extends IGeoResourceInfo {
 
-    GeoResourceInfo(final IRenderableModel sourceModel, GisModel gis, IProgressMonitor monitor) {
-        this.name = gis.getName();
-        this.title = name;
-        this.description = sourceModel.getDescription();
-        this.bounds = sourceModel.getBounds();
+    GeoResourceInfo(final IGISModel sourceModel, final IProgressMonitor monitor) {
+        name = sourceModel.getName();
+        title = name;
+        description = sourceModel.getName();
+        bounds = sourceModel.getBounds();
 
         // taken from previous implementation
-        this.icon = new ImageDescriptor() {
+        icon = new ImageDescriptor() {
             private ImageData imageData;
 
             @Override
@@ -46,6 +45,6 @@ public class GeoResourceInfo extends IGeoResourceInfo {
 
     @Override
     public ReferencedEnvelope getBounds() {
-        return this.bounds;
+        return bounds;
     }
 }

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.ui.view;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -33,12 +34,12 @@ import org.amanzi.awe.statistics.ui.view.table.StatisticsComparator;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsContentProvider;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsLabelProvider;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsRowFilter;
+import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -67,7 +68,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -88,6 +91,8 @@ public class StatisticsView extends ViewPart {
     private static final String ASTERISK = "*";
     private static final String SEPARATOR = "----------";
     private static final String TOTAL_NAME_COLUMN = "Total";
+    private static final int MAX_GROUPS_PER_CHART = 10;
+
     private static Mutex mutexRule = new Mutex();
     /*
      * components
@@ -124,17 +129,18 @@ public class StatisticsView extends ViewPart {
     private Composite topControlsComposite;
     private Composite bottomControlsComposite;
 
-    private Map<String, IDriveModel> datasets = new HashMap<String, IDriveModel>();
+    private final Map<String, IDriveModel> datasets = new HashMap<String, IDriveModel>();
     /*
      * statistics manager
      */
-    private StatisticsManager statisticsManager = StatisticsManager.getInstance();
+    private final StatisticsManager statisticsManager = StatisticsManager.getInstance();
     /*
      * statistics
      */
     private AggregatedStatistics statistics;
 
     private Collection<String> groupNames;
+    private ArrayList<String> selection;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -284,6 +290,13 @@ public class StatisticsView extends ViewPart {
             public void mouseDoubleClick(MouseEvent e) {
             }
         });
+        tableViewer.getTable().getShell().addListener(TableListenersType.UPDATE_BUTTON, new Listener() {
+
+            @Override
+            public void handleEvent(Event event) {
+                updateButtons();
+            }
+        });
     }
 
     /**
@@ -312,6 +325,8 @@ public class StatisticsView extends ViewPart {
                         while (groups.hasNext()) {
                             groupNames.add(groups.next().getName());
                         }
+                        selection = new ArrayList<String>(groupNames);
+
                         StatisticsRow row = group.getAllChild().iterator().next();
                         // dispose table
                         final Composite parent = tableViewer.getTable().getParent();
@@ -347,7 +362,7 @@ public class StatisticsView extends ViewPart {
                         for (StatisticsCell cell : values) {
                             column = new TableColumn(table, SWT.RIGHT);
                             column.setText(cell.getName());
-                            column.setImage(StatisticsPlugin.getImageDescriptor(Messages.PATH_TO_EMPTY_FILTER_IMG).createImage());
+                            column.setImage(StatisticsPlugin.getImageDescriptor(Messages.pathToEmptyFilterImg).createImage());
                             column.setToolTipText(cell.getName());
                             layout.addColumnData(new ColumnWeightData(width, true));
                         }
@@ -360,7 +375,7 @@ public class StatisticsView extends ViewPart {
                                 Rectangle firstRowRect = table.getItem(0).getBounds();
                                 Rectangle lastRowRect = table.getItem(table.getItemCount() - NumberUtils.INTEGER_ONE).getBounds();
                                 // check if a data row selected
-                                if (e.y >= firstRowRect.y && e.y <= lastRowRect.y + lastRowRect.height) {
+                                if ((e.y >= firstRowRect.y) && (e.y <= (lastRowRect.y + lastRowRect.height))) {
                                     int rowNum = (e.y - firstRowRect.y) / table.getItemHeight();
                                     TableItem item = table.getItem(rowNum);
                                     for (int i = 0; i < tableViewer.getTable().getColumnCount(); i++) {
@@ -413,8 +428,11 @@ public class StatisticsView extends ViewPart {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     final TableColumn currentColumn = (TableColumn)e.widget;
-                    if (colNum == (isAdditionalColumnNecessary() ? 1 : 0)) {
-                        // TODO KV: implement sorting dialog;
+                    boolean isAdditionalColumnNecessary = isAdditionalColumnNecessary();
+                    if (colNum == (isAdditionalColumnNecessary ? 1 : 0)) {
+                        SortingDialog dialog = new SortingDialog(tableViewer, groupNames, groupNames, colNum,
+                                isAdditionalColumnNecessary);
+                        dialog.open();
                     } else {
                         updateSorting(table, colNum, currentColumn);
                     }
@@ -441,9 +459,6 @@ public class StatisticsView extends ViewPart {
         }
         table.setSortDirection(sortDirection);
         table.setSortColumn(currentColumn);
-        // if (colNum == 0 || (isAdditionalColumnNecessary() && colNum == 1)) {
-        // currentColumn.setImage(deselectedFilter);
-        // }
         ((StatisticsComparator)tableViewer.getComparator()).update(colNum, sortDirection, isAdditionalColumnNecessary());
         tableViewer.refresh();
     }
@@ -451,7 +466,7 @@ public class StatisticsView extends ViewPart {
     /**
      * run statistics preparation process in new job with execution rule. this method should be
      * invoked each time when you want to rebuild statistics, and this method should be the first,
-     * others job with {@link Mutex} rule will wait untill this process will be finished
+     * others job with {@link Mutex} rule will wait until this process will be finished
      * 
      * @param templateName
      * @param model
@@ -507,31 +522,31 @@ public class StatisticsView extends ViewPart {
         /*
          * top controls
          */
-        lDataset = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabel_DATASET);
+        lDataset = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelDataset);
         cDataset = CONTROLS_FACTORY.getCombobox(topControlsComposite);
         bRefreshDatasets = CONTROLS_FACTORY.getButton(topControlsComposite, StringUtils.EMPTY);
-        bRefreshDatasets.setImage(StatisticsPlugin.getImageDescriptor(Messages.PATH_TO_REFRESH_BUTTON_IMG).createImage());
-        lTemplate = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabel_TEMPLATE);
+        bRefreshDatasets.setImage(StatisticsPlugin.getImageDescriptor(Messages.pathToRefreshButtonImg).createImage());
+        lTemplate = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelTemplate);
         cTemplate = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        lAggregation = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabel_AGGREGATION);
+        lAggregation = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelAggregation);
         cAggregation = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        bBuild = CONTROLS_FACTORY.getButton(topControlsComposite, Messages.statisticsViewLabel_BUILD);
+        bBuild = CONTROLS_FACTORY.getButton(topControlsComposite, Messages.statisticsViewLabelBuild);
         /*
          * bottom controls
          */
-        lPeriod = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabel_PERIOD);
+        lPeriod = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelPeriod);
         cPeriod = CONTROLS_FACTORY.getCombobox(bottomControlsComposite);
-        lStartTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabel_START_TIME);
+        lStartTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelStartTime);
         dDateStart = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
         dTimeStart = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        bResetStart = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_RESET_BUTTON);
-        lEndTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabel_END_TIME);
+        bResetStart = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
+        lEndTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelEndTime);
         dDateEnd = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
         dTimeEnd = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        bResetEnd = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_RESET_BUTTON);
-        bReport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_REPORT);
-        bExport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_EXPORT);
-        bChartView = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabel_CHART_VIEW);
+        bResetEnd = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
+        bReport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelReport);
+        bExport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelExport);
+        bChartView = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelChartView);
         setEnabled(false, mainComposite);
         setEnabled(true, lDataset, cDataset);
     }
@@ -641,7 +656,7 @@ public class StatisticsView extends ViewPart {
      */
     private boolean isAdditionalColumnNecessary() {
         return getAggregation().equals(NetworkElementNodeType.SECTOR.getId())
-                && cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR);
+                && (cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR));
     }
 
     @Override
@@ -655,10 +670,12 @@ public class StatisticsView extends ViewPart {
      */
     private static class Mutex implements ISchedulingRule {
 
+        @Override
         public boolean contains(ISchedulingRule rule) {
             return (rule == this);
         }
 
+        @Override
         public boolean isConflicting(ISchedulingRule rule) {
             return (rule == this);
         }
@@ -686,5 +703,17 @@ public class StatisticsView extends ViewPart {
         calendar.setTimeInMillis(0L);
         calendar.set(dateField.getYear(), dateField.getMonth(), dateField.getDay(), timeField.getHours(), timeField.getMinutes());
         return calendar.getTimeInMillis();
+    }
+
+    /**
+     * Enables and disables report button according to selection
+     */
+    private void updateButtons() {
+        bExport.setEnabled(true);
+        if (selection != null) {
+            bReport.setEnabled(selection.size() < MAX_GROUPS_PER_CHART);
+        } else {
+            bReport.setEnabled(groupNames.size() < MAX_GROUPS_PER_CHART);
+        }
     }
 }

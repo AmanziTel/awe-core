@@ -81,9 +81,9 @@ public class StatisticsModel extends AbstractStatisticsModel {
         usedNodes = nodes == null ? 0 : nodes;
         nodes = (Long)statisticService.getNodeProperty(rootNode, TOTAL_NODES);
         totalNodes = nodes == null ? 0 : nodes;
-        LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
         minTimestamp = (Long)this.parentNode.getProperty(DriveModel.MIN_TIMESTAMP);
         maxTimestamp = (Long)this.parentNode.getProperty(DriveModel.MAX_TIMESTAMP);
+        LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
         initDimensions();
     }
 

@@ -19,10 +19,12 @@ import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -71,14 +73,14 @@ public class ProjectModelTest extends AbstractMockitoTest {
         Node referencedNode = getNodeMock();
 
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
-        when(nodeService.getParent(node)).thenReturn(referencedNode);
+        when(nodeService.getParent(node, NodeServiceRelationshipType.CHILD)).thenReturn(referencedNode);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
         when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         model.initialize(node);
 
         verify(nodeService).getReferencedNode();
-        verify(nodeService).getParent(node);
+        verify(nodeService).getParent(node, NodeServiceRelationshipType.CHILD);
         verify(nodeService).getNodeName(node);
         verify(nodeService).getNodeType(node);
     }
@@ -90,7 +92,7 @@ public class ProjectModelTest extends AbstractMockitoTest {
         Node parentNode = getNodeMock();
 
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
-        when(nodeService.getParent(node)).thenReturn(parentNode);
+        when(nodeService.getParent(eq(node), any(RelationshipType.class))).thenReturn(parentNode);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
         when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
@@ -103,7 +105,7 @@ public class ProjectModelTest extends AbstractMockitoTest {
         Node referencedNode = getNodeMock();
 
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
-        when(nodeService.getParent(node)).thenReturn(null);
+        when(nodeService.getParent(node, NodeServiceRelationshipType.CHILD)).thenReturn(null);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
         when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
@@ -116,7 +118,7 @@ public class ProjectModelTest extends AbstractMockitoTest {
         Node referencedNode = getNodeMock();
 
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
-        when(nodeService.getParent(node)).thenReturn(referencedNode);
+        when(nodeService.getParent(node, NodeServiceRelationshipType.CHILD)).thenReturn(referencedNode);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
         when(nodeService.getNodeType(node)).thenReturn(TestNodeType.TEST_TYPE);
 

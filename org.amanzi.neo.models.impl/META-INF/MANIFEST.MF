@@ -12,7 +12,8 @@ Export-Package: org.amanzi.neo.models.impl,
  org.amanzi.neo.models.impl.internal.util,
  org.amanzi.neo.models.impl.network,
  org.amanzi.neo.models.impl.project,
- org.amanzi.neo.models.impl.statistics
+ org.amanzi.neo.models.impl.statistics,
+ org.amanzi.neo.models.render.impl
 Eclipse-ExtensibleAPI: true
 Eclipse-RegisterBuddy: org.amanzi.neo.core
 

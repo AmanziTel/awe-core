@@ -65,7 +65,7 @@ public class DatasetService extends AbstractService {
      * TraversalDescription for Dataset nodes
      */
     private final TraversalDescription DATASET_TRAVERSAL_DESCRIPTION = Traversal.description()
-            .relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
     /**
      * <code>TraversalDescription</code> to iterate over children in a chain
      */
@@ -119,7 +119,7 @@ public class DatasetService extends AbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET, CHILD, NEXT, GIS, SELECTED_PROPERTIES, SUB_COUNTERS;
+        PROJECT, CHILD, NEXT, GIS, SELECTED_PROPERTIES, SUB_COUNTERS;
     }
 
     /**
@@ -169,7 +169,7 @@ public class DatasetService extends AbstractService {
      */
     private class FilterDataset extends NameTypeEvaluator {
 
-        private IDriveType driveType;
+        private final IDriveType driveType;
 
         /**
          * constructor with name and type parameter for filter
@@ -177,9 +177,9 @@ public class DatasetService extends AbstractService {
          * @param name - dataset name
          * @param type - dataset type
          */
-        public FilterDataset(String name, DatasetTypes type) {
+        public FilterDataset(final String name, final DatasetTypes type) {
             super(name, type);
-            this.driveType = null;
+            driveType = null;
         }
 
         /**
@@ -189,15 +189,15 @@ public class DatasetService extends AbstractService {
          * @param type - dataset type
          * @param driveType - dataset drive type
          */
-        public FilterDataset(String name, DatasetTypes type, IDriveType driveType) {
+        public FilterDataset(final String name, final DatasetTypes type, final IDriveType driveType) {
             super(name, type);
             this.driveType = driveType;
         }
 
         @Override
-        public Evaluation evaluate(Path arg0) {
+        public Evaluation evaluate(final Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
+                if ((driveType == null) || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -229,8 +229,8 @@ public class DatasetService extends AbstractService {
      * @throws DuplicateNodeNameException this method may call exception if it find more than one
      *         dataset
      */
-    public Node findDataset(Node projectNode, final String name, final DatasetTypes type) throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public Node findDataset(final Node projectNode, final String name, final DatasetTypes type)
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type)");
 
         if (name == null) {
@@ -284,7 +284,7 @@ public class DatasetService extends AbstractService {
      * @throws DuplicateNodeNameException this method may call exception if it find more than one
      *         dataset
      */
-    public Node findDataset(Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType)
+    public Node findDataset(final Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
 
@@ -341,8 +341,8 @@ public class DatasetService extends AbstractService {
      *         already exists
      * @throws DatabaseException - exception in database
      */
-    public Node createDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
+    public Node createDataset(final Node projectNode, final String name, final DatasetTypes type)
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type)");
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
@@ -373,7 +373,7 @@ public class DatasetService extends AbstractService {
         Transaction tx = graphDb.beginTx();
         try {
             datasetNode = createNode(type);
-            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.CHILD);
             datasetNode.setProperty(NAME, name);
             tx.success();
 
@@ -404,8 +404,9 @@ public class DatasetService extends AbstractService {
      * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
-    public Node createDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType, INodeType primaryType)
-            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
+    public Node createDataset(final Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType,
+            final INodeType primaryType) throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
@@ -444,7 +445,7 @@ public class DatasetService extends AbstractService {
         Transaction tx = graphDb.beginTx();
         try {
             datasetNode = createNode(type);
-            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.CHILD);
             datasetNode.setProperty(NAME, name);
             datasetNode.setProperty(DRIVE_TYPE, driveType.name());
             datasetNode.setProperty(PRIMARY_TYPE, primaryType.getId());
@@ -477,8 +478,8 @@ public class DatasetService extends AbstractService {
      *         already exists
      * @throws DatabaseException - exception in database
      */
-    public Node getDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
+    public Node getDataset(final Node projectNode, final String name, final DatasetTypes type)
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type)");
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
@@ -525,8 +526,9 @@ public class DatasetService extends AbstractService {
      * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
-    public Node getDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType, INodeType primaryType)
-            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
+    public Node getDataset(final Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType,
+            final INodeType primaryType) throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
 
         if (name == null) {
@@ -594,7 +596,7 @@ public class DatasetService extends AbstractService {
      * @throws InvalidDatasetParameterException this method may call exception if projectNode ==
      *         null
      */
-    public List<Node> findAllDatasets(Node projectNode) throws InvalidDatasetParameterException {
+    public List<Node> findAllDatasets(final Node projectNode) throws InvalidDatasetParameterException {
         LOGGER.debug("start findAllDatasets(Node projectNode)");
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
@@ -618,7 +620,8 @@ public class DatasetService extends AbstractService {
      * @throws InvalidDatasetParameterException this method may call exception if projectNode ==
      *         null or type == null
      */
-    public List<Node> findAllDatasetsByType(Node projectNode, final DatasetTypes type) throws InvalidDatasetParameterException {
+    public List<Node> findAllDatasetsByType(final Node projectNode, final DatasetTypes type)
+            throws InvalidDatasetParameterException {
         LOGGER.debug("start findAllDatasetsByType(Node projectNode, DatasetTypes type)");
 
         if (projectNode == null) {
@@ -655,7 +658,7 @@ public class DatasetService extends AbstractService {
      * @throws IllegalArgumentException if last_child_id and lastChild.getId() are not equal
      * @throws DatabaseException if some neo error occur
      */
-    public Node addChild(Node parent, Node child, Node lastChild) throws DatabaseException {
+    public Node addChild(final Node parent, final Node child, final Node lastChild) throws DatabaseException {
         LOGGER.debug("start addChild(Node parent, Node child, Node lastChild)");
         // validate arguments
         if (parent == null) {
@@ -716,7 +719,7 @@ public class DatasetService extends AbstractService {
      * @return child node
      * @throws DatabaseException if something went wrong during creating the relationship
      */
-    public Node addChild(Node parent, Node child) throws DatabaseException {
+    public Node addChild(final Node parent, final Node child) throws DatabaseException {
         return addChild(parent, child, DatasetRelationTypes.CHILD);
     }
 
@@ -729,7 +732,7 @@ public class DatasetService extends AbstractService {
      * @return child Node
      * @throws DatabaseException
      */
-    public Node addLocationChild(Node parent, Node child) throws DatabaseException {
+    public Node addLocationChild(final Node parent, final Node child) throws DatabaseException {
         return addChild(parent, child, DriveRelationshipTypes.LOCATION);
     }
 
@@ -742,7 +745,7 @@ public class DatasetService extends AbstractService {
      * @return child node
      * @throws DatabaseException if something went wrong during creating the relationship
      */
-    public Node addSelectedPropertiesNode(Node parent) throws DatabaseException {
+    public Node addSelectedPropertiesNode(final Node parent) throws DatabaseException {
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent cannot be null");
@@ -777,7 +780,7 @@ public class DatasetService extends AbstractService {
      * @return
      * @throws DatabaseException
      */
-    public Node getSelectedPropertiesNode(Node parent) throws DatabaseException {
+    public Node getSelectedPropertiesNode(final Node parent) throws DatabaseException {
         Node result = null;
 
         Transaction tx = graphDb.beginTx();
@@ -804,7 +807,7 @@ public class DatasetService extends AbstractService {
      * @param parent
      * @param child
      */
-    private void updateProperties(Node parent, Node child) {
+    private void updateProperties(final Node parent, final Node child) {
         LOGGER.debug("start updateProperties(Node parent, Node child)");
         Transaction tx = graphDb.beginTx();
         try {
@@ -826,7 +829,8 @@ public class DatasetService extends AbstractService {
      * @param linkTo
      * @param relationship
      */
-    private void insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship) throws DatabaseException {
+    private void insertChild(final Node parent, final Node child, final Node linkTo, final RelationshipType relationship)
+            throws DatabaseException {
         LOGGER.debug("start insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship)");
         Transaction tx = graphDb.beginTx();
         try {
@@ -851,7 +855,7 @@ public class DatasetService extends AbstractService {
      * @return - the parent node, or <code>null</code>, if it wasn't found
      * @throws DatabaseException if something went wrong during update
      */
-    public Node getParent(Node child, boolean updateProperties) throws DatabaseException {
+    public Node getParent(final Node child, final boolean updateProperties) throws DatabaseException {
         LOGGER.debug("start getParent(Node child)");
         // validate parameters
         if (child == null) {
@@ -870,7 +874,7 @@ public class DatasetService extends AbstractService {
         for (Node node : nodes) {
             Node parent = getNextNode(node, DatasetRelationTypes.CHILD, Direction.INCOMING);
             if (parent == null) {
-                parent = getNextNode(node, DatasetRelationTypes.DATASET, Direction.INCOMING);
+                parent = getNextNode(node, DatasetRelationTypes.CHILD, Direction.INCOMING);
                 if (parent == null) {
                     return null;
                 }
@@ -898,7 +902,7 @@ public class DatasetService extends AbstractService {
      * @param parent
      * @return - last child node, or <code>null</code>, if it wasn't found
      */
-    public Node getLastChild(Node parent) throws DatabaseException {
+    public Node getLastChild(final Node parent) throws DatabaseException {
         LOGGER.debug("start getLastChild(Node parent)");
         // validate parameters
         if (parent == null) {
@@ -940,7 +944,7 @@ public class DatasetService extends AbstractService {
      * @param parent
      * @return an <code>Iterable</code> over children in the chain
      */
-    public Iterable<Node> getChildrenChainTraverser(Node parent) {
+    public Iterable<Node> getChildrenChainTraverser(final Node parent) {
         LOGGER.debug("start getChildrenChainTraverser(Node parent)");
         // validate parameters
         if (parent == null) {
@@ -968,7 +972,7 @@ public class DatasetService extends AbstractService {
      * @param parent
      * @return
      */
-    public Iterable<Node> getChildrenTraverser(Node parent) {
+    public Iterable<Node> getChildrenTraverser(final Node parent) {
         LOGGER.debug("start getChildrenTraverser(Node parent)");
         // validate parameters
         if (parent == null) {
@@ -986,7 +990,7 @@ public class DatasetService extends AbstractService {
      * @param parent
      * @return
      */
-    public Iterable<Node> getFirstRelationTraverser(Node parent, RelationshipType relType, Direction direction) {
+    public Iterable<Node> getFirstRelationTraverser(final Node parent, final RelationshipType relType, final Direction direction) {
         LOGGER.debug("start getChildrenTraverser(Node parent)");
         // validate parameters
         if (parent == null) {
@@ -1004,7 +1008,7 @@ public class DatasetService extends AbstractService {
      * @return the gis node by dataset or null
      * @throws DatabaseException
      */
-    public Node getGisNodeByDataset(Node dataset, String name) throws DatabaseException {
+    public Node getGisNodeByDataset(final Node dataset, String name) throws DatabaseException {
         if (dataset == null) {
             return null;
         }
@@ -1026,7 +1030,7 @@ public class DatasetService extends AbstractService {
      * @param dataset
      * @return Iterable of gisNodes
      */
-    public Iterable<Node> getAllGisByDataset(Node dataset) {
+    public Iterable<Node> getAllGisByDataset(final Node dataset) {
         List<Node> gisNodes = new LinkedList<Node>();
         Iterable<Relationship> rel = dataset.getRelationships(DatasetRelationTypes.GIS, Direction.OUTGOING);
         for (Relationship gisRel : rel) {
@@ -1044,7 +1048,7 @@ public class DatasetService extends AbstractService {
      * @return
      * @throws DatabaseException
      */
-    private Node createGisNode(Node dataset, String name) throws DatabaseException {
+    private Node createGisNode(final Node dataset, final String name) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
         Node gis;
         try {
@@ -1067,7 +1071,7 @@ public class DatasetService extends AbstractService {
      * @param elementType
      * @return an <code>Iterable</code> over found nodes
      */
-    public Iterable<Node> findAllDatasetElements(Node parent, INodeType elementType) {
+    public Iterable<Node> findAllDatasetElements(final Node parent, final INodeType elementType) {
         LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
         // validate parameters
         if (parent == null) {
@@ -1085,7 +1089,7 @@ public class DatasetService extends AbstractService {
      * @param elementType
      * @return an <code>Iterable</code> over found nodes
      */
-    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType, RelationshipType relType) {
+    public Iterable<Node> findAllN2NElements(final Node parent, final INodeType elementType, final RelationshipType relType) {
         LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
         // validate parameters
         if (parent == null) {
@@ -1106,7 +1110,7 @@ public class DatasetService extends AbstractService {
      * @param relType
      * @return
      */
-    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, RelationshipType relType) {
+    public Iterable<Relationship> findN2NRelationships(final Node n2nProxy, final RelationshipType relType) {
         // validate parameters
         if (n2nProxy == null) {
             throw new IllegalArgumentException("N2N proxy is null.");
@@ -1126,7 +1130,7 @@ public class DatasetService extends AbstractService {
      *        be <code>null</code>
      * @return a not-null iterable over nodes with no elements in it.
      */
-    public Iterable<Node> emptyTraverser(Node source) {
+    public Iterable<Node> emptyTraverser(final Node source) {
         // validate parameters
         if (source == null) {
             throw new IllegalArgumentException("Source node is null.");
@@ -1134,7 +1138,7 @@ public class DatasetService extends AbstractService {
         return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
     }
 
-    public Iterable<Node> getVirtualDatasets(Node rootDataset) {
+    public Iterable<Node> getVirtualDatasets(final Node rootDataset) {
         // validate
         if (rootDataset == null) {
             throw new IllegalArgumentException("Root dataset node is null.");
@@ -1150,7 +1154,7 @@ public class DatasetService extends AbstractService {
      * @param value
      * @return
      */
-    public Node findNodeInChainByProperty(Node rootNode, String propertyName, Object value) {
+    public Node findNodeInChainByProperty(final Node rootNode, final String propertyName, final Object value) {
         Iterable<Node> chain = getChildrenChainTraverser(rootNode);
         if (chain == null) {
             return null;
@@ -1165,7 +1169,7 @@ public class DatasetService extends AbstractService {
         return null;
     }
 
-    public Iterable<Node> getAllMeasurements(Node rootNode) {
+    public Iterable<Node> getAllMeasurements(final Node rootNode) {
         if (rootNode == null) {
             throw new IllegalArgumentException("Root dataset node is null.");
         }
@@ -1182,7 +1186,7 @@ public class DatasetService extends AbstractService {
      * @return Child node
      * @throws DatabaseException
      */
-    private Node addChild(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+    private Node addChild(final Node parent, final Node child, final RelationshipType relType) throws DatabaseException {
         if (parent == null) {
             throw new IllegalArgumentException("Parent cannot be null");
         }

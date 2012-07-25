@@ -34,7 +34,7 @@ import org.neo4j.graphdb.Relationship;
 public class DataElement extends HashMap<String, Object> implements IDataElement {
     /** long serialVersionUID field */
     private static final long serialVersionUID = -5368114834697417654L;
-    
+
     private PropertyContainer propertyContainer;
 
     /**
@@ -75,7 +75,7 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
             return (Relationship)propertyContainer;
         return null;
     }
-    
+
     /**
      * Searches for a property value first in a stored map, and then in the underlying node.
      */
@@ -86,7 +86,7 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
             result = propertyContainer != null ? propertyContainer.getProperty(header, null) : null;
             if (result != null) {
                 this.put(header, result);
-            } 
+            }
         }
         return result;
     }
@@ -97,32 +97,31 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
             return this.get(AbstractService.NAME).toString();
         } else {
             if (getNode() != null) {
-                return (getNode().hasProperty(AbstractService.NAME) ? 
-                        getNode().getProperty(AbstractService.NAME).toString() : 
-                        Long.toString(getNode().getId()));
+                return (getNode().hasProperty(AbstractService.NAME) ? getNode().getProperty(AbstractService.NAME).toString() : Long
+                        .toString(getNode().getId()));
             } else if (getRelationship() != null) {
                 return Long.toString(getRelationship().getId());
             } else {
                 return super.toString();
-            }       
-             
-        }    
+            }
+
+        }
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof DataElement) {
-            if (propertyContainer != null) { 
+            if (propertyContainer != null) {
                 return ((DataElement)o).propertyContainer.equals(propertyContainer);
             } else {
                 return super.equals(o);
             }
         }
-        
+
         return false;
     }
-    
-    @Override 
+
+    @Override
     public Set<String> keySet() {
         if (propertyContainer == null) {
             return super.keySet();
@@ -133,5 +132,12 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
         return super.keySet();
     }
 
+    @Override
+    public Long getId() {
+        if (propertyContainer instanceof Node) {
+            return ((Node)propertyContainer).getId();
+        }
+        return null;
+    }
 
 }

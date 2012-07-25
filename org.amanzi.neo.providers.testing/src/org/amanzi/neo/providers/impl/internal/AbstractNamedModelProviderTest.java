@@ -16,6 +16,7 @@ package org.amanzi.neo.providers.impl.internal;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -70,6 +71,12 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
 
         @Override
         protected INodeType getModelType() {
+            return null;
+        }
+
+        @Override
+        public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+            // TODO Auto-generated method stub
             return null;
         }
 
@@ -156,7 +163,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
 
     @Test(expected = DuplicatedModelException.class)
     public void testCheckExceptionOnCreateModelWithExistingName() throws Exception {
-        when(provider.findByName(parent, MODEL_NAME)).thenReturn(parent);
+        doReturn(parent).when(provider).findByName(parent, MODEL_NAME);
 
         provider.create(parent, MODEL_NAME);
     }

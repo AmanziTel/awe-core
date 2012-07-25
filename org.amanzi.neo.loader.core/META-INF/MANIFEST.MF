@@ -3,13 +3,23 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Core
 Bundle-SymbolicName: org.amanzi.neo.loader.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.neo.loader.core.internal.Activator
+Bundle-Activator: org.amanzi.neo.loader.core.internal.LoaderCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
- org.amanzi.neo.providers;bundle-version="1.0.0",
- org.amanzi.awe.libs;bundle-version="1.0.0",
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
+ org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport,
+ org.amanzi.neo.core;bundle-version="1.0.0",
+ org.amanzi.neo.db;bundle-version="1.0.0",
+ org.amanzi.awe.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Eclipse-ExtensibleAPI: true
+Export-Package: org.amanzi.neo.loader.core,
+ org.amanzi.neo.loader.core.exception,
+ org.amanzi.neo.loader.core.impl,
+ org.amanzi.neo.loader.core.internal,
+ org.amanzi.neo.loader.core.parser,
+ org.amanzi.neo.loader.core.saver,
+ org.amanzi.neo.loader.core.saver.impl,
+ org.amanzi.neo.loader.core.validator
 

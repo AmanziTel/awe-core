@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.models;
 
+import java.util.Iterator;
+
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -27,13 +29,15 @@ import org.neo4j.graphdb.Node;
  */
 public interface IIndexModel extends IModel {
 
-    String getIndexKey(Node rootNode, INodeType nodeType);
+    Node getSingleNode(INodeType nodeType, String propertyName, Object value) throws ModelException;
 
-    String getMultiPropertyIndexKey(Node rootNode, INodeType nodeType, String indexName);
+    Iterator<Node> getNodes(INodeType nodeType, String propertyName, Object value) throws ModelException;
 
-    Node getSingleNode(String indexKey, String propertyName, Object value);
+    void index(final INodeType nodeType, final Node node, final String propertyName, Object value) throws ModelException;
 
-    void index(String key, String proeprtyName, Node node);
+    void indexInMultiProperty(final INodeType nodeType, final Node node, Class< ? > clazz, String... properties)
+            throws ModelException;
 
-    <T extends Object> MultiPropertyIndex<T> getMultiPropertyIndex(INodeType nodeType, Node rootNode, String... propertyNames);
+    <T extends Object> Iterator<Node> getNodes(final INodeType nodeType, final Class<T> clazz, final T[] min, final T[] max,
+            final String... properties) throws ModelException;
 }

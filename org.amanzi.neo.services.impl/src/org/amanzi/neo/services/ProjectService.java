@@ -50,7 +50,7 @@ public class ProjectService extends AbstractService {
      */
     public final TraversalDescription projectTraversalDescription = Traversal.description().breadthFirst()
             .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
-            .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);
+            .relationships(ProjectRelationshipType.CHILD, Direction.OUTGOING);
 
     /**
      * <p>
@@ -78,7 +78,7 @@ public class ProjectService extends AbstractService {
      * @since 1.0.0
      */
     protected enum ProjectRelationshipType implements RelationshipType {
-        PROJECT;
+        CHILD;
     }
 
     /**
@@ -117,7 +117,7 @@ public class ProjectService extends AbstractService {
         try {
             result = createNode(ProjectNodeType.PROJECT);
             result.setProperty(AbstractService.NAME, name);
-            graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.PROJECT);
+            graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.CHILD);
             tx.success();
         } catch (DatabaseException e) {
             LOGGER.error("Could not create project '" + name + "'.", e);

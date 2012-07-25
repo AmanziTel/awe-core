@@ -16,6 +16,7 @@ package org.amanzi.neo.services.impl.statistics.internal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
@@ -49,8 +50,10 @@ public class NodeTypeVault {
         return count;
     }
 
-    public void indexProperty(final String propertyName, final Object propertyValue) throws ServiceException {
-        getPropertyVault(propertyName).index(propertyValue);
+    public void indexElement(final Map<String, Object> properties) throws ServiceException {
+        for (Entry<String, Object> propertyEntry : properties.entrySet()) {
+            getPropertyVault(propertyEntry.getKey()).index(propertyEntry.getValue());
+        }
 
         count++;
         isChanged = true;
@@ -95,11 +98,11 @@ public class NodeTypeVault {
         this.isChanged = isChanged;
     }
 
-    public void setCount(int count) {
+    public void setCount(final int count) {
         this.count = count;
     }
 
-    public void addPropertyVault(PropertyVault propertyVault) {
+    public void addPropertyVault(final PropertyVault propertyVault) {
         propertyVaults.put(propertyVault.getPropertyName(), propertyVault);
     }
 }

@@ -224,7 +224,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 				node.getProperty(AbstractService.TYPE, null));
 		Node refNode = graphDatabaseService.getReferenceNode();
 		for (Relationship rel : node.getRelationships(
-				ProjectService.ProjectRelationshipType.PROJECT,
+				ProjectService.ProjectRelationshipType.CHILD,
 				Direction.INCOMING)) {
 			Assert.assertTrue(rel.getOtherNode(node).equals(refNode));
 		}

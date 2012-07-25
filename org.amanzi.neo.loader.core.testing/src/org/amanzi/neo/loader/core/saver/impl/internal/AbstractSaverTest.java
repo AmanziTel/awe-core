@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.saver.impl.internal;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.impl.UnderlyingModelException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
@@ -27,6 +28,8 @@ import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -40,12 +43,12 @@ public class AbstractSaverTest extends AbstractMockitoTest {
 
     public static class TestSaver extends AbstractSaver<IConfiguration, IData> {
 
-        protected TestSaver(IProjectModelProvider projectModelProvider) {
+        protected TestSaver(final IProjectModelProvider projectModelProvider) {
             super(projectModelProvider);
         }
 
         @Override
-        protected void saveInModel(IData data) throws ModelException {
+        protected void saveInModel(final IData data) throws ModelException {
         }
 
     }
@@ -63,6 +66,11 @@ public class AbstractSaverTest extends AbstractMockitoTest {
      */
     @Before
     public void setUp() throws Exception {
+        GraphDatabaseService dbService = mock(GraphDatabaseService.class);
+        DatabaseManagerFactory.getDatabaseManager().setDatabaseService(dbService);
+        Transaction tx = mock(Transaction.class);
+        when(dbService.beginTx()).thenReturn(tx);
+
         configuration = mock(IConfiguration.class);
 
         projectModelProvider = mock(IProjectModelProvider.class);
@@ -74,6 +82,8 @@ public class AbstractSaverTest extends AbstractMockitoTest {
     @Test
     public void testCheckFinishUpActivity() throws Exception {
         List<IModel> modelList = Arrays.asList(mock(IModel.class), mock(IModel.class), mock(IModel.class));
+
+        saver.init(configuration);
 
         for (IModel model : modelList) {
             saver.addProcessedModel(model);
@@ -91,6 +101,8 @@ public class AbstractSaverTest extends AbstractMockitoTest {
         List<IModel> modelList = Arrays.asList(mock(IModel.class), mock(IModel.class), mock(IModel.class));
 
         doThrow(new FatalException(new IllegalArgumentException())).when(modelList.get(0)).finishUp();
+
+        saver.init(configuration);
 
         for (IModel model : modelList) {
             saver.addProcessedModel(model);
@@ -127,6 +139,8 @@ public class AbstractSaverTest extends AbstractMockitoTest {
     @Test(expected = UnderlyingModelException.class)
     public void testCheckLoaderExceptionOnSaver() throws Exception {
         doThrow(new FatalException(new IllegalArgumentException())).when(saver).saveInModel(any(IData.class));
+
+        saver.init(configuration);
 
         IData data = mock(IData.class);
         saver.save(data);

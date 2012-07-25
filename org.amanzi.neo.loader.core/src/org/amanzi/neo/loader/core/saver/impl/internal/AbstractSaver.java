@@ -16,6 +16,10 @@ package org.amanzi.neo.loader.core.saver.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
+import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.manager.EventChain;
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.exception.impl.UnderlyingModelException;
@@ -23,9 +27,13 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -37,6 +45,8 @@ import org.apache.log4j.Logger;
  */
 public abstract class AbstractSaver<C extends IConfiguration, D extends IData> implements ISaver<C, D> {
 
+    private static final int MAX_TX_COUNT = 2000;
+
     private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
 
     private C configuration;
@@ -47,7 +57,11 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
 
     private IProjectModel currentProject;
 
-    protected AbstractSaver(IProjectModelProvider projectModelProvider) {
+    private Transaction tx;
+
+    private int txCount;
+
+    protected AbstractSaver(final IProjectModelProvider projectModelProvider) {
         this.projectModelProvider = projectModelProvider;
     }
 
@@ -56,25 +70,67 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         this.configuration = configuration;
 
         this.currentProject = projectModelProvider.getActiveProjectModel();
+
+        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
+        tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
     }
 
     @Override
     public void finishUp() {
+        saveTx(true, true);
+
+        EventChain eventChain = new EventChain(true);
+        eventChain.addEvent(AWEEventManager.DATA_UPDATED_EVENT);
+
         for (IModel model : processedModels) {
             try {
                 model.finishUp();
+
+                if (model.isRenderable()) {
+                    for (IGISModel gisModel : ((IRenderableModel)model).getAllGIS()) {
+                        eventChain.addEvent(new ShowGISOnMap(gisModel));
+                    }
+                }
             } catch (ModelException e) {
                 LOGGER.error("an exception occured on finishing up a saver", e);
             }
         }
+        saveTx(true, false);
+
+        AWEEventManager.getManager().fireEventChain(eventChain);
     }
 
     @Override
-    public void save(D data) throws LoaderException {
+    public void save(final D data) throws LoaderException {
         try {
             saveInModel(data);
+            updateTransaction();
+        } catch (ParameterInconsistencyException e) {
+            LOGGER.error(e.getParameterName());
         } catch (ModelException e) {
+            saveTx(false, true);
             throw new UnderlyingModelException(e);
+        }
+    }
+
+    protected void updateTransaction() {
+        txCount++;
+        if (txCount > MAX_TX_COUNT) {
+            txCount = 0;
+            saveTx(true, true);
+        }
+    }
+
+    protected void saveTx(final boolean success, final boolean shouldContinue) {
+        if (success) {
+            tx.success();
+        } else {
+            tx.failure();
+        }
+
+        tx.finish();
+        if (shouldContinue) {
+            tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
         }
     }
 

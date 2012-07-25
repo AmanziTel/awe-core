@@ -22,10 +22,9 @@ import net.refractions.udig.catalog.ID;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -35,64 +34,59 @@ import org.osgi.framework.BundleContext;
  * 
  * @author Bondoronok_p
  */
-public class NeoCatalogPlugin extends AbstractUIPlugin {
-    
+public class NeoCatalogPlugin extends AbstractProviderPlugin {
+
     private static final String FILE_PREFIX = "file://";
-    
+
     private static final String PLUGIN_ID = "org.amanzi.awe.catalog.neo";
 
-	/**
-	 * Plugin variable
-	 */
-	static private NeoCatalogPlugin plugin;
-	private IPropertyChangeListener propertyListener;
+    /**
+     * Plugin variable
+     */
+    static private NeoCatalogPlugin plugin;
 
-	/**
-	 * Constructor for SplashPlugin.
-	 */
-	public NeoCatalogPlugin() {
-		super();
-		plugin = this;
-	}
+    /**
+     * Constructor for SplashPlugin.
+     */
+    public NeoCatalogPlugin() {
+        super();
+        plugin = this;
+    }
 
-	@Override
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+    @Override
+    public void start(final BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
-	 * )
-	 */
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		getPreferenceStore().removePropertyChangeListener(propertyListener);
-		super.stop(context);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext )
+     */
+    @Override
+    public void stop(final BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
 
-	/**
-	 * Returns the shared instance.
-	 */
-	public static NeoCatalogPlugin getDefault() {
-		return plugin;
-	}
-	
-	public String getDatabaseLocation() {
-	    return DatabaseManagerFactory.getDatabaseManager().getLocation().replace(" ", "%20");
-	}
-	
-	/**
-	 * Returns Map service
-	 *
-	 * @return
-	 * @throws MalformedURLException
-	 */
-	public IService getMapService() throws MalformedURLException {
+    /**
+     * Returns the shared instance.
+     */
+    public static NeoCatalogPlugin getDefault() {
+        return plugin;
+    }
+
+    public String getDatabaseLocation() {
+        return DatabaseManagerFactory.getDatabaseManager().getLocation().replace(" ", "%20");
+    }
+
+    /**
+     * Returns Map service
+     * 
+     * @return
+     * @throws MalformedURLException
+     */
+    public IService getMapService() throws MalformedURLException {
         String databaseLocation = getDatabaseLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
         URL url = new URL(FILE_PREFIX + databaseLocation);
@@ -100,19 +94,19 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
         IService curService = catalog.getById(IService.class, id, null);
         return curService;
     }
-	
-	public IService createService(URL url) {
-	    ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+
+    public IService createService(final URL url) {
+        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
         ID id = new ID(url);
         IService curService = catalog.getById(IService.class, id, null);
         curService = CatalogPlugin.getDefault().getServiceFactory().createService(url).get(0);
         updateMapServices();
-        
+
         return curService;
-	}
-	
-	public void updateMapServices() {
-	    String databaseLocation = getDatabaseLocation();
+    }
+
+    public void updateMapServices() {
+        String databaseLocation = getDatabaseLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
         URL url = null;
         try {
@@ -128,7 +122,11 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
                 catalog.add(service);
             }
         }
-	}
-	
-	
+    }
+
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
+    }
+
 }

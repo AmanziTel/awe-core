@@ -12,9 +12,9 @@
  */
 package org.amanzi.awe.console;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -94,7 +94,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(final BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
         device = getWorkbench().getDisplay();
@@ -106,7 +106,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(final BundleContext context) throws Exception {
         plugin = null;
         removeConsole();
         isVisible = false;
@@ -137,7 +137,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
 
             ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {pluginConsole});
             if (PlatformUI.isWorkbenchRunning()) {
-                loggingPossible = (plugin != null) && (pluginConsole != null) && Display.getDefault() != null;
+                loggingPossible = (plugin != null) && (pluginConsole != null) && (Display.getDefault() != null);
             } else {
                 loggingPossible = false;
             }
@@ -153,11 +153,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     private void removeConsole() {
         ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[] {pluginConsole});
 
-        try {
-            consoleStream.close();
-        } catch (IOException e) {
-            LOGGER.error(e.getLocalizedMessage(), e);
-        }
+        IOUtils.closeQuietly(consoleStream);
 
         pluginConsole.destroy();
     }
@@ -168,7 +164,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * @param line
      */
 
-    public void debug(String line) {
+    public void debug(final String line) {
         if (loggingPossible) {
             if (debug) {
                 getDefault().printToStream(line);
@@ -200,7 +196,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * 
      * @param line
      */
-    public static void notify(String line) {
+    public static void notify(final String line) {
         if (loggingPossible) {
             consoleStream = pluginConsole.newMessageStream();
             setColor(BLUE);
@@ -216,7 +212,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * 
      * @param line
      */
-    public static void error(String line) {
+    public static void error(final String line) {
         if (loggingPossible) {
             consoleStream = pluginConsole.newMessageStream();
             setColor(RED);
@@ -233,7 +229,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * @param line
      */
 
-    public static void exception(Exception e) {
+    public static void exception(final Exception e) {
 
         if (loggingPossible) {
             consoleStream = pluginConsole.newMessageStream();
@@ -259,7 +255,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     }
 
     /** Print a exception to Console */
-    private boolean printException(Exception e) {
+    private boolean printException(final Exception e) {
         if (loggingPossible) {
             if (!isVisible) {
                 pluginConsole.activate();
@@ -275,7 +271,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
 
     /**
      * set message color
-     *
+     * 
      * @param color message color
      */
     private static void setColor(final Color color) {

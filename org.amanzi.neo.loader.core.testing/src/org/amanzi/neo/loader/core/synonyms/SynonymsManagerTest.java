@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.amanzi.neo.loader.core.internal.Activator;
+import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
@@ -91,7 +91,7 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
     private static final String[] SYNONYM_PATHES = {NETWORK_SYNONYMS, DRIVE_SYNONYMS, N2N_SYNONYMS};
 
-    private static final String LOADER_PLUGIN_ID = Activator.getInstance().getPluginId();
+    private static final String LOADER_PLUGIN_ID = LoaderCorePlugin.getInstance().getPluginId();
 
     private SynonymsManager synonymsManager;
 

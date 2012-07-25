@@ -119,7 +119,7 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
                     result = createInstance();
                     result.initialize(modelNode);
 
-                    postInitialize(result);
+                    postInitialize(result, parent);
 
                     addToCache(result, key);
                 }
@@ -160,7 +160,7 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
             C resultModel = createInstance();
             resultModel.initialize(parentModel.getRootNode(), name);
 
-            postInitialize(resultModel);
+            postInitialize(resultModel, parent);
 
             result = (M)resultModel;
         }
@@ -180,6 +180,10 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
 
     protected IGeneralNodeProperties getGeneralNodeProperties() {
         return generalNodeProperties;
+    }
+
+    protected void postInitialize(final C model, final P parent) throws ModelException {
+        postInitialize(model);
     }
 
 }

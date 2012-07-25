@@ -19,7 +19,9 @@ import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
+import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.providers.IGISModelProvider;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
@@ -38,7 +40,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
         implements
             INetworkModelProvider {
 
-    private IGeoNodeProperties geoNodeProperties;
+    private final INetworkNodeProperties networkNodeProperties;
 
     /**
      * @param nodeService
@@ -46,10 +48,13 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
      * @param indexModelProvider
      * @param propertyStatisticsModelProvider
      */
-    protected NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+    public NetworkModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
             final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
-            final IGeoNodeProperties geoNodeProperties) {
-        super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties);
+            final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties,
+            final IGISModelProvider gisModelProvider) {
+        super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties,
+                gisModelProvider);
+        this.networkNodeProperties = networkNodeProperties;
     }
 
     @Override
@@ -59,7 +64,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
 
     @Override
     protected NetworkModel createInstance() {
-        return new NetworkModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties());
+        return new NetworkModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties(), networkNodeProperties);
     }
 
     @Override

@@ -28,8 +28,11 @@ public abstract class AbstractEvent implements IEvent {
 
     private final EventStatus status;
 
-    protected AbstractEvent(EventStatus status) {
+    private final boolean isAsync;
+
+    protected AbstractEvent(final EventStatus status, final boolean isAsync) {
         this.status = status;
+        this.isAsync = isAsync;
     }
 
     @Override
@@ -38,7 +41,7 @@ public abstract class AbstractEvent implements IEvent {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o instanceof IEvent) {
             return ((IEvent)o).getStatus().equals(status);
         }
@@ -49,6 +52,11 @@ public abstract class AbstractEvent implements IEvent {
     @Override
     public int hashCode() {
         return status.name().hashCode();
+    }
+
+    @Override
+    public boolean isAsync() {
+        return isAsync;
     }
 
 }

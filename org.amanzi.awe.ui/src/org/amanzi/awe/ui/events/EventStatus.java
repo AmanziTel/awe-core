@@ -23,5 +23,5 @@ package org.amanzi.awe.ui.events;
  */
 public enum EventStatus {
 
-    AWE_STARTED, PROJECT_CHANGED;
+    AWE_STARTED, PROJECT_CHANGED, DATA_UPDATED, SHOW_GIS_ON_MAP;
 }

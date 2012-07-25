@@ -13,7 +13,12 @@
 
 package org.amanzi.neo.services;
 
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.internal.IService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 /**
  * TODO Purpose of
@@ -24,5 +29,11 @@ import org.amanzi.neo.services.internal.IService;
  * @since 1.0.0
  */
 public interface IIndexService extends IService {
+
+    Index<Node> getIndex(Node rootNode, INodeType nodeType) throws ServiceException;
+
+    void addToIndex(Node rootNode, INodeType nodeType, Node node, String propertyName, Object value) throws ServiceException;
+
+    <T extends Object> MultiPropertyIndex<T> createMultiPropertyIndex(INodeType nodeType, Node node, Class<T> clazz, String... properties) throws ServiceException;
 
 }

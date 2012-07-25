@@ -15,6 +15,7 @@ package org.amanzi.awe.ui.udig;
 
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
+import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -40,14 +41,18 @@ public class UDIGProjectListener implements IAWEEventListenter, Adapter {
      * 
      */
     public UDIGProjectListener() {
+
     }
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
         case AWE_STARTED:
             // register UDIG listener
             ProjectRegistryImpl.getProjectRegistry().eAdapters().add(this);
+
+            // initialize active project in uDIG
+            ApplicationGIS.getActiveProject();
             break;
         default:
             break;
@@ -55,7 +60,7 @@ public class UDIGProjectListener implements IAWEEventListenter, Adapter {
     }
 
     @Override
-    public void notifyChanged(Notification notification) {
+    public void notifyChanged(final Notification notification) {
         if (notification.getEventType() == Notification.SET) {
             IProject project = (IProject)notification.getNewValue();
 
@@ -74,11 +79,11 @@ public class UDIGProjectListener implements IAWEEventListenter, Adapter {
     }
 
     @Override
-    public void setTarget(Notifier newTarget) {
+    public void setTarget(final Notifier newTarget) {
     }
 
     @Override
-    public boolean isAdapterForType(Object type) {
+    public boolean isAdapterForType(final Object type) {
         return false;
     }
 

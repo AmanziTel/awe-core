@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.loader.core.internal;
 
+import org.amanzi.neo.loader.core.validator.IValidationResult;
+
 /**
  * TODO Purpose of
  * <p>
@@ -24,5 +26,9 @@ package org.amanzi.neo.loader.core.internal;
 public interface IConfiguration {
 
     String getDatasetName();
+
+    void setDatasetName(String datasetName);
+
+    IValidationResult isValid();
 
 }

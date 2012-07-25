@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl.statistics;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -21,7 +22,7 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
+import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -40,7 +41,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     private final IPropertyStatisticsService statisticsService;
 
-    private IPropertyStatistics statisticsVault;
+    private StatisticsVault statisticsVault;
 
     /**
      * @param nodeService
@@ -89,8 +90,8 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    public void indexProperty(final INodeType nodeType, final String property, final Object value) throws ServiceException {
-        statisticsVault.indexProperty(nodeType, property, value);
+    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
+        statisticsVault.indexElement(nodeType, properties);
     }
 
     @Override

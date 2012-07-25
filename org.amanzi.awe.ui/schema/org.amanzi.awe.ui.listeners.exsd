@@ -79,6 +79,10 @@
                   </enumeration>
                   <enumeration value="PROJECT_CHANGED">
                   </enumeration>
+                  <enumeration value="DATA_UPDATED">
+                  </enumeration>
+                  <enumeration value="SHOW_GIS_ON_MAP">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>

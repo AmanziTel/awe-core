@@ -28,6 +28,7 @@ public class PerspectiveFactory extends AbstractPerspectiveFactory {
     private static final String N2N = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
     private static final String DISTRIBUTION = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
     private static final String PROPERTIES = "org.eclipse.ui.views.PropertySheet";
+    private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
 
     /**
      * Creates the initial layout for a page.
@@ -49,6 +50,7 @@ public class PerspectiveFactory extends AbstractPerspectiveFactory {
         topLeft.addView(DATABASE_PROJECT_EXPLORER);
 
         IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, getBottom(), editorArea);
+        bottom.addView(CATALOG);
         bottom.addView(PROPERTIES);
         bottom.addView(N2N);
         bottom.addView(DISTRIBUTION);

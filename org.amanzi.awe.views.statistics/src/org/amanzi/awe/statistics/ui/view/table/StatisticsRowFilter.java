@@ -43,7 +43,7 @@ public class StatisticsRowFilter extends ViewerFilter {
     public boolean select(Viewer viewer, Object parentElement, Object element) {
         StatisticsCell[] cells = (StatisticsCell[])element;
         StatisticsRow row = cells[0].getParent();
-        if (row.isSummaryNode()) {
+        if (row.isSummaryRow()) {
             return true;
         }
         Long period = row.getTimestamp();

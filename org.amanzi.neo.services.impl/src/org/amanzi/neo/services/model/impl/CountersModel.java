@@ -56,11 +56,11 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
      * 
      * @param service
      */
-    static void setDatasetService(DatasetService service) {
+    static void setDatasetService(final DatasetService service) {
         datasetService = service;
     }
 
-    protected CountersModel(Node rootNode) throws AWEException {
+    protected CountersModel(final Node rootNode) throws AWEException {
         super(rootNode, DatasetTypes.COUNTERS);
         // validate
         if (rootNode == null) {
@@ -71,7 +71,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
         }
 
         this.rootNode = rootNode;
-        this.name = rootNode.getProperty(AbstractService.NAME, StringUtils.EMPTY).toString();
+        name = rootNode.getProperty(AbstractService.NAME, StringUtils.EMPTY).toString();
         setPrimaryType(DriveNodeTypes.findById(rootNode.getProperty(DatasetService.PRIMARY_TYPE).toString()));
         initializeStatistics();
     }
@@ -88,11 +88,12 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
      * @param primaryType
      * @throws AWEException
      */
-    public CountersModel(Node parent, Node rootNode, String name, ICountersType type) throws AWEException {
+    public CountersModel(final Node parent, final Node rootNode, final String name, final ICountersType type) throws AWEException {
         this(parent, rootNode, name, type, DriveNodeTypes.M);
     }
 
-    public IDataElement addMeasurement(Map<String, Object> param) throws AWEException {
+    @Override
+    public IDataElement addMeasurement(final Map<String, Object> param) throws AWEException {
         Node measurmentNode = datasetService.createNode(param);
         datasetService.addChild(rootNode, measurmentNode, null);
         Long tst = (Long)param.get(TIMESTAMP);
@@ -113,7 +114,8 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
      * @throws AWEException if parameters are null or empty or some errors occur in database during
      *         creation of nodes
      */
-    public CountersModel(Node parent, Node rootNode, String name, ICountersType type, INodeType primaryType) throws AWEException {
+    public CountersModel(final Node parent, final Node rootNode, final String name, final ICountersType type,
+            final INodeType primaryType) throws AWEException {
         super(rootNode, DatasetTypes.COUNTERS);
         // if root node is null, get one by name
         if (rootNode != null) {
@@ -121,7 +123,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(AbstractService.NAME, null);
-            this.countersType = type;
+            countersType = type;
         } else {
             // validate params
             if (parent == null) {
@@ -130,7 +132,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
 
             this.rootNode = datasetService.getDataset(parent, name, DatasetTypes.COUNTERS, type, primaryType);
             this.name = name;
-            this.countersType = type;
+            countersType = type;
         }
         setPrimaryType(primaryType);
         initializeStatistics();
@@ -146,7 +148,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
     }
 
     @Override
-    public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException {
+    public ICorrelationModel getCorrelatedModel(final String correlationModelName) throws AWEException {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
             if (network.getProperty(AbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
@@ -163,12 +165,12 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
     }
 
     @Override
-    public Iterable<IDataElement> getChildren(IDataElement parent) {
+    public Iterable<IDataElement> getChildren(final IDataElement parent) {
         return null;
     }
 
     @Override
-    public boolean isUniqueProperties(String property) {
+    public boolean isUniqueProperties(final String property) {
         return false;
     }
 
@@ -177,7 +179,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
         if (rootNode == null) {
             throw new IllegalArgumentException("currentModel type is null.");
         }
-        Iterator<Node> isVirtual = datasetService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET,
+        Iterator<Node> isVirtual = datasetService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD,
                 Direction.INCOMING).iterator();
         if (isVirtual.hasNext()) {
             return new ProjectModel(isVirtual.next());
@@ -186,7 +188,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
     }
 
     @Override
-    public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp) {
+    public Iterable<IDataElement> findAllElementsByTimestampPeriod(final long min_timestamp, final long max_timestamp) {
         return null;
     }
 

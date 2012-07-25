@@ -54,9 +54,12 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
     private static final String SCRIPTS_FOLDER = "awe-scripts";
-    private static final String RUBY_SCRIPT_FOLDER = "/ruby";
-    private static final String COMMON_SCRIPTS_FOLDER = "/common";
-    private static final String PLUGIN_ID = "org.amanzi.awe.scripting";
+    private static final String RUBY_SCRIPT_FOLDER = "ruby";
+    private static final String COMMON_SCRIPTS_FOLDER = "common";
+    public static final String PLUGIN_ID = "org.amanzi.awe.scripting";
+    private static final String PATH_SEPARATOR = "/";
+    private static final String NEO4J_ENTRY = "neo4j";
+    private static final String NEO4J_RB_PATH = "/lib/neo4j.rb";
     /**
      * wrapper for runtime instance
      */
@@ -76,7 +79,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws IOException
      */
     protected void initDefaultScript(Bundle bundle, JRubyRuntimeWrapper runtime) throws ScriptingException, IOException {
-        URL workspaceName = bundle.getEntry(RUBY_SCRIPT_FOLDER + COMMON_SCRIPTS_FOLDER);
+        URL workspaceName = bundle.getEntry(RUBY_SCRIPT_FOLDER + PATH_SEPARATOR + COMMON_SCRIPTS_FOLDER);
         if (workspaceName == null) {
             LOGGER.info("nothing to initialize in bundle " + bundle.getSymbolicName());
             return;
@@ -94,6 +97,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         try {
             super.start(context);
             manager.initWorkspace();
+            initScriptManager(context);
         } catch (Exception e) {
             LOGGER.error("error when trying to initialize default ruby scripts", e);
             throw new ScriptingException(e);
@@ -124,7 +128,9 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     public void initScriptManager(BundleContext context) throws IOException {
         try {
+            LOGGER.info("Start scripts processing. for plugin" + context.getBundle().getSymbolicName());
             URL workspaceName = context.getBundle().getEntry(RUBY_SCRIPT_FOLDER);
+            LOGGER.info("Scripts folder founded in" + workspaceName.getPath());
             URL workspaceLocator = FileLocator.toFileURL(workspaceName);
             LOGGER.info("Start workspace initializing");
             LOGGER.info("Start file copying");
@@ -173,11 +179,28 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
             runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
-            initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
-            initDefaultScript(getBundle(), runtimeWrapper);
+            initRuntimeWithDefaultScripts();
         } catch (Exception e) {
             LOGGER.error("Error in runtime initialisation", e);
             throw new ScriptingException(e);
+        }
+    }
+
+    /**
+     * @param runtime
+     * @throws ScriptingException
+     */
+    private void initRuntimeWithDefaultScripts() throws ScriptingException {
+
+        URL scripts;
+        try {
+            scripts = FileLocator.toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(NEO4J_ENTRY));
+            File file = new File(scripts.getPath() + NEO4J_RB_PATH);
+            runtimeWrapper.executeScript(file);
+            initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
+            initDefaultScript(getBundle(), runtimeWrapper);
+        } catch (Exception e) {
+            throw new ScriptingException("Unable to initialize runtime with default scripts", e);
         }
     }
 
@@ -198,7 +221,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @return
      */
     private ClassLoader getClassLoader() {
-        return this.getClass().getClassLoader();
+        return getClass().getClassLoader();
     }
 
     /**
@@ -247,7 +270,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         public void copySources(URL rubyScriptingFolder) throws IOException {
             File rubyFolder = new File(rubyScriptingFolder.getPath());
             for (File source : rubyFolder.listFiles()) {
-                if (!source.isDirectory()) {
+                if (!source.isDirectory() || source.getName().equals(COMMON_SCRIPTS_FOLDER)) {
                     continue;
                 }
                 String scriptFolderName = source.getAbsolutePath();

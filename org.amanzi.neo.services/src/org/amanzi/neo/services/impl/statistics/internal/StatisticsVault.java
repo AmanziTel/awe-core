@@ -21,8 +21,6 @@ import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * TODO Purpose of
@@ -32,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsVault implements IPropertyStatistics {
+public class StatisticsVault {
 
     private int count;
 
@@ -44,20 +42,17 @@ public class StatisticsVault implements IPropertyStatistics {
         isChanged = false;
     }
 
-    @Override
-    public void indexProperty(final INodeType nodeType, final String property, final Object value) throws ServiceException {
+    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
         assert nodeType != null;
-        assert !StringUtils.isEmpty(property);
-        assert value != null;
+        assert properties != null;
 
         NodeTypeVault vault = getNodeTypeVaule(nodeType);
-        vault.indexProperty(property, value);
+        vault.indexElement(properties);
 
         count++;
         isChanged = true;
     }
 
-    @Override
     public Set<String> getPropertyNames() {
         Set<String> result = new HashSet<String>();
 
@@ -68,27 +63,22 @@ public class StatisticsVault implements IPropertyStatistics {
         return result;
     }
 
-    @Override
     public Set<String> getPropertyNames(final INodeType nodeType) {
         return getNodeTypeVaule(nodeType).getPropertyNames();
     }
 
-    @Override
     public int getCount() {
         return count;
     }
 
-    @Override
     public int getCount(final INodeType nodeType) {
         return getNodeTypeVaule(nodeType).getCount();
     }
 
-    @Override
     public Set<Object> getValues(final INodeType nodeType, final String property) {
         return getNodeTypeVaule(nodeType).getValues(property);
     }
 
-    @Override
     public int getValueCount(final INodeType nodeType, final String property, final Object value) {
         return getNodeTypeVaule(nodeType).getValueCount(property, value);
     }
@@ -116,11 +106,11 @@ public class StatisticsVault implements IPropertyStatistics {
         this.isChanged = isChanged;
     }
 
-    public void setCount(int count) {
+    public void setCount(final int count) {
         this.count = count;
     }
 
-    public void addNodeTypeVault(NodeTypeVault nodeTypeVault) {
+    public void addNodeTypeVault(final NodeTypeVault nodeTypeVault) {
         nodeTypeVaults.put(nodeTypeVault.getNodeType(), nodeTypeVault);
     }
 

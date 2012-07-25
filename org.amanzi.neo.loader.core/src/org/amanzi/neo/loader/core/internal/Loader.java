@@ -13,11 +13,11 @@
 
 package org.amanzi.neo.loader.core.internal;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.exception.impl.SaverInitializationException;
 import org.amanzi.neo.loader.core.parser.IParser;
@@ -25,6 +25,7 @@ import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidator;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -35,7 +36,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class Loader<C extends IConfiguration, D extends IData> {
+public final class Loader<C extends IConfiguration, D extends IData> implements ILoader<C, D> {
+
+    private static final Logger LOGGER = Logger.getLogger(Loader.class);
 
     private IValidator<C> validator;
 
@@ -43,7 +46,10 @@ public final class Loader<C extends IConfiguration, D extends IData> {
 
     private final List<ISaver<C, D>> savers = new ArrayList<ISaver<C, D>>();
 
-    public void init(C configuration) throws LoaderException {
+    private String loaderName;
+
+    @Override
+    public void init(final C configuration) throws LoaderException {
         parser.init(configuration);
 
         try {
@@ -55,7 +61,10 @@ public final class Loader<C extends IConfiguration, D extends IData> {
         }
     }
 
-    public void run(IProgressMonitor monitor) throws ModelException {
+    @Override
+    public void run(final IProgressMonitor monitor) throws LoaderException {
+        long timeBefore = System.currentTimeMillis();
+
         parser.setProgressMonitor(monitor);
 
         try {
@@ -69,26 +78,40 @@ public final class Loader<C extends IConfiguration, D extends IData> {
         } finally {
             finishUp();
         }
+
+        LOGGER.info("Loading time = " + (System.currentTimeMillis() - timeBefore));
+
     }
 
-    public void setValidator(IValidator<C> validator) {
+    @Override
+    public void setValidator(final IValidator<C> validator) {
         this.validator = validator;
     }
 
-    public void setParser(IParser<C, D> parser) {
+    @Override
+    public void setParser(final IParser<C, D> parser) {
         this.parser = parser;
     }
 
-    public void addSaver(ISaver<C, D> saver) {
+    @Override
+    public void addSaver(final ISaver<C, D> saver) {
         this.savers.add(saver);
     }
 
-    public IValidationResult validate(C configuration) {
-        return validator.validate(configuration);
+    @Override
+    public IValidationResult validate(final C configuration) {
+        IValidationResult configurationValidation = configuration.isValid();
+
+        if (configurationValidation == IValidationResult.SUCCESS) {
+            return validator.validate(configuration);
+        } else {
+            return configurationValidation;
+        }
     }
 
-    public boolean isAppropriate(List<File> filesToLoad) {
-        IValidationResult result = validator.appropriate(filesToLoad);
+    @Override
+    public boolean isAppropriate(final C configuration) {
+        IValidationResult result = validator.appropriate(configuration);
 
         switch (result.getResult()) {
         case FAIL:
@@ -104,5 +127,15 @@ public final class Loader<C extends IConfiguration, D extends IData> {
         for (ISaver<C, D> saver : savers) {
             saver.finishUp();
         }
+    }
+
+    @Override
+    public String getName() {
+        return loaderName;
+    }
+
+    @Override
+    public void setName(final String name) {
+        this.loaderName = name;
     }
 }

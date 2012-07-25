@@ -52,7 +52,7 @@ public enum Period {
 
     },
     // 1 hour
-    HOURLY(Messages.CTP_HOURLY, null, -1) {
+    HOURLY(Messages.ctrHourly, null, -1) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.HOUR_OF_DAY);
@@ -70,7 +70,7 @@ public enum Period {
 
     },
     // 1 day
-    DAILY(Messages.CTP_DAILY, HOURLY, Calendar.HOUR_OF_DAY) {
+    DAILY(Messages.ctrDaily, HOURLY, Calendar.HOUR_OF_DAY) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.DAY_OF_MONTH);
@@ -88,7 +88,7 @@ public enum Period {
         }
     },
     // 1 week
-    WEEKLY(Messages.CTP_WEEKLY, DAILY, Calendar.DAY_OF_YEAR) {
+    WEEKLY(Messages.ctrWeekly, DAILY, Calendar.DAY_OF_YEAR) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.WEEK_OF_YEAR);
@@ -108,7 +108,7 @@ public enum Period {
 
     },
     // 1 month
-    MONTHLY(Messages.CTP_MONTHLY, WEEKLY, Calendar.WEEK_OF_YEAR) {
+    MONTHLY(Messages.ctrMonthly, WEEKLY, Calendar.WEEK_OF_YEAR) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.MONTH);
@@ -128,7 +128,7 @@ public enum Period {
         }
 
     },
-    YEARLY(Messages.CTP_YEARLY, MONTHLY, Calendar.MONTH) {
+    YEARLY(Messages.ctrYearly, MONTHLY, Calendar.MONTH) {
         @Override
         public Long addPeriod(Long time) {
             return addOnePeriod(time, Calendar.YEAR);
@@ -148,7 +148,7 @@ public enum Period {
         }
 
     },
-    ALL(Messages.CTP_TOTAL, YEARLY, Calendar.YEAR) {
+    ALL(Messages.ctrTotal, YEARLY, Calendar.YEAR) {
 
         @Override
         public Long addPeriod(Long time) {

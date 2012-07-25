@@ -21,23 +21,18 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IGeoResourceInfo;
 import net.refractions.udig.catalog.IService;
 
-import org.amanzi.neo.services.model.IDataModel;
-import org.amanzi.neo.services.model.IMeasurementModel;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.IRenderableModel;
-import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
+import org.amanzi.neo.models.render.IGISModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 public class GeoResource extends IGeoResource {
 
     private static Logger LOGGER = Logger.getLogger(GeoResource.class);
-    private IRenderableModel source;
-    private IService service;
-    private URL url;
-    private GisModel gis;
+    private final IGISModel source;
+    private final IService service;
+    private final URL url;
 
-    protected GeoResource(IService service, IRenderableModel source, GisModel gis) {
+    protected GeoResource(final IService service, final IGISModel source) {
         // validate
         if (service == null) {
             throw new IllegalArgumentException("Geo service is null.");
@@ -48,8 +43,7 @@ public class GeoResource extends IGeoResource {
 
         this.source = source;
         this.service = service;
-        this.gis = gis;
-        this.url = getURL(service, source, gis);
+        url = getURL(service, source);
     }
 
     /**
@@ -60,11 +54,10 @@ public class GeoResource extends IGeoResource {
      * @param gis
      * @return
      */
-    private URL getURL(IService service, IRenderableModel source, GisModel gis) {
+    private URL getURL(final IService service, final IGISModel source) {
         try {
-            String urlString = service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
-                    + File.separator + gis.getName();
-            
+            String urlString = service.getIdentifier().toString() + File.separator + "#" + source.getName();
+
             urlString = urlString.replace(" ", "_").replace("\\", "/");
 
             return new URL(urlString);
@@ -85,12 +78,12 @@ public class GeoResource extends IGeoResource {
     }
 
     @Override
-    public IGeoResourceInfo createInfo(IProgressMonitor monitor) throws IOException {
-        return new GeoResourceInfo(this.source, this.gis, monitor);
+    public IGeoResourceInfo createInfo(final IProgressMonitor monitor) throws IOException {
+        return new GeoResourceInfo(source, monitor);
     }
 
     @Override
-    public IService service(IProgressMonitor monitor) throws IOException {
+    public IService service(final IProgressMonitor monitor) throws IOException {
         return service;
     }
 
@@ -100,20 +93,15 @@ public class GeoResource extends IGeoResource {
     }
 
     @Override
-    public <T> boolean canResolve(Class<T> adaptee) {
-        return (adaptee.isAssignableFrom(INetworkModel.class) && (source instanceof INetworkModel))
-                || adaptee.isAssignableFrom(IRenderableModel.class)
-                || (adaptee.isAssignableFrom(IMeasurementModel.class) && (source instanceof IMeasurementModel))
-                || super.canResolve(adaptee);
+    public <T> boolean canResolve(final Class<T> adaptee) {
+        return ((source instanceof IGISModel) || ((source.canResolve(adaptee)) && super.canResolve(adaptee)));
     }
 
     @Override
-    public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor) throws IOException {
-        if ((adaptee.isAssignableFrom(INetworkModel.class)) || (adaptee.isAssignableFrom(IMeasurementModel.class))
-                || (adaptee.isAssignableFrom(IRenderableModel.class))) {
+    public <T> T resolve(final Class<T> adaptee, final IProgressMonitor monitor) throws IOException {
+        if (adaptee.isAssignableFrom(IGISModel.class)) {
             return adaptee.cast(source);
         }
         return super.resolve(adaptee, monitor);
     }
-
 }

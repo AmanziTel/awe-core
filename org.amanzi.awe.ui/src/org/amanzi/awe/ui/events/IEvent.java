@@ -25,4 +25,6 @@ public interface IEvent {
 
     EventStatus getStatus();
 
+    boolean isAsync();
+
 }

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.impl.MappedStringData;
@@ -30,11 +31,14 @@ import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.impl.NetworkNodeProperties;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -75,6 +79,12 @@ public class NetworkSaverTest extends AbstractMockitoTest {
      */
     @Before
     public void setUp() throws Exception {
+        GraphDatabaseService dbService = mock(GraphDatabaseService.class);
+        DatabaseManagerFactory.getDatabaseManager().setDatabaseService(dbService);
+
+        Transaction tx = mock(Transaction.class);
+        doReturn(tx).when(dbService).beginTx();
+
         configuration = mock(IConfiguration.class);
         when(configuration.getDatasetName()).thenReturn(NETWORK_NAME);
 
@@ -93,7 +103,8 @@ public class NetworkSaverTest extends AbstractMockitoTest {
 
         synonymsManager = mock(SynonymsManager.class);
 
-        saver = spy(new NetworkSaver(projectModelProvider, networkModelProvider, synonymsManager, GENERAL_NODE_PROPERTIES));
+        saver = spy(new NetworkSaver(projectModelProvider, networkModelProvider, synonymsManager, GENERAL_NODE_PROPERTIES,
+                new NetworkNodeProperties()));
         saver.init(configuration);
     }
 
@@ -127,7 +138,7 @@ public class NetworkSaverTest extends AbstractMockitoTest {
         checkSingleElementCreated(NetworkElementType.SITE);
     }
 
-    private void checkSingleElementCreated(NetworkElementType type) throws Exception {
+    private void checkSingleElementCreated(final NetworkElementType type) throws Exception {
         List<Synonyms> synonyms = getSynonyms(type);
 
         when(synonymsManager.getSynonyms(saver.getSynonymsType(), type)).thenReturn(synonyms);
@@ -137,20 +148,22 @@ public class NetworkSaverTest extends AbstractMockitoTest {
         saver.save(getData(type));
 
         Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), NAME_VALUE);
 
         verify(networkModel).findElement(type, NAME_VALUE);
         verify(networkModel).createElement(eq(type), eq(networkNode), eq(NAME_VALUE), eq(properties));
     }
 
-    private List<Synonyms> getSynonyms(NetworkElementType type) {
+    private List<Synonyms> getSynonyms(final NetworkElementType type) {
         List<Synonyms> result = new ArrayList<Synonyms>();
 
-        result.add(new Synonyms(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), SynonymType.STRING, new String[] {NAME_VALUE}));
+        result.add(new Synonyms(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), SynonymType.STRING, Boolean.FALSE,
+                new String[] {NAME_VALUE}));
 
         return result;
     }
 
-    private IMappedStringData getData(NetworkElementType type) {
+    private IMappedStringData getData(final NetworkElementType type) {
         IMappedStringData result = new MappedStringData();
 
         result.put(NAME_VALUE, NAME_VALUE);

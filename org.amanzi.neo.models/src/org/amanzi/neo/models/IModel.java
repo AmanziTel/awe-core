@@ -45,4 +45,6 @@ public interface IModel {
     void finishUp() throws ModelException;
 
     IDataElement asDataElement();
+
+    boolean isRenderable();
 }

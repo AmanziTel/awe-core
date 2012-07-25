@@ -26,16 +26,14 @@
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.PropertyStatisticsNodeProperties">
             </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.PropertyStatisticsNodeProperties">
+            </nodePropertiesReference>
          </parameters>
       </service>
       <service
             class="org.amanzi.neo.services.impl.IndexService"
             id="org.amanzi.service.IndexService">
-         <parameters>
-            <nodePropertiesReference
-                  refId="org.amanzi.nodeproperties.generalnodeproperties">
-            </nodePropertiesReference>
-         </parameters>
       </service>
    </extension>
    <extension

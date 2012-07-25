@@ -55,6 +55,10 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.when(methodCall);
     }
 
+    protected Stubber doCallRealMethod() {
+        return Mockito.doCallRealMethod();
+    }
+
     protected <T> T eq(final T value) {
         return Mockito.eq(value);
     }
@@ -91,7 +95,7 @@ public class AbstractMockitoTest extends AbstractTest {
         Mockito.verifyNoMoreInteractions(mocks);
     }
 
-    protected VerificationMode times(int wantedNumberOfInvocations) {
+    protected VerificationMode times(final int wantedNumberOfInvocations) {
         return Mockito.times(wantedNumberOfInvocations);
     }
 
@@ -99,11 +103,11 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.doNothing();
     }
 
-    protected String contains(String substring) {
+    protected String contains(final String substring) {
         return Mockito.contains(substring);
     }
 
-    protected Stubber doAnswer(Answer< ? > answer) {
+    protected Stubber doAnswer(final Answer< ? > answer) {
         return Mockito.doAnswer(answer);
     }
 

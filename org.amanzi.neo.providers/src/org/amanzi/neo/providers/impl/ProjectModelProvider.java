@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.providers.impl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
@@ -140,5 +144,35 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
     @Override
     protected Class< ? extends IProjectModel> getModelClass() {
         return ProjectModel.class;
+    }
+
+    @Override
+    public List<IProjectModel> findAll() throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findAll"));
+        }
+
+        List<IProjectModel> result = new ArrayList<IProjectModel>();
+
+        try {
+            Node referencedNode = nodeService.getReferencedNode();
+
+            Iterator<Node> projectNodes = nodeService.getChildren(referencedNode, ProjectModelNodeType.PROJECT);
+
+            while (projectNodes.hasNext()) {
+                ProjectModel projectModel = createInstance();
+                projectModel.initialize(projectNodes.next());
+
+                result.add(projectModel);
+            }
+        } catch (ServiceException e) {
+            processException("Error on Searching for a Project Model", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findAll"));
+        }
+
+        return result;
     }
 }

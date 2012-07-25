@@ -29,4 +29,6 @@ public interface ISingleFileConfiguration extends IConfiguration {
 
     File getFile();
 
+    void setFile(File file);
+
 }

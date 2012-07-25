@@ -25,7 +25,8 @@ import java.util.Map;
 
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.testing.TestActivator;
-import org.amanzi.testing.AbstractTest;
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.eclipse.core.runtime.FileLocator;
@@ -40,7 +41,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AbstractScriptingPluginTests extends AbstractTest {
+public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
     private static List<File> allFiles;
     private static List<File> modules;
     private static final String SCRIPT_ROOT = "/ruby";
@@ -54,6 +55,9 @@ public class AbstractScriptingPluginTests extends AbstractTest {
 
     @BeforeClass
     public static void init() throws IOException {
+        clearDb();
+        initializeDb();
+        new LogStarter().earlyStartup();
         Enumeration<URL> projectScripts = Platform.getBundle(TestActivator.ID).findEntries(SCRIPT_ROOT, "*", false);
         allFiles = new ArrayList<File>();
         modules = new ArrayList<File>();
@@ -131,8 +135,14 @@ public class AbstractScriptingPluginTests extends AbstractTest {
     @Test
     public void testGetScriptsForProjectifExist() throws IOException {
         String projectName = TEST2_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
+        File requiredModule = null;
+        for (File module : modules) {
+            if (module.getName().equals(projectName)) {
+                requiredModule = module;
+            }
+        }
         Assert.assertEquals("Not expected count of files", TestActivator.getDefault().getScriptsForProject(projectName).size(),
-                modules.get(NumberUtils.INTEGER_ZERO).listFiles().length);
+                requiredModule.listFiles().length);
 
     }
 

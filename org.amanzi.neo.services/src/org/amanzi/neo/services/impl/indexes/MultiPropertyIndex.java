@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.amanzi.neo.services.impl.indexes.PropertyIndex.NeoIndexRelationshipTypes;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -25,6 +26,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 
@@ -40,6 +42,8 @@ import org.neo4j.kernel.Traversal;
  * @param <E> the type of the property to index, any standard numerical type
  */
 public class MultiPropertyIndex<E extends Object> {
+
+    private static final Logger LOGGER = Logger.getLogger(MultiPropertyIndex.class);
 
     private final String[] properties;
     private GraphDatabaseService neo;
@@ -492,6 +496,7 @@ public class MultiPropertyIndex<E extends Object> {
         try {
             flush();
         } catch (IOException e) {
+            LOGGER.error("Error on flushing MultiPropertyIndexes", e);
         }
         try {
             if (root != null) {
@@ -511,7 +516,9 @@ public class MultiPropertyIndex<E extends Object> {
                     root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
                 }
             }
+            tx.success();
         } catch (Exception e) {
+            LOGGER.error("Error on writing MultiPropertyIndexes to DB", e);
             tx.failure();
         } finally {
             tx.finish();
@@ -720,21 +727,20 @@ public class MultiPropertyIndex<E extends Object> {
         }
     }
 
-    public Traverser searchTraverser(final E[] min, final E[] max) {
+    public TraversalDescription searchTraverser(final E[] min, final E[] max) {
         try {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
             SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, null);
             // Then we return a traverser using this evaluator
             return Traversal.description().breadthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
-                    .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator)
-                    .traverse(root);
+                    .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
     public Iterable<Node> find(final E[] min, final E[] max) {
-        return searchTraverser(min, max).nodes();
+        return searchTraverser(min, max).traverse(root).nodes();
     }
 
     /**

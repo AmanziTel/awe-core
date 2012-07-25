@@ -43,6 +43,7 @@
         <module>org.amanzi.neo.db.testing</module>
         <module>org.amanzi.neo.core.testing</module>
         <module>org.amanzi.neo.loader.core.testing</module>
+	<module>org.amanzi.neo.loader.ui.testing</module>
         <module>org.amanzi.neo.models.impl.testing</module>
         <module>org.amanzi.neo.providers.testing</module>
         <module>org.amanzi.neo.services.testing</module>
@@ -93,6 +94,7 @@
   </profiles>
   
   <modules>
+     <module>org.amanzi.awe.console</module>
      <module>org.amanzi.awe.filters</module>
      <module>org.amanzi.awe.libs</module>
      <module>org.amanzi.awe.scripting</module>
@@ -102,11 +104,13 @@
      <module>org.amanzi.neo.db</module>
      <module>org.amanzi.neo.core</module>
      <module>org.amanzi.neo.loader.core</module>
+     <module>org.amanzi.neo.loader.ui</module>
      <module>org.amanzi.neo.models</module>
      <module>org.amanzi.neo.models.impl</module>
      <module>org.amanzi.neo.providers</module>
      <module>org.amanzi.neo.services</module>
      <module>org.amanzi.neo.services.impl</module>
+     <module>org.amanzi.neo.services.ui</module>
      <module>org.neo4j</module>
   </modules>
   

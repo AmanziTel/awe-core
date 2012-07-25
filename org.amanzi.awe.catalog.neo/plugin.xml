@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
- <extension
-         point="org.eclipse.ui.startup">
-         <startup class="org.amanzi.awe.catalog.neo.NeoCatalogStartup">
-         </startup>
-   </extension>
    <extension
          id="org.amanzi.awe.catalog.neo.ServiceExtensions"
          name="Neo4J Service Extensions"
@@ -15,5 +10,20 @@
             id="org.amanzi.awe.catalog.neo.service"
             name="Neo4J Catalog Service Extension">
       </service>
+   </extension>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.catalog.neo.listeners.NeoCatalogListener">
+         <eventStatus
+               status="DATA_UPDATED">
+         </eventStatus>
+         <eventStatus
+               status="SHOW_GIS_ON_MAP">
+         </eventStatus>
+         <eventStatus
+               status="AWE_STARTED">
+         </eventStatus>
+      </listener>
    </extension>
 </plugin>

@@ -15,7 +15,7 @@ package org.amanzi.neo.services.statistics;
 
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
+import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
 
@@ -29,8 +29,8 @@ import org.neo4j.graphdb.Node;
  */
 public interface IPropertyStatisticsService extends IService {
 
-    void saveStatistics(Node node, IPropertyStatistics vault) throws ServiceException;
+    void saveStatistics(Node node, StatisticsVault vault) throws ServiceException;
 
-    IPropertyStatistics loadStatistics(Node rootNode) throws ServiceException, NodeTypeNotExistsException;
+    StatisticsVault loadStatistics(Node rootNode) throws ServiceException, NodeTypeNotExistsException;
 
 }

@@ -20,4 +20,5 @@ Export-Package: org.neo4j.graphdb,
  org.neo4j.graphdb.event,
  org.neo4j.graphdb.index,
  org.neo4j.graphdb.traversal,
- org.neo4j.kernel
+ org.neo4j.kernel,
+ org.neo4j.kernel.impl.core

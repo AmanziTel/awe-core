@@ -23,10 +23,11 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.IServiceInfo;
 
-import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IRenderableModel;
-import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.models.render.IGISModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -36,7 +37,7 @@ public class GeoService extends IService {
 
     private List<IGeoResource> members;
     private Throwable message;
-    private URL url;
+    private final URL url;
     private final Map<String, Serializable> params;
 
     GeoService(Map<String, Serializable> params) {
@@ -47,11 +48,13 @@ public class GeoService extends IService {
     @Override
     public Status getStatus() {
         // did an error occur
-        if (message != null)
+        if (message != null) {
             return Status.BROKEN;
+        }
         // has the file been parsed yet
-        if (url == null)
+        if (url == null) {
             return Status.NOTCONNECTED;
+        }
         return Status.CONNECTED;
     }
 
@@ -71,15 +74,18 @@ public class GeoService extends IService {
             synchronized (this) {
                 List<IGeoResource> result = new ArrayList<IGeoResource>();
                 try {
-                    // TODO: current project or all the projects?
-                    for (IRenderableModel model : ProjectModel.getCurrentProjectModel().getAllRenderableModels()) {
-                        if (checkForExistCoordinateElement(model)) {
-                            for (GisModel gisElements : model.getAllGisModels()) {
-                                result.add(new GeoResource(this, model, gisElements));
+                    IProjectModel activeProject = NeoCatalogPlugin.getDefault().getProjectModelProvider().getActiveProjectModel();
+
+                    // add all network models
+                    for (INetworkModel networkModel : NeoCatalogPlugin.getDefault().getNetworkModelProvider()
+                            .findAll(activeProject)) {
+                        for (IGISModel gisModel : networkModel.getAllGIS()) {
+                            if (checkForExistCoordinateElement(gisModel)) {
+                                result.add(new GeoResource(this, gisModel));
                             }
                         }
                     }
-                } catch (AWEException e) {
+                } catch (ModelException e) {
                     LOGGER.error("Could not create a list of resources.", e);
                     message = e;
                 }
@@ -96,11 +102,9 @@ public class GeoService extends IService {
      * @param gis
      * @return
      */
-    private boolean checkForExistCoordinateElement(IRenderableModel gis) {
-        if (gis.getMaxLongitude() != 0d && 
-            gis.getMinLongitude() != 0d && 
-            gis.getMaxLatitude() != 0d && 
-            gis.getMinLatitude() != 0d) {
+    private boolean checkForExistCoordinateElement(IGISModel gis) {
+        if ((gis.getMaxLongitude() != 0d) && (gis.getMinLongitude() != 0d) && (gis.getMaxLatitude() != 0d)
+                && (gis.getMinLatitude() != 0d)) {
             return true;
         }
         return false;

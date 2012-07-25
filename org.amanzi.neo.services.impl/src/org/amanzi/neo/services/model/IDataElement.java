@@ -32,21 +32,25 @@ public interface IDataElement {
      * @return Property value or <code>null</code>.
      */
     public Object get(String header);
-    
 
     /**
      * Put any object to DataElement
-     *
+     * 
      * @param key Key by object
      * @param value Value by object
      * @return Put object
      */
     public Object put(String key, Object value);
-    
+
     /**
      * Get all properties from DataElement
-     *
+     * 
      * @return Set of properties
      */
     public Set<String> keySet();
+
+    /**
+     * get node id
+     */
+    Long getId();
 }

@@ -57,7 +57,28 @@
             </providerReference>
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.GeoNodeProperties">
-            </nodePropertiesReference></parameters>
+            </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.NetworkNodeProperties">
+            </nodePropertiesReference>
+            <providerReference
+                  refId="org.amanzi.provider.GISModelProvider">
+            </providerReference></parameters>
+      </provider>
+      <provider
+            class="org.amanzi.neo.providers.impl.GISModelProvider"
+            id="org.amanzi.provider.GISModelProvider">
+         <parameters>
+            <serviceReference
+                  refId="org.amanzi.service.NodeService">
+            </serviceReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.generalnodeproperties">
+            </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.GeoNodeProperties">
+            </nodePropertiesReference>
+         </parameters>
       </provider>
    </extension>
 

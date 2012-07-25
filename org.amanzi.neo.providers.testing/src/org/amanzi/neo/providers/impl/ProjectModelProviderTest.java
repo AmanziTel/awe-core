@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -130,9 +131,9 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckCacheActivityWithEmptyCache() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModelNodeType.PROJECT))
-                .thenReturn(node);
-        when(nodeService.getParent(node)).thenReturn(referencedNode);
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModelNodeType.PROJECT)).thenReturn(
+                node);
+        when(nodeService.getParent(eq(node), any(RelationshipType.class))).thenReturn(referencedNode);
         when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         // without cache
@@ -146,8 +147,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckNohingFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, ProjectModelNodeType.PROJECT)).thenReturn(
-                null);
+        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, ProjectModelNodeType.PROJECT)).thenReturn(null);
 
         IProjectModel result = projectModelProvider.findProjectByName(NOT_FOUND_PROJECT);
 
@@ -157,7 +157,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     @Test
     public void testCheckModelFoundByName() throws Exception {
         when(nodeService.getChildByName(referencedNode, PROJECT_NAME, ProjectModelNodeType.PROJECT)).thenReturn(node);
-        when(nodeService.getParent(node)).thenReturn(referencedNode);
+        when(nodeService.getParent(eq(node), any(RelationshipType.class))).thenReturn(referencedNode);
         when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         IProjectModel result = projectModelProvider.findProjectByName(PROJECT_NAME);
@@ -201,7 +201,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
         setProjectFound(false);
     }
 
-    private void setProjectFound(boolean isFound) throws ModelException {
+    private void setProjectFound(final boolean isFound) throws ModelException {
         doReturn(isFound ? new ProjectModel(nodeService, GENERAL_NODE_PROPERTIES) : null).when(projectModelProvider)
                 .findProjectByName(PROJECT_NAME);
     }

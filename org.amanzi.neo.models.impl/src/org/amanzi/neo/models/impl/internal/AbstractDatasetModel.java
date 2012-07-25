@@ -13,18 +13,21 @@
 
 package org.amanzi.neo.models.impl.internal;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
-import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -35,7 +38,23 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel {
+public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel, IRenderableModel {
+
+    protected final class LocationIterator extends AbstractDataElementIterator<ILocationElement> {
+
+        /**
+         * @param nodeIterator
+         */
+        public LocationIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected ILocationElement createDataElement(final Node node) {
+            return getLocationElement(node);
+        }
+
+    }
 
     private IIndexModel indexModel;
 
@@ -43,7 +62,9 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
 
     private final IGeoNodeProperties geoNodeProperties;
 
-    private final Map<INodeType, MultiPropertyIndex< ? >> indexMap = new HashMap<INodeType, MultiPropertyIndex< ? >>();
+    private final List<IGISModel> gisModels = new ArrayList<IGISModel>();
+
+    private IGISModel mainGISModel;
 
     /**
      * @param nodeService
@@ -60,12 +81,12 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         assert indexModel != null;
         assert propertyStatisticsModel != null;
 
-        for (MultiPropertyIndex< ? > index : indexMap.values()) {
-            index.finishUp();
-        }
-
         indexModel.finishUp();
         propertyStatisticsModel.finishUp();
+
+        for (IGISModel gisModel : gisModels) {
+            gisModel.finishUp();
+        }
     }
 
     /**
@@ -86,22 +107,47 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
         return indexModel;
     }
 
-    protected void registerMultiPropertyIndexes(final INodeType nodeType, final String... propertyNames) {
-        indexMap.put(nodeType, indexModel.getMultiPropertyIndex(nodeType, getRootNode(), propertyNames));
-    }
-
-    protected void index(final INodeType nodeType, final Node node) {
-        MultiPropertyIndex< ? > index = indexMap.get(nodeType);
-
-        if (index != null) {
-            index.add(node);
-        }
+    protected IPropertyStatisticsModel getPropertyStatisticsModel() {
+        return propertyStatisticsModel;
     }
 
     protected IGeoNodeProperties getGeoNodeProperties() {
         return geoNodeProperties;
     }
 
-    public abstract void initializeIndexes();
+    @Override
+    public IGISModel getMainGIS() {
+        return mainGISModel;
+    }
+
+    @Override
+    public List<IGISModel> getAllGIS() {
+        return gisModels;
+    }
+
+    protected void updateLocation(final double latitude, final double longitude) {
+        for (IGISModel gis : getAllGIS()) {
+            gis.updateBounds(latitude, longitude);
+        }
+    }
+
+    @Override
+    public void addGISModel(final IGISModel model) {
+        if (!gisModels.contains(model)) {
+            gisModels.add(model);
+        }
+    }
+
+    public void setMainGISModel(final IGISModel model) {
+        mainGISModel = model;
+        addGISModel(mainGISModel);
+    }
+
+    @Override
+    public IPropertyStatisticsModel getPropertyStatistics() {
+        return propertyStatisticsModel;
+    }
+
+    protected abstract ILocationElement getLocationElement(Node node);
 
 }

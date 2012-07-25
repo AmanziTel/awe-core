@@ -33,6 +33,7 @@ import org.junit.runners.Suite.SuiteClasses;
         org.amanzi.neo.db.testing.DbTestSuite.class, 
         org.amanzi.neo.CoreTestsSuite.class,
         org.amanzi.neo.loader.core.LoaderCoreTestSuite.class,
+        org.amanzi.neo.loader.ui.LoaderUITestSuite.class,
         org.amanzi.neo.models.ModelsTestSuite.class,
         org.amanzi.neo.providers.ProvidersTestSuite.class,
         org.amanzi.neo.services.ServicesTestSuite.class
