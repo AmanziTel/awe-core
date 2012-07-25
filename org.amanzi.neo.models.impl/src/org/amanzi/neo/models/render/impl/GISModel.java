@@ -192,7 +192,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public boolean canResolve(final Class< ? > clazz) {
-        return sourceModel.getClass().isAssignableFrom(clazz);
+        return clazz.isAssignableFrom(sourceModel.getClass());
     }
 
     @Override

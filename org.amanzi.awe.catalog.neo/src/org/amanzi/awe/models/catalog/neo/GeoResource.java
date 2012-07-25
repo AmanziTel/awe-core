@@ -94,7 +94,7 @@ public class GeoResource extends IGeoResource {
 
     @Override
     public <T> boolean canResolve(final Class<T> adaptee) {
-        return (adaptee.isAssignableFrom(IGISModel.class) || ((source.canResolve(adaptee)) && super.canResolve(adaptee)));
+        return (adaptee.isAssignableFrom(IGISModel.class) || ((source.canResolve(adaptee)) || super.canResolve(adaptee)));
     }
 
     @Override
