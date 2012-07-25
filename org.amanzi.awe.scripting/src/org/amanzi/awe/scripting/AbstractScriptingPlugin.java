@@ -58,6 +58,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static final String COMMON_SCRIPTS_FOLDER = "common";
     public static final String PLUGIN_ID = "org.amanzi.awe.scripting";
     private static final String PATH_SEPARATOR = "/";
+    private static final String NEO4J_ENTRY = "neo4j";
+    private static final String NEO4J_RB_PATH = "/lib/neo4j.rb";
     /**
      * wrapper for runtime instance
      */
@@ -192,8 +194,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
 
         URL scripts;
         try {
-            scripts = FileLocator.toFileURL(Platform.getBundle(PLUGIN_ID).getEntry("neo4j"));
-            File file = new File(scripts.getPath() + "/lib/neo4j.rb");
+            scripts = FileLocator.toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(NEO4J_ENTRY));
+            File file = new File(scripts.getPath() + NEO4J_RB_PATH);
             runtimeWrapper.executeScript(file);
             initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
             initDefaultScript(getBundle(), runtimeWrapper);
