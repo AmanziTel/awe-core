@@ -35,7 +35,9 @@ import org.junit.runners.Suite.SuiteClasses;
     org.amanzi.awe.statistics.entities.impl.AggregatedStatisticsTests.class,
     org.amanzi.awe.statistics.entities.impl.StatisticsGroupTests.class,
     org.amanzi.awe.statistics.entities.impl.StatisticsRowTests.class,
-    org.amanzi.awe.statistics.entities.impl.StatisticsCellTests.class
+    org.amanzi.awe.statistics.entities.impl.StatisticsCellTests.class,
+    org.amanzi.awe.statistics.manager.StatisticsManagerTests.class
+    
     })
 public class StatisticsTestsSuite {
 
