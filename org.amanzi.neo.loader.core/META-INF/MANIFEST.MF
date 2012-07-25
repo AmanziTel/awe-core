@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.neo.loader.core.internal.LoaderCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
- org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport,
+ org.amanzi.awe.libs;bundle-version="1.0.0",
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.neo.db;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0"
