@@ -22,6 +22,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
         /**
          * @param nodeService
          */
-        public TestDataModel(INodeService nodeService) {
+        public TestDataModel(final INodeService nodeService) {
             super(nodeService, null);
         }
 
@@ -73,11 +74,11 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
 
         Node parentNode = getNodeMock();
 
-        when(nodeService.getParent(childNode)).thenReturn(parentNode);
+        when(nodeService.getParent(childNode, NodeServiceRelationshipType.CHILD)).thenReturn(parentNode);
 
         dataModel.getParentElement(child);
 
-        verify(nodeService).getParent(childNode);
+        verify(nodeService).getParent(childNode, NodeServiceRelationshipType.CHILD);
     }
 
     @Test
@@ -88,7 +89,7 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
         Node parentNode = getNodeMock();
         IDataElement parent = new DataElement(parentNode);
 
-        when(nodeService.getParent(childNode)).thenReturn(parentNode);
+        when(nodeService.getParent(childNode, NodeServiceRelationshipType.CHILD)).thenReturn(parentNode);
 
         IDataElement result = dataModel.getParentElement(child);
 
@@ -100,7 +101,8 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
         Node childNode = getNodeMock();
         IDataElement child = new DataElement(childNode);
 
-        doThrow(new PropertyNotFoundException("parent", childNode)).when(nodeService).getParent(childNode);
+        doThrow(new PropertyNotFoundException("parent", childNode)).when(nodeService).getParent(childNode,
+                NodeServiceRelationshipType.CHILD);
 
         dataModel.getParentElement(child);
     }
@@ -110,7 +112,8 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
         Node childNode = getNodeMock();
         IDataElement child = new DataElement(childNode);
 
-        when(nodeService.getParent(childNode)).thenThrow(new DatabaseException(new IllegalArgumentException()));
+        when(nodeService.getParent(childNode, NodeServiceRelationshipType.CHILD)).thenThrow(
+                new DatabaseException(new IllegalArgumentException()));
 
         dataModel.getParentElement(child);
     }
