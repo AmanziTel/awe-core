@@ -18,6 +18,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.ContextException;
+import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
@@ -48,6 +49,8 @@ public abstract class AbstractProviderPlugin extends Plugin {
     private static final String GENERAL_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.generalnodeproperties";
 
     private static final String NETWORK_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.NetworkNodeProperties";
+
+    private static final String DRIVE_MODEL_PROVIDER_ID = "org.amanzi.provider.DriveModelProvider";
 
     private static class ProviderContextHolder {
         private static volatile IProviderContext context = new ProviderContextImpl();
@@ -107,6 +110,10 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     public INetworkNodeProperties getNetworkNodeProperties() {
         return getNodeProperties(NETWORK_NODE_PROPERTIES_ID);
+    }
+
+    public IDriveModelProvider getDriveModelProvider() {
+        return getModelProvider(DRIVE_MODEL_PROVIDER_ID);
     }
 
     public abstract String getPluginId();

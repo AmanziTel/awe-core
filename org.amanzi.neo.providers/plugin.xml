@@ -80,6 +80,30 @@
             </nodePropertiesReference>
          </parameters>
       </provider>
+      <provider
+            class="org.amanzi.neo.providers.impl.DriveModelProvider"
+            id="org.amanzi.provider.DriveModelProvider">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.generalnodeproperties">
+            </nodePropertiesReference>
+            <serviceReference
+                  refId="org.amanzi.service.NodeService">
+            </serviceReference>
+            <providerReference
+                  refId="org.amanzi.providers.PropertyStatisticsModelProvider">
+            </providerReference>
+            <providerReference
+                  refId="org.amanzi.provider.IndexModelProvider">
+            </providerReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.GeoNodeProperties">
+            </nodePropertiesReference>
+            <providerReference
+                  refId="org.amanzi.provider.GISModelProvider">
+            </providerReference>
+         </parameters>
+      </provider>
    </extension>
 
 </plugin>
