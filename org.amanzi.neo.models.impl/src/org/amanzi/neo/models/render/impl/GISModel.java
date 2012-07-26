@@ -199,16 +199,21 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public INodeType getType() {
+        return GISNodeType.GIS;
+    }
+
+    @Override
+    public INodeType getSourceType() {
         return sourceModel.getType();
     }
 
     @Override
-    protected Node getParent(Node rootNode) throws ServiceException {
+    protected Node getParent(final Node rootNode) throws ServiceException {
         return getNodeService().getParent(rootNode, GISRelationType.GIS);
     }
 
     @Override
-    protected Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+    protected Node createNode(final Node parentNode, final INodeType nodeType, final String name) throws ServiceException {
         return getNodeService().createNode(parentNode, nodeType, GISRelationType.GIS, name);
     }
 

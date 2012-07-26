@@ -644,7 +644,7 @@ public class MultiPropertyIndex<E extends Object> {
                                 nodeInRange = false;
                                 break;
                             }
-                            if (MultiPropertyIndex.this.converter.compare(values[i], max[i]) >= 0) {
+                            if (MultiPropertyIndex.this.converter.compare(values[i], max[i]) > 0) {
                                 nodeInRange = false;
                                 break;
                             }

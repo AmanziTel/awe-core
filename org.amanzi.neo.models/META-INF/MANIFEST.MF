@@ -6,7 +6,9 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.models,
  org.amanzi.neo.models.distribution,
+ org.amanzi.neo.models.drive,
  org.amanzi.neo.models.exceptions,
+ org.amanzi.neo.models.internal;x-friends:="org.amanzi.neo.providers",
  org.amanzi.neo.models.network,
  org.amanzi.neo.models.project,
  org.amanzi.neo.models.render,

@@ -14,6 +14,7 @@
 package org.amanzi.neo.impl.dto;
 
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -28,6 +29,10 @@ public class LocationElement extends DataElement implements ILocationElement {
     private double latitude;
 
     private double longitude;
+
+    public LocationElement(final Node node) {
+        super(node);
+    }
 
     @Override
     public double getLatitude() {

@@ -310,7 +310,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     @Override
     protected ILocationElement getLocationElement(final Node node) {
-        SiteElement site = new SiteElement();
+        SiteElement site = new SiteElement(node);
+        site.setNodeType(NetworkElementType.SITE);
 
         try {
             site.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitideProperty(), null,
@@ -334,7 +335,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     private ISectorElement getSectorElement(final Node node) throws ServiceException {
-        SectorElement element = new SectorElement();
+        SectorElement element = new SectorElement(node);
+        element.setNodeType(NetworkElementType.SECTOR);
 
         element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
         element.setBeamwidth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getBeamwidthProperty(), null,

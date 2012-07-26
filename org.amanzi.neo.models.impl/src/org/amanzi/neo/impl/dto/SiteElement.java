@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.INetworkModel.ISectorElement;
 import org.amanzi.neo.models.network.INetworkModel.ISiteElement;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -29,6 +30,14 @@ import org.amanzi.neo.models.network.INetworkModel.ISiteElement;
  * @since 1.0.0
  */
 public class SiteElement extends LocationElement implements ISiteElement {
+
+    /**
+     * @param node
+     */
+    public SiteElement(final Node node) {
+        super(node);
+        // TODO Auto-generated constructor stub
+    }
 
     private final List<ISectorElement> sectorElements = new ArrayList<INetworkModel.ISectorElement>();
 

@@ -66,12 +66,10 @@ public interface INodeService extends IService {
 
     Node getParent(Node child, RelationshipType relationshipType) throws ServiceException;
 
-    @Deprecated
     Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException;
 
     Iterator<Node> getChildren(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
 
-    @Deprecated
     Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 
     Node getChildByName(Node parentNode, String name, INodeType nodeType, RelationshipType relationshipType)

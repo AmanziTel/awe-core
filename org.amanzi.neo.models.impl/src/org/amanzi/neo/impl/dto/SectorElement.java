@@ -14,6 +14,7 @@
 package org.amanzi.neo.impl.dto;
 
 import org.amanzi.neo.models.network.INetworkModel.ISectorElement;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -28,6 +29,10 @@ public class SectorElement extends DataElement implements ISectorElement {
     private Double azimuth;
 
     private Double beamwidth;
+
+    public SectorElement(final Node node) {
+        super(node);
+    }
 
     /**
      * @return Returns the azimuth.
