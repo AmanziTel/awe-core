@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
@@ -59,7 +58,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     private final IGeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
 
-    private INodeService nodeService = null;
+    private NodeService nodeService = null;
 
     @Override
     @Before
