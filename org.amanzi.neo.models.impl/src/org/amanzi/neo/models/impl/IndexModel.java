@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,11 +41,40 @@ import org.neo4j.graphdb.index.IndexHits;
  */
 public class IndexModel extends AbstractModel implements IIndexModel {
 
+    private interface IKey {
+
+    }
+
+    private static final class MultiPropertyKey implements IKey {
+
+        private final String[] properties;
+
+        public MultiPropertyKey(final String... properties) {
+            this.properties = properties;
+        }
+
+        @Override
+        public int hashCode() {
+            return new Integer(properties.length).hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (o instanceof MultiPropertyKey) {
+                MultiPropertyKey key = (MultiPropertyKey)o;
+
+                return Arrays.equals(properties, key.properties);
+            }
+
+            return false;
+        }
+    }
+
     private static final Logger LOGGER = Logger.getLogger(IndexModel.class);
 
     private final IIndexService indexService;
 
-    private final Map<Object, MultiPropertyIndex< ? >> indexMap = new HashMap<Object, MultiPropertyIndex< ? >>();
+    private final Map<IKey, MultiPropertyIndex< ? >> indexMap = new HashMap<IKey, MultiPropertyIndex< ? >>();
 
     /**
      * @param nodeService
@@ -139,12 +169,14 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     @SuppressWarnings("unchecked")
     private <T extends Object> MultiPropertyIndex<T> getMultiPropertyIndex(final INodeType nodeType, final Class<T> clazz,
             final String... properties) throws ModelException {
-        MultiPropertyIndex<T> index = (MultiPropertyIndex<T>)indexMap.get(properties);
+        IKey key = new MultiPropertyKey(properties);
+
+        MultiPropertyIndex<T> index = (MultiPropertyIndex<T>)indexMap.get(key);
 
         if (index == null) {
             try {
                 index = indexService.createMultiPropertyIndex(nodeType, getRootNode(), clazz, properties);
-                indexMap.put(properties, index);
+                indexMap.put(key, index);
             } catch (ServiceException e) {
                 processException("Error on initializing MultiPropertyIndex", e);
             }
