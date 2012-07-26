@@ -7,7 +7,7 @@ Bundle-Activator: org.amanzi.awe.ui.AWEUIPlugin
 Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport,
  org.eclipse.swt;bundle-version="3.7.2",
- org.eclipse.ui;bundle-version="3.7.0",
+ org.eclipse.ui,
  org.amanzi.neo.db;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
