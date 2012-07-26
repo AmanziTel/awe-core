@@ -89,6 +89,7 @@
         <module>org.amanzi.awe.render.core</module>
         <module>org.amanzi.awe.render.network</module>
 	<module>org.amanzi.awe.scripting.feature</module>
+	<module>org.amanzi.awe.startup.splash</module>
 	<module>org.amanzi.awe.statistics.feature</module>
         <module>org.amanzi.awe.ui.udig</module>
         <module>org.amanzi.awe.views.explorer</module>
