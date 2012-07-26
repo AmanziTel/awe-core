@@ -16,6 +16,7 @@ package org.amanzi.neo.models.render;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -60,4 +61,6 @@ public interface IGISModel extends IModel {
     boolean canResolve(Class< ? > clazz);
 
     int getCount();
+
+    INodeType getSourceType();
 }

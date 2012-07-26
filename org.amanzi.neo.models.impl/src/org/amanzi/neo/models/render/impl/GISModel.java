@@ -199,6 +199,11 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public INodeType getType() {
+        return GISNodeType.GIS;
+    }
+
+    @Override
+    public INodeType getSourceType() {
         return sourceModel.getType();
     }
 
