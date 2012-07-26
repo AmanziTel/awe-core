@@ -84,7 +84,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         }
     }
 
-    protected Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+    protected Node createNode(final Node parentNode, final INodeType nodeType, final String name) throws ServiceException {
         return nodeService.createNode(parentNode, nodeType, NodeServiceRelationshipType.CHILD, name);
     }
 
@@ -109,7 +109,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         }
     }
 
-    protected Node getParent(Node rootNode) throws ServiceException {
+    protected Node getParent(final Node rootNode) throws ServiceException {
         return nodeService.getParent(rootNode, NodeServiceRelationshipType.CHILD);
     }
 
@@ -181,5 +181,21 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     @Override
     public boolean isRenderable() {
         return this instanceof IRenderableModel;
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o instanceof IModel) {
+            IModel model = (IModel)o;
+
+            return model.asDataElement().equals(asDataElement());
+        }
+
+        return false;
     }
 }
