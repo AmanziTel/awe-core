@@ -18,7 +18,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.loader.core.IMultiFileConfiguration;
 import org.amanzi.neo.loader.core.internal.Messages;
-import org.amanzi.neo.loader.core.saver.impl.DriveSaver;
+import org.amanzi.neo.loader.core.saver.impl.AbstractDriveSaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.ValidationResult;
@@ -73,7 +73,7 @@ public class DriveValidator extends AbstractHeadersValidator<IMultiFileConfigura
 
     @Override
     protected String getSynonyms() {
-        return DriveSaver.DRIVE_SYNONYMS;
+        return AbstractDriveSaver.DRIVE_SYNONYMS;
     }
 
 }

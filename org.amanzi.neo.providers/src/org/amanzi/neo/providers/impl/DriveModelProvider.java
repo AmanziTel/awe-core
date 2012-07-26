@@ -14,6 +14,8 @@
 package org.amanzi.neo.providers.impl;
 
 import org.amanzi.neo.models.drive.IDriveModel;
+import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.drive.DriveModel;
 import org.amanzi.neo.models.measurement.MeasurementNodeType;
 import org.amanzi.neo.models.project.IProjectModel;
@@ -78,6 +80,20 @@ public class DriveModelProvider extends AbstractDatasetModelProvider<IDriveModel
     @Override
     protected Class< ? extends IDriveModel> getModelClass() {
         return DriveModel.class;
+    }
+
+    @Override
+    public IDriveModel create(final IProjectModel parent, final String name, final IDriveType driveType) throws ModelException {
+        DriveModel model = createInternal(parent, name);
+
+        model.setDriveType(driveType);
+
+        return model;
+    }
+
+    @Override
+    public IDriveModel create(final IProjectModel parent, final String name) throws ModelException {
+        throw new UnsupportedOperationException("Should be used create() method with IDriveType parameter");
     }
 
 }

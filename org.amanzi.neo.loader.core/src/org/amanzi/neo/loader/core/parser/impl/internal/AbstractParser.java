@@ -16,8 +16,8 @@ package org.amanzi.neo.loader.core.parser.impl.internal;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
@@ -44,7 +44,7 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     private boolean actual = false;
 
-    private final List<IFileParsingStartedListener> listeners = new ArrayList<IFileParsingStartedListener>();
+    private final Set<IFileParsingStartedListener> listeners = new HashSet<IFileParsingStartedListener>();
 
     boolean parsingStarted = false;
 
@@ -126,9 +126,7 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     @Override
     public void addFileParsingListener(final IFileParsingStartedListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     @Override

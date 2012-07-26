@@ -6,12 +6,21 @@
    <extension
          point="org.amanzi.loader.pages">
       <page
+            class="org.amanzi.neo.loader.ui.page.impl.drive.LoadDrivePage"
+            description="%LoadDrivePageDescription"
+            title="%LoadDrivePageTitle"
+            wizardId="org.amanzi.wizards.DriveLoaderWizard">
+         <loaders
+               refId="org.amanzi.loader.NetworkCSVLoader">
+         </loaders>
+      </page>
+      <page
             class="org.amanzi.neo.loader.ui.page.impl.network.LoadNetworkPage"
-            description="Load Network Data"
+            description="%LoadNetworkPageDescription"
             title="%LoadNetworkPageTitle"
             wizardId="org.amanzi.wizards.NetworkLoaderWizard">
          <loaders
-               refId="org.amanzi.loader.NetworkCSVLoader">
+               refId="org.amanzi.loader.GeoptimaLoader">
          </loaders>
       </page>
    </extension>
@@ -21,6 +30,11 @@
             class="org.amanzi.neo.loader.ui.wizard.impl.NetworkLoaderWizard"
             id="org.amanzi.wizards.NetworkLoaderWizard"
             title="%LoadNetworkWizardTitle">
+      </wizard>
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizard.impl.DriveLoaderWizard"
+            id="org.amanzi.wizards.DriveLoaderWizard"
+            title="%LoadDriveWizardTitle">
       </wizard>
    </extension>
    <extension
@@ -50,6 +64,16 @@
                <parameter
                      name="org.amanzi.loader.wizard.id"
                      value="org.amanzi.wizards.NetworkLoaderWizard">
+               </parameter>
+            </command>
+            <command
+                  commandId="org.amanzi.command.launchLoader"
+                  icon="icons/16/drive.png"
+                  style="push"
+                  tooltip="%DriveLoaderTooltip">
+               <parameter
+                     name="org.amanzi.loader.wizard.id"
+                     value="org.amanzi.wizards.DriveLoaderWizard">
                </parameter>
             </command>
          </toolbar>

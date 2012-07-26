@@ -18,8 +18,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
@@ -68,15 +68,14 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.addListener(listener, EventStatus.AWE_STARTED);
 
-        Map<EventStatus, List<IAWEEventListenter>> listenersMap = eventManager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners();
         assertEquals("Unexpected size of listened events", 1, listenersMap.size());
 
-        List<IAWEEventListenter> listenerList = listenersMap.get(EventStatus.AWE_STARTED);
+        Set<IAWEEventListenter> listenerList = listenersMap.get(EventStatus.AWE_STARTED);
         assertNotNull("Unexpected listeners list for AWE STARTED", listenerList);
         assertEquals(UNEXPECTED_SIZE_OF_LISTENERS, 1, listenerList.size());
 
-        IAWEEventListenter result = listenerList.get(0);
-        assertEquals("Unexpected listener", listener, result);
+        assertTrue("Unexpected listener", listenerList.contains(listener));
     }
 
     @Test
@@ -85,16 +84,15 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.addListener(listener, EventStatus.values());
 
-        Map<EventStatus, List<IAWEEventListenter>> listenersMap = eventManager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners();
         assertEquals("Unexpected size of listened events", EventStatus.values().length, listenersMap.size());
 
         for (EventStatus singleStatus : EventStatus.values()) {
-            List<IAWEEventListenter> listenerList = listenersMap.get(singleStatus);
+            Set<IAWEEventListenter> listenerList = listenersMap.get(singleStatus);
             assertNotNull("Unexpected listeners list for " + singleStatus, listenerList);
             assertEquals(UNEXPECTED_SIZE_OF_LISTENERS, 1, listenerList.size());
 
-            IAWEEventListenter result = listenerList.get(0);
-            assertEquals("Unexpected listener", listener, result);
+            assertTrue("Unexpected listener", listenerList.contains(listener));
         }
     }
 
@@ -108,11 +106,11 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
         eventManager.addListener(listener2, EventStatus.PROJECT_CHANGED);
         eventManager.addListener(listener3, EventStatus.AWE_STARTED, EventStatus.PROJECT_CHANGED);
 
-        Map<EventStatus, List<IAWEEventListenter>> listenersMap = eventManager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners();
         assertEquals("Unexpected size of listened events", 2, listenersMap.size());
 
         // check awe started
-        List<IAWEEventListenter> listenerList = listenersMap.get(EventStatus.AWE_STARTED);
+        Set<IAWEEventListenter> listenerList = listenersMap.get(EventStatus.AWE_STARTED);
         assertNotNull("Unexpected listeners list for AWE_STARTED", listenerList);
         assertEquals(UNEXPECTED_SIZE_OF_LISTENERS, 2, listenerList.size());
 
@@ -151,7 +149,7 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.addListener(listener, EventStatus.AWE_STARTED);
 
-        List<IAWEEventListenter> listeners = eventManager.getListeners().get(EventStatus.AWE_STARTED);
+        Set<IAWEEventListenter> listeners = eventManager.getListeners().get(EventStatus.AWE_STARTED);
 
         eventManager.addListener(listener, EventStatus.AWE_STARTED);
 

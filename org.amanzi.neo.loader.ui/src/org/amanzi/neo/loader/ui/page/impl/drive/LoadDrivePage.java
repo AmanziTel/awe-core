@@ -11,13 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.neo.loader.ui.page.impl.drive;
 
-import org.amanzi.neo.models.drive.IDriveModel;
-import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.providers.internal.INamedModelProvider;
+import org.amanzi.neo.loader.core.IMultiFileConfiguration;
+import org.amanzi.neo.loader.ui.internal.Messages;
+import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 
 /**
  * TODO Purpose of
@@ -27,8 +25,13 @@ import org.amanzi.neo.providers.internal.INamedModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IDriveModelProvider extends INamedModelProvider<IDriveModel, IProjectModel> {
+public class LoadDrivePage extends AbstractLoaderPage<IMultiFileConfiguration> {
 
-    IDriveModel create(final IProjectModel parent, final String name, final IDriveType driveType) throws ModelException;
+    /**
+     * @param pageName
+     */
+    protected LoadDrivePage() {
+        super(Messages.LoadDrivePage_PageName);
+    }
 
 }

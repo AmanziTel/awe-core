@@ -25,4 +25,10 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  */
 public interface IDriveModel extends IMeasurementModel {
 
+    public interface IDriveType {
+
+    }
+
+    IDriveType getDriveType();
+
 }

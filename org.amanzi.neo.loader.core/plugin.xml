@@ -33,8 +33,8 @@
             id="org.amanzi.saver.NetworkSaver">
       </saver>
       <saver
-            class="org.amanzi.neo.loader.core.saver.impl.DriveSaver"
-            id="org.amanzi.saver.DriveSaver">
+            class="org.amanzi.neo.loader.core.saver.drive.impl.GeoptimaSaver"
+            id="org.amanzi.saver.GeoptimaSaver">
       </saver>
    </extension>
    <extension
@@ -65,7 +65,7 @@
             parser="org.amanzi.parser.MultiCSVParser"
             validator="org.amanzi.validators.DriveValidator">
          <savers
-               saver="org.amanzi.saver.DriveSaver">
+               saver="org.amanzi.saver.GeoptimaSaver">
          </savers>
       </loader>
    </extension>

@@ -11,13 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.neo.models.drive;
 
-import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.providers.internal.INamedModelProvider;
 
 /**
  * TODO Purpose of
@@ -27,8 +23,8 @@ import org.amanzi.neo.providers.internal.INamedModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IDriveModelProvider extends INamedModelProvider<IDriveModel, IProjectModel> {
+public enum DriveType implements IDriveType {
 
-    IDriveModel create(final IProjectModel parent, final String name, final IDriveType driveType) throws ModelException;
+    GEOPTIMA;
 
 }

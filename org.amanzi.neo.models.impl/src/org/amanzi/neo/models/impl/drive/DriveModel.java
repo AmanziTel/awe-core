@@ -33,6 +33,8 @@ import org.amanzi.neo.services.INodeService;
  */
 public class DriveModel extends AbstractMeasurementModel implements IDriveModel {
 
+    private IDriveType driveType;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -52,6 +54,15 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
     @Override
     public INodeType getMainMeasurementNodeType() {
         return MeasurementNodeType.M;
+    }
+
+    public void setDriveType(final IDriveType driveType) {
+        this.driveType = driveType;
+    }
+
+    @Override
+    public IDriveType getDriveType() {
+        return driveType;
     }
 
 }

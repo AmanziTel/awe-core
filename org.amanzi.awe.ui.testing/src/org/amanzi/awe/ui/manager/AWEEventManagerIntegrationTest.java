@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.ui.manager;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -43,7 +43,7 @@ public class AWEEventManagerIntegrationTest extends AbstractIntegrationTest {
 
         Class< ? >[] aweStartedClasses = new Class< ? >[] {Listener1.class, Listener3.class};
 
-        Map<EventStatus, List<IAWEEventListenter>> listenerMap = manager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenerMap = manager.getListeners();
 
         for (EventStatus status : new EventStatus[] {EventStatus.AWE_STARTED, EventStatus.PROJECT_CHANGED}) {
             Class< ? >[] classes = null;

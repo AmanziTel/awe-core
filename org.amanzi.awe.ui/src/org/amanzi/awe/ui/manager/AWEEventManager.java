@@ -13,11 +13,11 @@
 
 package org.amanzi.awe.ui.manager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
@@ -65,7 +65,7 @@ public final class AWEEventManager {
 
     public static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
 
-    private final Map<EventStatus, List<IAWEEventListenter>> listeners = new HashMap<EventStatus, List<IAWEEventListenter>>();
+    private final Map<EventStatus, Set<IAWEEventListenter>> listeners = new HashMap<EventStatus, Set<IAWEEventListenter>>();
 
     private final IExtensionRegistry registry;
 
@@ -87,10 +87,10 @@ public final class AWEEventManager {
         assert statuses != null;
 
         for (EventStatus eventStatus : statuses) {
-            List<IAWEEventListenter> eventListeners = listeners.get(eventStatus);
+            Set<IAWEEventListenter> eventListeners = listeners.get(eventStatus);
 
             if (eventListeners == null) {
-                eventListeners = new ArrayList<IAWEEventListenter>();
+                eventListeners = new HashSet<IAWEEventListenter>();
                 listeners.put(eventStatus, eventListeners);
             }
 
@@ -101,13 +101,13 @@ public final class AWEEventManager {
     }
 
     public synchronized void removeListener(final IAWEEventListenter listener) {
-        for (Entry<EventStatus, List<IAWEEventListenter>> listenerEntry : listeners.entrySet()) {
+        for (Entry<EventStatus, Set<IAWEEventListenter>> listenerEntry : listeners.entrySet()) {
             listenerEntry.getValue().remove(listener);
         }
     }
 
     private void fireEvent(final IEvent event, final boolean inDisplay) {
-        List<IAWEEventListenter> eventListeners = listeners.get(event.getStatus());
+        Set<IAWEEventListenter> eventListeners = listeners.get(event.getStatus());
 
         if (eventListeners != null) {
             for (IAWEEventListenter singleListener : eventListeners) {
@@ -194,7 +194,7 @@ public final class AWEEventManager {
         return EventStatus.valueOf(statusName);
     }
 
-    protected Map<EventStatus, List<IAWEEventListenter>> getListeners() {
+    protected Map<EventStatus, Set<IAWEEventListenter>> getListeners() {
         return listeners;
     }
 }

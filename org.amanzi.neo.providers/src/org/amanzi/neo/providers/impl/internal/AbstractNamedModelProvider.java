@@ -146,6 +146,10 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
     @Override
     @SuppressWarnings("unchecked")
     public M create(final P parent, final String name) throws ModelException {
+        return (M)createInternal(parent, name);
+    }
+
+    protected C createInternal(final P parent, final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("create", parent, name));
         }
@@ -160,17 +164,15 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
             throw new DuplicatedModelException(getModelClass(), generalNodeProperties.getNodeNameProperty(), name);
         }
 
-        M result = null;
+        C result = null;
 
         if (parent instanceof AbstractModel) {
             AbstractModel parentModel = (AbstractModel)parent;
 
-            C resultModel = createInstance();
-            resultModel.initialize(parentModel.getRootNode(), name);
+            result = createInstance();
+            result.initialize(parentModel.getRootNode(), name);
 
-            postInitialize(resultModel, parent);
-
-            result = (M)resultModel;
+            postInitialize(result, parent);
         }
 
         if (LOGGER.isDebugEnabled()) {

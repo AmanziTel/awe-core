@@ -77,6 +77,9 @@
                <documentation>
                   
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="wizardId" type="string" use="required">

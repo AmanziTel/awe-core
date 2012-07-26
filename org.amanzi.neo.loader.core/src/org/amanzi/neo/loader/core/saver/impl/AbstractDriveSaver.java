@@ -24,6 +24,7 @@ import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.models.drive.IDriveModel;
+import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
@@ -40,7 +41,7 @@ import org.apache.commons.math3.util.Precision;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveSaver extends AbstractSynonymsSaver<IConfiguration> {
+public abstract class AbstractDriveSaver extends AbstractSynonymsSaver<IConfiguration> {
 
     public static final String DRIVE_SYNONYMS = "drive";
 
@@ -64,7 +65,7 @@ public class DriveSaver extends AbstractSynonymsSaver<IConfiguration> {
 
     private double previousLon;
 
-    public DriveSaver() {
+    public AbstractDriveSaver() {
         this(LoaderCorePlugin.getInstance().getTimePeriodNodeProperties(), LoaderCorePlugin.getInstance().getGeoNodeProperties(),
                 LoaderCorePlugin.getInstance().getDriveModelProvider(), LoaderCorePlugin.getInstance().getProjectModelProvider(),
                 SynonymsManager.getInstance());
@@ -74,9 +75,9 @@ public class DriveSaver extends AbstractSynonymsSaver<IConfiguration> {
      * @param projectModelProvider
      * @param synonymsManager
      */
-    protected DriveSaver(final ITimePeriodNodeProperties timePeriodNodeProperties, final IGeoNodeProperties geoNodeProperties,
-            final IDriveModelProvider driveModelProvider, final IProjectModelProvider projectModelProvider,
-            final SynonymsManager synonymsManager) {
+    protected AbstractDriveSaver(final ITimePeriodNodeProperties timePeriodNodeProperties,
+            final IGeoNodeProperties geoNodeProperties, final IDriveModelProvider driveModelProvider,
+            final IProjectModelProvider projectModelProvider, final SynonymsManager synonymsManager) {
         super(projectModelProvider, synonymsManager);
         this.driveModelProvider = driveModelProvider;
         this.geoNodeProperties = geoNodeProperties;
@@ -123,7 +124,7 @@ public class DriveSaver extends AbstractSynonymsSaver<IConfiguration> {
     }
 
     protected IDriveModel createDriveModel(final String driveName) throws ModelException {
-        IDriveModel model = driveModelProvider.create(getCurrentProject(), driveName);
+        IDriveModel model = driveModelProvider.create(getCurrentProject(), driveName, getDriveType());
         addProcessedModel(model);
 
         return model;
@@ -137,5 +138,7 @@ public class DriveSaver extends AbstractSynonymsSaver<IConfiguration> {
             throw new UnderlyingModelException(e);
         }
     }
+
+    protected abstract IDriveType getDriveType();
 
 }

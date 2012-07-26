@@ -34,6 +34,7 @@ public class Messages extends NLS {
     public static String LoaderWizardHandler_NoWizardByIdError;
 
     public static String LoadNetworkPage_PageName;
+    public static String LoadDrivePage_PageName;
 
     public static String ResourceSelectorWidget_SelectDirectoryTitle;
 
