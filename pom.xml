@@ -88,22 +88,27 @@
       </activation>
       <modules>
 	<module>org.amanzi.awe</module>
+        <module>org.amanzi.awe.neostyle</module>
 	<module>org.amanzi.awe.feature</module>
         <module>org.amanzi.awe.project</module>
+        <module>org.amanzi.awe.render.core</module>
+        <module>org.amanzi.awe.render.network</module>
 	<module>org.amanzi.awe.scripting.feature</module>
 	<module>org.amanzi.awe.statistics.feature</module>
         <module>org.amanzi.awe.ui.udig</module>
+        <module>org.amanzi.awe.views.explorer</module>
 	<module>org.amanzi.awe.views.statistics</module>
       </modules>
     </profile>
   </profiles>
   
   <modules>
+     <module>org.amanzi.awe.catalog.neo</module>
      <module>org.amanzi.awe.console</module>
      <module>org.amanzi.awe.filters</module>
      <module>org.amanzi.awe.libs</module>
      <module>org.amanzi.awe.scripting</module>
-     <module>org.amanzi.awe.statistics</module>
+     <module>org.amanzi.awe.statistics</module>     
      <module>org.amanzi.awe.ui</module>
      <module>org.amanzi.log4j</module>
      <module>org.amanzi.neo.db</module>
