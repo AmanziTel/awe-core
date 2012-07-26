@@ -122,19 +122,15 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
             AbstractModel parentModel = (AbstractModel)parent;
 
             try {
-                result = createInstance();
-
                 Node modelNode = getNodeByName(parentModel.getRootNode(), name, getModelType());
 
                 if (modelNode != null) {
-
+                    result = createInstance();
                     result.initialize(modelNode);
 
                     postInitialize(result, parent);
 
                     addToCache(result, key);
-                } else {
-                    result = null;
                 }
             } catch (ServiceException e) {
                 processException("Error on searching for a model <" + getModelType() + "> by name <" + name + ">", e);

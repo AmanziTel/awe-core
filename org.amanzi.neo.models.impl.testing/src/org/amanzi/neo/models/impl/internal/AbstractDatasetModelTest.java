@@ -86,6 +86,11 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
             // TODO Auto-generated method stub
             return null;
         }
+
+        @Override
+        public int getRenderableElementCount() {
+            return 0;
+        }
     }
 
     private IIndexModel indexModel;

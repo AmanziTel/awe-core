@@ -191,7 +191,7 @@ public class NetworkRenderer extends AbstractRenderer {
 
     @Override
     protected long getRenderableElementCount(final IGISModel model) {
-        return 0;
+        return model.getCount();
     }
 
     @Override

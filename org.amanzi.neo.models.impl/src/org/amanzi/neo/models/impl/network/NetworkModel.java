@@ -342,4 +342,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         return element;
     }
+
+    @Override
+    public int getRenderableElementCount() {
+        return getPropertyStatistics().getCount(NetworkElementType.SITE);
+    }
 }
