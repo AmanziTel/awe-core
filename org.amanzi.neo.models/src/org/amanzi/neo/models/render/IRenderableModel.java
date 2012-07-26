@@ -42,4 +42,6 @@ public interface IRenderableModel extends IModel {
 
     Iterable<ILocationElement> getElements(Envelope bound, IFilter filter);
 
+    int getRenderableElementCount();
+
 }

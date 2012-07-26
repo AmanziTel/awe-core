@@ -23,6 +23,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.neo.services.util.AbstractServiceTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -605,7 +606,7 @@ public class NodeServiceTest extends AbstractServiceTest {
     private void setChildTraversalToNull() {
         NodeService spyService = spy(new NodeService(getService(), generalNodeProperties));
 
-        when(spyService.getChildrenTraversal(TestNodeType.TEST1)).thenReturn(null);
+        when(spyService.getChildrenTraversal(TestNodeType.TEST1, NodeServiceRelationshipType.CHILD)).thenReturn(null);
 
         nodeService = spyService;
     }

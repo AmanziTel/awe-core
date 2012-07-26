@@ -13,16 +13,21 @@
 
 package org.amanzi.neo.providers.impl;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.render.impl.GISModel;
 import org.amanzi.neo.models.render.impl.GISNodeType;
+import org.amanzi.neo.models.render.impl.GISRelationType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IGISModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractNamedModelProvider;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -66,6 +71,16 @@ public class GISModelProvider extends AbstractNamedModelProvider<IGISModel, IRen
     @Override
     protected void postInitialize(final GISModel model, final IRenderableModel parent) {
         model.setSourceModel(parent);
+    }
+
+    @Override
+    protected Iterator<Node> getNodeIterator(Node parent, INodeType nodeType) throws ServiceException {
+        return getNodeService().getChildren(parent, getModelType(), GISRelationType.GIS);
+    }
+
+    @Override
+    protected Node getNodeByName(Node rootNode, String name, INodeType modelType) throws ServiceException {
+        return getNodeService().getChildByName(rootNode, name, getModelType(), GISRelationType.GIS);
     }
 
 }

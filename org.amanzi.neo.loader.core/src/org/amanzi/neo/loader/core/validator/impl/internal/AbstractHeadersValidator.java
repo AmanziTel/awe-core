@@ -32,7 +32,6 @@ import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.ValidationResult;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.apache.commons.io.IOUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -99,7 +98,9 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
         try {
             return reader.readNext();
         } finally {
-            IOUtils.closeQuietly(reader);
+            // FIXME: replace with IOUtils.closeQuitly when uDIG will contain latest version of
+            // Apache Commons IO
+            reader.close();
         }
     }
 

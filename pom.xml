@@ -26,6 +26,11 @@
       <layout>p2</layout>
       <url>http://download.aptana.com/studio3/plugin/install</url>
     </repository>
+    <repository>
+      <id>awe-udig</id>
+      <layout>p2</layout>
+      <url>ftp://awe:Explore88@ftp.amanzitel.com/udig_sdk_1.3.1_repository/</url>
+    </repository>
   </repositories>
 
   <profiles>

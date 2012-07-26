@@ -23,11 +23,11 @@ import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.RelationshipType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -77,12 +77,17 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         super.initialize(rootNode);
 
         try {
-            maxLatitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMaxLatitudeProperty(), null, true);
-            minLatitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLatitudeProperty(), null, true);
-            maxLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMaxLongitudeProperty(), null, true);
-            minLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLongitudeProperty(), null, true);
+            maxLatitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMaxLatitudeProperty(), -Double.MAX_VALUE,
+                    false);
+            minLatitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLatitudeProperty(), Double.MAX_VALUE,
+                    false);
+            maxLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMaxLongitudeProperty(),
+                    -Double.MAX_VALUE, false);
+            minLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLongitudeProperty(),
+                    Double.MAX_VALUE, false);
 
-            String crsCodeValue = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCRSProperty(), null, true);
+            String crsCodeValue = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCRSProperty(), StringUtils.EMPTY,
+                    false);
             setCRS(crsCodeValue);
         } catch (ServiceException e) {
             processException("Cannot get GIS-related properties from Node", e);
@@ -116,11 +121,6 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     }
 
     @Override
-    protected RelationshipType getRelationTypeToParent() {
-        return GISRelationType.GIS;
-    }
-
-    @Override
     protected INodeType getModelType() {
         return GISNodeType.GIS;
     }
@@ -140,11 +140,13 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     }
 
     protected void setCRS(final String crsCode) {
-        try {
-            this.crsCode = crsCode;
-            crs = CRS.decode(crsCode);
-        } catch (FactoryException e) {
-            LOGGER.error("Cannot determinate CRS", e);
+        if (!StringUtils.isEmpty(crsCode)) {
+            try {
+                this.crsCode = crsCode;
+                crs = CRS.decode(crsCode);
+            } catch (FactoryException e) {
+                LOGGER.error("Cannot determinate CRS", e);
+            }
         }
     }
 
@@ -192,11 +194,26 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public boolean canResolve(final Class< ? > clazz) {
-        return sourceModel.getClass().isAssignableFrom(clazz);
+        return clazz.isAssignableFrom(sourceModel.getClass());
     }
 
     @Override
     public INodeType getType() {
         return sourceModel.getType();
+    }
+
+    @Override
+    protected Node getParent(Node rootNode) throws ServiceException {
+        return getNodeService().getParent(rootNode, GISRelationType.GIS);
+    }
+
+    @Override
+    protected Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+        return getNodeService().createNode(parentNode, nodeType, GISRelationType.GIS, name);
+    }
+
+    @Override
+    public int getCount() {
+        return sourceModel.getRenderableElementCount();
     }
 }

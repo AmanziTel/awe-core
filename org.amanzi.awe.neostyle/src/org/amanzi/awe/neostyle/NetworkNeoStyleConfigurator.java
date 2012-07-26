@@ -42,7 +42,7 @@ import org.eclipse.swt.widgets.Table;
  */
 public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     private NetworkNeoStyle curStyle;
-    private NetworkStyleDefiner defaultStyle = new NetworkStyleDefiner();
+    private final NetworkStyleDefiner defaultStyle = new NetworkStyleDefiner();
     private CheckboxTableViewer viewer;
 
     /** NetworkNeoStyleConfigurator ID field */
@@ -58,16 +58,6 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     @Override
     public boolean canStyle(Layer aLayer) {
         return aLayer.getStyleBlackboard().get(ID) != null;
-        // try {
-        // if (aLayer.getStyleBlackboard().get(ID) != null) {
-        // GeoNeo geoNeo;
-        // geoNeo = aLayer.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null);
-        // return geoNeo.getGisType() == GisTypes.NETWORK;
-        // }
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
-        // return false;
     }
 
     @Override
@@ -76,13 +66,6 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         CTabFolder tabFolder = new CTabFolder(parent, SWT.TOP);
         tabFolder.setBorderVisible(true);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        // // Set up a gradient background for the selected tab
-        // tabFolder.setSelectionBackground(new Color[] {
-        // display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW),
-        // display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW),
-        // display.getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW)}, new int[] { 50,
-        // 100});
 
         CTabItem item = new CTabItem(tabFolder, SWT.NONE);
         item.setText("Style");
@@ -152,7 +135,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     @Override
     public void preApply() {
         defaultStyle.preApply();
-        NetworkNeoStyle clone = (NetworkNeoStyle)defaultStyle.getCurStyle().clone();        
+        NetworkNeoStyle clone = (NetworkNeoStyle)defaultStyle.getCurStyle().clone();
         getStyleBlackboard().put(ID, clone);
     }
 }

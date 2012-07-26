@@ -132,6 +132,10 @@ public class StatisticsManager {
     public AggregatedStatistics processStatistics(String templateName, IDriveModel parentModel, String propertyName, Period period,
             IProgressMonitor monitor) throws StatisticsException {
         LOGGER.info("Process statistics calculation");
+        if (templateName.isEmpty()) {
+            LOGGER.error("template name can't be null or empty");
+            throw new StatisticsException("template name can't be null or empty");
+        }
         getAllScripts();
         Template template;
         try {

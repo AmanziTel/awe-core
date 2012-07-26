@@ -11,30 +11,27 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model;
+package org.amanzi.awe.ui.events.impl;
 
-import org.amanzi.awe.statistics.AbstractMockedTests;
-import org.amanzi.awe.statistics.service.StatisticsService;
-import org.junit.Before;
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
 
 /**
  * TODO Purpose of
+ * <p>
+ * </p>
  * 
- * @author Vladislav_Kondratenko
+ * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AbstractModelTest extends AbstractMockedTests {
-    @Before
-    public void setUp() {
-        super.setUp();
-    }
+public class AWEStoppedEvent extends AbstractEvent {
 
     /**
-     * init services
-     * 
-     * @param statisticsService
+     * @param status
+     * @param isAsync
      */
-    public static void initServices(StatisticsService statisticsService) {
-        StatisticsModel.setStatisticsService(statisticsService);
+    public AWEStoppedEvent() {
+        super(EventStatus.AWE_STOPPED, false);
     }
+
 }

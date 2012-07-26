@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Statistic
-Bundle-SymbolicName: org.amanzi.awe.statistics;singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.statistics
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.statistics.entities,
