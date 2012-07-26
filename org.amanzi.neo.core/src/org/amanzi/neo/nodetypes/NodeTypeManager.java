@@ -19,8 +19,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -49,8 +47,6 @@ public final class NodeTypeManager {
     private static final String NODE_TYPE_EXTENSION_ID = "org.amanzi.nodetypes";
 
     private static final String CLASS_ATTRIBUTE = "class";
-
-    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
     @SuppressWarnings("rawtypes")
     private static final class StringToEnumConverter<T extends Enum> {
