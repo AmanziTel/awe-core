@@ -14,7 +14,10 @@
 package org.amanzi.neo.loader.core.parser.impl.internal;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
@@ -41,11 +44,17 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     private boolean actual = false;
 
+    private final List<IFileParsingStartedListener> listeners = new ArrayList<IFileParsingStartedListener>();
+
+    boolean parsingStarted = false;
+
     @Override
     public boolean hasNext() {
         if (!actual) {
             nextElement = parseToNextElement();
             actual = true;
+
+            fireFileParsingEvent();
         }
         return nextElement != null;
     }
@@ -54,10 +63,24 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
     public D next() {
         if (!actual) {
             nextElement = parseToNextElement();
+
+            fireFileParsingEvent();
         }
         actual = false;
         return nextElement;
     }
+
+    private void fireFileParsingEvent() {
+        if (!parsingStarted) {
+            File file = getFileFromConfiguration(configuration);
+            if (file != null) {
+                onNewFileParsingStarted(file);
+            }
+            parsingStarted = true;
+        }
+    }
+
+    protected abstract File getFileFromConfiguration(C configuration);
 
     protected D parseToNextElement() throws LoaderException {
         try {
@@ -77,12 +100,12 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
     }
 
     @Override
-    public void init(C configuration) throws LoaderException {
+    public void init(final C configuration) throws LoaderException {
         this.configuration = configuration;
     }
 
     @Override
-    public void setProgressMonitor(IProgressMonitor monitor) {
+    public void setProgressMonitor(final IProgressMonitor monitor) {
         this.monitor = monitor;
     }
 
@@ -93,5 +116,23 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
     @Override
     public void finishUp() {
         monitor.done();
+    }
+
+    private void onNewFileParsingStarted(final File file) {
+        for (IFileParsingStartedListener listener : listeners) {
+            listener.onFileParsingStarted(file);
+        }
+    }
+
+    @Override
+    public void addFileParsingListener(final IFileParsingStartedListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeFileParsingListener(final IFileParsingStartedListener listener) {
+        listeners.remove(listener);
     }
 }

@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,8 +53,10 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
     }
 
     @Override
-    protected IValidationResult checkFileContents(T configuration) {
-        for (File singleFile : getFilesFromConfiguration(configuration)) {
+    protected IValidationResult checkFileContents(final T configuration) {
+        Iterator<File> fileIterator = getFilesFromConfiguration(configuration);
+        while (fileIterator.hasNext()) {
+            File singleFile = fileIterator.next();
             try {
                 List<String> errors = checkFile(singleFile);
 
@@ -70,11 +73,11 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
         return IValidationResult.SUCCESS;
     }
 
-    protected abstract List<File> getFilesFromConfiguration(T configuration);
+    protected abstract Iterator<File> getFilesFromConfiguration(T configuration);
 
     protected abstract String getSynonyms();
 
-    private List<String> checkFile(File file) throws IOException {
+    private List<String> checkFile(final File file) throws IOException {
         List<String> failedSynonyms = new ArrayList<String>();
 
         String[] headers = getHeadersArray(file);
@@ -92,7 +95,7 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
         return failedSynonyms;
     }
 
-    protected String[] getHeadersArray(File file) throws IOException {
+    protected String[] getHeadersArray(final File file) throws IOException {
         CSVReader reader = new CSVReader(new FileReader(file), CSVUtils.getSeparator(file));
 
         try {

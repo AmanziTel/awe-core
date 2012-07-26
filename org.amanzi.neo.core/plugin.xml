@@ -17,6 +17,14 @@
             class="org.amanzi.neo.nodeproperties.impl.NetworkNodeProperties"
             id="org.amanzi.nodeproperties.NetworkNodeProperties">
       </nodeProperties>
+      <nodeProperties
+            class="org.amanzi.neo.nodeproperties.impl.MeasurementNodeProperties"
+            id="org.amanzi.nodeproperties.MeasurementNodeProperties">
+      </nodeProperties>
+      <nodeProperties
+            class="org.amanzi.neo.nodeproperties.impl.TimePeriodNodeProperties"
+            id="org.amanzi.nodeproperties.TimePeriodNodeProperties">
+      </nodeProperties>
    </extension>
 
 </plugin>

@@ -14,20 +14,18 @@
 package org.amanzi.neo.loader.core.validator.impl.network;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Iterator;
 
-import org.amanzi.neo.loader.core.ISingleFileConfiguration;
-import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
+import org.amanzi.neo.loader.core.IMultiFileConfiguration;
 import org.amanzi.neo.loader.core.internal.Messages;
-import org.amanzi.neo.loader.core.saver.impl.NetworkSaver;
+import org.amanzi.neo.loader.core.saver.impl.DriveSaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.ValidationResult;
 import org.amanzi.neo.loader.core.validator.impl.internal.AbstractHeadersValidator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.providers.INetworkModelProvider;
+import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 
@@ -39,47 +37,43 @@ import org.apache.log4j.Logger;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NetworkValidator extends AbstractHeadersValidator<ISingleFileConfiguration> {
+public class DriveValidator extends AbstractHeadersValidator<IMultiFileConfiguration> {
 
-    private static final Logger LOGGER = Logger.getLogger(NetworkValidator.class);
+    private static final Logger LOGGER = Logger.getLogger(DriveValidator.class);
 
-    private final INetworkModelProvider networkModelProvider;
+    private final IDriveModelProvider driveModelProvider;
 
     private final IProjectModelProvider projectModelProvider;
 
-    protected NetworkValidator(final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider) {
+    protected DriveValidator(final IProjectModelProvider projectModelProvider, final IDriveModelProvider driveModelProvider) {
         super();
-        this.networkModelProvider = networkModelProvider;
+        this.driveModelProvider = driveModelProvider;
         this.projectModelProvider = projectModelProvider;
     }
 
-    public NetworkValidator() {
-        this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getNetworkModelProvider());
-    }
-
     @Override
-    protected IValidationResult checkModelExists(final ISingleFileConfiguration configuration) {
-        LOGGER.info("Validating Configuration to load Network"); //$NON-NLS-1$
+    protected IValidationResult checkModelExists(final IMultiFileConfiguration configuration) {
+        LOGGER.info("Validating Configuration to load Drive"); //$NON-NLS-1$
         try {
             IProjectModel currentProject = projectModelProvider.getActiveProjectModel();
-            if (networkModelProvider.findByName(currentProject, configuration.getDatasetName()) != null) {
+            if (driveModelProvider.findByName(currentProject, configuration.getDatasetName()) != null) {
                 return new ValidationResult(Result.FAIL, Messages.format(Messages.NetworkValidator_DuplicatedNetworkName,
                         configuration.getDatasetName()));
             }
         } catch (ModelException e) {
-            LOGGER.error("Database error on Network Validation", e); //$NON-NLS-1$
+            LOGGER.error("Database error on Drive Validation", e); //$NON-NLS-1$
         }
         return IValidationResult.SUCCESS;
     }
 
     @Override
-    protected Iterator<File> getFilesFromConfiguration(final ISingleFileConfiguration configuration) {
-        return Arrays.asList(configuration.getFile()).iterator();
+    protected Iterator<File> getFilesFromConfiguration(final IMultiFileConfiguration configuration) {
+        return configuration.getFileIterator();
     }
 
     @Override
     protected String getSynonyms() {
-        return NetworkSaver.SYNONYMS_TYPE;
+        return DriveSaver.DRIVE_SYNONYMS;
     }
 
 }

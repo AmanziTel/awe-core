@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.parser.impl.internal;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.loader.core.IData;
@@ -69,6 +70,12 @@ public class AbstractParserTest extends AbstractMockitoTest {
 
         @Override
         protected IData parseNextElement() throws IOException {
+            return null;
+        }
+
+        @Override
+        protected File getFileFromConfiguration(final IConfiguration configuration) {
+            // TODO Auto-generated method stub
             return null;
         }
 

@@ -89,8 +89,6 @@ public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P ex
         S configuration = createSingleFileConfiguration(file, getConfiguration());
         currentParser.init(configuration);
 
-        onNewFileParsingStarted(file);
-
         return currentParser;
     }
 
@@ -98,6 +96,9 @@ public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P ex
 
     protected abstract S createSingleFileConfiguration(File file, C configuration);
 
-    protected abstract void onNewFileParsingStarted(File file);
+    @Override
+    protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {
+        return null;
+    }
 
 }

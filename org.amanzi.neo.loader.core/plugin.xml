@@ -12,11 +12,18 @@
             class="org.amanzi.neo.loader.core.parser.impl.CSVParser"
             id="org.amanzi.parser.CSVParser">
       </parser>
+      <parser
+            class="org.amanzi.neo.loader.core.parser.impl.MultiCSVParser"
+            id="org.amanzi.parser.MultiCSVParser">
+      </parser>
    </extension>
    <extension
          point="org.amanzi.loaderSynonyms">
       <synonyms
             synonymsFile="synonyms/network.synonyms">
+      </synonyms>
+      <synonyms
+            synonymsFile="synonyms/drive.synonyms">
       </synonyms>
    </extension>
    <extension
@@ -25,12 +32,20 @@
             class="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
             id="org.amanzi.saver.NetworkSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.DriveSaver"
+            id="org.amanzi.saver.DriveSaver">
+      </saver>
    </extension>
    <extension
          point="org.amanzi.validators">
       <validator
             class="org.amanzi.neo.loader.core.validator.impl.network.NetworkValidator"
             id="org.amanzi.validator.NetworkCSVValidator">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.core.validator.impl.network.DriveValidator"
+            id="org.amanzi.validators.DriveValidator">
       </validator>
    </extension>
    <extension
@@ -42,6 +57,15 @@
             validator="org.amanzi.validator.NetworkCSVValidator">
          <savers
                saver="org.amanzi.saver.NetworkSaver">
+         </savers>
+      </loader>
+      <loader
+            id="org.amanzi.loader.GeoptimaLoader"
+            name="Geoptima CSV Loader"
+            parser="org.amanzi.parser.MultiCSVParser"
+            validator="org.amanzi.validators.DriveValidator">
+         <savers
+               saver="org.amanzi.saver.DriveSaver">
          </savers>
       </loader>
    </extension>

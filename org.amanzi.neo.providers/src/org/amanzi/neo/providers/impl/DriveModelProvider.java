@@ -13,12 +13,14 @@
 
 package org.amanzi.neo.providers.impl;
 
-import org.amanzi.neo.models.drive.DriveNodeType;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.impl.drive.DriveModel;
+import org.amanzi.neo.models.measurement.MeasurementNodeType;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
+import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IGISModelProvider;
@@ -39,6 +41,10 @@ public class DriveModelProvider extends AbstractDatasetModelProvider<IDriveModel
         implements
             IDriveModelProvider {
 
+    private final ITimePeriodNodeProperties timePeriodNodeProperties;
+
+    private final IMeasurementNodeProperties measurementNodeProperties;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -47,22 +53,26 @@ public class DriveModelProvider extends AbstractDatasetModelProvider<IDriveModel
      * @param geoNodeProperties
      * @param gisModelProvider
      */
-    protected DriveModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-            final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
-            final IGeoNodeProperties geoNodeProperties, final IGISModelProvider gisModelProvider) {
+    protected DriveModelProvider(final ITimePeriodNodeProperties timePeriodNodeProperties,
+            final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
+            final IGeneralNodeProperties generalNodeProperties, final IIndexModelProvider indexModelProvider,
+            final IPropertyStatisticsModelProvider propertyStatisticsModelProvider, final IGeoNodeProperties geoNodeProperties,
+            final IGISModelProvider gisModelProvider) {
         super(nodeService, generalNodeProperties, indexModelProvider, propertyStatisticsModelProvider, geoNodeProperties,
                 gisModelProvider);
-        // TODO Auto-generated constructor stub
+        this.timePeriodNodeProperties = timePeriodNodeProperties;
+        this.measurementNodeProperties = measurementNodeProperties;
     }
 
     @Override
     protected INodeType getModelType() {
-        return DriveNodeType.DRIVE;
+        return MeasurementNodeType.DRIVE;
     }
 
     @Override
     protected DriveModel createInstance() {
-        return new DriveModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties());
+        return new DriveModel(timePeriodNodeProperties, measurementNodeProperties, getNodeService(), getGeneralNodeProperties(),
+                getGeoNodeProperties());
     }
 
     @Override

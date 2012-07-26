@@ -6,6 +6,9 @@
       <nodetype
             class="org.amanzi.neo.models.network.NetworkElementType">
       </nodetype>
+      <nodetype
+      		class="org.amanzi.neo.models.measurement.MeasurementNodeType">
+      </nodetype>
    </extension>
 
 </plugin>

@@ -11,10 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.drive;
-
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
+package org.amanzi.neo.nodeproperties;
 
 /**
  * TODO Purpose of
@@ -24,12 +21,8 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum DriveNodeType implements INodeType {
-    DRIVE, M, MP;
+public interface IMeasurementNodeProperties {
 
-    @Override
-    public String getId() {
-        return NodeTypeUtils.getTypeId(this);
-    }
+    String getFilePath();
 
 }

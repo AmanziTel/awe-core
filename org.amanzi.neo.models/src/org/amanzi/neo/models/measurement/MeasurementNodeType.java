@@ -11,9 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.drive;
+package org.amanzi.neo.models.measurement;
 
-import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -23,6 +24,12 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IDriveModel extends IMeasurementModel {
+public enum MeasurementNodeType implements INodeType {
+    DRIVE, M, MP;
+
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
+    }
 
 }

@@ -73,6 +73,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
                 for (ISaver<C, D> saver : savers) {
                     saver.save(data);
+                    parser.addFileParsingListener(saver);
                 }
             }
         } finally {
@@ -126,6 +127,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
         for (ISaver<C, D> saver : savers) {
             saver.finishUp();
+            parser.removeFileParsingListener(saver);
         }
     }
 

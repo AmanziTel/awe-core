@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.parser.impl.internal;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,5 +68,10 @@ public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D
     public void finishUp() {
         IOUtils.closeQuietly(reader);
         IOUtils.closeQuietly(stream);
+    }
+
+    @Override
+    protected File getFileFromConfiguration(final ISingleFileConfiguration configuration) {
+        return configuration.getFile();
     }
 }

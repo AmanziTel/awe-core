@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,6 +50,12 @@ public class AbstractSaverTest extends AbstractMockitoTest {
 
         @Override
         protected void saveInModel(final IData data) throws ModelException {
+        }
+
+        @Override
+        public void onFileParsingStarted(final File file) {
+            // TODO Auto-generated method stub
+
         }
 
     }

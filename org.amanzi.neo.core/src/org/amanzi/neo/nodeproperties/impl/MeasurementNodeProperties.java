@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.drive;
+package org.amanzi.neo.nodeproperties.impl;
 
-import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 
 /**
  * TODO Purpose of
@@ -23,6 +23,16 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IDriveModel extends IMeasurementModel {
+public class MeasurementNodeProperties implements IMeasurementNodeProperties {
+
+    private static final String FILE_PATH_PROPERTY = "path";
+
+    /**
+     * @return Returns the filePathProperty.
+     */
+    @Override
+    public String getFilePath() {
+        return FILE_PATH_PROPERTY;
+    }
 
 }

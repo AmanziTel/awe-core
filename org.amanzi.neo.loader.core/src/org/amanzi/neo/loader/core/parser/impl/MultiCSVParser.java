@@ -46,10 +46,4 @@ public class MultiCSVParser
         return singleFileConfiguration;
     }
 
-    @Override
-    protected void onNewFileParsingStarted(final File file) {
-        // TODO Auto-generated method stub
-
-    }
-
 }

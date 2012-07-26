@@ -15,8 +15,11 @@ package org.amanzi.neo.providers.internal;
 
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
+import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodeproperties.INodeProperties;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -49,6 +52,12 @@ public abstract class AbstractProviderPlugin extends Plugin {
     private static final String GENERAL_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.generalnodeproperties";
 
     private static final String NETWORK_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.NetworkNodeProperties";
+
+    private static final String GEO_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.GeoNodeProperties";
+
+    private static final String TIME_PERIOD_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.TimePeriodNodeProperties";
+
+    private static final String MEASUREMENT_NODE_PROPERTIES_ID = "org.amanzi.nodeproperties.MeasurementNodeProperties";
 
     private static final String DRIVE_MODEL_PROVIDER_ID = "org.amanzi.provider.DriveModelProvider";
 
@@ -114,6 +123,18 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     public IDriveModelProvider getDriveModelProvider() {
         return getModelProvider(DRIVE_MODEL_PROVIDER_ID);
+    }
+
+    public IGeoNodeProperties getGeoNodeProperties() {
+        return getNodeProperties(GEO_NODE_PROPERTIES_ID);
+    }
+
+    public ITimePeriodNodeProperties getTimePeriodNodeProperties() {
+        return getNodeProperties(TIME_PERIOD_NODE_PROPERTIES_ID);
+    }
+
+    public IMeasurementNodeProperties getMeasurementNodeProperties() {
+        return getNodeProperties(MEASUREMENT_NODE_PROPERTIES_ID);
     }
 
     public abstract String getPluginId();

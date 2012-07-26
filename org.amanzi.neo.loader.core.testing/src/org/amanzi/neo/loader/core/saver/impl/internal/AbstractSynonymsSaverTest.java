@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
          * @param projectModelProvider
          * @param synonymsManager
          */
-        protected TestAbstractSynonymsSaver(IProjectModelProvider projectModelProvider, SynonymsManager synonymsManager) {
+        protected TestAbstractSynonymsSaver(final IProjectModelProvider projectModelProvider, final SynonymsManager synonymsManager) {
             super(projectModelProvider, synonymsManager);
         }
 
@@ -83,7 +84,13 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
         }
 
         @Override
-        protected void saveInModel(IMappedStringData data) throws ModelException {
+        protected void saveInModel(final IMappedStringData data) throws ModelException {
+        }
+
+        @Override
+        public void onFileParsingStarted(final File file) {
+            // TODO Auto-generated method stub
+
         }
 
     }

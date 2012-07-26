@@ -31,14 +31,14 @@ public class Messages extends NLS {
     public static String AbstractConfiguration_EmptyDatasetNameError;
 
     public static String AbstractHeadersValidator_IOError;
-
     public static String AbstractHeadersValidator_SynonymsFailed;
 
+    public static String DriveValidator_DuplicatedDriveName;
+
     public static String NetworkValidator_DuplicatedNetworkName;
+
     public static String SingleFileConfiguration_FileNotExists;
-
     public static String SingleFileConfiguration_LocationIsNotFile;
-
     public static String SingleFileConfiguration_NullFile;
     static {
         // initialize resource bundle
@@ -48,7 +48,7 @@ public class Messages extends NLS {
     private Messages() {
     }
 
-    public static String format(String message, Object... parameters) {
+    public static String format(final String message, final Object... parameters) {
         return MessageFormat.format(message, parameters);
     }
 }

@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.drive;
+package org.amanzi.neo.nodeproperties.impl;
 
-import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 
 /**
  * TODO Purpose of
@@ -23,6 +23,13 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IDriveModel extends IMeasurementModel {
+public class TimePeriodNodeProperties implements ITimePeriodNodeProperties {
+
+    private static final String TIMESTAMP_PROPERTY = "timestamp";
+
+    @Override
+    public String getTimestampProperty() {
+        return TIMESTAMP_PROPERTY;
+    }
 
 }

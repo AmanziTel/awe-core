@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver.impl;
 
+import java.io.File;
 import java.util.Map;
 
 import org.amanzi.neo.dto.IDataElement;
@@ -125,6 +126,11 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
         addProcessedModel(model);
 
         return model;
+    }
+
+    @Override
+    public void onFileParsingStarted(final File file) {
+        // do nothing
     }
 
 }

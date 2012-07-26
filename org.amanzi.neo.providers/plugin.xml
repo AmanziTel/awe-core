@@ -102,6 +102,12 @@
             <providerReference
                   refId="org.amanzi.provider.GISModelProvider">
             </providerReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.TimePeriodNodeProperties">
+            </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.MeasurementNodeProperties">
+            </nodePropertiesReference>
          </parameters>
       </provider>
    </extension>
