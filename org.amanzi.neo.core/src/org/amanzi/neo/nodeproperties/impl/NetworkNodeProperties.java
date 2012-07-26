@@ -29,6 +29,10 @@ public class NetworkNodeProperties implements INetworkNodeProperties {
 
     private static final String LAC_PROPERTY = "lac";
 
+    private static final String BEAMWIDTH_PROPERTY = "beamwidth";
+
+    private static final String AZIMUTH_PROPERTY = "azimuth";
+
     @Override
     public String getCIProperty() {
         return CI_PROPERTY;
@@ -37,5 +41,15 @@ public class NetworkNodeProperties implements INetworkNodeProperties {
     @Override
     public String getLACProperty() {
         return LAC_PROPERTY;
+    }
+
+    @Override
+    public String getAzimuthProperty() {
+        return AZIMUTH_PROPERTY;
+    }
+
+    @Override
+    public String getBeamwidthProperty() {
+        return BEAMWIDTH_PROPERTY;
     }
 }

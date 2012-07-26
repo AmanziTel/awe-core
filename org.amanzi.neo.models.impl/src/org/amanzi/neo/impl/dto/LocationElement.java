@@ -11,16 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.render;
+package org.amanzi.neo.impl.dto;
 
-import java.util.List;
-
-import org.amanzi.awe.filters.IFilter;
-import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
-
-import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -30,16 +23,34 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IRenderableModel extends IModel {
+public class LocationElement extends DataElement implements ILocationElement {
 
-    IGISModel getMainGIS();
+    private double latitude;
 
-    List<IGISModel> getAllGIS();
+    private double longitude;
 
-    void addGISModel(IGISModel model);
+    @Override
+    public double getLatitude() {
+        return latitude;
+    }
 
-    Iterable<ILocationElement> getElements(Envelope bound) throws ModelException;
+    @Override
+    public double getLongitude() {
+        return longitude;
+    }
 
-    Iterable<ILocationElement> getElements(Envelope bound, IFilter filter);
+    /**
+     * @param latitude The latitude to set.
+     */
+    public void setLatitude(final double latitude) {
+        this.latitude = latitude;
+    }
+
+    /**
+     * @param longitude The longitude to set.
+     */
+    public void setLongitude(final double longitude) {
+        this.longitude = longitude;
+    }
 
 }

@@ -281,7 +281,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
         for (Node child : children) {
-            Node result = nodeService.getParent(child);
+            Node result = nodeService.getParent(child, NodeService.NodeServiceRelationshipType.CHILD);
 
             assertEquals("Unexpected parent of child", parent, result);
         }
@@ -291,7 +291,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     public void testGetParentWithoutParent() throws Exception {
         Node child = createNode();
 
-        Node result = nodeService.getParent(child);
+        Node result = nodeService.getParent(child, NodeService.NodeServiceRelationshipType.CHILD);
 
         assertNull("Parent should be null", result);
     }
@@ -305,7 +305,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
                 anotherParent);
 
         for (Node child : children) {
-            nodeService.getParent(child);
+            nodeService.getParent(child, NodeService.NodeServiceRelationshipType.CHILD);
         }
     }
 

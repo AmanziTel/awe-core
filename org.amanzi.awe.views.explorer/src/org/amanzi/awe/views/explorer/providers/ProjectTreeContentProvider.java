@@ -19,15 +19,13 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.explorer.ProjectExplorerPluginMessages;
-import org.amanzi.neo.model.distribution.impl.DistributionManager;
-import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.IModel;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.apache.commons.lang3.ArrayUtils;
+import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.providers.INetworkModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -39,160 +37,127 @@ import org.eclipse.jface.viewers.Viewer;
  * 
  * @author Vladislav_Kondratenko
  */
-public class ProjectTreeContentProvider implements IStructuredContentProvider,
-		ITreeContentProvider {
+public class ProjectTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 
-	private static final Logger LOGGER = Logger
-			.getLogger(ProjectTreeContentProvider.class);
+    private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
 
-	/**
-	 * Constructor of ContentProvider
-	 * 
-	 * @param neoProvider
-	 *            neoServiceProvider for this ContentProvider
-	 */
-	public ProjectTreeContentProvider() {
-	}
+    private final INetworkModelProvider networkModelProvider;
 
-	@Override
-	public void dispose() {
+    private final IProjectModelProvider projectModelProvider;
 
-	}
+    /**
+     * Constructor of ContentProvider
+     * 
+     * @param neoProvider neoServiceProvider for this ContentProvider
+     */
+    public ProjectTreeContentProvider() {
+        networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
+        projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
+    }
 
-	@Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    @Override
+    public void dispose() {
 
-	}
+    }
 
-	/**
-	 * collect models of current selected element
-	 * 
-	 * @param parentElement
-	 * @return
-	 * @throws AWEException
-	 */
-	private List<IModel> collectModelMap(Object parentElement)
-			throws AWEException {
-		ArrayList<IModel> modelMap = new ArrayList<IModel>();
-		if (parentElement instanceof IProjectModel) {
-			IProjectModel project = ((IProjectModel) parentElement);
-			// add all networkModel model
-			addToModelCollection(project.findAllNetworkModels(), modelMap);
-			// add all drive model
-			addToModelCollection(project.findAllDriveModels(), modelMap);
-			// add all counters models
-			addToModelCollection(project.findAllCountersModel(), modelMap);
-		} else if (parentElement instanceof INetworkModel) {
-			INetworkModel networkModel = ((INetworkModel) parentElement);
-			// add all selection model
-			addToModelCollection(networkModel.getAllSelectionModels(), modelMap);
-			// add all n2n models
-			addToModelCollection(networkModel.getNodeToNodeModels(), modelMap);
-			// add all corelation models
-			addToModelCollection(networkModel.getCorrelationModels(), modelMap);
-			modelMap.addAll(DistributionManager.getManager()
-					.getAllDistributionModels(networkModel));
-		} else if (parentElement instanceof IDriveModel) {
-			IDriveModel driveModel = ((IDriveModel) parentElement);
-			// add virtual datasets
-			addToModelCollection(driveModel.getVirtualDatasets(), modelMap);
-			modelMap.addAll(DistributionManager.getManager()
-					.getAllDistributionModels(driveModel));
-		}
-		return modelMap;
-	}
+    @Override
+    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
 
-	@Override
-	public Object[] getChildren(Object parentElement) {
-		ArrayList<IModel> modelMap = new ArrayList<IModel>();
-		try {
-			modelMap.addAll(collectModelMap(parentElement));
-		} catch (AWEException e) {
-			MessageDialog.openError(null,
-					ProjectExplorerPluginMessages.ErrorTitle,
-					ProjectExplorerPluginMessages.GetChildrenException
-							+ parentElement);
-		}
-		Collections.sort(modelMap, new IModelComparator());
-		return modelMap.toArray();
-	}
+    }
 
-	/**
-	 * @param findAllNetworkModels
-	 * @param modelMap
-	 */
-	private void addToModelCollection(Iterable<? extends IModel> findedModels,
-			ArrayList<IModel> modelMap) {
-		Iterator<? extends IModel> modelsIterator = findedModels.iterator();
-		while (modelsIterator.hasNext()) {
-			IModel model = modelsIterator.next();
-			modelMap.add(model);
-		}
-	}
+    /**
+     * collect models of current selected element
+     * 
+     * @param parentElement
+     * @return
+     * @throws AWEException
+     */
+    private List<IModel> collectModelMap(final Object parentElement) throws ModelException {
+        ArrayList<IModel> modelMap = new ArrayList<IModel>();
+        if (parentElement instanceof IProjectModel) {
+            IProjectModel project = ((IProjectModel)parentElement);
 
-	/**
-	 * <p>
-	 * Comparator of IDataElement
-	 * </p>
-	 * 
-	 * @author Kasnitskij_V
-	 * @since 1.0.0
-	 */
-	public static class IModelComparator implements Comparator<IModel> {
+            addToModelCollection(networkModelProvider.findAll(project), modelMap);
+        }
+        return modelMap;
+    }
 
-		@Override
-		public int compare(IModel dataElement1, IModel dataElement2) {
-			return dataElement1 == null ? -1 : dataElement2 == null ? 1
-					: dataElement1.getName().compareTo(dataElement2.getName());
-		}
+    @Override
+    public Object[] getChildren(final Object parentElement) {
+        ArrayList<IModel> modelMap = new ArrayList<IModel>();
+        try {
+            modelMap.addAll(collectModelMap(parentElement));
+        } catch (ModelException e) {
+            MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
+                    ProjectExplorerPluginMessages.GetChildrenException + parentElement);
+        }
+        Collections.sort(modelMap, new IModelComparator());
+        return modelMap.toArray();
+    }
 
-	}
+    /**
+     * @param findAllNetworkModels
+     * @param modelMap
+     */
+    private void addToModelCollection(final Iterable< ? extends IModel> findedModels, final ArrayList<IModel> modelMap) {
+        Iterator< ? extends IModel> modelsIterator = findedModels.iterator();
+        while (modelsIterator.hasNext()) {
+            IModel model = modelsIterator.next();
+            modelMap.add(model);
+        }
+    }
 
-	@Override
-	public Object getParent(Object element) {
-		// TODO Need implement
-		return null;
-	}
+    /**
+     * <p>
+     * Comparator of IDataElement
+     * </p>
+     * 
+     * @author Kasnitskij_V
+     * @since 1.0.0
+     */
+    public static class IModelComparator implements Comparator<IModel> {
 
-	@Override
-	public boolean hasChildren(Object parentElement) {
-		ArrayList<IModel> modelMap = new ArrayList<IModel>();
-		try {
-			modelMap.addAll(collectModelMap(parentElement));
-		} catch (AWEException e) {
-			MessageDialog.openError(null,
-					ProjectExplorerPluginMessages.ErrorTitle,
-					ProjectExplorerPluginMessages.HasChildrenException);
-			LOGGER.error(ProjectExplorerPluginMessages.HasChildrenException, e);
-		}
-		if (modelMap != null && !modelMap.isEmpty()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+        @Override
+        public int compare(final IModel dataElement1, final IModel dataElement2) {
+            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.getName().compareTo(dataElement2.getName());
+        }
 
-	@Override
-	public Object[] getElements(Object inputElement) {
-		Object[] projectModelsInObject = new Object[0];
+    }
 
-		IProjectModel projectModels = null;
-		try {
-			Iterable<IProjectModel> findAllProjectModels = ProjectModel
-					.findAllProjectModels();
+    @Override
+    public Object getParent(final Object element) {
+        // TODO Need implement
+        return null;
+    }
 
-			for (IProjectModel iProjectModel : findAllProjectModels) {
-				projectModelsInObject = ArrayUtils.add(projectModelsInObject,
-						iProjectModel);
+    @Override
+    public boolean hasChildren(final Object parentElement) {
+        ArrayList<IModel> modelMap = new ArrayList<IModel>();
+        try {
+            modelMap.addAll(collectModelMap(parentElement));
+        } catch (ModelException e) {
+            MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
+                    ProjectExplorerPluginMessages.HasChildrenException);
+            LOGGER.error(ProjectExplorerPluginMessages.HasChildrenException, e);
+        }
+        if ((modelMap != null) && !modelMap.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-			}
-		} catch (AWEException e) {
-			MessageDialog.openError(null,
-					ProjectExplorerPluginMessages.ErrorTitle,
-					ProjectExplorerPluginMessages.GetElementsException
-							+ projectModels);
-		}
+    @Override
+    public Object[] getElements(final Object inputElement) {
+        IProjectModel projectModels = null;
+        try {
 
-		return projectModelsInObject;
-	}
+            return projectModelProvider.findAll().toArray();
+        } catch (ModelException e) {
+            MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
+                    ProjectExplorerPluginMessages.GetElementsException + projectModels);
+        }
+
+        return null;
+    }
 }

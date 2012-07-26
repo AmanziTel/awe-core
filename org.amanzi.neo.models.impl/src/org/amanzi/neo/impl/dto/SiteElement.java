@@ -11,16 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.render;
+package org.amanzi.neo.impl.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.filters.IFilter;
-import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.render.IGISModel.ILocationElement;
-
-import com.vividsolutions.jts.geom.Envelope;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.INetworkModel.ISectorElement;
+import org.amanzi.neo.models.network.INetworkModel.ISiteElement;
 
 /**
  * TODO Purpose of
@@ -30,16 +28,17 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IRenderableModel extends IModel {
+public class SiteElement extends LocationElement implements ISiteElement {
 
-    IGISModel getMainGIS();
+    private final List<ISectorElement> sectorElements = new ArrayList<INetworkModel.ISectorElement>();
 
-    List<IGISModel> getAllGIS();
+    @Override
+    public List<ISectorElement> getSectors() {
+        return sectorElements;
+    }
 
-    void addGISModel(IGISModel model);
-
-    Iterable<ILocationElement> getElements(Envelope bound) throws ModelException;
-
-    Iterable<ILocationElement> getElements(Envelope bound, IFilter filter);
+    public void addSector(final ISectorElement sector) {
+        sectorElements.add(sector);
+    }
 
 }

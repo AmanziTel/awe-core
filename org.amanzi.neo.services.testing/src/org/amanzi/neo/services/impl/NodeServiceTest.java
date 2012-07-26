@@ -221,7 +221,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         when(relToParent.getStartNode()).thenReturn(parent);
         when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
 
-        nodeService.getParent(node);
+        nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
 
         verify(node).getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING);
         verify(relToParent).getStartNode();
@@ -236,7 +236,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         when(relToParent.getStartNode()).thenReturn(parent);
         when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
 
-        Node result = nodeService.getParent(node);
+        Node result = nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
 
         assertEquals("unexpected parent", parent, result);
     }
@@ -247,7 +247,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
         when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(null);
 
-        Node result = nodeService.getParent(node);
+        Node result = nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
 
         assertNull("there cannot be a parent", result);
     }
@@ -259,7 +259,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenThrow(
                 new IllegalArgumentException());
 
-        nodeService.getParent(node);
+        nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
     }
 
     @Test

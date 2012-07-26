@@ -14,16 +14,21 @@
 package org.amanzi.neo.models.impl.network;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.filters.IFilter;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.dto.SectorElement;
+import org.amanzi.neo.impl.dto.SiteElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.NetworkElementType;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
@@ -35,6 +40,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -282,5 +289,56 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         CollectionUtils.addAll(result, getIndexModel().getNodes(nodeType, propertyName, value));
 
         return result;
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
+        Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
+        Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
+
+        Iterator<Node> nodeIterator = getIndexModel().getNodes(NetworkElementType.SITE, Double.class, min, max,
+                getGeoNodeProperties().getLatitideProperty(), getGeoNodeProperties().getLongitudeProperty());
+
+        return new LocationIterator(nodeIterator).toIterable();
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected ILocationElement getLocationElement(final Node node) {
+        SiteElement site = new SiteElement();
+
+        try {
+            site.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitideProperty(), null,
+                    true));
+            site.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
+                    true));
+
+            Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR);
+            while (sectorNodes.hasNext()) {
+                site.addSector(getSectorElement(sectorNodes.next()));
+            }
+
+        } catch (ServiceException e) {
+            LOGGER.error("Unable to create a SiteElement from node", e);
+
+            return null;
+        }
+
+        return site;
+    }
+
+    private ISectorElement getSectorElement(final Node node) throws ServiceException {
+        SectorElement element = new SectorElement();
+
+        element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
+        element.setBeamwidth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getBeamwidthProperty(), null,
+                false));
+
+        return element;
     }
 }

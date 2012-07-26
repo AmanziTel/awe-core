@@ -63,4 +63,9 @@ public class GISModelProvider extends AbstractNamedModelProvider<IGISModel, IRen
         return GISModel.class;
     }
 
+    @Override
+    protected void postInitialize(final GISModel model, final IRenderableModel parent) {
+        model.setSourceModel(parent);
+    }
+
 }

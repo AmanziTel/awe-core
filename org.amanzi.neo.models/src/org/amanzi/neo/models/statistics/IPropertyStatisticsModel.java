@@ -13,8 +13,12 @@
 
 package org.amanzi.neo.models.statistics;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.ServiceException;
 
 /**
  * Interface to PropertyStaticticalModel to work with statistics
@@ -22,6 +26,20 @@ import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IPropertyStatisticsModel extends IModel, IPropertyStatistics {
+public interface IPropertyStatisticsModel extends IModel {
+
+    void indexElement(INodeType nodeType, Map<String, Object> properties) throws ServiceException;
+
+    Set<String> getPropertyNames();
+
+    Set<String> getPropertyNames(INodeType nodeType);
+
+    int getCount();
+
+    int getCount(INodeType nodeType);
+
+    Set<Object> getValues(INodeType nodeType, String property);
+
+    int getValueCount(INodeType nodeType, String property, Object value);
 
 }

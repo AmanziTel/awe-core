@@ -60,6 +60,18 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
 
         }
 
+        @Override
+        public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public IPropertyStatisticsModel getPropertyStatistics() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
     }
 
     private PropertyStatisticsModel model;

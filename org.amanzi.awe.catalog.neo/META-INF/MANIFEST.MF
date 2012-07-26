@@ -4,7 +4,7 @@ Bundle-Name: Neo Catalog Plug-in
 Bundle-SymbolicName: org.amanzi.awe.catalog.neo;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
-Require-Bundle: net.refractions.udig.project.ui;bundle-version="1.2.0",
+Require-Bundle: net.refractions.udig.project.ui,
  org.amanzi.awe.startup.splash;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.neo.db;bundle-version="1.0.0",

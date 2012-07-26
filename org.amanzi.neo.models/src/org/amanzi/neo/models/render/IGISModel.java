@@ -13,9 +13,13 @@
 
 package org.amanzi.neo.models.render;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -27,13 +31,19 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public interface IGISModel extends IModel {
 
+    public interface ILocationElement extends IDataElement {
+
+        double getLatitude();
+
+        double getLongitude();
+
+    }
+
     void updateBounds(double latitude, double longitude);
 
     void setSourceModel(IRenderableModel sourceModel);
 
     CoordinateReferenceSystem getCRS();
-
-    IRenderableModel getSourceModel();
 
     double getMinLatitude();
 
@@ -44,4 +54,8 @@ public interface IGISModel extends IModel {
     double getMaxLongitude();
 
     ReferencedEnvelope getBounds();
+
+    Iterable<ILocationElement> getElements(Envelope bound) throws ModelException;
+
+    boolean canResolve(Class< ? > clazz);
 }

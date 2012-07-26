@@ -17,6 +17,7 @@ import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -43,12 +44,12 @@ public class ProjectChangedListener implements IAWEEventListenter {
         this(AWEUIPlugin.getDefault().getProjectModelProvider());
     }
 
-    protected ProjectChangedListener(IProjectModelProvider projectModelProvider) {
+    protected ProjectChangedListener(final IProjectModelProvider projectModelProvider) {
         this.projectModelProvider = projectModelProvider;
     }
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
         case PROJECT_CHANGED:
             if (event instanceof ProjectNameChangedEvent) {
@@ -61,13 +62,14 @@ public class ProjectChangedListener implements IAWEEventListenter {
         }
     }
 
-    private void onProjectChangedEvent(ProjectNameChangedEvent event) {
+    private void onProjectChangedEvent(final ProjectNameChangedEvent event) {
         String name = event.getNewProjectName();
 
         try {
             IProjectModel projectModel = projectModelProvider.findProjectByName(name);
             if (projectModel == null) {
                 projectModel = projectModelProvider.createProjectModel(name);
+                AWEEventManager.getManager().fireDataUpdatedEvent();
             }
 
             projectModelProvider.setActiveProjectModel(projectModel);

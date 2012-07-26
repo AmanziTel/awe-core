@@ -16,7 +16,9 @@ package org.amanzi.neo.loader.core.saver.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
@@ -69,19 +71,24 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
 
         this.currentProject = projectModelProvider.getActiveProjectModel();
 
+        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
         tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
     }
 
     @Override
     public void finishUp() {
         saveTx(true, true);
+
+        EventChain eventChain = new EventChain(true);
+        eventChain.addEvent(AWEEventManager.DATA_UPDATED_EVENT);
+
         for (IModel model : processedModels) {
             try {
                 model.finishUp();
 
                 if (model.isRenderable()) {
                     for (IGISModel gisModel : ((IRenderableModel)model).getAllGIS()) {
-                        AWEEventManager.getManager().fireShowOnMapEvent(gisModel);
+                        eventChain.addEvent(new ShowGISOnMap(gisModel));
                     }
                 }
             } catch (ModelException e) {
@@ -90,7 +97,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         }
         saveTx(true, false);
 
-        AWEEventManager.getManager().fireDataUpdatedEvent();
+        AWEEventManager.getManager().fireEventChain(eventChain);
     }
 
     @Override

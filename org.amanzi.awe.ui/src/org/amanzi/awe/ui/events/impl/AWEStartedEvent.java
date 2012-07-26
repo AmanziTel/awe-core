@@ -30,7 +30,7 @@ public class AWEStartedEvent extends AbstractEvent {
      * @param status
      */
     public AWEStartedEvent() {
-        super(EventStatus.AWE_STARTED);
+        super(EventStatus.AWE_STARTED, true);
     }
 
 }

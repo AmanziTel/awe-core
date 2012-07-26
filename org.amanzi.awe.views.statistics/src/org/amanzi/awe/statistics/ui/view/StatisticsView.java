@@ -34,12 +34,12 @@ import org.amanzi.awe.statistics.ui.view.table.StatisticsComparator;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsContentProvider;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsLabelProvider;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsRowFilter;
+import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -129,11 +129,11 @@ public class StatisticsView extends ViewPart {
     private Composite topControlsComposite;
     private Composite bottomControlsComposite;
 
-    private Map<String, IDriveModel> datasets = new HashMap<String, IDriveModel>();
+    private final Map<String, IDriveModel> datasets = new HashMap<String, IDriveModel>();
     /*
      * statistics manager
      */
-    private StatisticsManager statisticsManager = StatisticsManager.getInstance();
+    private final StatisticsManager statisticsManager = StatisticsManager.getInstance();
     /*
      * statistics
      */
@@ -375,7 +375,7 @@ public class StatisticsView extends ViewPart {
                                 Rectangle firstRowRect = table.getItem(0).getBounds();
                                 Rectangle lastRowRect = table.getItem(table.getItemCount() - NumberUtils.INTEGER_ONE).getBounds();
                                 // check if a data row selected
-                                if (e.y >= firstRowRect.y && e.y <= lastRowRect.y + lastRowRect.height) {
+                                if ((e.y >= firstRowRect.y) && (e.y <= (lastRowRect.y + lastRowRect.height))) {
                                     int rowNum = (e.y - firstRowRect.y) / table.getItemHeight();
                                     TableItem item = table.getItem(rowNum);
                                     for (int i = 0; i < tableViewer.getTable().getColumnCount(); i++) {
@@ -656,7 +656,7 @@ public class StatisticsView extends ViewPart {
      */
     private boolean isAdditionalColumnNecessary() {
         return getAggregation().equals(NetworkElementNodeType.SECTOR.getId())
-                && cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR);
+                && (cAggregation.getSelectionIndex() < cAggregation.indexOf(SEPARATOR));
     }
 
     @Override
@@ -670,10 +670,12 @@ public class StatisticsView extends ViewPart {
      */
     private static class Mutex implements ISchedulingRule {
 
+        @Override
         public boolean contains(ISchedulingRule rule) {
             return (rule == this);
         }
 
+        @Override
         public boolean isConflicting(ISchedulingRule rule) {
             return (rule == this);
         }

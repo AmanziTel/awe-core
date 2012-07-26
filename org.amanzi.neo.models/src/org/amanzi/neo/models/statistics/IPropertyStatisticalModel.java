@@ -25,4 +25,6 @@ import org.amanzi.neo.models.IDataModel;
  */
 public interface IPropertyStatisticalModel extends IDataModel {
 
+    IPropertyStatisticsModel getPropertyStatistics();
+
 }

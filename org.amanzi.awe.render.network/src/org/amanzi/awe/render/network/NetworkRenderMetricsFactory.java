@@ -20,34 +20,31 @@ import net.refractions.udig.project.render.IRenderContext;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.IRenderableModel;
+import org.amanzi.neo.models.network.INetworkModel;
 
 public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
 
     /**
      * @return a NetworkRenderMetrics constructed on this context
      */
-    public AbstractRenderMetrics createMetrics(IRenderContext context) {
+    @Override
+    public AbstractRenderMetrics createMetrics(final IRenderContext context) {
         return new NetworkRenderMetrics(context, this);
     }
 
     /**
      * @return NetworkRenderer.class
      */
+    @Override
     public Class< ? extends IRenderer> getRendererType() {
         return NetworkRenderer.class;
     }
 
     @Override
-    public boolean canRender(IRenderContext context) throws IOException {
+    public boolean canRender(final IRenderContext context) throws IOException {
         for (IGeoResource resource : context.getLayer().getGeoResources()) {
-            if (resource.canResolve(IRenderableModel.class) && resource.canResolve(INetworkModel.class)) {
-                return true;
-                // return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
-            }
+            return resource.canResolve(INetworkModel.class);
         }
         return false;
     }
-
 }

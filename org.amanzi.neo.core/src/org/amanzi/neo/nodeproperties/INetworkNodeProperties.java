@@ -27,4 +27,8 @@ public interface INetworkNodeProperties extends INodeProperties {
 
     String getLACProperty();
 
+    String getAzimuthProperty();
+
+    String getBeamwidthProperty();
+
 }
