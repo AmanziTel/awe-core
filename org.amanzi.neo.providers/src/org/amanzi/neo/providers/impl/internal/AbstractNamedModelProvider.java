@@ -28,7 +28,6 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.internal.INamedModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -93,12 +92,12 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
         return result;
     }
 
-    protected Iterator<Node> getNodeIterator(Node parent, INodeType nodeType) throws ServiceException {
-        return nodeService.getChildren(parent, getModelType(), NodeServiceRelationshipType.CHILD);
+    protected Iterator<Node> getNodeIterator(final Node parent, final INodeType nodeType) throws ServiceException {
+        return nodeService.getChildren(parent, getModelType());
     }
 
-    protected Node getNodeByName(Node rootNode, String name, INodeType modelType) throws ServiceException {
-        return nodeService.getChildByName(rootNode, name, getModelType(), NodeServiceRelationshipType.CHILD);
+    protected Node getNodeByName(final Node rootNode, final String name, final INodeType modelType) throws ServiceException {
+        return nodeService.getChildByName(rootNode, name, getModelType());
     }
 
     @SuppressWarnings("unchecked")

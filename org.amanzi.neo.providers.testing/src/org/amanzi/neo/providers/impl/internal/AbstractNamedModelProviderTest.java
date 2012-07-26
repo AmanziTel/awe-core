@@ -173,8 +173,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     public void testCheckResultOnFindAllMethod() throws Exception {
         List<Node> nodes = getNodeList();
 
-        when(nodeService.getChildren(parentNode, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD)).thenReturn(
-                nodes.iterator());
+        doReturn(nodes.iterator()).when(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
 
         List<IModel> result = provider.findAll(parent);
 
@@ -186,13 +185,12 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     public void testCheckActivityOnFindAllMethod() throws Exception {
         List<Node> nodes = getNodeList();
 
-        when(nodeService.getChildren(parentNode, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD)).thenReturn(
-                nodes.iterator());
+        doReturn(nodes.iterator()).when(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
 
         provider.findAll(parent);
 
         verify(parent).getRootNode();
-        verify(nodeService).getChildren(parentNode, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD);
+        verify(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
         verify(provider, times(nodes.size())).createInstance();
         for (Node node : nodes) {
             verify(model).initialize(node);
@@ -204,13 +202,12 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     public void testCheckActivityOnFindByExistingName() throws Exception {
         Node node = getNodeMock();
 
-        when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD))
-                .thenReturn(node);
+        doReturn(node).when(provider).getNodeByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
 
         provider.findByName(parent, MODEL_NAME);
 
         verify(parent).getRootNode();
-        verify(nodeService).getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD);
+        verify(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
         verify(provider).createInstance();
         verify(model).initialize(node);
         verify(provider).postInitialize(model);
@@ -220,13 +217,12 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     public void testCheckActivityOnFindByNotExistingName() throws Exception {
         Node node = getNodeMock();
 
-        when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD))
-                .thenReturn(null);
+        doReturn(null).when(provider).getNodeByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
 
         provider.findByName(parent, MODEL_NAME);
 
         verify(parent).getRootNode();
-        verify(nodeService).getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD);
+        verify(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
         verify(provider, never()).createInstance();
         verify(model, never()).initialize(node);
     }
@@ -235,8 +231,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     public void testCheckResultOnFindByExistingName() throws Exception {
         Node node = getNodeMock();
 
-        when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD))
-                .thenReturn(node);
+        doReturn(node).when(provider).getNodeByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
 
         IModel result = provider.findByName(parent, MODEL_NAME);
 
@@ -277,8 +272,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     public void testCacheEnabling() throws Exception {
         Node node = getNodeMock();
 
-        when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD))
-                .thenReturn(node);
+        doReturn(node).when(provider).getNodeByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
         when(provider.getFromCache(CACHE_KEY)).thenReturn(null);
 
         provider.findByName(parent, MODEL_NAME);
