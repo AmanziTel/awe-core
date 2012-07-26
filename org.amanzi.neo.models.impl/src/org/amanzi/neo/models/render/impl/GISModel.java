@@ -216,15 +216,4 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     public int getCount() {
         return sourceModel.getRenderableElementCount();
     }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (o instanceof GISModel) {
-            GISModel gisModel = (GISModel)o;
-
-            return sourceModel.equals(gisModel.sourceModel) && getName().equals(gisModel.getName());
-        }
-
-        return false;
-    }
 }
