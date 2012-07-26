@@ -68,6 +68,13 @@ public class Application extends UDIGApplication {
         }
 
         @Override
+        public boolean preShutdown() {
+            AWEEventManager.getManager().fireAWEStoppedEvent();
+
+            return super.preShutdown();
+        }
+
+        @Override
         public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
             configurer.setShowPerspectiveBar(true);
             return super.createWorkbenchWindowAdvisor(configurer);

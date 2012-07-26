@@ -55,7 +55,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         try {
             Node childNode = ((DataElement)childElement).getNode();
 
-            Node parentNode = getNodeService().getParent(childNode, getRelationTypeToParent());
+            Node parentNode = getParent(childNode);
 
             result = new DataElement(parentNode);
         } catch (ServiceException e) {

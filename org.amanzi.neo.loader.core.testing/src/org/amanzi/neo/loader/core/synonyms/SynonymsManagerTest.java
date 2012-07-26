@@ -301,7 +301,9 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
             input.append(line).append("\n");
         }
 
-        return IOUtils.toInputStream(input);
+        // FIXME: replace with IOUtils.toInputStream(CharSequence) when uDIG will contain latest
+        // version of Apache Commons IO
+        return IOUtils.toInputStream(input.toString());
     }
 
     private String[] getSynonyms(String base, int number) {

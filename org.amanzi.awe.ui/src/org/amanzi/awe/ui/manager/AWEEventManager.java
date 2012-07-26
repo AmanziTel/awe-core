@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
+import org.amanzi.awe.ui.events.impl.AWEStoppedEvent;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
@@ -59,6 +60,8 @@ public final class AWEEventManager {
     private static final String STATUS_ATTRIBUTE = "status";
 
     private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
+
+    private static final IEvent AWE_STOPPED_EVENT = new AWEStoppedEvent();
 
     public static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
 
@@ -129,6 +132,10 @@ public final class AWEEventManager {
 
     public synchronized void fireAWEStartedEvent() {
         fireEvent(AWE_STARTED_EVENT, true);
+    }
+
+    public synchronized void fireAWEStoppedEvent() {
+        fireEvent(AWE_STOPPED_EVENT, true);
     }
 
     public synchronized void fireProjectNameChangedEvent(final String newProjectName) {

@@ -58,4 +58,6 @@ public interface IGISModel extends IModel {
     Iterable<ILocationElement> getElements(Envelope bound) throws ModelException;
 
     boolean canResolve(Class< ? > clazz);
+
+    int getCount();
 }
