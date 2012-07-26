@@ -160,7 +160,7 @@ public class NetworkRenderer extends AbstractRenderer {
     protected void setStyle(final Graphics2D destination) {
         super.setStyle(destination);
         NetworkNeoStyle newStyle = (NetworkNeoStyle)getContext().getLayer().getStyleBlackboard().get(NetworkNeoStyleContent.ID);
-        if (newStyle.equals(style)) {
+        if ((newStyle == null) || (style == null) || newStyle.equals(style)) {
             return;
         }
 

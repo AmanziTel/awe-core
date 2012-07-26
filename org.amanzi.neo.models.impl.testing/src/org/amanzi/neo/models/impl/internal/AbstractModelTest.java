@@ -74,7 +74,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
     public void setUp() throws Exception {
         nodeService = mock(INodeService.class);
 
-        model = new TestModel(nodeService);
+        model = spy(new TestModel(nodeService));
 
     }
 
@@ -86,7 +86,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
 
         verify(nodeService).getNodeName(eq(rootNode));
         verify(nodeService).getNodeType(eq(rootNode));
-        verify(nodeService).getParent(eq(rootNode), eq(model.getRelationTypeToParent()));
+        verify(model).getParent(eq(rootNode));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
 
         when(nodeService.getNodeName(eq(rootNode))).thenReturn(TEST_NODE_NAME);
         when(nodeService.getNodeType(eq(rootNode))).thenReturn(TEST_NODE_TYPE);
-        when(nodeService.getParent(eq(rootNode), eq(model.getRelationTypeToParent()))).thenReturn(parentNode);
+        doReturn(parentNode).when(model).getParent(rootNode);
 
         model.initialize(rootNode);
 
@@ -137,8 +137,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
     public void testCheckInconsistencyExceptionForParentOnInitialize() throws Exception {
         Node rootNode = getNodeMock();
 
-        doThrow(new PropertyNotFoundException("Parent", rootNode)).when(nodeService).getParent(rootNode,
-                model.getRelationTypeToParent());
+        doThrow(new PropertyNotFoundException("Parent", rootNode)).when(model).getParent(rootNode);
 
         model.initialize(rootNode);
     }

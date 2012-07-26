@@ -28,11 +28,10 @@ import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.NodeService;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -75,7 +74,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         this.parentNode = parentNode;
 
         try {
-            rootNode = nodeService.createNode(parentNode, nodeType, getRelationTypeToParent(), name);
+            rootNode = createNode(parentNode, nodeType, name);
         } catch (ServiceException e) {
             processException("Error on initializing new node for Model", e);
         }
@@ -83,6 +82,10 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
         }
+    }
+
+    protected Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+        return nodeService.createNode(parentNode, nodeType, NodeServiceRelationshipType.CHILD, name);
     }
 
     public void initialize(final Node rootNode) throws ModelException {
@@ -96,7 +99,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             this.rootNode = rootNode;
             name = nodeService.getNodeName(rootNode);
             nodeType = nodeService.getNodeType(rootNode);
-            parentNode = nodeService.getParent(rootNode, getRelationTypeToParent());
+            parentNode = getParent(rootNode);
         } catch (Exception e) {
             processException("An error occured on Model Initialization", e);
         }
@@ -104,6 +107,10 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
         }
+    }
+
+    protected Node getParent(Node rootNode) throws ServiceException {
+        return nodeService.getParent(rootNode, NodeServiceRelationshipType.CHILD);
     }
 
     @Override
@@ -174,9 +181,5 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     @Override
     public boolean isRenderable() {
         return this instanceof IRenderableModel;
-    }
-
-    protected RelationshipType getRelationTypeToParent() {
-        return NodeService.NodeServiceRelationshipType.CHILD;
     }
 }

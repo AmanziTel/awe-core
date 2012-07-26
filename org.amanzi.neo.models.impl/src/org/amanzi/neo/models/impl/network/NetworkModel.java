@@ -318,7 +318,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             site.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
                     true));
 
-            Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR);
+            Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR,
+                    NodeServiceRelationshipType.CHILD);
             while (sectorNodes.hasNext()) {
                 site.addSector(getSectorElement(sectorNodes.next()));
             }

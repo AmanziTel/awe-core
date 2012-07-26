@@ -28,6 +28,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.internal.INamedModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -70,7 +71,7 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
             AbstractModel parentModel = (AbstractModel)parent;
 
             try {
-                Iterator<Node> modelNodes = nodeService.getChildren(parentModel.getRootNode(), getModelType());
+                Iterator<Node> modelNodes = getNodeIterator(parentModel.getRootNode(), getModelType());
 
                 while (modelNodes.hasNext()) {
                     C model = createInstance();
@@ -90,6 +91,14 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
         }
 
         return result;
+    }
+
+    protected Iterator<Node> getNodeIterator(Node parent, INodeType nodeType) throws ServiceException {
+        return nodeService.getChildren(parent, getModelType(), NodeServiceRelationshipType.CHILD);
+    }
+
+    protected Node getNodeByName(Node rootNode, String name, INodeType modelType) throws ServiceException {
+        return nodeService.getChildByName(rootNode, name, getModelType(), NodeServiceRelationshipType.CHILD);
     }
 
     @SuppressWarnings("unchecked")
@@ -113,15 +122,19 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
             AbstractModel parentModel = (AbstractModel)parent;
 
             try {
-                Node modelNode = nodeService.getChildByName(parentModel.getRootNode(), name, getModelType());
+                result = createInstance();
+
+                Node modelNode = getNodeByName(parentModel.getRootNode(), name, getModelType());
 
                 if (modelNode != null) {
-                    result = createInstance();
+
                     result.initialize(modelNode);
 
                     postInitialize(result, parent);
 
                     addToCache(result, key);
+                } else {
+                    result = null;
                 }
             } catch (ServiceException e) {
                 processException("Error on searching for a model <" + getModelType() + "> by name <" + name + ">", e);

@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.RelationshipType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -116,11 +115,6 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     }
 
     @Override
-    protected RelationshipType getRelationTypeToParent() {
-        return GISRelationType.GIS;
-    }
-
-    @Override
     protected INodeType getModelType() {
         return GISNodeType.GIS;
     }
@@ -198,5 +192,15 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     @Override
     public INodeType getType() {
         return sourceModel.getType();
+    }
+
+    @Override
+    protected Node getParent(Node rootNode) throws ServiceException {
+        return getNodeService().getParent(rootNode, GISRelationType.GIS);
+    }
+
+    @Override
+    protected Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+        return getNodeService().createNode(parentNode, nodeType, GISRelationType.GIS, name);
     }
 }
