@@ -207,7 +207,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
         provider.findByName(parent, MODEL_NAME);
 
         verify(parent).getRootNode();
-        verify(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
+        verify(provider).getNodeByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
         verify(provider).createInstance();
         verify(model).initialize(node);
         verify(provider).postInitialize(model);
@@ -222,7 +222,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
         provider.findByName(parent, MODEL_NAME);
 
         verify(parent).getRootNode();
-        verify(provider).getNodeIterator(parentNode, TestNodeTypes.TEST1);
+        verify(provider).getNodeByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
         verify(provider, never()).createInstance();
         verify(model, never()).initialize(node);
     }
