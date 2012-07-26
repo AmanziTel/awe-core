@@ -19,7 +19,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.apache.commons.lang3.StringUtils;
@@ -96,12 +95,6 @@ public final class NodeTypeManager {
         assert nodeType != null;
 
         registeredNodeTypes.add(nodeType);
-    }
-
-    public INodeType getType(final IDataElement element) throws NodeTypeNotExistsException {
-        String nodeType = (String)element.get(GENERAL_NODE_PROPERTIES.getNodeTypeProperty());
-
-        return getType(nodeType);
     }
 
     /**

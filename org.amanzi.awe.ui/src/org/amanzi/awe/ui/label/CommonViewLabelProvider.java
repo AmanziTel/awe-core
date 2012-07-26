@@ -19,8 +19,6 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeManager;
-import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
@@ -65,13 +63,8 @@ public class CommonViewLabelProvider extends LabelProvider {
             return IconManager.getInstance().getImage(model.getType());
         } else if (element instanceof IDataElement) {
             IDataElement dataElement = (IDataElement)element;
-            try {
-                INodeType type = NodeTypeManager.getInstance().getType(
-                        (String)dataElement.get(generalNodeProperties.getNodeTypeProperty()));
-                return IconManager.getInstance().getImage(type);
-            } catch (NodeTypeNotExistsException e) {
-                e.printStackTrace();
-            }
+            INodeType type = dataElement.getNodeType();
+            return IconManager.getInstance().getImage(type);
         }
         return null;
     }

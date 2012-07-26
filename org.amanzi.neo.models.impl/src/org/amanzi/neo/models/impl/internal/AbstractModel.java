@@ -55,6 +55,8 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     private final INodeService nodeService;
     private final IGeneralNodeProperties generalNodeProperties;
 
+    private IDataElement dataElement;
+
     public AbstractModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
@@ -175,7 +177,17 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
     @Override
     public IDataElement asDataElement() {
-        return rootNode == null ? null : new DataElement(rootNode);
+        dataElement = dataElement == null ? rootNode == null ? null : toDataElement() : dataElement;
+
+        return dataElement;
+    }
+
+    protected IDataElement toDataElement() {
+        DataElement result = new DataElement();
+
+        result.setNodeType(getType());
+
+        return result;
     }
 
     @Override

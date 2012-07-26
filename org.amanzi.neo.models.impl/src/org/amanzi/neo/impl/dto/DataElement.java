@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -34,11 +35,13 @@ public class DataElement implements IDataElement {
 
     private final Map<String, Object> properties = new HashMap<String, Object>();
 
+    private INodeType nodeType;
+
     public DataElement() {
 
     }
 
-    public DataElement(Node node) {
+    public DataElement(final Node node) {
         this.node = node;
     }
 
@@ -52,7 +55,7 @@ public class DataElement implements IDataElement {
     }
 
     @Override
-    public boolean equals(Object anotherObject) {
+    public boolean equals(final Object anotherObject) {
         if (anotherObject instanceof DataElement) {
             DataElement anotherElement = (DataElement)anotherObject;
             if (node == null) {
@@ -71,17 +74,36 @@ public class DataElement implements IDataElement {
     }
 
     @Override
-    public Object get(String header) {
+    public Object get(final String header) {
+        if ((node != null) && properties.isEmpty()) {
+            fillProperties();
+        }
         return properties.get(header);
     }
 
+    protected void fillProperties() {
+        for (String propertyKey : node.getPropertyKeys()) {
+            Object value = node.getProperty(propertyKey);
+            properties.put(propertyKey, value);
+        }
+    }
+
     @Override
-    public Object put(String key, Object value) {
+    public Object put(final String key, final Object value) {
         return properties.put(key, value);
     }
 
     @Override
     public Set<String> keySet() {
         return properties.keySet();
+    }
+
+    public void setNodeType(final INodeType nodeType) {
+        this.nodeType = nodeType;
+    }
+
+    @Override
+    public INodeType getNodeType() {
+        return nodeType;
     }
 }

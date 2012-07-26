@@ -35,8 +35,6 @@ import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeManager;
-import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -201,15 +199,11 @@ public class NetworkRenderer extends AbstractRenderer {
 
     @Override
     protected Color getDefaultFillColorByElement(final IDataElement element) {
-        try {
-            INodeType type = NodeTypeManager.getInstance().getType(element);
-            if (type.getId().equals(NetworkElementType.SECTOR.getId())) {
-                return networkRendererStyle.getSectorFill();
-            } else if (type.getId().equals(NetworkElementType.SITE.getId())) {
-                return networkRendererStyle.getSiteFill();
-            }
-        } catch (NodeTypeNotExistsException e) {
-            // TODO: error!
+        INodeType type = element.getNodeType();
+        if (type.getId().equals(NetworkElementType.SECTOR.getId())) {
+            return networkRendererStyle.getSectorFill();
+        } else if (type.getId().equals(NetworkElementType.SITE.getId())) {
+            return networkRendererStyle.getSiteFill();
         }
         return networkRendererStyle.getBorderColor();
     }
