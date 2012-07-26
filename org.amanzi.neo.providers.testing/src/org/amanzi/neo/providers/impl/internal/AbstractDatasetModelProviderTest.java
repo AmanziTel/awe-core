@@ -16,6 +16,7 @@ package org.amanzi.neo.providers.impl.internal;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
+import org.amanzi.neo.models.internal.IDatasetModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -37,7 +38,7 @@ import org.junit.Test;
  */
 public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
 
-    public static class TestDatasetModelProvider extends AbstractDatasetModelProvider<IModel, IModel, AbstractDatasetModel> {
+    public static class TestDatasetModelProvider extends AbstractDatasetModelProvider<IDatasetModel, IModel, AbstractDatasetModel> {
 
         /**
          * @param nodeService
@@ -62,13 +63,13 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
         }
 
         @Override
-        protected Class< ? extends IModel> getModelClass() {
+        protected Class< ? extends IDatasetModel> getModelClass() {
             return null;
         }
 
     }
 
-    private AbstractDatasetModelProvider<IModel, IModel, AbstractDatasetModel> provider;
+    private AbstractDatasetModelProvider<IDatasetModel, IModel, AbstractDatasetModel> provider;
 
     private IIndexModelProvider indexModelProvider;
 

@@ -17,6 +17,7 @@ import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
+import org.amanzi.neo.models.internal.IDatasetModel;
 import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -34,7 +35,7 @@ import org.amanzi.neo.services.INodeService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetModelProvider<M extends IModel, P extends IModel, C extends AbstractDatasetModel>
+public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P extends IModel, C extends AbstractDatasetModel>
         extends
             AbstractNamedModelProvider<M, P, C> {
 
