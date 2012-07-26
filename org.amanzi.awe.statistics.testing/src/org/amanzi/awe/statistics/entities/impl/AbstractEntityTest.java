@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.entities.impl;
 
 import org.amanzi.awe.statistics.AbstractMockedTests;
+import org.amanzi.awe.statistics.service.StatisticsService;
 import org.junit.Before;
 
 /**
@@ -33,8 +34,10 @@ public class AbstractEntityTest extends AbstractMockedTests {
 
     /**
      * init services
+     * 
+     * @param statisticsService
      */
-    public static void initServices() {
+    public static void initServices(StatisticsService statisticsService) {
         AbstractEntity.setStatisticsService(statisticsService);
     }
 

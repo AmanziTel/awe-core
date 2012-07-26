@@ -62,8 +62,8 @@ public abstract class AbstractMockedTests extends AbstractStatisticsTest {
         statisticsService = getMockedService();
         initMockedParentNode();
         initMockedStatisticsRootModel();
-        AbstractEntityTest.initServices();
-        AbstractModelTest.initServices();
+        AbstractEntityTest.initServices(statisticsService);
+        AbstractModelTest.initServices(statisticsService);
     }
 
     /**

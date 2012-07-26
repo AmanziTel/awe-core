@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.manager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -23,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.scripting.exceptions.ScriptingException;
+import org.amanzi.awe.statistics.StatisticsPlugin;
+import org.amanzi.awe.statistics.entities.impl.AbstractEntityTest;
 import org.amanzi.awe.statistics.entities.impl.AggregatedStatistics;
 import org.amanzi.awe.statistics.entities.impl.StatisticsCell;
 import org.amanzi.awe.statistics.entities.impl.StatisticsGroup;
@@ -30,6 +34,8 @@ import org.amanzi.awe.statistics.entities.impl.StatisticsRow;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
 import org.amanzi.awe.statistics.exceptions.StatisticsException;
+import org.amanzi.awe.statistics.model.AbstractModelTest;
+import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
@@ -71,7 +77,8 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
     private static IProjectModel PROJECT_MODEL;
     private static final String DRIVE_MODEL_NAME = "drive";
     private static final String FILE_NAME = "fileName";
-    private static final String TEMPLATE_NAME = "netview:imei.t";
+    private static final String TEMPLATE_NAME = "test1:fakeTemplate.t";
+    private static final String PREPARATOR_NAME = "test1:testPreparator.t";
     private static final String SIGNAL_STRENGTH_PROPERTY = "signal_strength";
     private static final String CALL_STATUS_PROPERTY = "call_status";
     private static final String TRAFIC_RX_BYTES = "trafficcount_rxbytes";
@@ -82,17 +89,25 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
             "GT-55830", "GT-I9100", "GT-I9210", "GT-N7000", "Galaxy Nexus", "HTC Desire HD A9191"};
     private static final String[] CELLS = {"Desire HD", "NX-A899", "GT-P1000", "GT-S5360", "GT-I8150", "GT-55830", "GT-I9100",
             "GT-I9210", "GT-N7000", "Galaxy Nexus", "HTC Desire HD A9191"};
-
     private static Calendar startTime = Calendar.getInstance();
-    private static DatasetService service;
+    private static DatasetService datasetService;
     private List<Long> expectedRows;
 
     @BeforeClass
     public static void prepareDatabase() throws AWEException {
         clearDb();
         initializeDb();
-        service = NeoServiceFactory.getInstance().getDatasetService();
+        datasetService = NeoServiceFactory.getInstance().getDatasetService();
         PROJECT_MODEL = ProjectModel.setActiveProject(PROJECT_NAME);
+        AbstractModelTest.initServices(StatisticsService.getInstance());
+        AbstractEntityTest.initServices(StatisticsService.getInstance());
+        try {
+            StatisticsPlugin.getDefault().getRuntimeWrapper().executeScriptByName(PREPARATOR_NAME);
+        } catch (FileNotFoundException e) {
+            LOGGER.error("cann't find file" + PREPARATOR_NAME, e);
+        } catch (ScriptingException e) {
+            LOGGER.error("can't execute script", e);
+        }
         new LogStarter().earlyStartup();
     }
 
@@ -145,26 +160,26 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
         AggregatedStatistics statistics = MANAGER.processStatistics(TEMPLATE_NAME, driveModel, MODEL, Period.HOURLY,
                 new NullProgressMonitor());
         Assert.assertNotNull(statistics);
-        Iterator<Node> statisticsModels = service.getFirstRelationTraverser(driveModel.getRootNode(),
+        Iterator<Node> statisticsModels = datasetService.getFirstRelationTraverser(driveModel.getRootNode(),
                 StatisticsRelationshipTypes.STATISTICS, Direction.OUTGOING).iterator();
         Assert.assertTrue(statisticsModels.hasNext());
         Node statisticsNode = statisticsModels.next();
         Node dimensionNode;
-        Iterator<Node> dimensions = service.getChildrenTraverser(statisticsNode).iterator();
+        Iterator<Node> dimensions = datasetService.getChildrenTraverser(statisticsNode).iterator();
         Assert.assertTrue(dimensions.hasNext());
         dimensionNode = dimensions.next();
         Node level;
-        Iterator<Node> levels = service.getChildrenTraverser(dimensionNode).iterator();
+        Iterator<Node> levels = datasetService.getChildrenTraverser(dimensionNode).iterator();
         Assert.assertTrue(levels.hasNext());
         level = levels.next();
-        Iterator<Node> aggregations = service.getChildrenTraverser(level).iterator();
+        Iterator<Node> aggregations = datasetService.getChildrenTraverser(level).iterator();
         Assert.assertTrue(aggregations.hasNext());
         Assert.assertEquals(aggregations.next(), statistics.getRootNode());
 
     }
 
     @Test
-    public void testStatisticsHourlyStructure() throws StatisticsException {
+    public void testStatisticsSingleLevelStructure() throws StatisticsException {
         LOGGER.info("testStatisticsStructure started");
         final int MEASUREMENT_SIZE = 10;
         buildDriveModel(MEASUREMENT_SIZE, Period.HOURLY);

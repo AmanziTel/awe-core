@@ -14,6 +14,7 @@
 package org.amanzi.awe.scripting;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +53,14 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
     private static final double EXPECTED_NUMBER_RESULT = 5.0;
     private static final String TEST1_MODULE_NAME = "test2:";
     private static final String TEST2_MODULE_NAME = "test1:";
+    private static final FileFilter TEMPLATES_FILTER = new FileFilter() {
+
+        @Override
+        public boolean accept(File pathname) {
+            final String name = pathname.getName();
+            return name.endsWith(".t");
+        }
+    };
 
     @BeforeClass
     public static void init() throws IOException {
@@ -65,7 +74,7 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
             URL path = FileLocator.resolve(projectScripts.nextElement());
             File file = new File(path.getFile());
             modules.add(file);
-            allFiles.addAll(Arrays.asList(file.listFiles()));
+            allFiles.addAll(Arrays.asList(file.listFiles(TEMPLATES_FILTER)));
         }
     }
 
