@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 import java.io.File;
 
 import org.amanzi.neo.loader.ui.internal.LoaderUIPlugin;
+import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -34,7 +35,7 @@ public class AdvancedFileFieldEditor extends FileFieldEditor {
      * @param labelText
      * @param parent
      */
-    public AdvancedFileFieldEditor(String name, String labelText, Composite parent) {
+    public AdvancedFileFieldEditor(final String name, final String labelText, final Composite parent) {
         super(name, labelText, parent);
         setFilterPath(new File(LoaderUIPlugin.getDefault().getDefaultLoadPath()));
     }
@@ -50,5 +51,10 @@ public class AdvancedFileFieldEditor extends FileFieldEditor {
         }
 
         return state;
+    }
+
+    @Override
+    public int getNumberOfControls() {
+        return AbstractLoaderPage.NUMBER_OF_COLUMNS;
     }
 }

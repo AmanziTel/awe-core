@@ -21,7 +21,7 @@ package org.amanzi.neo.nodeproperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IMeasurementNodeProperties {
+public interface IMeasurementNodeProperties extends INodeProperties {
 
     String getFilePath();
 

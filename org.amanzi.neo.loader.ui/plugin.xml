@@ -11,7 +11,7 @@
             title="%LoadDrivePageTitle"
             wizardId="org.amanzi.wizards.DriveLoaderWizard">
          <loaders
-               refId="org.amanzi.loader.NetworkCSVLoader">
+               refId="org.amanzi.loader.GeoptimaLoader">
          </loaders>
       </page>
       <page
@@ -20,8 +20,9 @@
             title="%LoadNetworkPageTitle"
             wizardId="org.amanzi.wizards.NetworkLoaderWizard">
          <loaders
-               refId="org.amanzi.loader.GeoptimaLoader">
+               refId="org.amanzi.loader.NetworkCSVLoader">
          </loaders>
+         
       </page>
    </extension>
    <extension

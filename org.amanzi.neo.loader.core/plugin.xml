@@ -44,7 +44,7 @@
             id="org.amanzi.validator.NetworkCSVValidator">
       </validator>
       <validator
-            class="org.amanzi.neo.loader.core.validator.impl.network.DriveValidator"
+            class="org.amanzi.neo.loader.core.validator.impl.drive.DriveValidator"
             id="org.amanzi.validators.DriveValidator">
       </validator>
    </extension>

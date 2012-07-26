@@ -11,12 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.validator.impl.network;
+package org.amanzi.neo.loader.core.validator.impl.drive;
 
 import java.io.File;
 import java.util.Iterator;
 
 import org.amanzi.neo.loader.core.IMultiFileConfiguration;
+import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.internal.Messages;
 import org.amanzi.neo.loader.core.saver.impl.AbstractDriveSaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
@@ -45,6 +46,10 @@ public class DriveValidator extends AbstractHeadersValidator<IMultiFileConfigura
 
     private final IProjectModelProvider projectModelProvider;
 
+    public DriveValidator() {
+        this(LoaderCorePlugin.getInstance().getProjectModelProvider(), LoaderCorePlugin.getInstance().getDriveModelProvider());
+    }
+
     protected DriveValidator(final IProjectModelProvider projectModelProvider, final IDriveModelProvider driveModelProvider) {
         super();
         this.driveModelProvider = driveModelProvider;
@@ -57,7 +62,7 @@ public class DriveValidator extends AbstractHeadersValidator<IMultiFileConfigura
         try {
             IProjectModel currentProject = projectModelProvider.getActiveProjectModel();
             if (driveModelProvider.findByName(currentProject, configuration.getDatasetName()) != null) {
-                return new ValidationResult(Result.FAIL, Messages.format(Messages.NetworkValidator_DuplicatedNetworkName,
+                return new ValidationResult(Result.UNKNOWN, Messages.format(Messages.NetworkValidator_DuplicatedNetworkName,
                         configuration.getDatasetName()));
             }
         } catch (ModelException e) {

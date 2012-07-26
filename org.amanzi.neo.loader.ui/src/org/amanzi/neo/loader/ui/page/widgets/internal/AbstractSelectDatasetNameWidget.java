@@ -13,7 +13,11 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.internal;
 
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IPageEventListener;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.widgets.Composite;
 
@@ -25,7 +29,9 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractSelectDatasetNameWidget<E extends IAbstractPageEventListener> extends AbstractComboWidget<E> {
+public abstract class AbstractSelectDatasetNameWidget<E extends IPageEventListener> extends AbstractComboWidget<E>
+        implements
+            IAWEEventListenter {
 
     /**
      * @param isEditable
@@ -33,9 +39,27 @@ public abstract class AbstractSelectDatasetNameWidget<E extends IAbstractPageEve
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected AbstractSelectDatasetNameWidget(String labelText, final Composite parent, E listener, final boolean isEditable,
-            final boolean isEnabled, final IProjectModelProvider projectModelProvider) {
+    protected AbstractSelectDatasetNameWidget(final String labelText, final Composite parent, final E listener,
+            final boolean isEditable, final boolean isEnabled, final IProjectModelProvider projectModelProvider) {
         super(labelText, isEditable, isEnabled, parent, listener, projectModelProvider);
+        AWEEventManager.getManager().addListener(this, EventStatus.DATA_UPDATED);
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        switch (event.getStatus()) {
+        case DATA_UPDATED:
+            fillData();
+            break;
+        default:
+            break;
+        }
+    }
+
+    @Override
+    public void finishUp() {
+        AWEEventManager.getManager().removeListener(this);
+        super.finishUp();
     }
 
 }

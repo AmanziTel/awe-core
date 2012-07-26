@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.internal;
 
 import org.amanzi.neo.loader.core.validator.IValidationResult;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -30,5 +31,7 @@ public interface IConfiguration {
     void setDatasetName(String datasetName);
 
     IValidationResult isValid();
+
+    CoordinateReferenceSystem getCRS();
 
 }

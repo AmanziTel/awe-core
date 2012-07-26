@@ -17,6 +17,7 @@ Eclipse-ExtensibleAPI: true
 Export-Package: org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.exception,
  org.amanzi.neo.loader.core.impl,
+ org.amanzi.neo.loader.core.impl.internal,
  org.amanzi.neo.loader.core.internal,
  org.amanzi.neo.loader.core.parser,
  org.amanzi.neo.loader.core.saver,

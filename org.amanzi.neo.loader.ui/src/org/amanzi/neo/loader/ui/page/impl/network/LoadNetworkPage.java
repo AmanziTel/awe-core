@@ -17,6 +17,7 @@ import java.io.File;
 
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
+import org.amanzi.neo.loader.core.impl.SingleFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget;
@@ -37,7 +38,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration>
+public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
         implements
             ISelectLoaderListener,
             ISelectNetworkListener,
@@ -45,7 +46,7 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
 
     private SelectNetworkNameWidget networkNameCombo;
 
-    private SelectLoaderWidget<ISingleFileConfiguration> loaderCombo;
+    private SelectLoaderWidget<SingleFileConfiguration> loaderCombo;
 
     private ResourceSelectorWidget resourceEditor;
 
@@ -60,17 +61,18 @@ public class LoadNetworkPage extends AbstractLoaderPage<ISingleFileConfiguration
     public void createControl(final Composite parent) {
         super.createControl(parent);
 
-        networkNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
+        networkNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
+        WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
 
         resourceEditor = WizardFactory.getInstance().getFileSelector(getMainComposite(), this);
 
-        loaderCombo = WizardFactory.getInstance().getLoaderSelector(getMainComposite(), this, getLoaders());
+        loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
         update();
     }
 
     @Override
-    public void setCurrentLoader(final ILoader<ISingleFileConfiguration, ? > currentLoader) {
+    public void setCurrentLoader(final ILoader<SingleFileConfiguration, ? > currentLoader) {
         super.setCurrentLoader(currentLoader);
         loaderCombo.updateData();
     }

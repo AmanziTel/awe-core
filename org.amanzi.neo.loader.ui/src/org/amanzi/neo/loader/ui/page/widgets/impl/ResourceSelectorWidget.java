@@ -17,7 +17,7 @@ import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.internal.AdvancedFileFieldEditor;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IPageEventListener;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResourceSelectorListener> implements ModifyListener {
 
-    public interface IResourceSelectorListener extends IAbstractPageEventListener {
+    public interface IResourceSelectorListener extends IPageEventListener {
         void onResourceChanged();
     }
 

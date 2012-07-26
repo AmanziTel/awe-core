@@ -19,6 +19,7 @@ import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -31,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class AbstractConfiguration implements IConfiguration {
 
     private String datasetName;
+
+    private CoordinateReferenceSystem crs;
 
     @Override
     public void setDatasetName(final String datasetName) {
@@ -52,6 +55,15 @@ public abstract class AbstractConfiguration implements IConfiguration {
 
         return result;
 
+    }
+
+    public void setCRS(final CoordinateReferenceSystem crs) {
+        this.crs = crs;
+    }
+
+    @Override
+    public CoordinateReferenceSystem getCRS() {
+        return crs;
     }
 
 }

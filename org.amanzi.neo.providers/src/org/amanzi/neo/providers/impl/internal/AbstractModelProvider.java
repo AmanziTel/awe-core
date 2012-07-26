@@ -143,7 +143,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
     protected abstract Class< ? extends T1> getModelClass();
 
     protected void processException(final String message, final ServiceException e) throws ModelException {
-        LOGGER.error("Error on Searching for a Project Model)");
+        LOGGER.error(message);
 
         if (e.getReason() == ServiceExceptionReason.DATABASE_EXCEPTION) {
             throw new FatalException(e);

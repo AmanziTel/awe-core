@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.ui.page.widgets.internal;
 
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IPageEventListener;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Label;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractComboWidget<E extends IAbstractPageEventListener> extends AbstractPageWidget<Combo, E>
+public abstract class AbstractComboWidget<E extends IPageEventListener> extends AbstractPageWidget<Combo, E>
         implements
             ModifyListener {
 
@@ -46,8 +46,8 @@ public abstract class AbstractComboWidget<E extends IAbstractPageEventListener> 
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected AbstractComboWidget(String labelText, final boolean isEditable, final boolean isEnabled, final Composite parent,
-            final E listener, final IProjectModelProvider projectModelProvider) {
+    protected AbstractComboWidget(final String labelText, final boolean isEditable, final boolean isEnabled,
+            final Composite parent, final E listener, final IProjectModelProvider projectModelProvider) {
         super(isEnabled, parent, listener, projectModelProvider);
         this.isEditable = isEditable;
         this.labelText = labelText;
@@ -67,7 +67,7 @@ public abstract class AbstractComboWidget<E extends IAbstractPageEventListener> 
         return combo;
     }
 
-    protected static GridData getComboLayoutData() {
+    protected GridData getComboLayoutData() {
         return new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
     }
 
@@ -91,6 +91,10 @@ public abstract class AbstractComboWidget<E extends IAbstractPageEventListener> 
 
     public void updateData() {
 
+    }
+
+    public void setText(final String text) {
+        getWidget().setText(text);
     }
 
 }

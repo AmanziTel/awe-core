@@ -13,9 +13,16 @@
 
 package org.amanzi.neo.loader.ui.page.impl.drive;
 
-import org.amanzi.neo.loader.core.IMultiFileConfiguration;
+import org.amanzi.neo.loader.core.impl.MultiFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
@@ -25,13 +32,51 @@ import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class LoadDrivePage extends AbstractLoaderPage<IMultiFileConfiguration> {
+public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
+        implements
+            ISelectLoaderListener,
+            ISelectDriveListener {
+
+    private SelectDriveNameWidget driveNameCombo;
+
+    private SelectLoaderWidget<MultiFileConfiguration> loaderCombo;
+
+    private CRSSelector crsSelector;
 
     /**
      * @param pageName
      */
-    protected LoadDrivePage() {
+    public LoadDrivePage() {
         super(Messages.LoadDrivePage_PageName);
+    }
+
+    @Override
+    public void createControl(final Composite parent) {
+        super.createControl(parent);
+
+        driveNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForDrive(getMainComposite(), this);
+        crsSelector = WizardFactory.getInstance().addCRSSelector(parent, this);
+
+        loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
+
+        update();
+    }
+
+    @Override
+    public void onDriveChanged() {
+        MultiFileConfiguration configuration = getConfiguration();
+
+        if (driveNameCombo != null) {
+            configuration.setDatasetName(driveNameCombo.getText());
+        }
+
+        update();
+    }
+
+    @Override
+    public void onLoaderChanged() {
+        update();
+
     }
 
 }

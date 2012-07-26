@@ -16,12 +16,13 @@ package org.amanzi.neo.loader.ui.page.widgets.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IAbstractPageEventListener;
+import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IPageEventListener;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 /**
  * TODO Purpose of
@@ -31,9 +32,9 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractPageWidget<C extends Composite, E extends IAbstractPageEventListener> {
+public abstract class AbstractPageWidget<C extends Control, E extends IPageEventListener> {
 
-    public interface IAbstractPageEventListener {
+    public interface IPageEventListener {
 
     }
 
@@ -51,7 +52,8 @@ public abstract class AbstractPageWidget<C extends Composite, E extends IAbstrac
             final IProjectModelProvider projectModelProvider) {
         this.parent = parent;
         this.isEnabled = isEnabled;
-        this.activeProject = projectModelProvider.getActiveProjectModel();
+
+        this.activeProject = projectModelProvider == null ? null : projectModelProvider.getActiveProjectModel();
 
         addListener(listener);
     }

@@ -22,9 +22,11 @@ import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoad
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractComboWidget;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
@@ -40,7 +42,7 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
         implements
             SelectionListener {
 
-    public interface ISelectLoaderListener extends AbstractPageWidget.IAbstractPageEventListener {
+    public interface ISelectLoaderListener extends AbstractPageWidget.IPageEventListener {
         void onLoaderChanged();
     }
 
@@ -52,8 +54,8 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected SelectLoaderWidget(final boolean isEnabled, Composite parent, ISelectLoaderListener listener,
-            List<ILoader<T, ? >> loaders, final IProjectModelProvider projectModelProvider) {
+    protected SelectLoaderWidget(final boolean isEnabled, final Composite parent, final ISelectLoaderListener listener,
+            final List<ILoader<T, ? >> loaders, final IProjectModelProvider projectModelProvider) {
         super(Messages.SelectLoaderWidget_Label, false, isEnabled, parent, listener, projectModelProvider);
         this.loaders = loaders;
     }
@@ -92,8 +94,14 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
         widgetSelected(e);
     }
 
-    public void setText(String text) {
+    @Override
+    public void setText(final String text) {
         getWidget().setText(text);
+    }
+
+    @Override
+    protected GridData getComboLayoutData() {
+        return new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
     }
 
 }

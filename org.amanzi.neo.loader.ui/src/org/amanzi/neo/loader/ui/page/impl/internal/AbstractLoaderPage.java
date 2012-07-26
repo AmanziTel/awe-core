@@ -17,16 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.impl.internal.AbstractConfiguration;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
+import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector.ICRSSelectorListener;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -36,9 +38,14 @@ import org.eclipse.swt.widgets.Group;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractLoaderPage<T extends IConfiguration> extends WizardPage implements ILoaderPage<T> {
+public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extends WizardPage
+        implements
+            ILoaderPage<T>,
+            ICRSSelectorListener {
 
-    private static final GridLayout STANDARD_LOADER_PAGE_LAYOUT = new GridLayout(3, false);
+    public static final int NUMBER_OF_COLUMNS = 4;
+
+    private static final GridLayout STANDARD_LOADER_PAGE_LAYOUT = new GridLayout(NUMBER_OF_COLUMNS, false);
 
     private final List<ILoader<T, ? >> loaders = new ArrayList<ILoader<T, ? >>();
 
@@ -106,7 +113,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         return currentLoader;
     }
 
-    protected void setCurrentLoader(ILoader<T, ? > currentLoader) {
+    protected void setCurrentLoader(final ILoader<T, ? > currentLoader) {
         this.currentLoader = currentLoader;
     }
 
@@ -128,7 +135,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         case FAIL:
             setErrorMessage(result.getMessages());
             break;
-        case SUCCESS:
+        case UNKNOWN:
             setMessage(result.getMessages(), WARNING);
             break;
         default:
@@ -136,4 +143,10 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         }
     }
 
+    @Override
+    public void onCRSSelected(final CoordinateReferenceSystem crs) {
+        T configuration = getConfiguration();
+
+        configuration.setCRS(crs);
+    }
 }

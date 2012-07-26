@@ -55,7 +55,7 @@ public class DriveModelProvider extends AbstractDatasetModelProvider<IDriveModel
      * @param geoNodeProperties
      * @param gisModelProvider
      */
-    protected DriveModelProvider(final ITimePeriodNodeProperties timePeriodNodeProperties,
+    public DriveModelProvider(final ITimePeriodNodeProperties timePeriodNodeProperties,
             final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
             final IGeneralNodeProperties generalNodeProperties, final IIndexModelProvider indexModelProvider,
             final IPropertyStatisticsModelProvider propertyStatisticsModelProvider, final IGeoNodeProperties geoNodeProperties,
