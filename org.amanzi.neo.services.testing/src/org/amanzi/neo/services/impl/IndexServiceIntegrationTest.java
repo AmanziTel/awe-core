@@ -16,6 +16,7 @@ package org.amanzi.neo.services.impl;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,5 +105,26 @@ public class IndexServiceIntegrationTest extends AbstractIntegrationTest {
     public void testCheckAddToIndexIfSecondNodeIsNull() throws ServiceException {
         Node node = createNode(NAME_PARAM, NODE_NAME);
         indexService.addToIndex(node, TestNodeType.TEST_NODE_TYPE1, null, PROPERTY_NAME, PROPERTY_VALUE);
+    }
+
+    @Test
+    public void testCheckCreateMultiPropertyIndex() throws ServiceException {
+        Node node = createNode(NAME_PARAM, NODE_NAME);
+
+        MultiPropertyIndex<Double> multipropertyIndex = indexService.createMultiPropertyIndex(TestNodeType.TEST_NODE_TYPE1, node,
+                Double.class, NAME_PARAM, PROPERTY_VALUE);
+
+        assertNotNull("multipropertyIndex shall not be null", multipropertyIndex);
+
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testCheckCreateMultiPropertyIndexFailure() throws ServiceException {
+
+        MultiPropertyIndex<String> multipropertyIndex = indexService.createMultiPropertyIndex(TestNodeType.TEST_NODE_TYPE1, null,
+                String.class, NAME_PARAM, PROPERTY_VALUE);
+
+        assertNotNull("multipropertyIndex shall not be null", multipropertyIndex);
+
     }
 }
