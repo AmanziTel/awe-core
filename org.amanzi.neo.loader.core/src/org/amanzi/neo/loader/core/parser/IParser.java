@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.Iterator;
 
 import org.amanzi.neo.loader.core.IData;
-import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -31,18 +30,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface IParser<C extends IConfiguration, D extends IData> extends Iterator<D> {
 
-    public interface IFileParsingStartedListener {
-        void onFileParsingStarted(File file);
-    }
+	interface IFileParsingStartedListener {
+		void onFileParsingStarted(File file);
+	}
 
-    void init(C configuration) throws LoaderException;
+	void init(C configuration);
 
-    void setProgressMonitor(IProgressMonitor monitor);
+	void setProgressMonitor(IProgressMonitor monitor);
 
-    void finishUp() throws LoaderException;
+	void finishUp();
 
-    void addFileParsingListener(IFileParsingStartedListener listener);
+	void addFileParsingListener(IFileParsingStartedListener listener);
 
-    void removeFileParsingListener(IFileParsingStartedListener listener);
+	void removeFileParsingListener(IFileParsingStartedListener listener);
 
 }

@@ -79,7 +79,7 @@
     <profile>
       <id>release</id>
       <activation>
-	<activeByDefault>true</activeByDefault>
+	<activeByDefault>false</activeByDefault>
       </activation>
       <modules>
         <module>org.amanzi.awe</module>
