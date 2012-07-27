@@ -16,8 +16,6 @@ package org.amanzi.neo.services.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.util.AbstractServiceTest;
 import org.junit.Before;
@@ -43,15 +41,6 @@ public class IndexServiceTest extends AbstractServiceTest {
     private static final String VALUE_PARAM = "value";
     private static final String TYPE_PARAM = "type";
 
-    private enum TestNodeType implements INodeType {
-        TEST_NODE_TYPE1;
-
-        @Override
-        public String getId() {
-            return NodeTypeUtils.getTypeId(this);
-        }
-    }
-
     @Override
     @Before
     public void setUp() {
@@ -62,14 +51,17 @@ public class IndexServiceTest extends AbstractServiceTest {
         setReadOnly(true);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testCheckGetIndexIfNotExist() throws ServiceException {
         indexService = spy(indexService);
         Node node = getMockedNodeWithValues();
-        @SuppressWarnings("unchecked")
         Index<Node> mockedIndex = mock(Index.class);
+
         doReturn(mockedIndex).when(indexService).createNodeIndex(any(String.class));
-        Index<Node> index = indexService.getIndex(node, TestNodeType.TEST_NODE_TYPE1);
+
+        Index<Node> index = indexService.getIndex(node, TestNodeType.TEST1);
+
         verify(indexService).createNodeIndex(any(String.class));
         assertEquals("Unexpected index", mockedIndex, index);
     }
@@ -80,9 +72,12 @@ public class IndexServiceTest extends AbstractServiceTest {
         indexService = spy(indexService);
         Node node = getMockedNodeWithValues();
         Index<Node> mockedIndex = mock(Index.class);
+
         doReturn(mockedIndex).when(indexService).createNodeIndex(any(String.class));
-        indexService.getIndex(node, TestNodeType.TEST_NODE_TYPE1);
-        Index<Node> index = indexService.getIndex(node, TestNodeType.TEST_NODE_TYPE1);
+
+        indexService.getIndex(node, TestNodeType.TEST1);
+        Index<Node> index = indexService.getIndex(node, TestNodeType.TEST1);
+
         verify(indexService, times(1)).createNodeIndex(any(String.class));
         assertEquals("Unexpected index", mockedIndex, index);
     }
@@ -91,8 +86,10 @@ public class IndexServiceTest extends AbstractServiceTest {
     public void testCheckGetIndexKeyWithotuArray() {
         String key = Long.MIN_VALUE + "@test_node_type1";
         Node node = getNodeMock();
+
         doReturn(Long.MIN_VALUE).when(node).getId();
-        String result = indexService.getIndexKey(node, TestNodeType.TEST_NODE_TYPE1);
+
+        String result = indexService.getIndexKey(node, TestNodeType.TEST1);
         assertEquals("keys not equals", key, result);
     }
 
@@ -100,8 +97,10 @@ public class IndexServiceTest extends AbstractServiceTest {
     public void testCheckGetIndexKeyWithArray() {
         String key = Long.MIN_VALUE + "@test_node_type1|" + NODE_NAME + "|" + TEST_NODE_VALUE;
         Node node = getNodeMock();
+
         doReturn(Long.MIN_VALUE).when(node).getId();
-        String result = indexService.getIndexKey(node, TestNodeType.TEST_NODE_TYPE1, NODE_NAME, TEST_NODE_VALUE);
+
+        String result = indexService.getIndexKey(node, TestNodeType.TEST1, NODE_NAME, TEST_NODE_VALUE);
         assertEquals("keys not equals", key, result);
     }
 
@@ -117,7 +116,7 @@ public class IndexServiceTest extends AbstractServiceTest {
         Map<String, Object> values = new HashMap<String, Object>();
         values.put(NAME_PARAM, NODE_NAME);
         values.put(VALUE_PARAM, TEST_NODE_VALUE);
-        values.put(TYPE_PARAM, TestNodeType.TEST_NODE_TYPE1.getId());
+        values.put(TYPE_PARAM, TestNodeType.TEST1.getId());
         return values;
     }
 }
