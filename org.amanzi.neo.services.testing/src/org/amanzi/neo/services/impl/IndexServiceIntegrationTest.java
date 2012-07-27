@@ -15,8 +15,8 @@ package org.amanzi.neo.services.impl;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeUtils;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,15 +67,19 @@ public class IndexServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckCreateNodeIndex() throws ServiceException {
         String key = String.format(KEY_FORMAT, NODE_NAME, TestNodeType.TEST_NODE_TYPE1.getId());
+
         Index<Node> index = indexService.createNodeIndex(key);
+
         assertEquals("index names are not equals", key, index.getName());
     }
 
     @Test
     public void testCheckGetIndex() throws ServiceException {
         Node node = createNode(NAME_PARAM, NODE_NAME);
+
         String key = String.format(KEY_FORMAT, node.getId(), TestNodeType.TEST_NODE_TYPE1.getId());
         Index<Node> index = indexService.getIndex(node, TestNodeType.TEST_NODE_TYPE1);
+
         assertEquals("index names are not equals", key, index.getName());
     }
 
@@ -84,24 +88,43 @@ public class IndexServiceIntegrationTest extends AbstractIntegrationTest {
         Node node = createNode(NAME_PARAM, NODE_NAME);
         Node node2 = createNode(NAME_PARAM, NODE_NAME_2);
         String key = String.format(KEY_FORMAT, node.getId(), TestNodeType.TEST_NODE_TYPE1.getId());
+
         indexService.addToIndex(node, TestNodeType.TEST_NODE_TYPE1, node2, PROPERTY_NAME, PROPERTY_VALUE);
+
         Index<Node> result;
         Transaction tx = getGraphDatabaseService().beginTx();
-        try {
-            result = getGraphDatabaseService().index().forNodes(key);
-            assertEquals("unexpected property", node2, result.get(PROPERTY_NAME, PROPERTY_VALUE).getSingle());
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
+        result = getGraphDatabaseService().index().forNodes(key);
+        tx.success();
+        tx.finish();
+
+        assertEquals("unexpected property", node2, result.get(PROPERTY_NAME, PROPERTY_VALUE).getSingle());
+
     }
 
     @Test(expected = ServiceException.class)
     public void testCheckAddToIndexIfSecondNodeIsNull() throws ServiceException {
         Node node = createNode(NAME_PARAM, NODE_NAME);
         indexService.addToIndex(node, TestNodeType.TEST_NODE_TYPE1, null, PROPERTY_NAME, PROPERTY_VALUE);
+    }
+
+    @Test
+    public void testCheckCreateMultiPropertyIndex() throws ServiceException {
+        Node node = createNode(NAME_PARAM, NODE_NAME);
+
+        MultiPropertyIndex<Double> multipropertyIndex = indexService.createMultiPropertyIndex(TestNodeType.TEST_NODE_TYPE1, node,
+                Double.class, NAME_PARAM, PROPERTY_VALUE);
+
+        assertNotNull("multipropertyIndex shall not be null", multipropertyIndex);
+
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testCheckCreateMultiPropertyIndexFailure() throws ServiceException {
+
+        MultiPropertyIndex<String> multipropertyIndex = indexService.createMultiPropertyIndex(TestNodeType.TEST_NODE_TYPE1, null,
+                String.class, NAME_PARAM, PROPERTY_VALUE);
+
+        assertNotNull("multipropertyIndex shall not be null", multipropertyIndex);
+
     }
 }
