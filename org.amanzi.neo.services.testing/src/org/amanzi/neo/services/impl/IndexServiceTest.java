@@ -83,8 +83,8 @@ public class IndexServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void testCheckGetIndexKeyWithotuArray() {
-        String key = Long.MIN_VALUE + "@test_node_type1";
+    public void testCheckGetIndexKeyWithoutArray() {
+        String key = Long.MIN_VALUE + "@" + TestNodeType.TEST1.getId();
         Node node = getNodeMock();
 
         doReturn(Long.MIN_VALUE).when(node).getId();
@@ -95,7 +95,7 @@ public class IndexServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckGetIndexKeyWithArray() {
-        String key = Long.MIN_VALUE + "@test_node_type1|" + NODE_NAME + "|" + TEST_NODE_VALUE;
+        String key = Long.MIN_VALUE + "@" + TestNodeType.TEST1.getId() + "|" + NODE_NAME + "|" + TEST_NODE_VALUE;
         Node node = getNodeMock();
 
         doReturn(Long.MIN_VALUE).when(node).getId();
