@@ -37,13 +37,13 @@
       <modules>
         <module>org.amanzi.awe.filters</module>
         <module>org.amanzi.awe.libs</module>
-	<module>org.amanzi.awe.scripting.testing</module>
-	<module>org.amanzi.awe.statistics.testing</module>
+        <module>org.amanzi.awe.scripting.testing</module>
+        <module>org.amanzi.awe.statistics.testing</module>
         <module>org.amanzi.awe.ui.testing</module>
         <module>org.amanzi.neo.db.testing</module>
         <module>org.amanzi.neo.core.testing</module>
         <module>org.amanzi.neo.loader.core.testing</module>
-	<module>org.amanzi.neo.loader.ui.testing</module>
+        <module>org.amanzi.neo.loader.ui.testing</module>
         <module>org.amanzi.neo.models.impl.testing</module>
         <module>org.amanzi.neo.providers.testing</module>
         <module>org.amanzi.neo.services.testing</module>
@@ -82,14 +82,17 @@
 	<activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-	<module>org.amanzi.awe</module>
+        <module>org.amanzi.awe</module>
+        <module>org.amanzi.awe.catalog.neo</module>
+        <module>org.amanzi.awe.console</module>
         <module>org.amanzi.awe.neostyle</module>
-	<module>org.amanzi.awe.feature</module>
+        <module>org.amanzi.awe.feature</module>
         <module>org.amanzi.awe.project</module>
         <module>org.amanzi.awe.render.core</module>
         <module>org.amanzi.awe.render.network</module>
-	<module>org.amanzi.awe.scripting.feature</module>
-	<module>org.amanzi.awe.statistics.feature</module>
+        <module>org.amanzi.awe.scripting.feature</module>
+        <module>org.amanzi.awe.startup.splash</module>
+        <module>org.amanzi.awe.statistics.feature</module>
         <module>org.amanzi.awe.ui.udig</module>
         <module>org.amanzi.awe.views.explorer</module>
 	<module>org.amanzi.awe.views.statistics</module>
@@ -97,9 +100,7 @@
     </profile>
   </profiles>
   
-  <modules>
-     <module>org.amanzi.awe.catalog.neo</module>
-     <module>org.amanzi.awe.console</module>
+  <modules>     
      <module>org.amanzi.awe.filters</module>
      <module>org.amanzi.awe.libs</module>
      <module>org.amanzi.awe.scripting</module>
