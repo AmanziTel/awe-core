@@ -48,178 +48,178 @@ import org.osgi.framework.Bundle;
  */
 public class SynonymsManager {
 
-    private static final Logger LOGGER = Logger.getLogger(SynonymsManager.class);
+	private static final Logger LOGGER = Logger.getLogger(SynonymsManager.class);
 
-    private static final String SYNONYMS_EXTENSION_ID = "org.amanzi.loaderSynonyms";
+	private static final String SYNONYMS_EXTENSION_ID = "org.amanzi.loaderSynonyms";
 
-    private static final String SYNONYMS_FILE_ATTRIBUTE = "synonymsFile";
+	private static final String SYNONYMS_FILE_ATTRIBUTE = "synonymsFile";
 
-    private static final String HEADERS_SEPARATOR = ",";
+	private static final String HEADERS_SEPARATOR = ",";
 
-    private static final Pattern SYNONYM_KEY_PATTERN = Pattern
-            .compile("(([a-zA-Z_0-9]+)\\.){1}([a-zA-Z_0-9]+){1}(@([a-zA-Z]+))?(!)?");
+	private static final Pattern SYNONYM_KEY_PATTERN = Pattern
+			.compile("(([a-zA-Z_0-9]+)\\.){1}([a-zA-Z_0-9]+){1}(@([a-zA-Z]+))?(!)?");
 
-    private static final int NODETYPE_GROUP_INDEX = 2;
+	private static final int NODETYPE_GROUP_INDEX = 2;
 
-    private static final int PROPERTY_GROUP_INDEX = 3;
+	private static final int PROPERTY_GROUP_INDEX = 3;
 
-    private static final int CLASS_GROUP_INDEX = 5;
+	private static final int CLASS_GROUP_INDEX = 5;
 
-    private static final int IS_MANDATORY_GROUP_INDEX = 6;
+	private static final int IS_MANDATORY_GROUP_INDEX = 6;
 
-    private static class SynonymsManagerInstanceHolder {
-        private static volatile SynonymsManager instance = new SynonymsManager();
-    }
+	private static class SynonymsManagerInstanceHolder {
+		private static volatile SynonymsManager instance = new SynonymsManager();
+	}
 
-    private final Map<String, Map<INodeType, List<Synonyms>>> synonymsCache = new HashMap<String, Map<INodeType, List<Synonyms>>>();
+	private final Map<String, Map<INodeType, List<Synonyms>>> synonymsCache = new HashMap<String, Map<INodeType, List<Synonyms>>>();
 
-    private final IExtensionRegistry registry;
+	private final IExtensionRegistry registry;
 
-    private final Map<String, List<URL>> resources = new HashMap<String, List<URL>>();
+	private final Map<String, List<URL>> resources = new HashMap<String, List<URL>>();
 
-    protected SynonymsManager(final IExtensionRegistry registry) {
-        this.registry = registry;
+	protected SynonymsManager(final IExtensionRegistry registry) {
+		this.registry = registry;
 
-        initializeSynonymsSources();
-    }
+		initializeSynonymsSources();
+	}
 
-    private SynonymsManager() {
-        this(Platform.getExtensionRegistry());
-    }
+	private SynonymsManager() {
+		this(Platform.getExtensionRegistry());
+	}
 
-    public static SynonymsManager getInstance() {
-        return SynonymsManagerInstanceHolder.instance;
-    }
+	public static SynonymsManager getInstance() {
+		return SynonymsManagerInstanceHolder.instance;
+	}
 
-    private void initializeSynonymsSources() {
-        for (IConfigurationElement singleSynonymResource : registry.getConfigurationElementsFor(SYNONYMS_EXTENSION_ID)) {
-            URL url = getResource(singleSynonymResource);
-            String name = FilenameUtils.getBaseName(url.getFile());
+	private void initializeSynonymsSources() {
+		for (IConfigurationElement singleSynonymResource : registry.getConfigurationElementsFor(SYNONYMS_EXTENSION_ID)) {
+			URL url = getResource(singleSynonymResource);
+			String name = FilenameUtils.getBaseName(url.getFile());
 
-            List<URL> urlList = resources.get(name);
-            if (urlList == null) {
-                urlList = new ArrayList<URL>();
-                resources.put(name, urlList);
-            }
+			List<URL> urlList = resources.get(name);
+			if (urlList == null) {
+				urlList = new ArrayList<URL>();
+				resources.put(name, urlList);
+			}
 
-            if (!urlList.contains(url)) {
-                urlList.add(url);
-            }
-        }
-    }
+			if (!urlList.contains(url)) {
+				urlList.add(url);
+			}
+		}
+	}
 
-    protected URL getResource(final IConfigurationElement resouceElement) {
-        String pluginId = resouceElement.getContributor().getName();
-        Bundle bundle = Platform.getBundle(pluginId);
+	private URL getResource(final IConfigurationElement resouceElement) {
+		String pluginId = resouceElement.getContributor().getName();
+		Bundle bundle = Platform.getBundle(pluginId);
 
-        String resourcePath = resouceElement.getAttribute(SYNONYMS_FILE_ATTRIBUTE);
+		String resourcePath = resouceElement.getAttribute(SYNONYMS_FILE_ATTRIBUTE);
 
-        return bundle.getResource(resourcePath);
-    }
+		return bundle.getResource(resourcePath);
+	}
 
-    protected synchronized Map<INodeType, List<Synonyms>> initializeSynonymsCache(final String dataType) {
-        HashMap<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
+	protected synchronized Map<INodeType, List<Synonyms>> initializeSynonymsCache(final String dataType) {
+		HashMap<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
 
-        List<URL> urlList = resources.get(dataType);
-        if (urlList != null) {
-            for (URL singleURL : urlList) {
-                try {
-                    Map<INodeType, List<Synonyms>> synonyms = loadSynonyms(singleURL.openStream());
+		List<URL> urlList = resources.get(dataType);
+		if (urlList != null) {
+			for (URL singleURL : urlList) {
+				try {
+					Map<INodeType, List<Synonyms>> synonyms = loadSynonyms(singleURL.openStream());
 
-                    for (Entry<INodeType, List<Synonyms>> synonymsEntry : synonyms.entrySet()) {
-                        List<Synonyms> synonymsList = result.get(synonymsEntry);
-                        if (synonymsList == null) {
-                            synonymsList = new ArrayList<Synonyms>();
+					for (Entry<INodeType, List<Synonyms>> synonymsEntry : synonyms.entrySet()) {
+						List<Synonyms> synonymsList = result.get(synonymsEntry.getKey());
+						if (synonymsList == null) {
+							synonymsList = new ArrayList<Synonyms>();
 
-                            result.put(synonymsEntry.getKey(), synonymsList);
-                        }
-                        synonymsList.addAll(synonymsEntry.getValue());
-                    }
+							result.put(synonymsEntry.getKey(), synonymsList);
+						}
+						synonymsList.addAll(synonymsEntry.getValue());
+					}
 
-                } catch (IOException e) {
-                    LOGGER.error("Unable to load Synonyms", e);
-                }
-            }
-        }
+				} catch (IOException e) {
+					LOGGER.error("Unable to load Synonyms", e);
+				}
+			}
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    protected Map<INodeType, List<Synonyms>> loadSynonyms(final InputStream stream) throws IOException {
-        Map<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
+	protected Map<INodeType, List<Synonyms>> loadSynonyms(final InputStream stream) throws IOException {
+		Map<INodeType, List<Synonyms>> result = new HashMap<INodeType, List<Synonyms>>();
 
-        Properties properties = new Properties();
-        properties.load(stream);
+		Properties properties = new Properties();
+		properties.load(stream);
 
-        for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
-            Pair<INodeType, Synonyms> pair = parseSynonyms(propertyEntry);
+		for (Entry<Object, Object> propertyEntry : properties.entrySet()) {
+			Pair<INodeType, Synonyms> pair = parseSynonyms(propertyEntry);
 
-            List<Synonyms> synonymsList = result.get(pair.getLeft());
-            if (synonymsList == null) {
-                synonymsList = new ArrayList<Synonyms>();
+			List<Synonyms> synonymsList = result.get(pair.getLeft());
+			if (synonymsList == null) {
+				synonymsList = new ArrayList<Synonyms>();
 
-                result.put(pair.getKey(), synonymsList);
-            }
-            synonymsList.add(pair.getRight());
-        }
+				result.put(pair.getKey(), synonymsList);
+			}
+			synonymsList.add(pair.getRight());
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    protected Pair<INodeType, Synonyms> parseSynonyms(final Entry<Object, Object> propertyEntry) {
-        // convert to string
-        String keyPart = propertyEntry.getKey().toString();
-        String valuePart = propertyEntry.getValue().toString();
+	protected Pair<INodeType, Synonyms> parseSynonyms(final Entry<Object, Object> propertyEntry) {
+		// convert to string
+		String keyPart = propertyEntry.getKey().toString();
+		String valuePart = propertyEntry.getValue().toString();
 
-        // get headers
-        String[] headers = valuePart.split(HEADERS_SEPARATOR);
+		// get headers
+		String[] headers = valuePart.split(HEADERS_SEPARATOR);
 
-        // get subtype, property and class
-        Matcher matcher = SYNONYM_KEY_PATTERN.matcher(keyPart);
-        if (matcher.matches()) {
-            String nodeTypeLine = matcher.group(NODETYPE_GROUP_INDEX);
-            String propertyName = matcher.group(PROPERTY_GROUP_INDEX);
-            String clazz = matcher.group(CLASS_GROUP_INDEX);
-            String isMandatoryGroup = matcher.group(IS_MANDATORY_GROUP_INDEX);
+		// get subtype, property and class
+		Matcher matcher = SYNONYM_KEY_PATTERN.matcher(keyPart);
+		if (matcher.matches()) {
+			String nodeTypeLine = matcher.group(NODETYPE_GROUP_INDEX);
+			String propertyName = matcher.group(PROPERTY_GROUP_INDEX);
+			String clazz = matcher.group(CLASS_GROUP_INDEX);
+			String isMandatoryGroup = matcher.group(IS_MANDATORY_GROUP_INDEX);
 
-            SynonymType synonymsType = clazz == null ? SynonymType.UNKOWN : SynonymType.findByClass(clazz);
+			SynonymType synonymsType = clazz == null ? SynonymType.UNKOWN : SynonymType.findByClass(clazz);
 
-            boolean isMandatory = !StringUtils.isEmpty(isMandatoryGroup);
+			boolean isMandatory = !StringUtils.isEmpty(isMandatoryGroup);
 
-            Synonyms synonyms = new Synonyms(propertyName, synonymsType, isMandatory, headers);
+			Synonyms synonyms = new Synonyms(propertyName, synonymsType, isMandatory, headers);
 
-            try {
-                INodeType nodeType = NodeTypeManager.getInstance().getType(nodeTypeLine);
+			try {
+				INodeType nodeType = NodeTypeManager.getInstance().getType(nodeTypeLine);
 
-                return new ImmutablePair<INodeType, Synonyms>(nodeType, synonyms);
-            } catch (Exception e) {
-                LOGGER.error("Error on parsing node type", e);
-            }
-        }
+				return new ImmutablePair<INodeType, Synonyms>(nodeType, synonyms);
+			} catch (Exception e) {
+				LOGGER.error("Error on parsing node type", e);
+			}
+		}
 
-        LOGGER.error("Synonyms key <" + keyPart + "> doesn't match pattern");
+		LOGGER.error("Synonyms key <" + keyPart + "> doesn't match pattern");
 
-        return null;
-    }
+		return null;
+	}
 
-    public List<Synonyms> getSynonyms(final String synonymsType, final INodeType nodeType) {
-        return getSynonyms(synonymsType).get(nodeType);
-    }
+	public List<Synonyms> getSynonyms(final String synonymsType, final INodeType nodeType) {
+		return getSynonyms(synonymsType).get(nodeType);
+	}
 
-    public Map<INodeType, List<Synonyms>> getSynonyms(final String synonymsType) {
-        Map<INodeType, List<Synonyms>> subTypeSynonyms = synonymsCache.get(synonymsType);
+	public Map<INodeType, List<Synonyms>> getSynonyms(final String synonymsType) {
+		Map<INodeType, List<Synonyms>> subTypeSynonyms = synonymsCache.get(synonymsType);
 
-        if (subTypeSynonyms == null) {
-            subTypeSynonyms = initializeSynonymsCache(synonymsType);
+		if (subTypeSynonyms == null) {
+			subTypeSynonyms = initializeSynonymsCache(synonymsType);
 
-            synonymsCache.put(synonymsType, subTypeSynonyms);
-        }
+			synonymsCache.put(synonymsType, subTypeSynonyms);
+		}
 
-        return subTypeSynonyms;
-    }
+		return subTypeSynonyms;
+	}
 
-    protected Map<String, List<URL>> getResources() {
-        return resources;
-    }
+	protected Map<String, List<URL>> getResources() {
+		return resources;
+	}
 
 }

@@ -20,7 +20,6 @@ import java.util.Iterator;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.IMultiFileConfiguration;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
-import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.parser.IParser;
 
 /**
@@ -32,73 +31,73 @@ import org.amanzi.neo.loader.core.parser.IParser;
  * @since 1.0.0
  */
 public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P extends IParser<S, D>, C extends IMultiFileConfiguration, D extends IData>
-        extends
-            AbstractParser<C, D> {
+extends
+AbstractParser<C, D> {
 
-    private final class ParserIterator implements Iterator<P> {
+	private final class ParserIterator implements Iterator<P> {
 
-        private final Iterator<File> fileIterator;
+		private final Iterator<File> fileIterator;
 
-        public ParserIterator(final Iterator<File> fileIterator) {
-            this.fileIterator = fileIterator;
-        }
+		public ParserIterator(final Iterator<File> fileIterator) {
+			this.fileIterator = fileIterator;
+		}
 
-        @Override
-        public boolean hasNext() {
-            return fileIterator.hasNext();
-        }
+		@Override
+		public boolean hasNext() {
+			return fileIterator.hasNext();
+		}
 
-        @Override
-        public P next() {
-            return createParser(fileIterator.next());
-        }
+		@Override
+		public P next() {
+			return createParser(fileIterator.next());
+		}
 
-        @Override
-        public void remove() {
-            fileIterator.remove();
-        }
+		@Override
+		public void remove() {
+			fileIterator.remove();
+		}
 
-    }
+	}
 
-    private ParserIterator parserIterator;
+	private ParserIterator parserIterator;
 
-    private P currentParser;
+	private P currentParser;
 
-    @Override
-    public void init(final C configuration) throws LoaderException {
-        super.init(configuration);
+	@Override
+	public void init(final C configuration) {
+		super.init(configuration);
 
-        parserIterator = new ParserIterator(configuration.getFileIterator());
-    }
+		parserIterator = new ParserIterator(configuration.getFileIterator());
+	}
 
-    @Override
-    protected D parseNextElement() throws IOException {
-        if (currentParser.hasNext()) {
-            return currentParser.next();
-        } else {
-            if (parserIterator.hasNext()) {
-                parserIterator.next();
-                return parseNextElement();
-            }
-        }
-        return null;
-    }
+	@Override
+	protected D parseNextElement() throws IOException {
+		if (currentParser.hasNext()) {
+			return currentParser.next();
+		} else {
+			if (parserIterator.hasNext()) {
+				parserIterator.next();
+				return parseNextElement();
+			}
+		}
+		return null;
+	}
 
-    private P createParser(final File file) {
-        currentParser = createParserInstance();
-        S configuration = createSingleFileConfiguration(file, getConfiguration());
-        currentParser.init(configuration);
+	private P createParser(final File file) {
+		currentParser = createParserInstance();
+		S configuration = createSingleFileConfiguration(file, getConfiguration());
+		currentParser.init(configuration);
 
-        return currentParser;
-    }
+		return currentParser;
+	}
 
-    protected abstract P createParserInstance();
+	protected abstract P createParserInstance();
 
-    protected abstract S createSingleFileConfiguration(File file, C configuration);
+	protected abstract S createSingleFileConfiguration(File file, C configuration);
 
-    @Override
-    protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {
-        return null;
-    }
+	@Override
+	protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {
+		return null;
+	}
 
 }

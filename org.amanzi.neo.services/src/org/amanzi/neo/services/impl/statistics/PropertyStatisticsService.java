@@ -76,9 +76,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
 
         Node statisticsNode = getStatisticsNode(node);
 
-        if (vault instanceof StatisticsVault) {
-            saveStatisticsVault(statisticsNode, vault);
-        }
+        saveStatisticsVault(statisticsNode, vault);
     }
 
     @Override

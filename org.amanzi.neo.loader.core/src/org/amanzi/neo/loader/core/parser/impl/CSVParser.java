@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
-import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.impl.MappedStringData;
 import org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParser;
 
@@ -35,56 +34,56 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IMappedStringData> {
 
-    private CSVReader csvReader;
+	private CSVReader csvReader;
 
-    private boolean headersParsed;
+	private boolean headersParsed;
 
-    private String[] headers;
+	private String[] headers;
 
-    @Override
-    protected IMappedStringData parseNextElement() throws IOException {
-        if (!headersParsed) {
-            headers = getCSVReader().readNext();
-            headersParsed = true;
-        }
+	@Override
+	protected IMappedStringData parseNextElement() throws IOException {
+		if (!headersParsed) {
+			headers = getCSVReader().readNext();
+			headersParsed = true;
+		}
 
-        return convertToMappedData(headers, getCSVReader().readNext());
-    }
+		return convertToMappedData(headers, getCSVReader().readNext());
+	}
 
-    @Override
-    public void init(final ISingleFileConfiguration configuration) throws LoaderException {
-        super.init(configuration);
-        csvReader = initializeCSVReader(getReader(), configuration.getFile());
+	@Override
+	public void init(final ISingleFileConfiguration configuration) {
+		super.init(configuration);
+		csvReader = initializeCSVReader(getReader(), configuration.getFile());
 
-        headersParsed = false;
-    }
+		headersParsed = false;
+	}
 
-    protected CSVReader initializeCSVReader(final InputStreamReader reader, final File file) {
-        return new CSVReader(reader, CSVUtils.getSeparator(file));
-    }
+	protected CSVReader initializeCSVReader(final InputStreamReader reader, final File file) {
+		return new CSVReader(reader, CSVUtils.getSeparator(file));
+	}
 
-    protected CSVReader getCSVReader() {
-        return csvReader;
-    }
+	protected CSVReader getCSVReader() {
+		return csvReader;
+	}
 
-    protected IMappedStringData convertToMappedData(final String[] headers, final String[] values) {
-        MappedStringData result = null;
+	protected IMappedStringData convertToMappedData(final String[] headers, final String[] values) {
+		MappedStringData result = null;
 
-        if (values != null) {
-            result = new MappedStringData();
+		if (values != null) {
+			result = new MappedStringData();
 
-            for (int i = 0; i < headers.length; i++) {
-                String value = null;
+			for (int i = 0; i < headers.length; i++) {
+				String value = null;
 
-                if (i < values.length) {
-                    value = values[i];
-                }
+				if (i < values.length) {
+					value = values[i];
+				}
 
-                result.put(headers[i], value);
-            }
-        }
+				result.put(headers[i], value);
+			}
+		}
 
-        return result;
-    }
+		return result;
+	}
 
 }

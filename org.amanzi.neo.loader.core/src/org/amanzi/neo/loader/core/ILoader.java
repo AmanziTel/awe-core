@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.loader.core;
 
-import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
@@ -33,21 +32,21 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface ILoader<C extends IConfiguration, D extends IData> {
 
-    void init(C configuration) throws LoaderException;
+	void init(C configuration);
 
-    void run(IProgressMonitor monitor) throws LoaderException;
+	void run(IProgressMonitor monitor);
 
-    IValidationResult validate(C configuration);
+	IValidationResult validate(C configuration);
 
-    boolean isAppropriate(C configuration);
+	boolean isAppropriate(C configuration);
 
-    void setValidator(final IValidator<C> validator);
+	void setValidator(final IValidator<C> validator);
 
-    void setParser(final IParser<C, D> parser);
+	void setParser(final IParser<C, D> parser);
 
-    void addSaver(final ISaver<C, D> saver);
+	void addSaver(final ISaver<C, D> saver);
 
-    String getName();
+	String getName();
 
-    void setName(String name);
+	void setName(String name);
 }
