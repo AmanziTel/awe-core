@@ -19,16 +19,21 @@ import java.util.Map;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IIndexModel;
+import org.amanzi.neo.models.exceptions.FatalException;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
+import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeoNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.NetworkNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +58,8 @@ public class NetworkModelTest extends AbstractMockitoTest {
     private static final String DEFAULT_ELEMENT_NAME = "element name";
 
     private static final INetworkElementType DEFAULT_ELEMENT_TYPE = NetworkElementType.BSC;
+
+    private static final INetworkNodeProperties NETWORK_NODE_PROPERTIES = new NetworkNodeProperties();
 
     private INodeService nodeService;
 
@@ -157,6 +164,116 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
         verify(nodeService).createNode(parentNode, DEFAULT_ELEMENT_TYPE, NodeServiceRelationshipType.CHILD, DEFAULT_ELEMENT_NAME,
                 properties);
+    }
+
+    @Test
+    public void testCheckCreateSiteSuccess() throws ModelException {
+        DataElement parentElement = new DataElement(getNodeMock());
+
+        Map<String, Object> properties = getProperties();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+
+        DataElement mockedSite = new DataElement(getNodeMock(properties));
+
+        doReturn(mockedSite).when(networkModel).createDefaultElement(NetworkElementType.SITE, parentElement, DEFAULT_ELEMENT_NAME,
+                properties);
+
+        networkModel.createSite(parentElement, DEFAULT_ELEMENT_NAME, Double.MAX_VALUE, Double.MIN_VALUE, properties);
+        verify(indexModel).indexInMultiProperty(NetworkElementType.SITE, mockedSite.getNode(), Double.class,
+                GEO_NODE_PROPERTIES.getLatitideProperty(), GEO_NODE_PROPERTIES.getLongitudeProperty());
+        verify(networkModel).createDefaultElement(NetworkElementType.SITE, parentElement, DEFAULT_ELEMENT_NAME, properties);
+    }
+
+    @Test(expected = ParameterInconsistencyException.class)
+    public void testCheckCreateSiteIfLatIsNull() throws ModelException {
+        DataElement parentElement = new DataElement(getNodeMock());
+
+        Map<String, Object> properties = getProperties();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+
+        networkModel.createSite(parentElement, DEFAULT_ELEMENT_NAME, null, Double.MIN_NORMAL, properties);
+    }
+
+    @Test(expected = ParameterInconsistencyException.class)
+    public void testCheckCreateSiteIfLonIsNull() throws ModelException {
+        DataElement parentElement = new DataElement(getNodeMock());
+        Map<String, Object> properties = getProperties();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+
+        networkModel.createSite(parentElement, DEFAULT_ELEMENT_NAME, Double.MIN_NORMAL, null, properties);
+    }
+
+    @Test
+    public void testCheckCreateSectorSuccess() throws ModelException {
+        DataElement parentElement = new DataElement(getNodeMock());
+
+        Map<String, Object> properties = getProperties();
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+
+        DataElement mockedSector = new DataElement(getNodeMock(properties));
+
+        doReturn(mockedSector).when(networkModel).createDefaultElement(NetworkElementType.SECTOR, parentElement,
+                DEFAULT_ELEMENT_NAME, properties);
+
+        networkModel.createSector(parentElement, DEFAULT_ELEMENT_NAME, Integer.MAX_VALUE, Integer.MIN_VALUE, properties);
+        verify(networkModel).createDefaultElement(NetworkElementType.SECTOR, parentElement, DEFAULT_ELEMENT_NAME, properties);
+        verify(indexModel).index(NetworkElementType.SECTOR, mockedSector.getNode(), NETWORK_NODE_PROPERTIES.getLACProperty(),
+                Integer.MAX_VALUE);
+        verify(indexModel).index(NetworkElementType.SECTOR, mockedSector.getNode(), NETWORK_NODE_PROPERTIES.getCIProperty(),
+                Integer.MIN_VALUE);
+    }
+
+    @Test
+    public void testCheckCreateElementIfSectorDefinedSuccess() throws ModelException {
+
+        Map<String, Object> properties = getProperties();
+        properties.put(NETWORK_NODE_PROPERTIES.getCIProperty(), Integer.MIN_VALUE);
+        properties.put(NETWORK_NODE_PROPERTIES.getLACProperty(), Integer.MAX_VALUE);
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+
+        DataElement mockedSector = new DataElement(getNodeMock(properties));
+
+        doReturn(mockedSector).when(networkModel).createDefaultElement(NetworkElementType.SECTOR, parentElement,
+                DEFAULT_ELEMENT_NAME, properties);
+
+        networkModel.createElement(NetworkElementType.SECTOR, parentElement, DEFAULT_ELEMENT_NAME, properties);
+        verify(networkModel).createSector(parentElement, DEFAULT_ELEMENT_NAME,
+                (Integer)properties.get(NETWORK_NODE_PROPERTIES.getLACProperty()),
+                (Integer)properties.get(NETWORK_NODE_PROPERTIES.getCIProperty()), properties);
+
+    }
+
+    @Test
+    public void testCheckCreateElementIfSiteDefinedSuccess() throws ModelException {
+        DataElement parentElement = new DataElement(getNodeMock());
+
+        Map<String, Object> properties = getProperties();
+        properties.put(GEO_NODE_PROPERTIES.getLatitideProperty(), Double.MIN_VALUE);
+        properties.put(GEO_NODE_PROPERTIES.getLongitudeProperty(), Double.MAX_VALUE);
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
+
+        DataElement mockedSite = new DataElement(getNodeMock(properties));
+
+        doReturn(mockedSite).when(networkModel).createDefaultElement(NetworkElementType.SITE, parentElement, DEFAULT_ELEMENT_NAME,
+                properties);
+
+        networkModel.createElement(NetworkElementType.SITE, parentElement, DEFAULT_ELEMENT_NAME, properties);
+        verify(networkModel).createSite(parentElement, DEFAULT_ELEMENT_NAME,
+                (Double)properties.get(GEO_NODE_PROPERTIES.getLatitideProperty()),
+                (Double)properties.get(GEO_NODE_PROPERTIES.getLongitudeProperty()), properties);
+
+    }
+
+    @Test(expected = FatalException.class)
+    public void testCheckCreateDefaultElementIfExceptionWasThrowsn() throws ModelException, ServiceException {
+        Map<String, Object> properties = getProperties();
+        DatabaseException exception = new DatabaseException(new Exception());
+
+        when(
+                nodeService.createNode(parentNode, NetworkElementType.SECTOR, NodeServiceRelationshipType.CHILD,
+                        DEFAULT_ELEMENT_NAME, properties)).thenThrow(exception);
+
+        networkModel.createDefaultElement(NetworkElementType.SECTOR, parentElement, DEFAULT_ELEMENT_NAME, getProperties());
     }
 
     private Map<String, Object> getProperties() {
