@@ -9,20 +9,16 @@ package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.label.CommonViewLabelProvider;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
+import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.IModel;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.ViewPart;
 
 /**
  * project explorer view
@@ -30,22 +26,17 @@ import org.eclipse.ui.part.ViewPart;
  * @author Vladislav_Kondratenko
  * @since 0.3
  */
-public class ProjectExplorerView extends ViewPart implements IAWEEventListenter {
+public class ProjectExplorerView extends AbstractTreeView implements IAWEEventListenter {
     /*
      * ID of this View
      */
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
 
-    /*
-     * TreeViewer for database Nodes
-     */
-    protected TreeViewer viewer;
-
     /**
      * The constructor.
      */
     public ProjectExplorerView() {
-
+        super();
     }
 
     /**
@@ -54,11 +45,11 @@ public class ProjectExplorerView extends ViewPart implements IAWEEventListenter 
     @Override
     public void createPartControl(final Composite parent) {
 
-        viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+        treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
         setProviders();
-        viewer.setInput(getSite());
-        viewer.setComparer(new IElementComparer() {
+        treeViewer.setInput(getSite());
+        treeViewer.setComparer(new IElementComparer() {
 
             @Override
             public int hashCode(final Object element) {
@@ -76,39 +67,9 @@ public class ProjectExplorerView extends ViewPart implements IAWEEventListenter 
             }
         });
 
-        getSite().setSelectionProvider(viewer);
+        getSite().setSelectionProvider(treeViewer);
         setLayout(parent);
 
-        AWEEventManager.getManager().addListener(this, EventStatus.DATA_UPDATED);
-    }
-
-    /**
-     * @param parent
-     */
-    private void setLayout(final Composite parent) {
-        FormLayout layout = new FormLayout();
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.marginWidth = 0;
-        layout.spacing = 0;
-        parent.setLayout(layout);
-        FormData formData = new FormData();
-        formData.top = new FormAttachment(0, 5);
-        formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(100, -5);
-        formData.bottom = new FormAttachment(100, -5);
-        viewer.getTree().setLayoutData(formData);
-    }
-
-    /**
-     * Set Label and Content providers for TreeView
-     * 
-     * @param neoServiceProvider
-     */
-
-    protected void setProviders() {
-        viewer.setContentProvider(new ProjectTreeContentProvider());
-        viewer.setLabelProvider(new CommonViewLabelProvider(viewer));
     }
 
     @Override
@@ -122,18 +83,7 @@ public class ProjectExplorerView extends ViewPart implements IAWEEventListenter 
      */
     @Override
     public void setFocus() {
-        viewer.getControl().setFocus();
-    }
-
-    /**
-     * Select node
-     * 
-     * @param dataElement - dataElement to select
-     */
-    public void selectDataElement(final IModel dataElement) {
-        viewer.refresh();
-        viewer.reveal(dataElement);
-        viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
+        treeViewer.getControl().setFocus();
     }
 
     @Override
@@ -148,7 +98,18 @@ public class ProjectExplorerView extends ViewPart implements IAWEEventListenter 
     }
 
     private void updateView() {
-        viewer.refresh();
+        treeViewer.refresh();
+    }
+
+    @Override
+    protected IContentProvider getContentProvider() {
+        return new ProjectTreeContentProvider();
+    }
+
+    @Override
+    protected void addEventListeners() {
+        eventManager.addListener(this, EventStatus.DATA_UPDATED);
+
     }
 
 }
