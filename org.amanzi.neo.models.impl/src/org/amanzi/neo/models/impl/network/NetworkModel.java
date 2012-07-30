@@ -269,7 +269,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
                 resultList = new ArrayList<Node>(CollectionUtils.intersection(ciList, lacNodes));
             }
 
-            if (!resultList.isEmpty()) {
+            if (resultList != null && !resultList.isEmpty()) {
                 result = new DataElement(resultList.get(0));
             } else if (!ciList.isEmpty()) {
                 result = new DataElement(ciList.get(0));

@@ -13,7 +13,9 @@
 
 package org.amanzi.neo.models.impl.network;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.dto.IDataElement;
@@ -40,6 +42,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -274,6 +278,77 @@ public class NetworkModelTest extends AbstractMockitoTest {
                         DEFAULT_ELEMENT_NAME, properties)).thenThrow(exception);
 
         networkModel.createDefaultElement(NetworkElementType.SECTOR, parentElement, DEFAULT_ELEMENT_NAME, getProperties());
+    }
+
+    @Test
+    public void testCheckFindSectorIfNameIsEmpty() throws ModelException {
+        Map<String, Object> properties = getProperties();
+        properties.put(NETWORK_NODE_PROPERTIES.getCIProperty(), Integer.MIN_VALUE);
+        properties.put(NETWORK_NODE_PROPERTIES.getLACProperty(), Integer.MAX_VALUE);
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), StringUtils.EMPTY);
+
+        DataElement mockedSector = new DataElement(getNodeMock(properties));
+        List<Node> iterableSectors = new ArrayList<Node>();
+        iterableSectors.add(mockedSector.getNode());
+        doReturn(iterableSectors.iterator()).when(indexModel).getNodes(NetworkElementType.SECTOR,
+                NETWORK_NODE_PROPERTIES.getLACProperty(), Integer.MAX_VALUE);
+        doReturn(iterableSectors.iterator()).when(indexModel).getNodes(NetworkElementType.SECTOR,
+                NETWORK_NODE_PROPERTIES.getCIProperty(), Integer.MIN_VALUE);
+        DataElement sector = (DataElement)networkModel.findSector(StringUtils.EMPTY, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        assertEquals("Expected equals valus", mockedSector.getNode(), sector.getNode());
+    }
+
+    @Test
+    public void testCheckFindSectorIfNameIsEmptyAndLacIsNull() throws ModelException {
+        Map<String, Object> properties = getProperties();
+        properties.put(NETWORK_NODE_PROPERTIES.getCIProperty(), Integer.MIN_VALUE);
+        properties.put(NETWORK_NODE_PROPERTIES.getLACProperty(), Integer.MAX_VALUE);
+        properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), StringUtils.EMPTY);
+
+        DataElement mockedSector = new DataElement(getNodeMock(properties));
+        List<Node> iterableSectors = new ArrayList<Node>();
+        iterableSectors.add(mockedSector.getNode());
+        doReturn(iterableSectors.iterator()).when(indexModel).getNodes(NetworkElementType.SECTOR,
+                NETWORK_NODE_PROPERTIES.getCIProperty(), Integer.MIN_VALUE);
+        DataElement sector = (DataElement)networkModel.findSector(StringUtils.EMPTY, Integer.MIN_VALUE, null);
+        assertEquals("Expected equals valus", mockedSector.getNode(), sector.getNode());
+    }
+
+    @Test
+    public void testCheckFindSectorIfNameNotEmpty() throws ModelException {
+        DataElement mockedSector = new DataElement(getNodeMock());
+        doReturn(mockedSector).when(networkModel).findElement(NetworkElementType.SECTOR, DEFAULT_ELEMENT_NAME);
+        DataElement sector = (DataElement)networkModel.findSector(DEFAULT_ELEMENT_NAME, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        assertEquals("Expected equals valus", mockedSector.getNode(), sector.getNode());
+
+    }
+
+    @Test(expected = ParameterInconsistencyException.class)
+    public void testCheckFindSectorIfNameIsEmptyAndCiAndLacNull() throws ModelException {
+        networkModel.findSector(StringUtils.EMPTY, null, null);
+
+    }
+
+    @Test(expected = ParameterInconsistencyException.class)
+    public void testCheckFindSectorIfNameIsEmptyAndCiNull() throws ModelException {
+        networkModel.findSector(StringUtils.EMPTY, null, Integer.MAX_VALUE);
+
+    }
+
+    @Test
+    public void testCheckGetElement() throws ModelException {
+        Envelope env = new Envelope(Double.MIN_EXPONENT, Double.MAX_EXPONENT, Double.MIN_NORMAL, Double.MAX_VALUE);
+        List<Node> nodes = new ArrayList<Node>();
+        Map<String, Object> properties = getProperties();
+        properties.put(GEO_NODE_PROPERTIES.getLatitideProperty(), Double.MIN_VALUE);
+        properties.put(GEO_NODE_PROPERTIES.getLongitudeProperty(), Double.MAX_VALUE);
+        Node mockedNode = getNodeMock(properties);
+        nodes.add(mockedNode);
+        Double[] min = new Double[] {env.getMinY(), env.getMinX()};
+        Double[] max = new Double[] {env.getMaxY(), env.getMaxX()};
+        doReturn(nodes.iterator()).when(indexModel).getNodes(NetworkElementType.SITE, Double.class, min, max,
+                GEO_NODE_PROPERTIES.getLatitideProperty(), GEO_NODE_PROPERTIES.getLongitudeProperty());
+
     }
 
     private Map<String, Object> getProperties() {
