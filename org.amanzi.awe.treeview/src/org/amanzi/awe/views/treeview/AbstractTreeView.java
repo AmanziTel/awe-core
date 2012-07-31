@@ -13,10 +13,11 @@
 
 package org.amanzi.awe.views.treeview;
 
-import org.amanzi.awe.ui.label.CommonViewLabelProvider;
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.neo.services.AbstractService;
-import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.awe.views.treeview.provider.impl.CommontTreeViewLabelProvider;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -39,6 +40,7 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class AbstractTreeView extends ViewPart {
 
+    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     private final String SEARCH_PATTERN = ".*%s.*";
     /**
      * event manager
@@ -78,7 +80,7 @@ public abstract class AbstractTreeView extends ViewPart {
         Object[] elements = treeViewer.getExpandedElements();
         for (Object element : elements) {
             IDataElement treeItem = ((IDataElement)element);
-            String elementName = (String)treeItem.get(AbstractService.NAME);
+            String elementName = (String)treeItem.get(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
             if (elementName.matches(String.format(SEARCH_PATTERN, searchText))) {
                 selectDataElement(treeItem);
                 return;
@@ -102,7 +104,7 @@ public abstract class AbstractTreeView extends ViewPart {
      */
     protected void setProviders() {
         this.treeViewer.setContentProvider(getContentProvider());
-        this.treeViewer.setLabelProvider(new CommonViewLabelProvider(this.treeViewer));
+        this.treeViewer.setLabelProvider(new CommontTreeViewLabelProvider(this.treeViewer));
     }
 
     /**

@@ -98,4 +98,23 @@ public interface INodeService extends IService {
 
     void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExist)
             throws ServiceException;
+
+    /**
+     * get all children from parent node with {@link RelationshipType}
+     * 
+     * @param parentNode
+     * @param relationshipType
+     * @return
+     * @throws ServiceException
+     */
+    Iterator<Node> getChildren(Node parentNode, RelationshipType relationshipType) throws ServiceException;
+
+    /**
+     * return all children from parent node with CHILD {@link RelationshipType}
+     * 
+     * @param parentNode
+     * @return
+     * @throws ServiceException
+     */
+    Iterator<Node> getChildren(Node parentNode) throws ServiceException;
 }

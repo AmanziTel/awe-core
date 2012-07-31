@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
@@ -71,6 +75,20 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
 
     @Override
     public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
-        return null;
+        assert parentElement != null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getChildren", parentElement));
+        }
+        List<IDataElement> elements = new ArrayList<IDataElement>();
+        Node parentNode = ((DataElement)parentElement).getNode();
+        try {
+            Iterator<Node> childs = getNodeService().getChildren(parentNode);
+            while (childs.hasNext()) {
+                elements.add(new DataElement(childs.next()));
+            }
+        } catch (ServiceException e) {
+            processException("An error occured on search child for parent Element", e);
+        }
+        return elements;
     }
 }

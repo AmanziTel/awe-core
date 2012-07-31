@@ -26,63 +26,54 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public class StarTool extends AbstractSelectionTool {
 
-	/**
-	 * Logger instance
-	 */
-	private static final Logger LOGGER = Logger.getLogger(StarTool.class);
+    /**
+     * Logger instance
+     */
+    private static final Logger LOGGER = Logger.getLogger(StarTool.class);
 
-	/**
-	 * Creates an new instance of the SOtarTool which supports mouse actions and
-	 * mouse motion. These are used to support panning as well as the star
-	 * analysis.
-	 */
-	@SuppressWarnings("unchecked")
-	public StarTool() {
-		super();
-		EventManager.getInstance().addListener(EventsType.ANALYSE,
-				new StarToolAnalyzerListener());
-	}
+    /**
+     * Creates an new instance of the SOtarTool which supports mouse actions and mouse motion. These
+     * are used to support panning as well as the star analysis.
+     */
+    @SuppressWarnings("unchecked")
+    public StarTool() {
+        super();
+        EventManager.getInstance().addListener(EventsType.ANALYSE, new StarToolAnalyzerListener());
+    }
 
-	@Override
-	protected void handleSelection(IDataModel model, Envelope selectionBounds,
-			Point point) {
-		if (model instanceof INetworkModel) {
+    @Override
+    protected void handleSelection(IDataModel model, Envelope selectionBounds, Point point) {
+        if (model instanceof INetworkModel) {
 
-			try {
-				INetworkModel networkModel = ((INetworkModel) model)
-						.getStarToolSelectedModel();
-				StarToolAnalyzer toolAnalyzer = new StarToolAnalyzer(
-						networkModel, iGeoResource, getContext(), dragged,
-						selectionBounds);
-				toolAnalyzer.analyze(point);
-			} catch (AWEException e) {
-				LOGGER.info("Star Tool: No model for the analysis of.");
-			}
-		}
-	}
+            try {
+                INetworkModel networkModel = ((INetworkModel)model).getStarToolSelectedModel();
+                StarToolAnalyzer toolAnalyzer = new StarToolAnalyzer(networkModel, iGeoResource, getContext(), dragged,
+                        selectionBounds);
+                toolAnalyzer.analyze(point);
+            } catch (AWEException e) {
+                LOGGER.info("Star Tool: No model for the analysis of.");
+            }
+        }
+    }
 
-	/**
-	 * Star Tool Analyzer Listener
-	 * 
-	 * @author Bondoronok_p
-	 * 
-	 */
-	private class StarToolAnalyzerListener implements
-			IEventsListener<StarToolAnalyzerEvent> {
-		@Override
-		public void handleEvent(StarToolAnalyzerEvent data) {
-			List<IDataElement> dataElements = data.getAnalyzedElements();
-			if (!dataElements.isEmpty()) {
-				Set<IDataElement> analyzedElements = new HashSet<IDataElement>();
-				analyzedElements.addAll(dataElements);
-				getPropertiesView().updateTableView(analyzedElements,
-						data.getAnalysedModel());
-			}
-		}
+    /**
+     * Star Tool Analyzer Listener
+     * 
+     * @author Bondoronok_p
+     */
+    private class StarToolAnalyzerListener implements IEventsListener<StarToolAnalyzerEvent> {
+        @Override
+        public void handleEvent(StarToolAnalyzerEvent data) {
+            List<IDataElement> dataElements = data.getAnalyzedElements();
+            if (!dataElements.isEmpty()) {
+                Set<IDataElement> analyzedElements = new HashSet<IDataElement>();
+                analyzedElements.addAll(dataElements);
+            }
+        }
 
-		@Override
-		public Object getSource() {
-			return null;
-		}
-	}
+        @Override
+        public Object getSource() {
+            return null;
+        }
+    }
 }

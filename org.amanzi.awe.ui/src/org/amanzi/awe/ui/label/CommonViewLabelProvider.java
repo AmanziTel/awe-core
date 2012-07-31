@@ -30,7 +30,7 @@ import org.eclipse.swt.graphics.Image;
  */
 public class CommonViewLabelProvider extends LabelProvider {
 
-    private final IGeneralNodeProperties generalNodeProperties;
+    protected final IGeneralNodeProperties generalNodeProperties;
 
     /**
      * Constructor. Gets an instance of IconManager

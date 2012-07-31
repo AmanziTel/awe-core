@@ -75,7 +75,11 @@ public class IconManager {
      * @return image if found and null if not found
      */
     public Image getImage(INodeType nodeType) {
-        return getImage(nodeType, IconSize.SIZE_16);
+        return getImage(nodeType.getId(), IconSize.SIZE_16);
+    }
+
+    public Image getImage(String name) {
+        return getImage(name, IconSize.SIZE_16);
     }
 
     /**
@@ -85,10 +89,9 @@ public class IconManager {
      * @param size
      * @return image or null if not found
      */
-    public Image getImage(INodeType nodeType, IconSize size) {
-        String iconName = nodeType.getId();
+    public Image getImage(String nodeType, IconSize size) {
         String directoryPath = getDirectoryPath(ICONS_DIRECTORY, size.getImageSize());
-        return getImage(iconName, directoryPath, size);
+        return getImage(nodeType, directoryPath, size);
     }
 
     /**

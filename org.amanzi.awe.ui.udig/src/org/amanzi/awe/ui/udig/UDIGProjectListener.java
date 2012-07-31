@@ -61,7 +61,7 @@ public class UDIGProjectListener implements IAWEEventListenter, Adapter {
 
     @Override
     public void notifyChanged(final Notification notification) {
-        if (notification.getEventType() == Notification.SET) {
+        if (notification.getEventType() == Notification.SET || notification.getEventType() == Notification.RESOLVE) {
             IProject project = (IProject)notification.getNewValue();
 
             String newProjectName = project.getName();

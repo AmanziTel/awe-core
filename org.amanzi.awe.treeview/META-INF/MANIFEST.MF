@@ -5,9 +5,8 @@ Bundle-SymbolicName: org.amanzi.awe.treeview
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.amanzi.neo.models;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0",
- org.amanzi.neo.services.ui;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.views.treeview
+Export-Package: org.amanzi.awe.views.treeview,
+ org.amanzi.awe.views.treeview.provider,
+ org.amanzi.awe.views.treeview.provider.impl

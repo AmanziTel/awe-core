@@ -12,35 +12,21 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.neo.model.distribution.IDistributionBar;
-import org.amanzi.neo.model.distribution.IDistributionModel;
-import org.amanzi.neo.model.distribution.IDistributionalModel;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.amanzi.neo.models.distribution.IDistributionBar;
+import org.amanzi.neo.models.distribution.IDistributionModel;
+import org.amanzi.neo.models.distribution.IDistributionalModel;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -56,12 +42,6 @@ public class NetworkTreeView extends AbstractTreeView implements IAWEEventListen
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
     public static final String PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.PropertiesView";
-
-    private boolean currentMode = false;
-
-    private boolean notInterruptEvent = Boolean.TRUE;
-
-    private final Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
 
     public NetworkTreeView() {
         super();
@@ -118,7 +98,6 @@ public class NetworkTreeView extends AbstractTreeView implements IAWEEventListen
 
             @Override
             public void mouseEnter(MouseEvent e) {
-                NetworkTreeView.this.notInterruptEvent = Boolean.TRUE;
             }
 
             @Override
@@ -130,55 +109,9 @@ public class NetworkTreeView extends AbstractTreeView implements IAWEEventListen
             }
         });
 
-        this.treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                if (NetworkTreeView.this.notInterruptEvent) {
-                    NetworkTreeView.this.selectedDataElements.clear();
-                    IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
-                    Iterator< ? > it = selection.iterator();
-                    INetworkModel model = null;
-                    while (it.hasNext()) {
-                        Object elementObject = it.next();
-                        if (elementObject instanceof INetworkModel) {
-                            model = (INetworkModel)elementObject;
-                            continue;
-                        } else {
-                            IDataElement element = (IDataElement)elementObject;
-                            model = (INetworkModel)element.get(INeoConstants.NETWORK_MODEL_NAME);
-                            NetworkTreeView.this.selectedDataElements.add(element);
-                        }
-                    }
-                    updateNetworkPropertiesView(NetworkTreeView.this.currentMode);
-
-                    if (model != null) {
-                        model.clearSelectedElements();
-                        model.setSelectedDataElements(new ArrayList<IDataElement>(NetworkTreeView.this.selectedDataElements));
-                    }
-
-                }
-            }
-        });
         addSearchListener();
         getSite().setSelectionProvider(this.treeViewer);
         setLayout(parent);
-    }
-
-    /**
-     * Load selected data elements to network properties view
-     * 
-     * @param isEditable
-     */
-    private void updateNetworkPropertiesView(boolean isEditable) {
-        try {
-            this.currentMode = isEditable;
-            PropertiesView propertiesView = (PropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(PROPERTIES_VIEW_ID);
-            propertiesView.updateTableView(this.selectedDataElements, isEditable);
-        } catch (PartInitException e) {
-            MessageDialog.openError(null, NetworkMessages.ERROR_TITLE, NetworkMessages.NETWORK_PROPERTIES_OPEN_ERROR + e);
-        }
     }
 
     @Override

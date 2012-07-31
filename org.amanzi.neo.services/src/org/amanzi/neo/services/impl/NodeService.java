@@ -152,6 +152,10 @@ public class NodeService extends AbstractService implements INodeService {
                 getPropertyEvaluatorForType(nodeType));
     }
 
+    protected TraversalDescription getChildrenTraversal(RelationshipType relationshipType) {
+        return getDownlinkTraversal().relationships(relationshipType, Direction.OUTGOING);
+    }
+
     protected TraversalDescription getDownlinkTraversal() {
         return OUTGOING_LEVEL_1_TRAVERSAL;
     }
@@ -388,5 +392,21 @@ public class NodeService extends AbstractService implements INodeService {
     @Override
     public Iterator<Node> getChildren(final Node parentNode, final INodeType nodeType) throws ServiceException {
         return getChildren(parentNode, nodeType, NodeServiceRelationshipType.CHILD);
+    }
+
+    @Override
+    public Iterator<Node> getChildren(final Node parentNode, RelationshipType relationshipType) throws ServiceException {
+        assert parentNode != null;
+
+        try {
+            return getChildrenTraversal(relationshipType).traverse(parentNode).nodes().iterator();
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    @Override
+    public Iterator<Node> getChildren(final Node parentNode) throws ServiceException {
+        return getChildren(parentNode, NodeServiceRelationshipType.CHILD);
     }
 }
