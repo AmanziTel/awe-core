@@ -22,12 +22,10 @@ import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.distribution.IDistributionBar;
 import org.amanzi.neo.models.distribution.IDistributionModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.Viewer;
 
 /**
  * New content provider for NetworkTree
@@ -43,17 +41,12 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
 
     }
 
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-
-    }
-
     /**
      * <p>
-     * Comparator of IDataElement
+     * Comparator for treeElements
      * </p>
      * 
-     * @author Kasnitskij_V
+     * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
     public static class IDataElementComparator implements Comparator<ITreeItem<INetworkModel>> {
@@ -69,18 +62,12 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
 
     @Override
     public Object getParent(Object element) {
-        if (element instanceof IDistributionModel) {
-            return ((IDistributionModel)element).getAnalyzedModel();
-        } else if (element instanceof IDistributionBar) {
-            return ((IDistributionBar)element).getDistribution();
-        }
-        // TODO implement for other elements
         return null;
     }
 
     @Override
     public Object[] getElements(Object inputElement) {
-
+        super.getElements(inputElement);
         Iterable<INetworkModel> networkModels;
         try {
             networkModels = networkModelProvider.findAll(projectModelProvider.getActiveProjectModel());
@@ -100,7 +87,6 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     protected Object[] processReturment(INetworkModel networkModel) {
         List<ITreeItem<INetworkModel>> dataElements = new ArrayList<ITreeItem<INetworkModel>>();
         for (IDataElement dataElement : children) {
-            // add network model to data element
             ITreeItem<INetworkModel> item = new TreeViewItem<INetworkModel>(networkModel, dataElement);
             dataElements.add(item);
         }

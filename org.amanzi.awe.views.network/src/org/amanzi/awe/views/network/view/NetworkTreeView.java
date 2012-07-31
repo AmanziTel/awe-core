@@ -13,8 +13,8 @@
 package org.amanzi.awe.views.network.view;
 
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
-import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.distribution.IDistributionBar;
 import org.amanzi.neo.models.distribution.IDistributionModel;
@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.0.0
  */
 
-public class NetworkTreeView extends AbstractTreeView implements IAWEEventListenter {
+public class NetworkTreeView extends AbstractTreeView {
 
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
@@ -47,11 +47,17 @@ public class NetworkTreeView extends AbstractTreeView implements IAWEEventListen
         super();
     }
 
+    @Override
+    public void dispose() {
+        AWEEventManager.getManager().removeListener(this);
+    }
+
     /**
      * add required Listener
      */
     @Override
     protected void addEventListeners() {
+        eventManager.addListener(this, EventStatus.PROJECT_CHANGED);
     }
 
     /**
@@ -117,12 +123,6 @@ public class NetworkTreeView extends AbstractTreeView implements IAWEEventListen
     @Override
     protected IContentProvider getContentProvider() {
         return new NetworkTreeContentProvider();
-    }
-
-    @Override
-    public void onEvent(IEvent event) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override

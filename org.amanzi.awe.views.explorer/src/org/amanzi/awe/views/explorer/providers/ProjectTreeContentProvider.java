@@ -16,95 +16,33 @@ package org.amanzi.awe.views.explorer.providers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.explorer.ProjectExplorerPluginMessages;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.providers.INetworkModelProvider;
-import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
 
 /**
  * content provider for project explorer
  * 
  * @author Vladislav_Kondratenko
  */
-public class ProjectTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+public class ProjectTreeContentProvider extends AbstractContentProvider<IProjectModel> {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
 
-    private final INetworkModelProvider networkModelProvider;
-
-    private final IProjectModelProvider projectModelProvider;
-
-    /**
-     * Constructor of ContentProvider
-     * 
-     * @param neoProvider neoServiceProvider for this ContentProvider
-     */
-    public ProjectTreeContentProvider() {
-        networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
-        projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
-    }
+    private List<IModel> models;
 
     @Override
     public void dispose() {
 
-    }
-
-    @Override
-    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-
-    }
-
-    /**
-     * collect models of current selected element
-     * 
-     * @param parentElement
-     * @return
-     * @throws AWEException
-     */
-    private List<IModel> collectModelMap(final Object parentElement) throws ModelException {
-        ArrayList<IModel> modelMap = new ArrayList<IModel>();
-        if (parentElement instanceof IProjectModel) {
-            IProjectModel project = ((IProjectModel)parentElement);
-
-            addToModelCollection(networkModelProvider.findAll(project), modelMap);
-        }
-        return modelMap;
-    }
-
-    @Override
-    public Object[] getChildren(final Object parentElement) {
-        ArrayList<IModel> modelMap = new ArrayList<IModel>();
-        try {
-            modelMap.addAll(collectModelMap(parentElement));
-        } catch (ModelException e) {
-            MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
-                    ProjectExplorerPluginMessages.GetChildrenException + parentElement);
-        }
-        Collections.sort(modelMap, new IModelComparator());
-        return modelMap.toArray();
-    }
-
-    /**
-     * @param findAllNetworkModels
-     * @param modelMap
-     */
-    private void addToModelCollection(final Iterable< ? extends IModel> findedModels, final ArrayList<IModel> modelMap) {
-        Iterator< ? extends IModel> modelsIterator = findedModels.iterator();
-        while (modelsIterator.hasNext()) {
-            IModel model = modelsIterator.next();
-            modelMap.add(model);
-        }
     }
 
     /**
@@ -131,33 +69,43 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
     }
 
     @Override
-    public boolean hasChildren(final Object parentElement) {
-        ArrayList<IModel> modelMap = new ArrayList<IModel>();
+    public Object[] getElements(final Object inputElement) {
+        super.getElements(inputElement);
         try {
-            modelMap.addAll(collectModelMap(parentElement));
+            for (IProjectModel model : projectModelProvider.findAll()) {
+                rootList.add(new TreeViewItem<IProjectModel>(model, model.asDataElement()));
+            }
         } catch (ModelException e) {
             MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
-                    ProjectExplorerPluginMessages.HasChildrenException);
-            LOGGER.error(ProjectExplorerPluginMessages.HasChildrenException, e);
+                    ProjectExplorerPluginMessages.GetElementsException);
         }
-        if ((modelMap != null) && !modelMap.isEmpty()) {
-            return true;
-        } else {
-            return false;
+
+        return rootList.toArray();
+    }
+
+    @Override
+    protected boolean additionalCheckChild(Object element) throws ModelException {
+        return false;
+    }
+
+    @Override
+    protected Object[] processReturment(IProjectModel t) {
+        LOGGER.info("process returment statement for project " + t);
+        Collections.sort(models, new IModelComparator());
+        return models.toArray();
+    }
+
+    @Override
+    protected void handleInnerElements(ITreeItem<IProjectModel> item) throws ModelException {
+        models = new ArrayList<IModel>();
+        for (INetworkModel model : networkModelProvider.findAll(item.getParent())) {
+            LOGGER.info("add model " + model + " to project node");
+            models.add(model);
         }
     }
 
     @Override
-    public Object[] getElements(final Object inputElement) {
-        IProjectModel projectModels = null;
-        try {
-
-            return projectModelProvider.findAll().toArray();
-        } catch (ModelException e) {
-            MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
-                    ProjectExplorerPluginMessages.GetElementsException + projectModels);
-        }
-
-        return null;
+    protected void handleRoot(ITreeItem<IProjectModel> item) throws ModelException {
+        handleInnerElements(item);
     }
 }

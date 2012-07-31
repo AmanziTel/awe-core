@@ -15,7 +15,7 @@ package org.amanzi.awe.views.treeview.provider.impl;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IDataModel;
+import org.amanzi.neo.models.IModel;
 
 /**
  * TODO Purpose of
@@ -26,7 +26,7 @@ import org.amanzi.neo.models.IDataModel;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class TreeViewItem<T extends IDataModel> implements ITreeItem<T> {
+public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
 
     private T model;
     private IDataElement element;

@@ -7,9 +7,6 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
-import org.amanzi.awe.ui.events.EventStatus;
-import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
@@ -26,7 +23,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 0.3
  */
-public class ProjectExplorerView extends AbstractTreeView implements IAWEEventListenter {
+public class ProjectExplorerView extends AbstractTreeView {
     /*
      * ID of this View
      */
@@ -87,28 +84,12 @@ public class ProjectExplorerView extends AbstractTreeView implements IAWEEventLi
     }
 
     @Override
-    public void onEvent(final IEvent event) {
-        switch (event.getStatus()) {
-        case DATA_UPDATED:
-            updateView();
-            break;
-        default:
-            break;
-        }
-    }
-
-    private void updateView() {
-        treeViewer.refresh();
-    }
-
-    @Override
     protected IContentProvider getContentProvider() {
         return new ProjectTreeContentProvider();
     }
 
     @Override
     protected void addEventListeners() {
-        eventManager.addListener(this, EventStatus.DATA_UPDATED);
 
     }
 

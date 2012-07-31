@@ -22,9 +22,9 @@ public class PerspectiveFactory extends AbstractPerspectiveFactory {
 
     public static final String AWE_PERSPECTIVE = "org.amanzi.awe.perspective"; //$NON-NLS-1$
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
+    private static final String DATABASE_PROJECT_EXPLORER = "org.amanzi.awe.views.explorer.view.ProjectExplorerView";
     private static final String NETWORK_TREE = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
     private static final String DRIVE_TREE = "org.amanzi.awe.views.drive.views.DriveTreeView";
-    private static final String DATABASE_PROJECT_EXPLORER = "org.amanzi.awe.views.explorer.view.ProjectExplorerView";
     private static final String N2N = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
     private static final String DISTRIBUTION = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
     private static final String PROPERTIES = "org.eclipse.ui.views.PropertySheet";

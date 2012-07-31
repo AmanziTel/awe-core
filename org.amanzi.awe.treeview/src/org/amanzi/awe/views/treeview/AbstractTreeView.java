@@ -14,12 +14,13 @@
 package org.amanzi.awe.views.treeview;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.treeview.provider.impl.CommontTreeViewLabelProvider;
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -38,10 +39,10 @@ import org.eclipse.ui.part.ViewPart;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractTreeView extends ViewPart {
+public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter {
 
-    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
-    private final String SEARCH_PATTERN = ".*%s.*";
+    protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    // private final String SEARCH_PATTERN = ".*%s.*";
     /**
      * event manager
      */
@@ -55,11 +56,12 @@ public abstract class AbstractTreeView extends ViewPart {
      */
     protected AbstractTreeView() {
         this.eventManager = AWEEventManager.getManager();
+        eventManager.addListener(this, EventStatus.DATA_UPDATED);
         addEventListeners();
     }
 
     /**
-     * add search listener to searc field
+     * add search listener to search field
      */
     protected void addSearchListener() {
         tSearch.addModifyListener(new ModifyListener() {
@@ -76,27 +78,7 @@ public abstract class AbstractTreeView extends ViewPart {
     /**
      * @param searchText
      */
-    protected void searchInTreeView(String searchText) {
-        Object[] elements = treeViewer.getExpandedElements();
-        for (Object element : elements) {
-            IDataElement treeItem = ((IDataElement)element);
-            String elementName = (String)treeItem.get(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
-            if (elementName.matches(String.format(SEARCH_PATTERN, searchText))) {
-                selectDataElement(treeItem);
-                return;
-            }
-        }
-    }
-
-    /**
-     * Select node
-     * 
-     * @param dataElement - dataElement to select
-     */
-    protected void selectDataElement(IDataElement dataElement) {
-        this.treeViewer.refresh();
-        this.treeViewer.reveal(dataElement);
-        this.treeViewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
+    protected void searchInTreeView(final String searchText) {
     }
 
     /**
@@ -148,4 +130,19 @@ public abstract class AbstractTreeView extends ViewPart {
         treeViewer.getTree().setLayoutData(formData);
     }
 
+    @Override
+    public void onEvent(IEvent event) {
+        switch (event.getStatus()) {
+        case PROJECT_CHANGED:
+        case DATA_UPDATED:
+            updateView();
+            break;
+        default:
+            break;
+        }
+    }
+
+    protected void updateView() {
+        this.treeViewer.refresh();
+    }
 }

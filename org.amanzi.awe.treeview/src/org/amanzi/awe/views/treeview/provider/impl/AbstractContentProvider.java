@@ -18,15 +18,15 @@ import java.util.List;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IDataModel;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 
 /**
  * TODO Purpose of
@@ -36,12 +36,18 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractContentProvider<T extends IDataModel> implements IStructuredContentProvider, ITreeContentProvider {
+public abstract class AbstractContentProvider<T extends IModel> implements IStructuredContentProvider, ITreeContentProvider {
 
     protected List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
     protected INetworkModelProvider networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
     protected IProjectModelProvider projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
     protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
+
+    @Override
+    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
+
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -55,8 +61,8 @@ public abstract class AbstractContentProvider<T extends IDataModel> implements I
                 handleInnerElements(item);
             }
         } catch (ModelException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("cann't get child for parentElement " + parentElement, e);
+            return null;
         }
         return processReturment(item.getParent());
     }
@@ -64,12 +70,12 @@ public abstract class AbstractContentProvider<T extends IDataModel> implements I
     @SuppressWarnings("unchecked")
     @Override
     public boolean hasChildren(Object element) {
-        Iterable<IDataElement> children = null;
+        Object[] children = null;
         try {
             if (element instanceof ITreeItem) {
-                ITreeItem<INetworkModel> item = (ITreeItem<INetworkModel>)element;
-                children = item.getParent().getChildren(item.getDataElement());
-                if (children.iterator().hasNext()) {
+                ITreeItem<T> item = (ITreeItem<T>)element;
+                children = getChildren(item);
+                if (children != null && children.length > 0) {
                     return true;
                 }
             } else {
@@ -95,21 +101,41 @@ public abstract class AbstractContentProvider<T extends IDataModel> implements I
     protected abstract Object[] processReturment(T t);
 
     /**
+     * handle inner elements
+     * 
      * @param parentElement
      * @throws ModelException
      */
     protected abstract void handleInnerElements(ITreeItem<T> parentElement) throws ModelException;
 
+    /**
+     * add to rootElement
+     * 
+     * @param root
+     */
     protected void addToRoot(T root) {
         rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
     }
 
+    @Override
+    public Object[] getElements(Object inputElement) {
+        rootList.clear();
+        // TODO Auto-generated method stub
+        return rootList.toArray();
+    }
+
+    /**
+     * check if object in rootList
+     * 
+     * @param object
+     * @return
+     */
     private boolean isInRootList(Object object) {
         return rootList.contains(object);
     }
 
     /**
-     *
+     * handle get roots element child
      */
     protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;;
 
