@@ -18,9 +18,10 @@ import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.treeview.provider.impl.CommontTreeViewLabelProvider;
+import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -31,6 +32,8 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -41,40 +44,31 @@ import org.eclipse.ui.part.ViewPart;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter {
-
+public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener {
+    private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
     protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
-    // private final String SEARCH_PATTERN = ".*%s.*";
     /**
      * event manager
      */
-    protected final AWEEventManager eventManager;
+    private final AWEEventManager eventManager;
 
-    protected TreeViewer treeViewer;
-    protected Text tSearch;
+    private TreeViewer treeViewer;
+    private Text tSearch;
+    private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
 
     /**
      * The constructor.
      */
     protected AbstractTreeView() {
+        super();
         this.eventManager = AWEEventManager.getManager();
-        eventManager.addListener(this, EventStatus.DATA_UPDATED);
-        addEventListeners();
     }
 
-    /**
-     * add search listener to search field
-     */
-    protected void addSearchListener() {
-        tSearch.addModifyListener(new ModifyListener() {
+    @Override
+    public void modifyText(ModifyEvent e) {
+        String searchText = tSearch.getText();
+        searchInTreeView(searchText);
 
-            @Override
-            public void modifyText(ModifyEvent e) {
-                String searchText = tSearch.getText();
-                searchInTreeView(searchText);
-
-            }
-        });
     }
 
     /**
@@ -95,13 +89,36 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected void setProviders() {
         this.treeViewer.setContentProvider(getContentProvider());
-        this.treeViewer.setLabelProvider(new CommontTreeViewLabelProvider());
+        this.treeViewer.setLabelProvider(LABEL_PROVIDER);
     }
+
+    @Override
+    public void createPartControl(Composite parent) {
+        createControls(parent);
+        try {
+            init(this.getViewSite());
+        } catch (PartInitException e) {
+            LOGGER.error("can't init");
+        }
+    }
+
+    /**
+     * @param parent
+     */
+    protected abstract void createControls(Composite parent);
 
     /**
      * @return content provider
      */
     protected abstract IContentProvider getContentProvider();
+
+    @Override
+    public void init(IViewSite site) throws PartInitException {
+        eventManager.addListener(this, EventStatus.DATA_UPDATED);
+        addEventListeners();
+        addEventListeners();
+        super.init(site);
+    }
 
     /**
      * added required listeners to event manager
@@ -153,5 +170,47 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     protected void updateView() {
         treeViewer.refresh();
+    }
+
+    /**
+     * @return Returns the treeViewer.
+     */
+    protected TreeViewer getTreeViewer() {
+        return treeViewer;
+    }
+
+    /**
+     * @param treeViewer The treeViewer to set.
+     */
+    protected void setTreeViewer(TreeViewer treeViewer) {
+        this.treeViewer = treeViewer;
+    }
+
+    /**
+     * @return Returns the tSearch.
+     */
+    protected Text gettSearch() {
+        return tSearch;
+    }
+
+    /**
+     * @param tSearch The tSearch to set.
+     */
+    protected void settSearch(Text tSearch) {
+        this.tSearch = tSearch;
+    }
+
+    /**
+     * @return Returns the generalNodeProperties.
+     */
+    protected static IGeneralNodeProperties getGeneralNodeProperties() {
+        return GENERAL_NODE_PROPERTIES;
+    }
+
+    /**
+     * @return Returns the eventManager.
+     */
+    protected AWEEventManager getEventManager() {
+        return eventManager;
     }
 }

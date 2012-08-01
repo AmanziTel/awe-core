@@ -14,17 +14,19 @@
 package org.amanzi.awe.views.treeview.provider.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -36,13 +38,18 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractContentProvider<T extends IModel> implements IStructuredContentProvider, ITreeContentProvider {
+public abstract class AbstractContentProvider<T extends IModel> implements ITreeContentProvider {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
-    protected List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
-    protected INetworkModelProvider networkModelProvider;
-    protected IProjectModelProvider projectModelProvider;
-    protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    
+    private List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
+    private INetworkModelProvider networkModelProvider;
+    private IProjectModelProvider projectModelProvider;
+
+    @Override
+    public void dispose() {
+    }
 
     /**
      * @param networkModelProvider
@@ -55,8 +62,24 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
     }
 
     /**
- * 
- */
+     * <p>
+     * Comparator for treeElements
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
+    public static class IDataElementComparator implements Comparator<ITreeItem<INetworkModel>> {
+
+        @Override
+        public int compare(ITreeItem<INetworkModel> dataElement1, ITreeItem<INetworkModel> dataElement2) {
+            return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
+                    .getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeNameProperty()).toString()
+                    .compareTo(dataElement2.getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeNameProperty()).toString());
+        }
+
+    }
+
     public AbstractContentProvider() {
         this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
 
@@ -64,7 +87,6 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
 
     @Override
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-
     }
 
     @SuppressWarnings("unchecked")
@@ -92,9 +114,10 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
         try {
             ITreeItem<T> item = (ITreeItem<T>)element;
             children = getChildren(item);
-            return children != null && children.length > 0 && additionalCheckChild(element);
-        } catch (ModelException e) {
 
+            return (children != null) && (!ArrayUtils.isEmpty(children)) && additionalCheckChild(element);
+        } catch (ModelException e) {
+            LOGGER.error("exception when trying to get child", e);
         }
         return false;
     }
@@ -148,6 +171,41 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
     /**
      * handle get roots element child
      */
-    protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;;
+    protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
+
+    /**
+     * @return Returns the logger.
+     */
+    public static Logger getLogger() {
+        return LOGGER;
+    }
+
+    /**
+     * @return Returns the generalNodeProperties.
+     */
+    public static IGeneralNodeProperties getGeneralNodeProperties() {
+        return GENERAL_NODE_PROPERTIES;
+    }
+
+    /**
+     * @return Returns the rootList.
+     */
+    public List<ITreeItem<T>> getRootList() {
+        return rootList;
+    }
+
+    /**
+     * @return Returns the networkModelProvider.
+     */
+    public INetworkModelProvider getNetworkModelProvider() {
+        return networkModelProvider;
+    }
+
+    /**
+     * @return Returns the projectModelProvider.
+     */
+    public IProjectModelProvider getProjectModelProvider() {
+        return projectModelProvider;
+    };
 
 }

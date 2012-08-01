@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Menu
+Bundle-SymbolicName: org.amanzi.awe.views.explorer.menu;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: org.amanzi.awe.views.explorer
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.ui

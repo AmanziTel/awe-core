@@ -14,10 +14,9 @@ package org.amanzi.awe.views.network.provider;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import org.amanzi.awe.views.network.NetworkTreePluginMessages;
+import org.amanzi.awe.views.network.messages.NetworkTreePluginMessages;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
@@ -33,31 +32,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
  * @since 1.0.0
  */
 public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
-    Iterable<IDataElement> children = null;
 
-    @Override
-    public void dispose() {
-
-    }
-
-    /**
-     * <p>
-     * Comparator for treeElements
-     * </p>
-     * 
-     * @author Kondratenko_Vladislav
-     * @since 1.0.0
-     */
-    public static class IDataElementComparator implements Comparator<ITreeItem<INetworkModel>> {
-
-        @Override
-        public int compare(ITreeItem<INetworkModel> dataElement1, ITreeItem<INetworkModel> dataElement2) {
-            return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
-                    .getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeNameProperty()).toString()
-                    .compareTo(dataElement2.getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeNameProperty()).toString());
-        }
-
-    }
+    private Iterable<IDataElement> children = null;
 
     @Override
     public Object getParent(Object element) {
@@ -69,7 +45,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
         super.getElements(inputElement);
         Iterable<INetworkModel> networkModels;
         try {
-            networkModels = networkModelProvider.findAll(projectModelProvider.getActiveProjectModel());
+            networkModels = getNetworkModelProvider().findAll(getProjectModelProvider().getActiveProjectModel());
         } catch (ModelException e) {
             MessageDialog.openError(null, NetworkTreePluginMessages.ERROR_TITLE,
                     NetworkTreePluginMessages.COULD_NOT_GET_ALL_NETWORK_MODELS);
@@ -79,7 +55,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
         for (INetworkModel model : networkModels) {
             addToRoot(model);
         }
-        return rootList.toArray();
+        return getRootList().toArray();
     }
 
     @Override

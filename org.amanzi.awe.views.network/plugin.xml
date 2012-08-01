@@ -28,4 +28,13 @@
       </perspectiveExtension>
    </extension>
    
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.views.network.NetworkTreeViewListener">
+         <eventStatus
+               status="SHOW_IN_VIEW">
+         </eventStatus>
+      </listener>
+   </extension>
 </plugin>

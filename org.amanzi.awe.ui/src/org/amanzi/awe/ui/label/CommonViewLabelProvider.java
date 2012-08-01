@@ -18,7 +18,6 @@ import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
@@ -62,7 +61,7 @@ public class CommonViewLabelProvider extends LabelProvider {
             return IconManager.getInstance().getImage(model.getType());
         } else if (element instanceof IDataElement) {
             IDataElement dataElement = (IDataElement)element;
-            INodeType type = dataElement.getNodeType();
+            String type = (String)dataElement.get(GENERAL_NODES_PROPERTIES.getNodeTypeProperty());
             return IconManager.getInstance().getImage(type);
         }
         return null;

@@ -26,14 +26,13 @@ import org.eclipse.swt.graphics.Image;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CommontTreeViewLabelProvider extends CommonViewLabelProvider {
+public class CommonTreeViewLabelProvider extends CommonViewLabelProvider {
 
     /**
      * @param viewer
      */
-    public CommontTreeViewLabelProvider() {
+    public CommonTreeViewLabelProvider() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     @SuppressWarnings("unchecked")
