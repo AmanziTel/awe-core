@@ -33,11 +33,14 @@ public class CommontTreeViewLabelProvider extends CommonViewLabelProvider {
     /**
      * @param viewer
      */
+    // TODO: LN: 01.08.2012, remove Viewer
     public CommontTreeViewLabelProvider(Viewer viewer) {
         super(viewer);
         // TODO Auto-generated constructor stub
     }
 
+    // TODO: LN: 01.08.2012, methods getText and getImage should just convert current input and
+    // provide it to super methods
     @SuppressWarnings("unchecked")
     @Override
     public String getText(final Object element) {

@@ -36,14 +36,23 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012: why implements both IStructuredContentProvider and ITreeContentProvider
+// when ITreeContentProvider itself extends IStructureContentProvider?
 public abstract class AbstractContentProvider<T extends IModel> implements IStructuredContentProvider, ITreeContentProvider {
 
+    // TODO: LN: 01.08.2012, fix field order
+
+    // TODO: LN: 01.08.2012, make fields private with protected getter
     protected List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
+    // TODO: LN: 01.08.2012, initialize providers in constructors (see previous implementation of
+    // ContentProvider for ProjectExplorerView for example)
     protected INetworkModelProvider networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
     protected IProjectModelProvider projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
     protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
+    // TODO: LN: 01.08.2012, it's abstract class, do we really need empty implementation of this
+    // method?
     @Override
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
 
@@ -75,14 +84,15 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
             if (element instanceof ITreeItem) {
                 ITreeItem<T> item = (ITreeItem<T>)element;
                 children = getChildren(item);
-                if (children != null && children.length > 0) {
+                // TODO: LN: 01.08.2012, why not used ArrayUtils.isEmpty()
+                if ((children != null) && (children.length > 0)) {
                     return true;
                 }
             } else {
                 return additionalCheckChild(element);
             }
         } catch (ModelException e) {
-
+            // TODO: LN: 01.08.2012, handle exception
         }
         return false;
     }

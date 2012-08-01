@@ -42,10 +42,12 @@ import org.eclipse.ui.part.ViewPart;
 public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter {
 
     protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    // TODO: LN: 01.08.2012, remove commented line
     // private final String SEARCH_PATTERN = ".*%s.*";
     /**
      * event manager
      */
+    // TODO: LN: 01.08.2012, make fields private with protected getter
     protected final AWEEventManager eventManager;
 
     protected TreeViewer treeViewer;
@@ -64,6 +66,8 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * add search listener to search field
      */
     protected void addSearchListener() {
+        // TODO: LN: 01.08.2012, to additional class, another way - make AbstractTreeView implements
+        // ModifyListener
         tSearch.addModifyListener(new ModifyListener() {
 
             @Override
@@ -78,6 +82,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * @param searchText
      */
+    // TODO: LN: 01.08.2012, should be abstract, since this class didn't know how to search for text
     protected void searchInTreeView(final String searchText) {
     }
 
@@ -86,6 +91,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected void setProviders() {
         this.treeViewer.setContentProvider(getContentProvider());
+        // TODO: LN: 01.08.2012, CommonTreeViewLabelProvider can be declared as constant
         this.treeViewer.setLabelProvider(new CommontTreeViewLabelProvider(this.treeViewer));
     }
 
@@ -97,6 +103,9 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * added required listeners to event manager
      */
+    // TODO: LN: 01.08.2012: initialization of listeners should be run on init() method
+    // TODO: LN: 01.08.2012: also please check that you remove this Listeners from Manager on
+    // dispose() method
     protected abstract void addEventListeners();
 
     /**
