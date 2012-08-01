@@ -53,7 +53,7 @@ public class StatisticsComparator extends ViewerComparator {
             if (showAdditionalColumn) {
                 // TODO KV: implement this case;
             } else {
-                if (row1 != null && row2 != null) {
+                if ((row1 != null) && (row2 != null)) {
                     result = group1.getName().compareTo(group2.getName());
                 }
             }
@@ -116,6 +116,7 @@ public class StatisticsComparator extends ViewerComparator {
         if (val1 == null) {
             result = val2 == null ? 0 : -1;
         } else {
+            // TODO: LN: 01.08.2012, what about return val1.compareTo(val2) ?
             if (val2 == null) {
                 result = 1;
             } else {

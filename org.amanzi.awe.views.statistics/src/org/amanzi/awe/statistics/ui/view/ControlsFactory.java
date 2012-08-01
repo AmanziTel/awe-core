@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Label;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012, I don't see sense of this class
 public class ControlsFactory {
     private static ControlsFactory factory;
 

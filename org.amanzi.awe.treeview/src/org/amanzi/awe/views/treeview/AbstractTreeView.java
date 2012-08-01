@@ -120,6 +120,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void init(IViewSite site) throws PartInitException {
+        // TODO: LN: 01.08.2012, why it called not in addEventsListeners?
         eventManager.addListener(this, EventStatus.DATA_UPDATED);
         // TODO: LN: 01.08.2012, why called two times?
         addEventListeners();

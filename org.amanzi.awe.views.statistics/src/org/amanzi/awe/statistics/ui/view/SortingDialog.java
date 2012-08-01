@@ -71,14 +71,14 @@ public class SortingDialog extends Shell {
     private static final RegexViewerFilter regexFilter = new RegexViewerFilter();
 
     private Table table;
-    private Point location;
+    private final Point location;
     private CLabel lblSortAsc;
     private CLabel lblSortDesc;
     private Label lblSeparator1;
     private Label lblClearFilter;
 
     private Collection<String> selection;
-    private Collection<String> groups;
+    private final Collection<String> groups;
     private Label lblTextFilters;
     private Label lblSeparator2;
     private Button btnSearch;
@@ -86,11 +86,11 @@ public class SortingDialog extends Shell {
     private CheckboxTreeViewer treeViewer;
     private Button btnSave;
     private Button btnClose;
-    private int colNum;
-    private TableColumn currentColumn;
-    private TableViewer tableViewer;
-    private boolean isAditionalColumnNecessary;
-
+    private final int colNum;
+    private final TableColumn currentColumn;
+    private final TableViewer tableViewer;
+    private final boolean isAditionalColumnNecessary;
+    // TODO: LN: 01.08.2012, move to the top
     private static final String MATCHES_PATTERN = ".*%s.*";
 
     public SortingDialog(TableViewer viewer, Collection<String> selectionList, Collection<String> groups, int colNum,
@@ -101,6 +101,8 @@ public class SortingDialog extends Shell {
         this.groups = groups;
         this.colNum = colNum;
         this.isAditionalColumnNecessary = isAditionalColumnNecessary;
+
+        // TODO: LN: 01.08.2012, possible NPE - this field is not initialized
         table.getColumn(colNum);
         this.currentColumn = viewer.getTable().getColumn(colNum);
         location = table.getDisplay().getCursorLocation();
@@ -118,6 +120,7 @@ public class SortingDialog extends Shell {
 
             @Override
             public void mouseDown(MouseEvent e) {
+                // TODO: LN: 01.08.2012, using SWT constants for direction is not clear
                 updateSorting(table, colNum, currentColumn, SWT.DOWN);
                 close();
             }
@@ -126,6 +129,7 @@ public class SortingDialog extends Shell {
 
             @Override
             public void mouseDown(MouseEvent e) {
+                // TODO: LN: 01.08.2012, using SWT constants for direction is not clear
                 updateSorting(table, colNum, currentColumn, SWT.UP);
                 close();
             }
@@ -137,6 +141,7 @@ public class SortingDialog extends Shell {
             public void mouseDown(MouseEvent e) {
                 selection.clear();
                 selection.addAll(groups);
+                // TODO: LN: 01.08.2012, make a constant with empty array
                 tableViewer.setFilters(new ViewerFilter[] {});
                 tableViewer.getTable().getShell().notifyListeners(TableListenersType.UPDATE_BUTTON, null);
                 close();
@@ -157,7 +162,7 @@ public class SortingDialog extends Shell {
             @Override
             public void modifyText(ModifyEvent e) {
                 String text = txtSearch.getText();
-                if (text != null && !text.isEmpty()) {
+                if ((text != null) && !text.isEmpty()) {
                     treeViewer.setSubtreeChecked(e.getSource(), false);
                     regexFilter.setFilterText(text);
                     treeViewer.setFilters(new ViewerFilter[] {regexFilter});
@@ -173,6 +178,8 @@ public class SortingDialog extends Shell {
                 selection = new ArrayList<String>();
 
                 for (Object element : treeViewer.getCheckedElements()) {
+                    // TODO: LN: 01.08.2012, do compute txtSearch.getText() and
+                    // txtSearch.getText().isEmpty each iteration
                     if (txtSearch.getText().isEmpty()
                             || (!txtSearch.getText().isEmpty() && matches(txtSearch.getText(), (String)element))) {
                         selection.add((String)element);
@@ -345,6 +352,7 @@ public class SortingDialog extends Shell {
      * @param treeViewer tree viewer to configure
      */
     private void configureTreeViewer(final CheckboxTreeViewer treeViewer) {
+        // TODO: LN: 01.08.2012, move to constant
         treeViewer.setContentProvider(new ITreeContentProvider() {
 
             @Override
@@ -367,7 +375,9 @@ public class SortingDialog extends Shell {
                 @SuppressWarnings("unchecked")
                 List<String> input = (List<String>)inputElement;
                 int size = input.size();
+                // TODO: LN: 01.08.2012, use here simple '1' or '0' for better reading
                 Object[] elements = new Object[size + NumberUtils.INTEGER_ONE];
+                // TODO: LN: 01.08.2012, use ArrayUtils
                 System.arraycopy(input.toArray(), NumberUtils.INTEGER_ZERO, elements, NumberUtils.INTEGER_ONE, size);
                 elements[0] = Messages.sortingDialogLabelSelectAll;
                 return elements;
@@ -382,6 +392,7 @@ public class SortingDialog extends Shell {
             }
 
         });
+        // TODO: LN: 01.08.2012, move to constant
         treeViewer.setLabelProvider(new ILabelProvider() {
 
             @Override
@@ -457,6 +468,8 @@ public class SortingDialog extends Shell {
      * @return true if matches
      */
     private static boolean matches(String filterText, String textToCompare) {
+        // TODO: LN: 01.08.2012, do is it make sense to call toLowerCase if we can use IgnoreCase in
+        // Pattern?
         return textToCompare.toLowerCase().matches(String.format(MATCHES_PATTERN, filterText));
     }
 
@@ -479,7 +492,7 @@ public class SortingDialog extends Shell {
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (filter == null || filter.isEmpty()) {
+            if ((filter == null) || filter.isEmpty()) {
                 return true;
             }
             String clearedText = clearTextFromSpecialChars(filter);
@@ -504,7 +517,7 @@ public class SortingDialog extends Shell {
      * @since 1.0.0
      */
     private static class StatisticsAggregationFilter extends ViewerFilter {
-        private Collection<String> values;
+        private final Collection<String> values;
 
         /**
          * @param start

@@ -21,6 +21,7 @@ package org.amanzi.awe.scripting.exceptions;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012, remove unused constructors
 public class ScriptingException extends Exception {
 
     /** long serialVersionUID field */

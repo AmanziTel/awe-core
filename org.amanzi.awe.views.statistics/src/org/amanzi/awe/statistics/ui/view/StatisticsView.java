@@ -140,6 +140,7 @@ public class StatisticsView extends ViewPart {
     private AggregatedStatistics statistics;
 
     private Collection<String> groupNames;
+    // TODO: LN: 01.08.2012, use List
     private ArrayList<String> selection;
 
     @Override
@@ -186,6 +187,8 @@ public class StatisticsView extends ViewPart {
         long start = model.getMinTimestamp();
         long end = model.getMaxTimestamp();
 
+        // TODO: LN: 01.08.2012, does it make sense to have Collection as result of
+        // Period.getAvailablePeriods? it creates a List into the method
         Collection<String> periods = Period.getAvailablePeriods(start, end);
         cPeriod.setItems(periods.toArray(new String[periods.size()]));
     }
@@ -340,6 +343,7 @@ public class StatisticsView extends ViewPart {
                         TableLayout layout = new TableLayout();
                         table.setLayout(layout);
                         Collection<StatisticsCell> values = row.getAllChild();
+                        // TODO: LN: 01.08.2012, magic numbers
                         int width = (int)100.0 / (values.size() + (isAdditionalColumnNecessary() ? 3 : 2));
                         if (isAdditionalColumnNecessary()) {
                             TableColumn column = new TableColumn(table, SWT.RIGHT);
@@ -483,6 +487,7 @@ public class StatisticsView extends ViewPart {
                     statistics = statisticsManager.processStatistics(templateName, model, property, period, monitor);
                 } catch (StatisticsException e) {
                     LOGGER.error("can't build statistics because of", e);
+                    // TODO: LN: 01.08.2012, return error status
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
