@@ -93,7 +93,7 @@
         <module>org.amanzi.awe.scripting.feature</module>
         <module>org.amanzi.awe.startup.splash</module>
         <module>org.amanzi.awe.statistics.feature</module>
-        <modlue>org.amanzi.awe.treeview</module>
+        <module>org.amanzi.awe.treeview</module>
         <module>org.amanzi.awe.ui.udig</module>
         <module>org.amanzi.awe.views.explorer</module>
 	<module>org.amanzi.awe.views.statistics</module>
