@@ -93,6 +93,7 @@
         <module>org.amanzi.awe.scripting.feature</module>
         <module>org.amanzi.awe.startup.splash</module>
         <module>org.amanzi.awe.statistics.feature</module>
+        <module>org.amanzi.awe.treeview</module>
         <module>org.amanzi.awe.ui.udig</module>
         <module>org.amanzi.awe.views.explorer</module>
 	<module>org.amanzi.awe.views.statistics</module>
@@ -117,7 +118,6 @@
      <module>org.amanzi.neo.providers</module>
      <module>org.amanzi.neo.services</module>
      <module>org.amanzi.neo.services.impl</module>
-     <module>org.amanzi.neo.services.ui</module>
      <module>org.neo4j</module>
   </modules>
   
