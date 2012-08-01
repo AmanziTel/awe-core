@@ -15,10 +15,10 @@ package org.amanzi.awe.views.explorer.view.menu.commands;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.treeview.TreeViewsNameFactory;
-import org.amanzi.awe.treeview.provider.ITreeItem;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.views.treeview.TreeViewsNameFactory;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;

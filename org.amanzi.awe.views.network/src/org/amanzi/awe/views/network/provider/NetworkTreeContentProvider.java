@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.amanzi.awe.treeview.provider.ITreeItem;
-import org.amanzi.awe.treeview.provider.impl.AbstractContentProvider;
-import org.amanzi.awe.treeview.provider.impl.TreeViewItem;
 import org.amanzi.awe.views.network.messages.NetworkTreePluginMessages;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;

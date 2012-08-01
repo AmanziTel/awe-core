@@ -9,10 +9,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.treeview.AbstractTreeView;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.drive.views.view.provider.DriveTreeContentProvider;
+import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.eclipse.jface.viewers.IContentProvider;

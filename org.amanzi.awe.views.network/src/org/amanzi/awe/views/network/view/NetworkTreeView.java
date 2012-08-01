@@ -12,10 +12,10 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import org.amanzi.awe.treeview.AbstractTreeView;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
+import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.distribution.IDistributionBar;
 import org.amanzi.neo.models.distribution.IDistributionModel;
 import org.amanzi.neo.models.distribution.IDistributionalModel;
