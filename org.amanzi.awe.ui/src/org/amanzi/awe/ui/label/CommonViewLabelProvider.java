@@ -29,7 +29,7 @@ import org.eclipse.swt.graphics.Image;
  */
 public class CommonViewLabelProvider extends LabelProvider {
 
-    protected final IGeneralNodeProperties generalNodeProperties;
+    protected final IGeneralNodeProperties GENERAL_NODES_PROPERTIES;
 
     /**
      * Constructor. Gets an instance of IconManager
@@ -37,7 +37,7 @@ public class CommonViewLabelProvider extends LabelProvider {
      * @param viewer of this LabelProvider
      */
     public CommonViewLabelProvider() {
-        generalNodeProperties = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+        GENERAL_NODES_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class CommonViewLabelProvider extends LabelProvider {
         if (element instanceof IModel) {
             return ((IModel)element).getName();
         } else if (element instanceof IDataElement) {
-            String name = (String)((IDataElement)element).get(generalNodeProperties.getNodeNameProperty());
+            String name = (String)((IDataElement)element).get(GENERAL_NODES_PROPERTIES.getNodeNameProperty());
             return name != null ? name : element.toString();
         }
         return null;

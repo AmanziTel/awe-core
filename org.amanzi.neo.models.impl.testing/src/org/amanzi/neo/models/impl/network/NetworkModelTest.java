@@ -172,7 +172,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckCreateSiteSuccess() throws ModelException {
-        DataElement parentElement = new DataElement(getNodeMock());
+        parentElement = new DataElement(getNodeMock());
 
         Map<String, Object> properties = getProperties();
         properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
@@ -190,7 +190,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     @Test(expected = ParameterInconsistencyException.class)
     public void testCheckCreateSiteIfLatIsNull() throws ModelException {
-        DataElement parentElement = new DataElement(getNodeMock());
+        parentElement = new DataElement(getNodeMock());
 
         Map<String, Object> properties = getProperties();
         properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
@@ -200,7 +200,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     @Test(expected = ParameterInconsistencyException.class)
     public void testCheckCreateSiteIfLonIsNull() throws ModelException {
-        DataElement parentElement = new DataElement(getNodeMock());
+        parentElement = new DataElement(getNodeMock());
         Map<String, Object> properties = getProperties();
         properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
 
@@ -209,7 +209,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckCreateSectorSuccess() throws ModelException {
-        DataElement parentElement = new DataElement(getNodeMock());
+        parentElement = new DataElement(getNodeMock());
 
         Map<String, Object> properties = getProperties();
         properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
@@ -249,7 +249,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckCreateElementIfSiteDefinedSuccess() throws ModelException {
-        DataElement parentElement = new DataElement(getNodeMock());
+        parentElement = new DataElement(getNodeMock());
 
         Map<String, Object> properties = getProperties();
         properties.put(GEO_NODE_PROPERTIES.getLatitideProperty(), Double.MIN_VALUE);
