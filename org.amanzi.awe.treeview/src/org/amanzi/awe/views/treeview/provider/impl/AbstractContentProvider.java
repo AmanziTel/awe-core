@@ -132,7 +132,6 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
     @Override
     public Object[] getElements(Object inputElement) {
         rootList.clear();
-        // TODO Auto-generated method stub
         return rootList.toArray();
     }
 
