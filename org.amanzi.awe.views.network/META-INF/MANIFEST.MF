@@ -7,8 +7,8 @@ Bundle-Activator: org.amanzi.awe.views.network.NetworkTreePlugin
 Require-Bundle: net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.amanzi.awe.treeview;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
-Export-Package: org.amanzi.awe.awe.views.view.provider,
- org.amanzi.awe.views.network,
+Export-Package: org.amanzi.awe.views.network,
+ org.amanzi.awe.views.network.provider,
  org.amanzi.awe.views.network.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org

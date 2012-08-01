@@ -72,15 +72,9 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
     public boolean hasChildren(Object element) {
         Object[] children = null;
         try {
-            if (element instanceof ITreeItem) {
-                ITreeItem<T> item = (ITreeItem<T>)element;
-                children = getChildren(item);
-                if (children != null && children.length > 0) {
-                    return true;
-                }
-            } else {
-                return additionalCheckChild(element);
-            }
+            ITreeItem<T> item = (ITreeItem<T>)element;
+            children = getChildren(item);
+            return children != null && children.length > 0 && additionalCheckChild(element);
         } catch (ModelException e) {
 
         }

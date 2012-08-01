@@ -19,8 +19,10 @@ import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.treeview.provider.impl.CommontTreeViewLabelProvider;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -76,9 +78,16 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     /**
+     * search tree element by name
+     * 
      * @param searchText
      */
     protected void searchInTreeView(final String searchText) {
+    }
+
+    public void selectDataElement(IDataElement dataElement) {
+        this.treeViewer.reveal(dataElement);
+        this.treeViewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
     }
 
     /**
@@ -86,7 +95,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected void setProviders() {
         this.treeViewer.setContentProvider(getContentProvider());
-        this.treeViewer.setLabelProvider(new CommontTreeViewLabelProvider(this.treeViewer));
+        this.treeViewer.setLabelProvider(new CommontTreeViewLabelProvider());
     }
 
     /**
@@ -143,6 +152,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     protected void updateView() {
-        this.treeViewer.refresh();
+        treeViewer.refresh();
     }
 }

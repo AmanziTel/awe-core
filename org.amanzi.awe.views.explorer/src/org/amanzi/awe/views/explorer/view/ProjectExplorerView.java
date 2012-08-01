@@ -11,11 +11,13 @@ import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.IModel;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 
 /**
  * project explorer view
@@ -45,7 +47,7 @@ public class ProjectExplorerView extends AbstractTreeView {
         treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
         setProviders();
-        treeViewer.setInput(getSite());
+        treeViewer.setInput(getViewSite());
         treeViewer.setComparer(new IElementComparer() {
 
             @Override
@@ -63,7 +65,10 @@ public class ProjectExplorerView extends AbstractTreeView {
                 return a == null ? b == null : a.equals(b);
             }
         });
-
+        MenuManager menuManager = new MenuManager();
+        Menu menu = menuManager.createContextMenu(treeViewer.getControl());
+        treeViewer.getControl().setMenu(menu);
+        getSite().registerContextMenu(menuManager, treeViewer);
         getSite().setSelectionProvider(treeViewer);
         setLayout(parent);
 

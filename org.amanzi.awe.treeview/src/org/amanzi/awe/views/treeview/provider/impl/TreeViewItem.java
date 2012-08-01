@@ -44,11 +44,38 @@ public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
     @Override
     public IDataElement getDataElement() {
         return element;
+
     }
 
     @Override
     public T getParent() {
         return model;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((element == null) ? 0 : element.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (element.getClass() != obj.getClass())
+            return false;
+        IDataElement other = (IDataElement)obj;
+        if (element == null) {
+            if (other != null)
+                return false;
+        } else if (!element.equals(other))
+            return false;
+        System.out.println("found");
+        return true;
     }
 
 }

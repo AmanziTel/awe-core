@@ -85,6 +85,8 @@
                   </enumeration>
                   <enumeration value="AWE_STOPPED">
                   </enumeration>
+                  <enumeration value="SHOW_IN_VIEW">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>

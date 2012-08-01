@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.awe.views.view.provider;
+package org.amanzi.awe.views.network.provider;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +22,6 @@ import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.distribution.IDistributionModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -109,6 +108,6 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
 
     @Override
     protected boolean additionalCheckChild(Object element) throws ModelException {
-        return ((IDistributionModel)element).getDistributionBars().size() > 0;
+        return true;
     }
 }

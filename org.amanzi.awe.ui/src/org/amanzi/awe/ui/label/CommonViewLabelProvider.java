@@ -20,7 +20,6 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -37,7 +36,7 @@ public class CommonViewLabelProvider extends LabelProvider {
      * 
      * @param viewer of this LabelProvider
      */
-    public CommonViewLabelProvider(final Viewer viewer) {
+    public CommonViewLabelProvider() {
         generalNodeProperties = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     }
 

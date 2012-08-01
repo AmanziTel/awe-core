@@ -13,11 +13,9 @@
 
 package org.amanzi.awe.views.treeview.provider.impl;
 
-import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.awe.ui.label.CommonViewLabelProvider;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IDataModel;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -33,37 +31,30 @@ public class CommontTreeViewLabelProvider extends CommonViewLabelProvider {
     /**
      * @param viewer
      */
-    public CommontTreeViewLabelProvider(Viewer viewer) {
-        super(viewer);
+    public CommontTreeViewLabelProvider() {
+        super();
         // TODO Auto-generated constructor stub
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public String getText(final Object element) {
-        String name = super.getText(element);
-        if (name != null) {
-            return name;
-        } else if (element instanceof ITreeItem) {
+        if (element instanceof ITreeItem) {
             ITreeItem<IDataModel> item = (ITreeItem<IDataModel>)element;
-            name = (String)item.getDataElement().get(generalNodeProperties.getNodeNameProperty());
-            return name != null ? name : element.toString();
+            return super.getText(item.getDataElement());
+        } else {
+            return super.getText(element);
         }
-        return null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Image getImage(Object element) {
-        Image img = super.getImage(element);
-        if (img != null) {
-            return img;
-        } else if (element instanceof ITreeItem) {
+        if (element instanceof ITreeItem) {
             ITreeItem<IDataModel> item = (ITreeItem<IDataModel>)element;
-            String type = (String)item.getDataElement().get(generalNodeProperties.getNodeTypeProperty());
-            return IconManager.getInstance().getImage(type);
+            return super.getImage(item.getDataElement());
+        } else {
+            return super.getImage(element);
         }
-
-        return null;
     }
 }
