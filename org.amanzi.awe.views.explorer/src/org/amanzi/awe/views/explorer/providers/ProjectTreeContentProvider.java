@@ -85,19 +85,27 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
 
     @Override
     protected boolean additionalCheckChild(Object element) throws ModelException {
-        return false;
+        return true;
     }
 
     @Override
     protected Object[] processReturment(IProjectModel t) {
         LOGGER.info("process returment statement for project " + t);
         Collections.sort(models, new IModelComparator());
-        return models.toArray();
+        List<ITreeItem<IModel>> treeItems = new ArrayList<ITreeItem<IModel>>();
+        for (IModel model : models) {
+            ITreeItem<IModel> item = new TreeViewItem<IModel>(t, model.asDataElement());
+            treeItems.add(item);
+        }
+        return treeItems.toArray();
     }
 
     @Override
     protected void handleInnerElements(ITreeItem<IProjectModel> item) throws ModelException {
         models = new ArrayList<IModel>();
+        if (!item.getParent().asDataElement().equals(item.getDataElement())) {
+            return;
+        }
         for (INetworkModel model : networkModelProvider.findAll(item.getParent())) {
             LOGGER.info("add model " + model + " to project node");
             models.add(model);

@@ -12,9 +12,9 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.distribution.IDistributionBar;
 import org.amanzi.neo.models.distribution.IDistributionModel;
@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
@@ -33,7 +31,7 @@ import org.eclipse.swt.widgets.Text;
  * existence of the NetworkRelationshipTypes.CHILD relation, and the set of INetworkModel nodes
  * defined by the INetworkModel.java class.
  * 
- * @author Kasnitskij_V
+ * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
 
@@ -99,21 +97,6 @@ public class NetworkTreeView extends AbstractTreeView {
 
         setProviders();
         this.treeViewer.setInput(getSite());
-
-        this.treeViewer.getTree().addMouseTrackListener(new MouseTrackListener() {
-
-            @Override
-            public void mouseEnter(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExit(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseHover(MouseEvent e) {
-            }
-        });
 
         addSearchListener();
         getSite().setSelectionProvider(this.treeViewer);

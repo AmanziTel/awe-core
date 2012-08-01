@@ -106,4 +106,9 @@ public class DataElement implements IDataElement {
     public INodeType getNodeType() {
         return nodeType;
     }
+
+    @Override
+    public long getId() {
+        return node == null ? -1 : node.getId();
+    }
 }

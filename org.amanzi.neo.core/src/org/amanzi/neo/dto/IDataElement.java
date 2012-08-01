@@ -51,5 +51,7 @@ public interface IDataElement {
      */
     Set<String> keySet();
 
+    long getId();
+
     INodeType getNodeType();
 }
