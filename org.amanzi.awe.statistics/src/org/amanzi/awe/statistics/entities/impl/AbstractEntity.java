@@ -86,7 +86,7 @@ public abstract class AbstractEntity {
         initStatisticsService();
         if (parent == null) {
             LOGGER.error("parentNode can't be null");
-            throw new IllegalArgumentException("Parent node cann't be null");
+            throw new IllegalArgumentException("Parent node can't be null");
         }
         parentNode = parent;
         if (current == null) {

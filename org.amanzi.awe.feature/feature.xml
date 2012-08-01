@@ -178,7 +178,29 @@
          unpack="false"/>
 
    <plugin
+         id="org.amanzi.awe.views.explorer.menu"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
          id="org.amanzi.awe.treeview"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.views.network.messages"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.views.network"
          download-size="0"
          install-size="0"
          version="0.0.0"

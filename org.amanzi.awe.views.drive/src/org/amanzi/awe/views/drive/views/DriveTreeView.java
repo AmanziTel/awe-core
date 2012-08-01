@@ -9,10 +9,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.awe.treeview.AbstractTreeView;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.drive.views.view.provider.DriveTreeContentProvider;
-import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -46,18 +46,15 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
         super();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets .Composite)
-     */
     @Override
-    public void createPartControl(Composite parent) {
-        tSearch = new Text(parent, SWT.BORDER);
-        treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
+    protected void createControls(Composite parent) {
+        settSearch(new Text(parent, SWT.BORDER));
+        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL));
         setProviders();
-        treeViewer.setInput(getSite());
+        getTreeViewer().setInput(getSite());
         initializeListeners();
         setLayout(parent);
+
     }
 
     /*
@@ -72,7 +69,7 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
      * Initialize tree view listeners
      */
     private void initializeListeners() {
-        treeViewer.addTreeListener(new ITreeViewerListener() {
+        getTreeViewer().addTreeListener(new ITreeViewerListener() {
 
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
@@ -80,7 +77,7 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
                 boolean isPrevious = Messages.PreviousElementsTitle.equals(expandedElement);
                 if (Messages.NextElementsTitle.equals(expandedElement) || isPrevious) {
                     contentProvider.setPreviousPressed(isPrevious);
-                    treeViewer.setInput(getSite());
+                    getTreeViewer().setInput(getSite());
                 }
             }
 
@@ -89,7 +86,7 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
             }
         });
 
-        treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
@@ -121,7 +118,6 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
                 }
             }
         });
-        addSearchListener();
     }
 
     @Override

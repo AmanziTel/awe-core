@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.views.network;
+package org.amanzi.awe.views.network.messages;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;

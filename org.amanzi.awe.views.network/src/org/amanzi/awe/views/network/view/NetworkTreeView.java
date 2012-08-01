@@ -12,10 +12,10 @@
  */
 package org.amanzi.awe.views.network.view;
 
+import org.amanzi.awe.treeview.AbstractTreeView;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
-import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.distribution.IDistributionBar;
 import org.amanzi.neo.models.distribution.IDistributionModel;
 import org.amanzi.neo.models.distribution.IDistributionalModel;
@@ -39,8 +39,6 @@ public class NetworkTreeView extends AbstractTreeView {
 
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
-    public static final String PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.PropertiesView";
-
     public NetworkTreeView() {
         super();
     }
@@ -55,17 +53,29 @@ public class NetworkTreeView extends AbstractTreeView {
      */
     @Override
     protected void addEventListeners() {
-        eventManager.addListener(this, EventStatus.PROJECT_CHANGED);
+        getEventManager().addListener(this, EventStatus.PROJECT_CHANGED);
     }
 
     /**
      * This is a callback that will allow us to create the viewer and initialize it.
      */
+
     @Override
-    public void createPartControl(Composite parent) {
-        this.tSearch = new Text(parent, SWT.BORDER);
-        this.treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-        this.treeViewer.setComparer(new IElementComparer() {
+    protected IContentProvider getContentProvider() {
+        return new NetworkTreeContentProvider();
+    }
+
+    @Override
+    public void setFocus() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    protected void createControls(Composite parent) {
+        settSearch(new Text(parent, SWT.BORDER));
+        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
+        getTreeViewer().setComparer(new IElementComparer() {
 
             @Override
             public boolean equals(Object a, Object b) {
@@ -96,21 +106,9 @@ public class NetworkTreeView extends AbstractTreeView {
         });
 
         setProviders();
-        this.treeViewer.setInput(getSite());
-
-        addSearchListener();
-        getSite().setSelectionProvider(this.treeViewer);
+        getTreeViewer().setInput(getSite());
+        getSite().setSelectionProvider(getTreeViewer());
         setLayout(parent);
-    }
-
-    @Override
-    protected IContentProvider getContentProvider() {
-        return new NetworkTreeContentProvider();
-    }
-
-    @Override
-    public void setFocus() {
-        // TODO Auto-generated method stub
 
     }
 }

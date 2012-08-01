@@ -79,7 +79,7 @@ public class ScriptUtils {
                 jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
             }
         } catch (ScriptingException e) {
-            LOGGER.error("Cann't ensure jruby.home", e);
+            LOGGER.error("Can't ensure jruby.home", e);
             throw new ScriptingException(e);
         }
         return jRubyHome;
@@ -92,7 +92,7 @@ public class ScriptUtils {
                 jRubyVersion = findJRubyVersion(getJRubyHome());
             }
         } catch (Exception e) {
-            LOGGER.error("Cann't ensure jruby.version", e);
+            LOGGER.error("Can't ensure jruby.version", e);
             throw new ScriptingException(e);
         }
         return jRubyVersion;

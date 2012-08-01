@@ -96,6 +96,11 @@
         <module>org.amanzi.awe.treeview</module>
         <module>org.amanzi.awe.ui.udig</module>
         <module>org.amanzi.awe.views.explorer</module>
+	<module>org.amanzi.awe.views.explorer.menu</module>
+	<module>org.amanzi.awe.views.network</module>
+	<module>org.amanzi.awe.views.network.messages</module>
+	<module>org.amanzi.awe.treeview</module>
+
 	<module>org.amanzi.awe.views.statistics</module>
       </modules>
     </profile>

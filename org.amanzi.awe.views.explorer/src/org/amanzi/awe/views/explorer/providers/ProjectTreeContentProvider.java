@@ -18,10 +18,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.amanzi.awe.treeview.provider.ITreeItem;
+import org.amanzi.awe.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.awe.treeview.provider.impl.TreeViewItem;
 import org.amanzi.awe.views.explorer.ProjectExplorerPluginMessages;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
-import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -39,11 +39,6 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
 
     private List<IModel> models;
-
-    @Override
-    public void dispose() {
-
-    }
 
     /**
      * <p>
@@ -72,15 +67,15 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     public Object[] getElements(final Object inputElement) {
         super.getElements(inputElement);
         try {
-            for (IProjectModel model : projectModelProvider.findAll()) {
-                rootList.add(new TreeViewItem<IProjectModel>(model, model.asDataElement()));
+            for (IProjectModel model : getProjectModelProvider().findAll()) {
+                getRootList().add(new TreeViewItem<IProjectModel>(model, model.asDataElement()));
             }
         } catch (ModelException e) {
             MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
                     ProjectExplorerPluginMessages.GetElementsException);
         }
 
-        return rootList.toArray();
+        return getRootList().toArray();
     }
 
     @Override
@@ -106,7 +101,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
         if (!item.getParent().asDataElement().equals(item.getDataElement())) {
             return;
         }
-        for (INetworkModel model : networkModelProvider.findAll(item.getParent())) {
+        for (INetworkModel model : getNetworkModelProvider().findAll(item.getParent())) {
             LOGGER.info("add model " + model + " to project node");
             models.add(model);
         }

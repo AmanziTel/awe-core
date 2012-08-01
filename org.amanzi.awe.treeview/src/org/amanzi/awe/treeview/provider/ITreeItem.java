@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.treeview.provider;
+package org.amanzi.awe.treeview.provider;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;

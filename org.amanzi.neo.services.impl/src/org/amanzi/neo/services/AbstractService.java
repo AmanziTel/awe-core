@@ -648,12 +648,12 @@ public abstract class AbstractService implements IDatabaseEventListener {
      */
     public void saveFilter(Node parentNode, INamedFilter filter) throws DatabaseException {
         if (parentNode == null) {
-            LOGGER.error("saveFilter(...) parent node cann't be null");
-            throw new IllegalArgumentException("saveFilter(...) parent node cann't be null");
+            LOGGER.error("saveFilter(...) parent node can't be null");
+            throw new IllegalArgumentException("saveFilter(...) parent node can't be null");
         }
         if (filter == null && !parentNode.getProperty(TYPE).equals(FilterNodeType.FILTER.getId())) {
-            LOGGER.error("saveFilter(...) filter node cann't be null");
-            throw new IllegalArgumentException("saveFilter(...) filter node cann't be null");
+            LOGGER.error("saveFilter(...) filter node can't be null");
+            throw new IllegalArgumentException("saveFilter(...) filter node can't be null");
         } else if (filter == null && parentNode.getProperty(TYPE).equals(FilterNodeType.FILTER.getId())) {
             return;
         }
@@ -669,7 +669,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
             tx.success();
         } catch (Exception e) {
             tx.failure();
-            LOGGER.error("Cann't save filters ", e);
+            LOGGER.error("can't save filters ", e);
             throw new DatabaseException(e);
         } finally {
             tx.finish();
@@ -745,12 +745,12 @@ public abstract class AbstractService implements IDatabaseEventListener {
      */
     public INamedFilter loadFilter(Node parentNode, String filterName) {
         if (parentNode == null) {
-            LOGGER.error("loadFilter(...) parent node cann't be null");
-            throw new IllegalArgumentException("loadFilter(...) parent node cann't be null");
+            LOGGER.error("loadFilter(...) parent node can't be null");
+            throw new IllegalArgumentException("loadFilter(...) parent node can't be null");
         }
         if (filterName == null || filterName.isEmpty()) {
-            LOGGER.error("loadFilter(...) filterName  cann't be null or empty");
-            throw new IllegalArgumentException("loadFilter(...) filterName  cann't be null or empty");
+            LOGGER.error("loadFilter(...) filterName  can't be null or empty");
+            throw new IllegalArgumentException("loadFilter(...) filterName  can't be null or empty");
         }
         Iterable<Node> filterRoots = FILTER_ROOTS_TRAVERSL_DESCRIPTION.traverse(parentNode).nodes();
         INamedFilter filter = null;
@@ -807,8 +807,8 @@ public abstract class AbstractService implements IDatabaseEventListener {
      */
     public Iterable<INamedFilter> loadFilters(Node parentNode) {
         if (parentNode == null) {
-            LOGGER.error("loadFilters(...) parent node cann't be null");
-            throw new IllegalArgumentException("loadFilter(...) parent node cann't be null");
+            LOGGER.error("loadFilters(...) parent node can't be null");
+            throw new IllegalArgumentException("loadFilter(...) parent node can't be null");
         }
         Iterable<Node> filterRoots = FILTER_ROOTS_TRAVERSL_DESCRIPTION.traverse(parentNode).nodes();
         INamedFilter filter = null;

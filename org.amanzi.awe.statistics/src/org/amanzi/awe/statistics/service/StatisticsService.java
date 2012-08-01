@@ -124,7 +124,7 @@ public class StatisticsService extends AbstractService {
             setAnyProperty(statisticsRoot, NAME, name);
         } catch (Exception e) {
             /*
-             * cann't be thrown
+             * can't be thrown
              */
             LOGGER.error("unexpected exception");
             throw new DatabaseException(e);
@@ -453,7 +453,7 @@ public class StatisticsService extends AbstractService {
             srowNode = createNode(type);
             setAnyProperty(srowNode, propertyName, value);
         } catch (DatabaseException e) {
-            LOGGER.error("Unexpectable exception thrown. Cann't compleatly identify S_ROW node type", e);
+            LOGGER.error("Unexpectable exception thrown. can't compleatly identify S_ROW node type", e);
             throw e;
         }
         if (addToChain) {

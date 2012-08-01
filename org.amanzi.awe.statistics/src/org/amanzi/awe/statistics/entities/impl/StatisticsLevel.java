@@ -48,7 +48,7 @@ public class StatisticsLevel extends AbstractEntity {
         initStatisticsService();
         if (dimensionRoot == null) {
             LOGGER.error("parent can't be null");
-            throw new IllegalArgumentException("dimension root cann't be null");
+            throw new IllegalArgumentException("dimension root can't be null");
         }
         if (!StatisticsNodeTypes.DIMENSION.getId().equals(statisticService.getType(dimensionRoot))) {
             LOGGER.error("incorrect parent type.parentNode should have Dimension Type.");
@@ -57,7 +57,7 @@ public class StatisticsLevel extends AbstractEntity {
         parentNode = dimensionRoot;
         if (name == null || name.isEmpty()) {
             LOGGER.error("level name can't be null or empty");
-            throw new IllegalArgumentException("level name cann't be null");
+            throw new IllegalArgumentException("level name can't be null");
         }
         this.name = name;
         rootNode = statisticService.findStatisticsLevelNode(parentNode, name);

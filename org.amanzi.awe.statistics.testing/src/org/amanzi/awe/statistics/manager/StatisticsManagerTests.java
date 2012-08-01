@@ -104,7 +104,7 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
         try {
             StatisticsPlugin.getDefault().getRuntimeWrapper().executeScriptByName(PREPARATOR_NAME);
         } catch (FileNotFoundException e) {
-            LOGGER.error("cann't find file" + PREPARATOR_NAME, e);
+            LOGGER.error("can't find file" + PREPARATOR_NAME, e);
         } catch (ScriptingException e) {
             LOGGER.error("can't execute script", e);
         }

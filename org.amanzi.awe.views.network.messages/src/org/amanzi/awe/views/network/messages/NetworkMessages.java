@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.amanzi.awe.views.network.view;
+package org.amanzi.awe.views.network.messages;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
