@@ -52,6 +52,8 @@ public abstract class AbstractStatisticsTest extends AbstractTest {
             range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
             break;
         case WEEKLY:
+            min.set(Calendar.MONTH, Calendar.JANUARY);
+            min.set(Calendar.WEEK_OF_MONTH, 1);
             min.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
             max.setTimeInMillis(min.getTimeInMillis());
             max.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
