@@ -33,8 +33,11 @@ import org.eclipse.jface.dialogs.MessageDialog;
  * @since 1.0.0
  */
 public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
+
+    // TODO: LN: 01.08.2012: add modifier
     Iterable<IDataElement> children = null;
 
+    // TODO: LN: 01.08.2012: remove method or add functionality
     @Override
     public void dispose() {
 
@@ -48,6 +51,8 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
+    // TODO: LN: 01.08.2012: seems like this class can be moved to org.amanzi.awe.treeview plugin
+    // since it contains general functionality
     public static class IDataElementComparator implements Comparator<ITreeItem<INetworkModel>> {
 
         @Override
