@@ -11,14 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.treeview;
+package org.amanzi.awe.treeview;
 
+import org.amanzi.awe.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.apache.log4j.Logger;

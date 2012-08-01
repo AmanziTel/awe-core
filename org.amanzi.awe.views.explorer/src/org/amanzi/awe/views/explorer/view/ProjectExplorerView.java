@@ -7,9 +7,9 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
+import org.amanzi.awe.treeview.AbstractTreeView;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
-import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.models.IModel;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IContentProvider;

@@ -18,10 +18,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.amanzi.awe.treeview.provider.ITreeItem;
+import org.amanzi.awe.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.awe.treeview.provider.impl.TreeViewItem;
 import org.amanzi.awe.views.explorer.ProjectExplorerPluginMessages;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
-import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
