@@ -40,7 +40,8 @@ public class Dimension extends AbstractEntity {
      */
     private static final Logger LOGGER = Logger.getLogger(Dimension.class);
 
-    private DimensionTypes dimensionType;
+    private final DimensionTypes dimensionType;
+    // TODO: LN: 01.08.2012, why LinkedHashMap???
     private LinkedHashMap<String, StatisticsLevel> levels;
 
     /**
@@ -53,6 +54,7 @@ public class Dimension extends AbstractEntity {
      */
     public Dimension(Node statisticsRoot, DimensionTypes dimensionType) throws DatabaseException, IllegalNodeDataException {
         super(StatisticsNodeTypes.DIMENSION);
+        // TODO: LN: 01.08.2012, input check should be first
         initStatisticsService();
         if (statisticsRoot == null) {
             LOGGER.error("parent can't be null");
@@ -104,8 +106,7 @@ public class Dimension extends AbstractEntity {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public StatisticsLevel createLevel(String name) throws DuplicateNodeNameException, DatabaseException,
-            IllegalNodeDataException {
+    public StatisticsLevel createLevel(String name) throws DuplicateNodeNameException, DatabaseException, IllegalNodeDataException {
         loadChildIfNecessary();
         if (levels.containsKey(name)) {
             LOGGER.error("level with name." + name + "is already exists");
@@ -137,6 +138,7 @@ public class Dimension extends AbstractEntity {
 
     protected void loadChildIfNecessary() throws DatabaseException {
         if (levels == null) {
+            // TODO: LN: 01.08.2012, why LinkedHashMap?????????
             levels = new LinkedHashMap<String, StatisticsLevel>();
             Iterable<Node> levelNodes = statisticService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD);
             if (levelNodes == null) {

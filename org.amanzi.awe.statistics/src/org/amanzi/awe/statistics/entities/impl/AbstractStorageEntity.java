@@ -35,6 +35,7 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntity> extends AbstractFlaggedEntity {
 
+    // TODO: LN: 01.08.2012, why LinkedHashMap???
     protected LinkedHashMap<String, T> childs;
     private static final Logger LOGGER = Logger.getLogger(AbstractStorageEntity.class);
 
@@ -65,7 +66,8 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * @throws IllegalNodeDataException
      */
     public T findChildByName(String name) {
-        if (name == null || name.isEmpty()) {
+        // TODO: LN: 01.08.2012, use StringUtils
+        if ((name == null) || name.isEmpty()) {
             LOGGER.error("name element is null.");
             throw new IllegalArgumentException("timestamp element is null");
         }
@@ -86,8 +88,10 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
     /**
      * Loads rows if necessary
      */
+    // TODO: LN: 01.08.2012, add private/protected modifier
     void loadChildIfNecessary() {
         if (childs == null) {
+            // TODO: LN: 01.08.2012, why LinkedHashMap??????
             childs = new LinkedHashMap<String, T>();
             Iterable<Node> rowsNodes = statisticService.getChildrenChainTraverser(rootNode);
             if (rowsNodes == null) {
@@ -110,8 +114,10 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * @throws IllegalNodeDataException
      * @throws DatabaseException
      */
+    // TODO: LN: 01.08.2012, add private/protected modifier
     T createChildWithName(String name, INodeType entityType) throws DuplicateNodeNameException, DatabaseException,
             IllegalNodeDataException {
+        // TODO: LN: 01.08.2012, input check should be first
         loadChildIfNecessary();
         if (childs.containsKey(name)) {
             LOGGER.error("child with name." + name + "is already exists");

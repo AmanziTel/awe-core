@@ -43,7 +43,7 @@ public abstract class AbstractEntity {
     /*
      * service instantiation
      */
-     static void setStatisticsService(StatisticsService service) {
+    static void setStatisticsService(StatisticsService service) {
         statisticService = service;
     }
 
@@ -67,6 +67,7 @@ public abstract class AbstractEntity {
      * @param nodeType
      */
     protected AbstractEntity(INodeType nodeType) {
+        // TODO: LN: 01.08.2012, check of input should be first
         initStatisticsService();
         if (nodeType == null) {
             LOGGER.error("incorrect node Type");
@@ -82,6 +83,7 @@ public abstract class AbstractEntity {
      * @param current
      */
     protected AbstractEntity(Node parent, Node current, INodeType type) {
+        // TODO: LN: 01.08.2012, check of input should be first
         this(type);
         initStatisticsService();
         if (parent == null) {
@@ -117,6 +119,7 @@ public abstract class AbstractEntity {
         return nodeType;
     }
 
+    @Override
     public String toString() {
         return getName();
     }

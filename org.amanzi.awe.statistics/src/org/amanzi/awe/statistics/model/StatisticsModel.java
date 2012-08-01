@@ -48,9 +48,9 @@ public class StatisticsModel extends AbstractStatisticsModel {
 
     private static final String NODES_USED = "used_nodes";
     private static final String TOTAL_NODES = "total_nodes";
-    private Long maxTimestamp;
-    private Long minTimestamp;
-    private EntityFactory factory = EntityFactory.getInstance();
+    private final Long maxTimestamp;
+    private final Long minTimestamp;
+    private final EntityFactory factory = EntityFactory.getInstance();
 
     private long totalNodes;
 
@@ -72,7 +72,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
             throw new IllegalArgumentException("parentNode can't be null");
         }
         this.parentNode = parentNode;
-        this.name = (String)templateName;
+        this.name = templateName;
         rootNode = statisticService.findStatistic(this.parentNode, name);
         if (rootNode == null) {
             rootNode = statisticService.createStatisticsModelRoot(parentNode, name, false);
@@ -94,7 +94,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
      */
     private void initDimensions() throws DatabaseException {
 
-        if (minTimestamp == null || maxTimestamp == null) {
+        if ((minTimestamp == null) || (maxTimestamp == null)) {
             LOGGER.info("missing required parametrs");
             return;
         }
@@ -134,6 +134,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
             Period highestPeriod = Period.getHighestPeriod(minTimestamp, maxTimestamp);
             createTimeLevels(timeModel, highestPeriod);
             factory.createDimension(this, DimensionTypes.NETWORK);
+            // TODO: LN: 01.08.2012, catch only one AWE Exception
         } catch (IllegalNodeDataException e) {
             LOGGER.error("can't intialize default Dimensions because of", e);
         } catch (DuplicateNodeNameException e) {
@@ -204,6 +205,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
         try {
             statisticService.setAnyProperty(rootNode, NODES_USED, noUsedNodes);
             usedNodes = noUsedNodes;
+            // TODO: LN: 01.08.2012, catch AWEException instead of Exception
         } catch (Exception e) {
             LOGGER.error("can't set nodes_used property because of", e);
         }
@@ -218,6 +220,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
         try {
             statisticService.setAnyProperty(rootNode, TOTAL_NODES, count);
             totalNodes = count;
+            // TODO: LN: 01.08.2012, catch AWEException instead of Exception
         } catch (Exception e) {
             LOGGER.error("can't set total_nodes property because of", e);
         }

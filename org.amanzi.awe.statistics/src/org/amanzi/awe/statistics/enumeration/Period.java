@@ -45,7 +45,7 @@ public enum Period {
             cl.set(Calendar.SECOND, 0);
             cl.set(Calendar.MILLISECOND, 0);
             int min = cl.get(Calendar.MINUTE);
-            min = min - min % 15;
+            min = min - (min % 15);
             cl.set(Calendar.MINUTE, min);
             return cl.getTimeInMillis();
         }
@@ -168,6 +168,7 @@ public enum Period {
     };
 
     private final String id;
+    // TODO: LN: 01.08.2012, do we need it? we can just sort Period.values by odd()
     private static final Period[] SORTED_PERIODS = new Period[] {Period.ALL, Period.YEARLY, Period.MONTHLY, WEEKLY, Period.DAILY,
             Period.HOURLY};
     private Period underlyingPeriod;
@@ -253,7 +254,7 @@ public enum Period {
         Period highestPeriod;
         Period result = null;
 
-        for (int i = 0; i < SORTED_PERIODS.length && result == null; i++) {
+        for (int i = 0; (i < SORTED_PERIODS.length) && (result == null); i++) {
             highestPeriod = SORTED_PERIODS[i];
 
             if (highestPeriod == Period.HOURLY) {
@@ -299,6 +300,7 @@ public enum Period {
      * @param endTime
      * @return
      */
+    // TODO: LN: 01.08.2012, why collection??????
     public static Collection<String> getAvailablePeriods(long startTime, long endTime) {
         List<String> periods = new ArrayList<String>();
         long time = (startTime - endTime) / (1000 * 60);

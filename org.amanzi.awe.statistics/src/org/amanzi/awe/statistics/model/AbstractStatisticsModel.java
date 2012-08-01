@@ -25,6 +25,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012, do we need it??????
 public abstract class AbstractStatisticsModel extends AbstractModel {
     protected Node parentNode;
 

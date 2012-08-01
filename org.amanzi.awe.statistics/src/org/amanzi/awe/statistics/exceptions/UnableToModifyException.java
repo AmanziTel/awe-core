@@ -21,6 +21,7 @@ package org.amanzi.awe.statistics.exceptions;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012, remove unused constructors
 public class UnableToModifyException extends StatisticsException {
 
     /** long serialVersionUID field */

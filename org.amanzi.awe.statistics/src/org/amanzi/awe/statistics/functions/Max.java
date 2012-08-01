@@ -38,6 +38,7 @@ public class Max implements IAggregationFunction {
 
     @Override
     public IAggregationFunction update(Number value) {
+        // TODO: LN: 01.08.2012, use Math.max()
         if (maxValue.compareTo(value.doubleValue()) < 0) {
             maxValue = value.doubleValue();
         }

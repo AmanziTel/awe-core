@@ -23,6 +23,7 @@ import org.neo4j.graphdb.Node;
  * @author Pechko_E
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012, not used anywhere
 public class PropertyBasedHeader implements IStatisticsHeader {
     private String property;
     private String name;

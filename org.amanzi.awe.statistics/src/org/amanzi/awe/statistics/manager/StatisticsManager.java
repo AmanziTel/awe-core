@@ -90,14 +90,14 @@ public class StatisticsManager {
     /*
      * entity factory
      */
-    private EntityFactory factory = EntityFactory.getInstance();
+    private final EntityFactory factory = EntityFactory.getInstance();
     /*
      * used models
      */
     private StatisticsModel currentStatisticsModel;
     private IDriveModel aggregatedModel;
     private Map<String, File> availableTemplates;
-    private StatisticsUtils utils = StatisticsUtils.getInstance();
+    private final StatisticsUtils utils = StatisticsUtils.getInstance();
     private JRubyRuntimeWrapper runtime;
 
     /*
@@ -232,7 +232,7 @@ public class StatisticsManager {
                 for (StatisticsRow lowerRow : lowerGroup.getAllChild()) {
                     if (!lowerRow.isSummaryRow()) {
                         Long lowerPeriod = lowerRow.getTimestamp();
-                        if (lowerPeriod >= currentStartTime && lowerPeriod < nextStartTime) {
+                        if ((lowerPeriod >= currentStartTime) && (lowerPeriod < nextStartTime)) {
                             StatisticsRow newRow = findOrCreateRow(higherGroup, currentStartTime, period);
                             newRow.addSourceRow(lowerRow);
                             List<TemplateColumn> columns = template.getColumns();
@@ -382,6 +382,8 @@ public class StatisticsManager {
 
             currentStartTime = nextStartTime;
             nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
+            // TODO: LN: 01.08.2012, use LOGGER.isDebugEnabled() to prevent time spending on
+            // creation of debug message on live system where debug disabled
             debugInfo = "Total no. of nodes processed: " + count + "\tCalc time for period="
                     + (System.currentTimeMillis() - startForPeriod) + "\tTime to update cells: " + cellCalcTime
                     + "\tTime to find a group:" + startFindGroup;
@@ -414,24 +416,24 @@ public class StatisticsManager {
             Condition condition = threshold.getCondition();
             switch (condition) {
             case LT:
-                cell.setFlagged(cell.getValue() != null && thresholdValue.doubleValue() >= cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue() != null
-                        && thresholdValue.doubleValue() >= summaryCell.getValue().doubleValue());
+                cell.setFlagged((cell.getValue() != null) && (thresholdValue.doubleValue() >= cell.getValue().doubleValue()));
+                summaryCell.setFlagged((summaryCell.getValue() != null)
+                        && (thresholdValue.doubleValue() >= summaryCell.getValue().doubleValue()));
                 break;
             case LE:
-                cell.setFlagged(cell.getValue() != null && thresholdValue.doubleValue() > cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue() != null
-                        && thresholdValue.doubleValue() > summaryCell.getValue().doubleValue());
+                cell.setFlagged((cell.getValue() != null) && (thresholdValue.doubleValue() > cell.getValue().doubleValue()));
+                summaryCell.setFlagged((summaryCell.getValue() != null)
+                        && (thresholdValue.doubleValue() > summaryCell.getValue().doubleValue()));
                 break;
             case GT:
-                cell.setFlagged(cell.getValue() != null && thresholdValue.doubleValue() <= cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue() != null
-                        && thresholdValue.doubleValue() <= summaryCell.getValue().doubleValue());
+                cell.setFlagged((cell.getValue() != null) && (thresholdValue.doubleValue() <= cell.getValue().doubleValue()));
+                summaryCell.setFlagged((summaryCell.getValue() != null)
+                        && (thresholdValue.doubleValue() <= summaryCell.getValue().doubleValue()));
                 break;
             case GE:
-                cell.setFlagged(cell.getValue() != null && thresholdValue.doubleValue() < cell.getValue().doubleValue());
-                summaryCell.setFlagged(summaryCell.getValue() != null
-                        && thresholdValue.doubleValue() < summaryCell.getValue().doubleValue());
+                cell.setFlagged((cell.getValue() != null) && (thresholdValue.doubleValue() < cell.getValue().doubleValue()));
+                summaryCell.setFlagged((summaryCell.getValue() != null)
+                        && (thresholdValue.doubleValue() < summaryCell.getValue().doubleValue()));
                 break;
             default:
                 break;
@@ -573,6 +575,8 @@ public class StatisticsManager {
      * @return script as string
      */
     private String createScriptForTemplate(Template template) {
+        // TODO: LN: 01.08.2012, variable name
+        // TODO: LN: 01.08.2012, to constant
         final String HASH_PATTERN = "\"%s\"=>%s(self),\n";
         StringBuffer sb = new StringBuffer("{");
         for (TemplateColumn column : template.getColumns()) {
@@ -611,7 +615,7 @@ public class StatisticsManager {
             DatabaseException {
         Double lat = (Double)locationNode.get(DriveModel.LATITUDE);
         Double lon = (Double)locationNode.get(DriveModel.LONGITUDE);
-        if (lat != null && lon != null) {
+        if ((lat != null) && (lon != null)) {
             ReferencedEnvelope re = new ReferencedEnvelope(lon, lon, lat, lat, null);
             nodeToUpdate.updateBbox(re);
         }
