@@ -56,7 +56,7 @@ public class Dimension extends AbstractEntity {
         initStatisticsService();
         if (statisticsRoot == null) {
             LOGGER.error("parent can't be null");
-            throw new IllegalArgumentException("statistics root cann't be null");
+            throw new IllegalArgumentException("statistics root can't be null");
         }
         rootNode = statisticService.findDimension(statisticsRoot, dimensionType);
         if (rootNode == null) {

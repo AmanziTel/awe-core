@@ -44,7 +44,7 @@ public class ChangeProjectEvent extends AbstractEvent {
         try {
             ProjectModel.setActiveProject(projectName);
         } catch (AWEException e) {
-            LOGGER.error("Cann't set project name because:", e);
+            LOGGER.error("can't set project name because:", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }

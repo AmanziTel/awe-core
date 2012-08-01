@@ -68,7 +68,7 @@ public class StatisticsCell extends AbstractFlaggedEntity implements IAggregated
      */
     public void addSources(List<IDataElement> sources) throws DatabaseException {
         if (sources == null) {
-            LOGGER.error(" sources list cann't be null");
+            LOGGER.error(" sources list can't be null");
             throw new IllegalArgumentException("sources list cannt be null");
         }
         for (IDataElement element : sources) {

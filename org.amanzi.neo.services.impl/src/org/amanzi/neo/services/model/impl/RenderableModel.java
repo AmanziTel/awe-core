@@ -146,7 +146,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
 
     public GisModel findGisByName(String gisName) throws DatabaseException {
         if (gisName == null || gisName.isEmpty()) {
-            throw new IllegalArgumentException("findGisByName(... ) gisName cann't be null");
+            throw new IllegalArgumentException("findGisByName(... ) gisName can't be null");
         }
         Iterable<GisModel> allGis = getAllGisModels();
         for (GisModel gis : allGis) {

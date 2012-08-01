@@ -331,7 +331,7 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
         Iterable<Node> periods = statisticsService.getFirstRelationTraverser(dimension, DatasetRelationTypes.CHILD);
-        Assert.assertNotNull("Periods count cann't be null", periods);
+        Assert.assertNotNull("Periods count can't be null", periods);
         Iterator<Node> periodsIterator = periods.iterator();
 
         while (periodsIterator.hasNext()) {
@@ -355,7 +355,7 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
         Iterable<Node> periods = statisticsService.getFirstRelationTraverser(dimension, DatasetRelationTypes.CHILD);
-        Assert.assertNotNull("Periods count cann't be null", periods);
+        Assert.assertNotNull("Periods count can't be null", periods);
         Node highestPeriod = statisticsService.getHighestPeriod(periods);
         Assert.assertEquals("Unexpected highest period ", periodW, highestPeriod);
     }
@@ -506,7 +506,7 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
             periodNode = datasetService.createNode(statisticNode, DatasetRelationTypes.CHILD, StatisticsNodeTypes.LEVEL);
             datasetService.setAnyProperty(periodNode, DatasetService.NAME, name);
         } catch (Exception e) {
-            LOGGER.error("cann't create period statistic root");
+            LOGGER.error("can't create period statistic root");
         }
         return periodNode;
     }
@@ -523,7 +523,7 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
             dimension = datasetService.createNode(parent, DatasetRelationTypes.CHILD, StatisticsNodeTypes.DIMENSION);
             datasetService.setAnyProperty(dimension, DatasetService.NAME, type.getId());
         } catch (Exception e) {
-            LOGGER.error("cann't create statistics root");
+            LOGGER.error("can't create statistics root");
         }
         return dimension;
     }
@@ -539,7 +539,7 @@ public class StatisticsServiceTests extends AbstractAWEDBTest {
                     StatisticsNodeTypes.STATISTICS_MODEL);
             datasetService.setAnyProperty(statRot, DatasetService.NAME, STATISTIC_ROOT_NAME);
         } catch (Exception e) {
-            LOGGER.error("cann't create statistics root");
+            LOGGER.error("can't create statistics root");
         }
         return statRot;
     }

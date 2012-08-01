@@ -135,7 +135,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
             createTimeLevels(timeModel, highestPeriod);
             factory.createDimension(this, DimensionTypes.NETWORK);
         } catch (IllegalNodeDataException e) {
-            LOGGER.error("cann't intialize default Dimensions because of", e);
+            LOGGER.error("can't intialize default Dimensions because of", e);
         } catch (DuplicateNodeNameException e) {
             LOGGER.error("cann'initialize default time levels", e);
         }
@@ -205,7 +205,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
             statisticService.setAnyProperty(rootNode, NODES_USED, noUsedNodes);
             usedNodes = noUsedNodes;
         } catch (Exception e) {
-            LOGGER.error("cann't set nodes_used property because of", e);
+            LOGGER.error("can't set nodes_used property because of", e);
         }
     }
 
@@ -219,7 +219,7 @@ public class StatisticsModel extends AbstractStatisticsModel {
             statisticService.setAnyProperty(rootNode, TOTAL_NODES, count);
             totalNodes = count;
         } catch (Exception e) {
-            LOGGER.error("cann't set total_nodes property because of", e);
+            LOGGER.error("can't set total_nodes property because of", e);
         }
     }
 

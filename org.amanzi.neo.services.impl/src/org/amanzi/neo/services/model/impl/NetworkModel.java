@@ -833,13 +833,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public Set<IDataElement> findElementByPropertyValue(INodeType type, String propertyName, Object propertyValue)
             throws DatabaseException {
         if (type == null) {
-            throw new IllegalArgumentException("type cann't be null");
+            throw new IllegalArgumentException("type can't be null");
         }
         if (propertyName == null) {
-            throw new IllegalArgumentException("propertyName cann't be null");
+            throw new IllegalArgumentException("propertyName can't be null");
         }
         if (propertyValue == null) {
-            throw new IllegalArgumentException("propertyValue cann't be null");
+            throw new IllegalArgumentException("propertyValue can't be null");
         }
         Set<IDataElement> result = new HashSet<IDataElement>();
         Iterator<Node> findedNodes = nwServ.findByIndex(getIndex(type), propertyName, propertyValue);
@@ -886,10 +886,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     public IDataElement addAntennaPattern(IDataElement element, AntennaPattern value) {
         if (element == null) {
-            throw new IllegalArgumentException("element cann't be null");
+            throw new IllegalArgumentException("element can't be null");
         }
         if (value == null) {
-            throw new IllegalArgumentException("value cann't be null");
+            throw new IllegalArgumentException("value can't be null");
         }
         INodeType typeElement = NodeTypeManager.getType(element.get(AbstractService.TYPE).toString());
         if (!typeElement.equals(NetworkElementNodeType.SITE)) {
@@ -930,10 +930,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     public Iterable<AntennaPattern> getAllAntennaPattern(IDataElement element, TypeRadiationPattern type) {
         if (element == null) {
-            throw new IllegalArgumentException("element cann't be null");
+            throw new IllegalArgumentException("element can't be null");
         }
         if (type == null) {
-            throw new IllegalArgumentException("value cann't be null");
+            throw new IllegalArgumentException("value can't be null");
         }
         INodeType typeElement = NodeTypeManager.getType(element.get(AbstractService.TYPE).toString());
         if (!typeElement.equals(NetworkElementNodeType.SITE)) {

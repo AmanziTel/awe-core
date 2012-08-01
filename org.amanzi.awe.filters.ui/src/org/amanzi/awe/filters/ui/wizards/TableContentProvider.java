@@ -60,7 +60,7 @@ public class TableContentProvider implements IContentProvider, IStructuredConten
                 }
             }
         } catch (DatabaseException e) {
-            LOGGER.error("cann't get gis for model " + model.getName(), e);
+            LOGGER.error("can't get gis for model " + model.getName(), e);
             return null;
         }
         return gisListReturnable;

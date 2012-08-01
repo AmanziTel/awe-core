@@ -127,7 +127,7 @@ public class IconManager {
      */
     private Image getImage(String iconName, String directoryPath, IconSize size) {
         if (iconName == null || iconName.isEmpty()) {
-            LOGGER.error("icon name cann't be null");
+            LOGGER.error("icon name can't be null");
         }
 
         // check if current icon is already handled and not be found

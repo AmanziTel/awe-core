@@ -38,11 +38,29 @@ import org.eclipse.jface.viewers.Viewer;
  */
 public abstract class AbstractContentProvider<T extends IModel> implements IStructuredContentProvider, ITreeContentProvider {
 
-    protected List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
-    protected INetworkModelProvider networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
-    protected IProjectModelProvider projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
-    protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
+    protected List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
+    protected INetworkModelProvider networkModelProvider;
+    protected IProjectModelProvider projectModelProvider;
+    protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+
+    /**
+     * @param networkModelProvider
+     * @param projectModelProvider
+     */
+    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider) {
+        super();
+        this.networkModelProvider = networkModelProvider;
+        this.projectModelProvider = projectModelProvider;
+    }
+
+    /**
+ * 
+ */
+    public AbstractContentProvider() {
+        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
+
+    }
 
     @Override
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
@@ -61,7 +79,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements IStru
                 handleInnerElements(item);
             }
         } catch (ModelException e) {
-            LOGGER.error("cann't get child for parentElement " + parentElement, e);
+            LOGGER.error("can't get child for parentElement " + parentElement, e);
             return null;
         }
         return processReturment(item.getParent());
