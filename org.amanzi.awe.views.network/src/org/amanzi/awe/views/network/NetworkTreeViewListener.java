@@ -36,6 +36,7 @@ public class NetworkTreeViewListener implements IAWEEventListenter {
             switch (event.getStatus()) {
             case SHOW_IN_VIEW:
                 ShowInViewEvent showInView = (ShowInViewEvent)event;
+                // TODO: LN: 01.08.2012, create abstract listener that will handle opening view
                 if (showInView.getViewId().equals(NetworkTreeView.NETWORK_TREE_VIEW_ID)) {
                     NetworkTreeView view = (NetworkTreeView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                             .showView(showInView.getViewId());
@@ -47,6 +48,7 @@ public class NetworkTreeViewListener implements IAWEEventListenter {
                 break;
             }
         } catch (PartInitException e) {
+            // TODO: LN: 01.08.2012, handle this exception
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

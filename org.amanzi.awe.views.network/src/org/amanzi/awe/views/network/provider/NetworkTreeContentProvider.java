@@ -47,6 +47,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
         try {
             networkModels = getNetworkModelProvider().findAll(getProjectModelProvider().getActiveProjectModel());
         } catch (ModelException e) {
+            // TODO: LN: 01.08.2012, exception should be logged
             MessageDialog.openError(null, NetworkTreePluginMessages.ERROR_TITLE,
                     NetworkTreePluginMessages.COULD_NOT_GET_ALL_NETWORK_MODELS);
             return null;
@@ -79,7 +80,6 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     @Override
     protected void handleRoot(ITreeItem<INetworkModel> item) throws ModelException {
         handleInnerElements(item);
-
     }
 
     @Override

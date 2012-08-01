@@ -46,6 +46,9 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener {
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
+
+    // TODO: LN: 01.08.2012, initialize this in Constructor
+    // TODO: LN: 01.08.2012, do not use protected modifer
     protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     /**
      * event manager
@@ -54,6 +57,8 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     private TreeViewer treeViewer;
     private Text tSearch;
+
+    // TODO: LN: 01.08.2012, move constants to the top
     private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
 
     /**
@@ -68,7 +73,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     public void modifyText(ModifyEvent e) {
         String searchText = tSearch.getText();
         searchInTreeView(searchText);
-
     }
 
     /**
@@ -76,6 +80,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * 
      * @param searchText
      */
+    // TODO: LN: 01.08.2012, this method do nothing - make it abstract
     protected void searchInTreeView(final String searchText) {
     }
 
@@ -98,6 +103,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
         try {
             init(this.getViewSite());
         } catch (PartInitException e) {
+            // TODO: LN: 01.08.2012, also log exception e
             LOGGER.error("can't init");
         }
     }
@@ -115,8 +121,10 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     @Override
     public void init(IViewSite site) throws PartInitException {
         eventManager.addListener(this, EventStatus.DATA_UPDATED);
+        // TODO: LN: 01.08.2012, why called two times?
         addEventListeners();
         addEventListeners();
+        // TODO: LN: 01.08.2012, super.init should be called first
         super.init(site);
     }
 

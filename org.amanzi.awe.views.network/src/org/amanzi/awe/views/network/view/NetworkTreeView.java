@@ -75,6 +75,7 @@ public class NetworkTreeView extends AbstractTreeView {
     protected void createControls(Composite parent) {
         settSearch(new Text(parent, SWT.BORDER));
         setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
+        // TODO: LN: 01.08.2012, Distribution is not a part of NetworkTree, remove this code
         getTreeViewer().setComparer(new IElementComparer() {
 
             @Override

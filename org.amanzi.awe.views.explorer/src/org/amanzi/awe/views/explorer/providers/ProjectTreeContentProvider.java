@@ -48,6 +48,8 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
      * @author Kasnitskij_V
      * @since 1.0.0
      */
+    // TODO: LN: 01.08.2012, make it constant
+    // TODO: LN: 01.08.2012, why name starts with I? is it inteface?
     public static class IModelComparator implements Comparator<IModel> {
 
         @Override
@@ -71,6 +73,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
                 getRootList().add(new TreeViewItem<IProjectModel>(model, model.asDataElement()));
             }
         } catch (ModelException e) {
+            // TODO: LN: 01.08.2012, log exception
             MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
                     ProjectExplorerPluginMessages.GetElementsException);
         }
@@ -86,6 +89,8 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     @Override
     protected Object[] processReturment(IProjectModel t) {
         LOGGER.info("process returment statement for project " + t);
+        // TODO: LN: 01.08.2012, why we need to use new class IModelComparator and sort models, if
+        // we can add ITreeItems and sort using comparator from Abstract Class?
         Collections.sort(models, new IModelComparator());
         List<ITreeItem<IModel>> treeItems = new ArrayList<ITreeItem<IModel>>();
         for (IModel model : models) {

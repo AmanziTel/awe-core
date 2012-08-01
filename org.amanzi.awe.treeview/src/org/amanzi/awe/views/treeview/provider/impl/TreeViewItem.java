@@ -28,8 +28,8 @@ import org.amanzi.neo.models.IModel;
  */
 public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
 
-    private T model;
-    private IDataElement element;
+    private final T model;
+    private final IDataElement element;
 
     /**
      * @param model
@@ -54,26 +54,40 @@ public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
 
     @Override
     public int hashCode() {
+        // TODO: LN: 01.08.2012, use HashCodeBuilder from Apache Commons
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((element == null) ? 0 : element.hashCode());
+        result = (prime * result) + ((element == null) ? 0 : element.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        // TODO: LN: 01.08.2012, too much code for this method
+        // you can simply:
+        // if (obj instanceof IDataElement) {
+        // IDataElement element = (IDataElement)obj;
+        // return this.element.equals(element);
+        // }
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (element.getClass() != obj.getClass())
+        }
+        // TODO: LN: 01.08.2012, use equals()
+        if (element.getClass() != obj.getClass()) {
             return false;
+        }
         IDataElement other = (IDataElement)obj;
         if (element == null) {
-            if (other != null)
+            if (other != null) {
                 return false;
-        } else if (!element.equals(other))
+            }
+        } else if (!element.equals(other)) {
             return false;
+        }
+        // TODO: LN: 01.08.2012, remove system.out
         System.out.println("found");
         return true;
     }

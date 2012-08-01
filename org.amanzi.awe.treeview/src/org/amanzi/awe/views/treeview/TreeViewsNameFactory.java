@@ -21,6 +21,8 @@ package org.amanzi.awe.views.treeview;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 01.08.2012: INCORRECT!!!! AbstractTree View Plugin should not know about it's children
+@Deprecated
 public class TreeViewsNameFactory {
     /**
      * TODO Purpose of ViewsNameFactory instance holder for {@link TreeViewsNameFactory}

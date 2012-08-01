@@ -41,25 +41,9 @@ import org.eclipse.jface.viewers.Viewer;
 public abstract class AbstractContentProvider<T extends IModel> implements ITreeContentProvider {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
+
+    // TODO: LN: 01.08.2012, same as for Providers
     private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
-    
-    private List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
-    private INetworkModelProvider networkModelProvider;
-    private IProjectModelProvider projectModelProvider;
-
-    @Override
-    public void dispose() {
-    }
-
-    /**
-     * @param networkModelProvider
-     * @param projectModelProvider
-     */
-    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider) {
-        super();
-        this.networkModelProvider = networkModelProvider;
-        this.projectModelProvider = projectModelProvider;
-    }
 
     /**
      * <p>
@@ -69,6 +53,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
+    // TODO: LN: 01.08.2012, make constant
+    // TODO: LN: 01.08.2012, why name starts with I? is it inteface?
     public static class IDataElementComparator implements Comparator<ITreeItem<INetworkModel>> {
 
         @Override
@@ -80,6 +66,27 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
 
     }
 
+    private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
+    private INetworkModelProvider networkModelProvider;
+    private IProjectModelProvider projectModelProvider;
+
+    /**
+     * @param networkModelProvider
+     * @param projectModelProvider
+     */
+    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider) {
+        super();
+        this.networkModelProvider = networkModelProvider;
+        this.projectModelProvider = projectModelProvider;
+    }
+
+    @Override
+    public void dispose() {
+    }
+
+    // TODO: LN: 01.08.2012, incorrect constructor, children of this class should use protected
+    // constructor
+    @Deprecated
     public AbstractContentProvider() {
         this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
 
@@ -115,6 +122,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
             ITreeItem<T> item = (ITreeItem<T>)element;
             children = getChildren(item);
 
+            // TODO: LN: 01.08.2012, review code of ArrayUtils.isEmpty and remove unnecessary
+            // condition
             return (children != null) && (!ArrayUtils.isEmpty(children)) && additionalCheckChild(element);
         } catch (ModelException e) {
             LOGGER.error("exception when trying to get child", e);
@@ -176,6 +185,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @return Returns the logger.
      */
+    // TODO: LN: 01.08.2012, ?????? remove this method, no one should use Logger of this class
+    // except this class
     public static Logger getLogger() {
         return LOGGER;
     }
@@ -183,6 +194,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @return Returns the generalNodeProperties.
      */
+    // TODO: LN: 01.08.2012, this method didn't used anywhere
     public static IGeneralNodeProperties getGeneralNodeProperties() {
         return GENERAL_NODE_PROPERTIES;
     }
@@ -190,6 +202,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @return Returns the rootList.
      */
+    // TODO: LN: 01.08.2012, make it protected for data protection
     public List<ITreeItem<T>> getRootList() {
         return rootList;
     }
@@ -197,6 +210,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @return Returns the networkModelProvider.
      */
+    // TODO: LN: 01.08.2012, make it protected for data protection
     public INetworkModelProvider getNetworkModelProvider() {
         return networkModelProvider;
     }
@@ -204,6 +218,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @return Returns the projectModelProvider.
      */
+    // TODO: LN: 01.08.2012, make it protected for data protection
     public IProjectModelProvider getProjectModelProvider() {
         return projectModelProvider;
     };

@@ -43,8 +43,9 @@ public class ShowInTreeCommand extends AbstractHandler {
     @SuppressWarnings("unchecked")
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        // TODO: LN: 01.08.2012, create abstract command that will handle all this actions
         ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
-        if (selection != null & selection instanceof IStructuredSelection) {
+        if ((selection != null) & (selection instanceof IStructuredSelection)) {
             IStructuredSelection strucSelection = (IStructuredSelection)selection;
             Iterator<Object> elements = strucSelection.iterator();
             while (elements.hasNext()) {

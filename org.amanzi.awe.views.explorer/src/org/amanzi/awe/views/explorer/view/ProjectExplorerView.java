@@ -43,6 +43,7 @@ public class ProjectExplorerView extends AbstractTreeView {
         setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
         setProviders();
         getTreeViewer().setInput(getViewSite());
+        // TODO: LN: 01.08.2012, make a constant
         getTreeViewer().setComparer(new IElementComparer() {
 
             @Override
@@ -89,7 +90,7 @@ public class ProjectExplorerView extends AbstractTreeView {
 
     @Override
     protected void addEventListeners() {
-
+        // TODO: LN: 01.08.2012, no event listeners initialized!!!!
     }
 
 }
