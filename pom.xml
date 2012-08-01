@@ -117,7 +117,6 @@
      <module>org.amanzi.neo.providers</module>
      <module>org.amanzi.neo.services</module>
      <module>org.amanzi.neo.services.impl</module>
-     <module>org.amanzi.neo.services.ui</module>
      <module>org.neo4j</module>
   </modules>
   
