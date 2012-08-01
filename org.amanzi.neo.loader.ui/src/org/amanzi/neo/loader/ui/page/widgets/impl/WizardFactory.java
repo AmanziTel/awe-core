@@ -22,6 +22,7 @@ import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector.ICRSSelectorListen
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.ResourceType;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget.ISelectNetworkListener;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
@@ -70,6 +71,10 @@ public final class WizardFactory {
         return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
     }
 
+    public SelectDriveResourcesWidget getDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+        return initializeWidget(new SelectDriveResourcesWidget(parent, listener));
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T extends IConfiguration> SelectLoaderWidget<T> addLoaderSelector(final Composite parent,
             final ISelectLoaderListener listener, final List<ILoader<T, ? >> loaders) {
@@ -77,9 +82,15 @@ public final class WizardFactory {
     }
 
     public ResourceSelectorWidget getFileSelector(final Composite parent, final IResourceSelectorListener listener,
-            final String... fileExtensions) {
+            int numberOfControls, final String... fileExtensions) {
         return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
-                fileExtensions));
+                numberOfControls, fileExtensions));
+    }
+
+    public ResourceSelectorWidget getDirectorySelector(final Composite parent, final IResourceSelectorListener listener,
+            int numberOfControls) {
+        return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider,
+                numberOfControls));
     }
 
     public CRSSelector addCRSSelector(final Composite parent, final ICRSSelectorListener listener) {

@@ -64,7 +64,7 @@ public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
         networkNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
         WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
 
-        resourceEditor = WizardFactory.getInstance().getFileSelector(getMainComposite(), this);
+        resourceEditor = WizardFactory.getInstance().getFileSelector(getMainComposite(), this, NUMBER_OF_COLUMNS);
 
         loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 

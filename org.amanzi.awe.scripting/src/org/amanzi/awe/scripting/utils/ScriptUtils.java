@@ -151,7 +151,9 @@ public class ScriptUtils {
     public String getPluginRoot(String pluginName) throws ScriptingException {
         try {
             URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
+            LOGGER.info("Ruby Plugin URL <" + rubyLocationURL + ">");
             String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
+            LOGGER.info("Ruby Location <" + rubyLocation + ">");
             if (rubyLocation.startsWith(PREFIX_JAR_FILE)) {
                 rubyLocation = rubyLocation.substring(PREFIX_JAR_FILE.length());
                 if (!rubyLocation.startsWith(File.separator)) {
@@ -161,6 +163,9 @@ public class ScriptUtils {
             } else if (rubyLocation.startsWith(PREFIX_FILE)) {
                 rubyLocation = rubyLocation.substring(PREFIX_FILE.length());
             }
+
+            LOGGER.info("Ruby Location <" + rubyLocation + ">");
+
             return rubyLocation;
         } catch (Exception e) {
             throw new ScriptingException(e);

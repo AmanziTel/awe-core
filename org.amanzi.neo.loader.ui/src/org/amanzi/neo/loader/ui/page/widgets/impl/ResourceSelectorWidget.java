@@ -17,7 +17,6 @@ import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.internal.AdvancedFileFieldEditor;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget.IPageEventListener;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
@@ -35,7 +34,7 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResourceSelectorListener> implements ModifyListener {
 
-    public interface IResourceSelectorListener extends IPageEventListener {
+    public interface IResourceSelectorListener extends AbstractPageWidget.IPageEventListener {
         void onResourceChanged();
     }
 
@@ -49,16 +48,20 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
 
     private final String[] fileExtensions;
 
+    private final int numberOfControls;
+
     /**
      * @param isEnabled
      * @param loaderPage
      * @param projectModelProvider
      */
     protected ResourceSelectorWidget(final ResourceType resourceType, final Composite parent,
-            final IResourceSelectorListener listener, final IProjectModelProvider projectModelProvider, String... fileExtensions) {
+            final IResourceSelectorListener listener, final IProjectModelProvider projectModelProvider, int numberOfControls,
+            String... fileExtensions) {
         super(true, parent, listener, projectModelProvider);
         this.resourceType = resourceType;
         this.fileExtensions = fileExtensions;
+        this.numberOfControls = numberOfControls;
     }
 
     @Override
@@ -69,13 +72,13 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
             break;
         case FILE:
             AdvancedFileFieldEditor fileEditor = new AdvancedFileFieldEditor(
-                    "resource", Messages.ResourceSelectorWidget_SelectFileTitle, parent); //$NON-NLS-1$
+                    "resource", Messages.ResourceSelectorWidget_SelectFileTitle, parent, numberOfControls); //$NON-NLS-1$
             fileEditor.setFileExtensions(fileExtensions);
 
             editor = fileEditor;
             break;
-            default:
-                break;
+        default:
+            break;
         }
 
         editor.getTextControl(parent).addModifyListener(this);

@@ -13,12 +13,17 @@
 
 package org.amanzi.neo.loader.ui.page.impl.drive;
 
+import java.io.File;
+import java.util.List;
+
 import org.amanzi.neo.loader.core.impl.MultiFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
@@ -35,13 +40,16 @@ import org.eclipse.swt.widgets.Composite;
 public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
         implements
             ISelectLoaderListener,
-            ISelectDriveListener {
+            ISelectDriveListener,
+            ISelectDriveResourceListener {
 
     private SelectDriveNameWidget driveNameCombo;
 
     private SelectLoaderWidget<MultiFileConfiguration> loaderCombo;
 
     private CRSSelector crsSelector;
+
+    private SelectDriveResourcesWidget driveResourceSelector;
 
     /**
      * @param pageName
@@ -55,7 +63,9 @@ public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
         super.createControl(parent);
 
         driveNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForDrive(getMainComposite(), this);
-        crsSelector = WizardFactory.getInstance().addCRSSelector(parent, this);
+        crsSelector = WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
+
+        driveResourceSelector = WizardFactory.getInstance().getDriveResourceSelector(getMainComposite(), this);
 
         loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
@@ -77,6 +87,10 @@ public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
     public void onLoaderChanged() {
         update();
 
+    }
+
+    @Override
+    public void onResourcesSelected(List<File> files) {
     }
 
 }
