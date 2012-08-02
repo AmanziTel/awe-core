@@ -1,0 +1,67 @@
+<project basedir="." default="install_jre" name="Download uDIG JRE">
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<property name="jre.dir">${basedir}/jre</property>
+	<property name="jre.url">http://udig.refractions.net/files/downloads/jre</property>
+
+	<property name="lin32">jre1.6.0_25.lin32_gdal_ecw.tar.gz</property>
+	<property name="lin64">jre1.6.0_25.lin64_gdal_ecw.tar.gz</property>
+	<property name="win32">jre1.6.0_25.win32_gdal_ecw.zip</property>
+	<property name="win64">jre1.6.0.win64.zip</property>
+
+	<property name="jre_names">${lin32},${lin64},${win32},${win64}</property>
+	<property name="jre_dir_names">lin32,lin64,win32,win64</property>
+
+	<target name="check_jre">
+		<for list="${jre_names}" param="singleJRE">
+			<sequential>
+				<condition property="jars_exists">
+					<available file="${jre.dir}/@{singleJRE}" />
+				</condition>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="prepare_jre_directory" depends="check_jre" unless="jars_exists">
+		<delete dir="${jre.dir}" />
+		<mkdir dir="${jre.dir}" />
+	</target>
+
+	<target name="download_jre">
+		<for list="${jre_names}" param="singleJRE">
+			<sequential>
+				<get src="${jre.url}/@{singleJRE}" dest="${jre.dir}" />
+			</sequential>
+		</for>
+	</target>
+
+	<target name="unpack">
+		<for list="${jre_dir_names}" param="name">
+			<sequential>
+				<mkdir dir="${jre.dir}/@{name}" />
+				<if>
+					<contains string="${@{name}}" substring="tar" />
+					<then>
+						<gunzip dest="${jre.dir}/temp.tar" src="${jre.dir}/${@{name}}" />
+						<untar dest="${jre.dir}/@{name}" src="${jre.dir}/temp.tar" />
+						<delete file="${jre.dir}/temp.tar" />
+					</then>
+					<else>
+						<unzip dest="${jre.dir}/@{name}" src="${jre.dir}/${@{name}}" />
+					</else>
+				</if>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="install_jre" depends="prepare_jre_directory" unless="jars_exists">
+		<antcall target="download_jre" />
+		<antcall target="unpack" />
+	</target>
+
+</project>
