@@ -13,44 +13,29 @@
 
 package org.amanzi.awe.views.network;
 
-import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
-import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.listener.AbstractShowViewListener;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
-import org.apache.log4j.Logger;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class NetworkTreeViewListener implements IAWEEventListenter {
-    private static final Logger LOGGER = Logger.getLogger(NetworkTreeViewListener.class);
+public class NetworkTreeViewListener extends AbstractShowViewListener {
+
+    /**
+     * @param requiredView
+     */
+    protected NetworkTreeViewListener() {
+        super(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+    }
 
     @Override
-    public void onEvent(IEvent event) {
-        try {
-            switch (event.getStatus()) {
-            case SHOW_IN_VIEW:
-                ShowInViewEvent showInView = (ShowInViewEvent)event;
-                // TODO: LN: 01.08.2012, create abstract listener that will handle opening view
-                if (showInView.getViewId().equals(NetworkTreeView.NETWORK_TREE_VIEW_ID)) {
-                    NetworkTreeView view = (NetworkTreeView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                            .showView(showInView.getViewId());
-                    view.selectDataElement(showInView.getElement());
-                }
-                break;
-
-            default:
-                break;
-            }
-        } catch (PartInitException e) {
-            LOGGER.error("Error when try to oppen view ", e);
-        }
+    protected void handleEventInView(ShowInViewEvent showInView) {
+        ((NetworkTreeView)getView()).selectDataElement(showInView.getElement());
     }
+
 }

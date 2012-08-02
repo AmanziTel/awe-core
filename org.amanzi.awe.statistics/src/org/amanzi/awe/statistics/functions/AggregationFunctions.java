@@ -16,7 +16,6 @@ package org.amanzi.awe.statistics.functions;
 import org.amanzi.awe.statistics.engine.IAggregationFunction;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 

@@ -26,8 +26,7 @@ import org.amanzi.awe.statistics.entities.impl.Dimension;
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -42,12 +41,12 @@ import org.neo4j.graphdb.Node;
 public class StatisticsModelTests extends AbstractModelTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
+    public void testConstructorIfParentIsNull() throws AWEException {
         new StatisticsModel(null, null);
     }
 
     @Test
-    public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
+    public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, AWEException {
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
         when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class), eq(Boolean.FALSE))).thenReturn(
                 statisticModelNode);
@@ -57,7 +56,7 @@ public class StatisticsModelTests extends AbstractModelTest {
     }
 
     @Test
-    public void testGetAllDimensions() throws IllegalArgumentException, DatabaseException {
+    public void testGetAllDimensions() throws IllegalArgumentException, AWEException {
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
         Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
         List<Node> foundedNodes = new ArrayList<Node>();
@@ -71,7 +70,7 @@ public class StatisticsModelTests extends AbstractModelTest {
     }
 
     @Test
-    public void testGetDimensionIfFound() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
+    public void testGetDimensionIfFound() throws IllegalArgumentException, AWEException {
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
         Node dimensionMocked = getMockedDimension(DimensionTypes.TIME);
         when(statisticsService.getNodeProperty(eq(dimensionMocked), eq(DatasetService.NAME))).thenReturn(

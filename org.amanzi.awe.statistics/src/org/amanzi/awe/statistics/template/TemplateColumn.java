@@ -20,7 +20,6 @@ import org.amanzi.awe.statistics.engine.IStatisticsHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
@@ -41,7 +40,7 @@ public class TemplateColumn {
     /**
      * @param header
      * @param function
-     * @param name TODO
+     * @param name
      */
     public TemplateColumn(IStatisticsHeader header, AggregationFunctions function, String name) {
         this(name);
@@ -53,7 +52,7 @@ public class TemplateColumn {
      * @param header
      * @param function
      * @param threshold
-     * @param name TODO
+     * @param name
      */
     public TemplateColumn(IStatisticsHeader header, AggregationFunctions function, Threshold threshold, String name) {
         this(header, function, name);

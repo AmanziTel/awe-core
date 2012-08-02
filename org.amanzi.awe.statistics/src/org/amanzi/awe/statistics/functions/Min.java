@@ -38,8 +38,7 @@ public class Min implements IAggregationFunction {
 
     @Override
     public IAggregationFunction update(Number value) {
-        // TODO: LN: 01.08.2012, use Max.min()
-        if (minValue.compareTo(value.doubleValue()) > 0) {
+        if (Math.min(minValue, value.doubleValue()) == value.doubleValue()) {
             minValue = value.doubleValue();
         }
         return this;

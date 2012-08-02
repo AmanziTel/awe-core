@@ -67,12 +67,11 @@ public abstract class AbstractEntity {
      * @param nodeType
      */
     protected AbstractEntity(INodeType nodeType) {
-        // TODO: LN: 01.08.2012, check of input should be first
-        initStatisticsService();
         if (nodeType == null) {
             LOGGER.error("incorrect node Type");
             throw new IllegalArgumentException("nodeType is null");
         }
+        initStatisticsService();
         this.nodeType = nodeType;
     }
 
@@ -83,9 +82,7 @@ public abstract class AbstractEntity {
      * @param current
      */
     protected AbstractEntity(Node parent, Node current, INodeType type) {
-        // TODO: LN: 01.08.2012, check of input should be first
         this(type);
-        initStatisticsService();
         if (parent == null) {
             LOGGER.error("parentNode can't be null");
             throw new IllegalArgumentException("Parent node can't be null");
@@ -104,6 +101,7 @@ public abstract class AbstractEntity {
             LOGGER.error("can't validate");
             throw new IllegalArgumentException("validation failed");
         }
+        initStatisticsService();
         name = (String)statisticService.getNodeProperty(current, DatasetService.NAME);
     }
 

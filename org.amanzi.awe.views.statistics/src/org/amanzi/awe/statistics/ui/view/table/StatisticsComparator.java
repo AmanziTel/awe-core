@@ -116,13 +116,13 @@ public class StatisticsComparator extends ViewerComparator {
         if (val1 == null) {
             result = val2 == null ? 0 : -1;
         } else {
-            // TODO: LN: 01.08.2012, what about return val1.compareTo(val2) ?
             if (val2 == null) {
                 result = 1;
             } else {
-                double value1 = val1.doubleValue();
-                double value2 = val2.doubleValue();
-                result = value1 == value2 ? 0 : value1 < value2 ? -1 : 1;
+                Double value1 = val1.doubleValue();
+                Double value2 = val2.doubleValue();
+
+                result = value1.compareTo(value2);
             }
 
         }

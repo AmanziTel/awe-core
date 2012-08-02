@@ -94,6 +94,9 @@ public class StatisticsView extends ViewPart {
     private static final String TOTAL_NAME_COLUMN = "Total";
     private static final int MAX_GROUPS_PER_CHART = 10;
 
+    private final int INCREASE_WITH_BY_THREE = 3;
+    private final int INCREASE_WITH_BY_TWO = 2;
+
     private static Mutex mutexRule = new Mutex();
     /*
      * components
@@ -341,8 +344,8 @@ public class StatisticsView extends ViewPart {
                         TableLayout layout = new TableLayout();
                         table.setLayout(layout);
                         Collection<StatisticsCell> values = row.getAllChild();
-                        // TODO: LN: 01.08.2012, magic numbers
-                        int width = (int)100.0 / (values.size() + (isAdditionalColumnNecessary() ? 3 : 2));
+                        int width = (int)100.0
+                                / (values.size() + (isAdditionalColumnNecessary() ? INCREASE_WITH_BY_THREE : INCREASE_WITH_BY_TWO));
                         if (isAdditionalColumnNecessary()) {
                             TableColumn column = new TableColumn(table, SWT.RIGHT);
                             column.setText(NetworkElementNodeType.SECTOR.getId());

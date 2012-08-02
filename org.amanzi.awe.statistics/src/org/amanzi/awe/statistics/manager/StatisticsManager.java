@@ -75,6 +75,13 @@ public class StatisticsManager {
     private static final String DATASET_NAME = "dataset";
     private static final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s}";
     private static final String DECIMAL_FORMAT = "0.#";
+    private static final String HASH_PATTERN = "\"%s\"=>%s(self),\n";
+
+    private static final String OPEN_BRACE = "{";
+
+    private static final String CLOSE_BRACE = "}";
+
+    private static final String NEW_STRING = "\n";
 
     /*
      * statistics manager singleton instance
@@ -382,12 +389,12 @@ public class StatisticsManager {
 
             currentStartTime = nextStartTime;
             nextStartTime = getNextStartDate(period, currentStatisticsModel.getMaxTimestamp(), currentStartTime);
-            // TODO: LN: 01.08.2012, use LOGGER.isDebugEnabled() to prevent time spending on
-            // creation of debug message on live system where debug disabled
-            debugInfo = "Total no. of nodes processed: " + count + "\tCalc time for period="
-                    + (System.currentTimeMillis() - startForPeriod) + "\tTime to update cells: " + cellCalcTime
-                    + "\tTime to find a group:" + startFindGroup;
-            LOGGER.debug(debugInfo);
+            if (LOGGER.isDebugEnabled()) {
+                debugInfo = "Total no. of nodes processed: " + count + "\tCalc time for period="
+                        + (System.currentTimeMillis() - startForPeriod) + "\tTime to update cells: " + cellCalcTime
+                        + "\tTime to find a group:" + startFindGroup;
+                LOGGER.debug(debugInfo);
+            }
         } while (currentStartTime < currentStatisticsModel.getMaxTimestamp());
         currentStatisticsModel.setUsedNodes(noUsedNodes);
         currentStatisticsModel.setTotalNodes(count);
@@ -575,15 +582,12 @@ public class StatisticsManager {
      * @return script as string
      */
     private String createScriptForTemplate(Template template) {
-        // TODO: LN: 01.08.2012, variable name
-        // TODO: LN: 01.08.2012, to constant
-        final String HASH_PATTERN = "\"%s\"=>%s(self),\n";
-        StringBuffer sb = new StringBuffer("{");
+        StringBuffer sb = new StringBuffer(OPEN_BRACE);
         for (TemplateColumn column : template.getColumns()) {
             KpiBasedHeader header = (KpiBasedHeader)column.getHeader();
             sb.append(String.format(HASH_PATTERN, header.getName(), header.getKpiName()));
         }
-        sb.append("}\n");
+        sb.append(CLOSE_BRACE + NEW_STRING);
         return sb.toString();
     }
 

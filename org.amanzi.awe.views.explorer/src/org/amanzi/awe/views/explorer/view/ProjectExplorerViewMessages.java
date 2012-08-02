@@ -10,12 +10,12 @@ public class ProjectExplorerViewMessages {
     private static final String BUNDLE_NAME = ProjectExplorerViewMessages.class.getName();
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
 
-    public static String SHOW_IN_DISTRIBUTION_ANALYSE_ITEM;
-    public static String SHOW_IN_PROPERTY_TABLE_ITEM;
-    public static String SHOW_IN_DRIVE_INUQIER_ITEM;
-    public static String SHOW_IN_N2N_VIEW_ITEM;
-    public static String STAR_TOOL_ANALYSE;
-    public static String SHOW_ON_MAP;
+    public static String showInDistributionAnalyseItem;
+    public static String showInPropertyViewItem;
+    public static String showIndDriveInqureItem;
+    public static String showInN2nViewItem;
+    public static String starToolAnaluse;
+    public static String showOnMap;
 
     private ProjectExplorerViewMessages() {
     }

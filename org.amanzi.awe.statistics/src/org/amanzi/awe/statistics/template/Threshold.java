@@ -14,7 +14,6 @@
 package org.amanzi.awe.statistics.template;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 

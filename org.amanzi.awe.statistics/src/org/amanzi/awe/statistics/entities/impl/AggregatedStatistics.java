@@ -43,7 +43,7 @@ public class AggregatedStatistics extends AbstractStorageEntity<StatisticsGroup>
 
     private static final String NAME_FORMAT = "%s, %s";
 
-    public AggregatedStatistics(StatisticsLevel firstLevel, StatisticsLevel secondLevel) throws DatabaseException,
+    protected AggregatedStatistics(StatisticsLevel firstLevel, StatisticsLevel secondLevel) throws DatabaseException,
             IllegalNodeDataException {
         super(StatisticsNodeTypes.STATISTICS);
         if (firstLevel == null || secondLevel == null) {
@@ -66,7 +66,7 @@ public class AggregatedStatistics extends AbstractStorageEntity<StatisticsGroup>
     /**
      * @param aggregatedNode
      */
-    public AggregatedStatistics(Node aggregatedNode) {
+    protected AggregatedStatistics(Node aggregatedNode) {
         super(StatisticsNodeTypes.STATISTICS);
         if (aggregatedNode == null) {
             LOGGER.error("can't create aggregated statistics element because of null ");

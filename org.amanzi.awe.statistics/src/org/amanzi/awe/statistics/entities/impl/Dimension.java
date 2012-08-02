@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.entities.impl;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
@@ -41,8 +42,7 @@ public class Dimension extends AbstractEntity {
     private static final Logger LOGGER = Logger.getLogger(Dimension.class);
 
     private final DimensionTypes dimensionType;
-    // TODO: LN: 01.08.2012, why LinkedHashMap???
-    private LinkedHashMap<String, StatisticsLevel> levels;
+    private Map<String, StatisticsLevel> levels;
 
     /**
      * initialize new dimension Level
@@ -54,12 +54,11 @@ public class Dimension extends AbstractEntity {
      */
     public Dimension(Node statisticsRoot, DimensionTypes dimensionType) throws DatabaseException, IllegalNodeDataException {
         super(StatisticsNodeTypes.DIMENSION);
-        // TODO: LN: 01.08.2012, input check should be first
-        initStatisticsService();
-        if (statisticsRoot == null) {
+        if (statisticsRoot == null || dimensionType == null) {
             LOGGER.error("parent can't be null");
             throw new IllegalArgumentException("statistics root can't be null");
         }
+        initStatisticsService();
         rootNode = statisticService.findDimension(statisticsRoot, dimensionType);
         if (rootNode == null) {
             rootNode = statisticService.createDimension(statisticsRoot, dimensionType, false);

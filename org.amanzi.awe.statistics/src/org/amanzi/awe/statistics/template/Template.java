@@ -22,7 +22,6 @@ import org.amanzi.awe.statistics.functions.AggregationFunctions;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 

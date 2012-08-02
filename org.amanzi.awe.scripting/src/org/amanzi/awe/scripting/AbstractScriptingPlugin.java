@@ -137,8 +137,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             manager.copySources(workspaceLocator);
         } catch (IOException e) {
             LOGGER.error("Error in wokspace preparator", e);
-            // TODO: LN: 01.08.2012, why you re-throwing
-            throw e;
         }
     }
 

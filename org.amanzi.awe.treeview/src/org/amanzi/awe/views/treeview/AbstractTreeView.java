@@ -46,13 +46,13 @@ import org.eclipse.ui.part.ViewPart;
  */
 public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener {
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
-
-    private final IGeneralNodeProperties GENERAL_NODE_PROPERTIES;
     private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
     /**
      * event manager
      */
-    private final AWEEventManager eventManager;
+    private AWEEventManager eventManager;
+
+    private IGeneralNodeProperties generalNodeProperties;
 
     private TreeViewer treeViewer;
     private Text tSearch;
@@ -66,7 +66,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     protected AbstractTreeView(IGeneralNodeProperties properties) {
         super();
-        GENERAL_NODE_PROPERTIES = properties;
+        generalNodeProperties = properties;
         this.eventManager = AWEEventManager.getManager();
     }
 
@@ -212,7 +212,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * @return Returns the generalNodeProperties.
      */
     protected IGeneralNodeProperties getGeneralNodeProperties() {
-        return GENERAL_NODE_PROPERTIES;
+        return generalNodeProperties;
     }
 
     /**

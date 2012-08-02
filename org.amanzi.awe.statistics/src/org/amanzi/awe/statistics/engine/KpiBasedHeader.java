@@ -16,16 +16,14 @@ package org.amanzi.awe.statistics.engine;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
- * Щ
  * 
  * @author Pechko_E
  * @since 1.0.0
  */
 public class KpiBasedHeader implements IStatisticsHeader {
-    // private static final String EVALUATE = "Neo4j::load_node(%s).instance_eval {%s(self)}";
+    private static final String TO_STRING_PATTERN = "Name: %s, Formula: %s";
     private String kpiName;
     private String name;
 
@@ -35,7 +33,7 @@ public class KpiBasedHeader implements IStatisticsHeader {
 
     /**
      * @param kpiName
-     * @param name TODO
+     * @param name
      */
     public KpiBasedHeader(String kpiName, String name) {
         this.kpiName = kpiName;
@@ -68,7 +66,7 @@ public class KpiBasedHeader implements IStatisticsHeader {
     @Override
     public String toString() {
         // TODO: LN: 01.08.2012, to constant
-        return String.format("Name: %s, Formula: %s", name, kpiName);
+        return String.format(TO_STRING_PATTERN, name, kpiName);
     }
 
     @Override

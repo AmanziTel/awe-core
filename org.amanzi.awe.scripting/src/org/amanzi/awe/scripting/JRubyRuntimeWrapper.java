@@ -16,6 +16,7 @@ package org.amanzi.awe.scripting;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
@@ -38,6 +39,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class JRubyRuntimeWrapper {
     private static final Logger LOGGER = Logger.getLogger(JRubyRuntimeWrapper.class);
     private static final String NAME_SEPARATOR = ":";
+    private static final int ZERO_ELEMENT_INDEX = NumberUtils.INTEGER_ZERO;
+    private static final int FIRST_ELEMNT_INDEX = NumberUtils.INTEGER_ONE;
 
     private final Ruby runtime;
     private final File destination;
@@ -65,17 +68,13 @@ public class JRubyRuntimeWrapper {
             LOGGER.error(scriptId + " has incorrect format. Correct format is <MODULE>:<SCRIPT_NAME>");
         }
         String[] splittedName = scriptId.split(NAME_SEPARATOR);
-        // TODO: LN: 01.08.2012, NumberUtils.INTEGER_ZERO didn't describe index, please add constant
-        // with good name
-        String project = splittedName[NumberUtils.INTEGER_ZERO];
+        String project = splittedName[ZERO_ELEMENT_INDEX];
         File destination = checkForExistance(project);
         if (destination == null) {
             LOGGER.error("Module " + project + " doesn't exists in script folder");
             throw new FileNotFoundException("Module " + project + " doesn't exists in script folder");
         }
-        // TODO: LN: 01.08.2012, NumberUtils.INTEGER_ONE didn't describe index, please add constant
-        // with good name
-        String scriptName = splittedName[NumberUtils.INTEGER_ONE];
+        String scriptName = splittedName[FIRST_ELEMNT_INDEX];
         String script = ScriptUtils.getInstance().getScript(scriptName, destination);
         return executeScript(script);
     }
@@ -148,8 +147,7 @@ public class JRubyRuntimeWrapper {
      * @param entrySet
      * @return
      */
-    // TODO: LN: 01.08.2012, return a Map not a HashMap
-    private HashMap<Object, Object> convertToHashMap(RubyHash rubyMap) {
+    private Map<Object, Object> convertToHashMap(RubyHash rubyMap) {
         HashMap<Object, Object> map = new HashMap<Object, Object>();
         for (Object key : rubyMap.keySet()) {
             map.put(key, rubyMap.get(key));

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.explorer.view.menu.commands;
+package org.amanzi.awe.views.treeview.command.handlers;
 
 import java.util.Iterator;
 
@@ -36,7 +36,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public abstract class AbstractTreeCommandHandler extends AbstractHandler {
     private final IGeneralNodeProperties GENERAL_NODE_PROPERTIES;
-    private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
     protected AbstractTreeCommandHandler() {
         this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
@@ -45,7 +44,7 @@ public abstract class AbstractTreeCommandHandler extends AbstractHandler {
     /**
      * @param generalNodeProperties
      */
-    public AbstractTreeCommandHandler(IGeneralNodeProperties generalNodeProperties) {
+    protected AbstractTreeCommandHandler(IGeneralNodeProperties generalNodeProperties) {
         GENERAL_NODE_PROPERTIES = generalNodeProperties;
     }
 
@@ -71,14 +70,8 @@ public abstract class AbstractTreeCommandHandler extends AbstractHandler {
     /**
      * @return Returns the gENERAL_NODE_PROPERTIES.
      */
-    public IGeneralNodeProperties getGeneralNodeProperites() {
+    protected IGeneralNodeProperties getGeneralNodeProperites() {
         return GENERAL_NODE_PROPERTIES;
     }
 
-    /**
-     * @return Returns the networkTreeViewId.
-     */
-    public static String getNetworkTreeViewId() {
-        return NETWORK_TREE_VIEW_ID;
-    }
 }

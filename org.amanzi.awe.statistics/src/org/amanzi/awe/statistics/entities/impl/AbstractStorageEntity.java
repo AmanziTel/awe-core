@@ -15,6 +15,7 @@ package org.amanzi.awe.statistics.entities.impl;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.amanzi.awe.statistics.entities.IAggregatedStatisticsEntity;
 import org.amanzi.awe.statistics.service.StatisticsService;
@@ -36,8 +37,7 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntity> extends AbstractFlaggedEntity {
 
-    // TODO: LN: 01.08.2012, why LinkedHashMap???
-    protected LinkedHashMap<String, T> childs;
+    protected Map<String, T> childs;
     private static final Logger LOGGER = Logger.getLogger(AbstractStorageEntity.class);
 
     /**
@@ -88,7 +88,6 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
     /**
      * Loads rows if necessary
      */
-    // TODO: LN: 01.08.2012, add private/protected modifier
     protected void loadChildIfNecessary() {
         if (childs == null) {
             // TODO: LN: 01.08.2012, why LinkedHashMap??????
@@ -114,10 +113,12 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * @throws IllegalNodeDataException
      * @throws DatabaseException
      */
-    // TODO: LN: 01.08.2012, add private/protected modifier
     protected T createChildWithName(String name, INodeType entityType) throws DuplicateNodeNameException, DatabaseException,
             IllegalNodeDataException {
-        // TODO: LN: 01.08.2012, input check should be first
+        if (StringUtils.isEmpty(name) || entityType == null) {
+            LOGGER.error("incorrect arguments values");
+            throw new IllegalArgumentException("incorrect arguments values");
+        }
         loadChildIfNecessary();
         if (childs.containsKey(name)) {
             LOGGER.error("child with name." + name + "is already exists");

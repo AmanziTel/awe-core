@@ -71,8 +71,7 @@ public class StatisticsRow extends AbstractStorageEntity<StatisticsCell> impleme
      * @throws IllegalNodeDataException
      * @throws DatabaseException
      */
-    // TODO: LN: 01.08.2012, private/protected?
-    void setTimestamp(long timestamp) throws IllegalNodeDataException, DatabaseException {
+    protected void setTimestamp(long timestamp) throws IllegalNodeDataException, DatabaseException {
         statisticService.setAnyProperty(rootNode, DriveModel.TIMESTAMP, timestamp);
     }
 

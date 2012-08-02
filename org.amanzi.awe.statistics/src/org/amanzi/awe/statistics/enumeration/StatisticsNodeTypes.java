@@ -17,7 +17,6 @@ import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 
 /**
- * TODO Purpose of
  * <p>
  * Statistics node Types
  * </p>
