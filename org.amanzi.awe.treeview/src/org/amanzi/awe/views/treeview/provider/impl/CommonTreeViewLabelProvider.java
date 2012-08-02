@@ -19,7 +19,6 @@ import org.amanzi.neo.models.IDataModel;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 

@@ -22,6 +22,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -66,8 +67,7 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * @throws IllegalNodeDataException
      */
     public T findChildByName(String name) {
-        // TODO: LN: 01.08.2012, use StringUtils
-        if ((name == null) || name.isEmpty()) {
+        if ((name == null) || StringUtils.isEmpty(name)) {
             LOGGER.error("name element is null.");
             throw new IllegalArgumentException("timestamp element is null");
         }
@@ -89,7 +89,7 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * Loads rows if necessary
      */
     // TODO: LN: 01.08.2012, add private/protected modifier
-    void loadChildIfNecessary() {
+    protected void loadChildIfNecessary() {
         if (childs == null) {
             // TODO: LN: 01.08.2012, why LinkedHashMap??????
             childs = new LinkedHashMap<String, T>();
@@ -115,7 +115,7 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * @throws DatabaseException
      */
     // TODO: LN: 01.08.2012, add private/protected modifier
-    T createChildWithName(String name, INodeType entityType) throws DuplicateNodeNameException, DatabaseException,
+    protected T createChildWithName(String name, INodeType entityType) throws DuplicateNodeNameException, DatabaseException,
             IllegalNodeDataException {
         // TODO: LN: 01.08.2012, input check should be first
         loadChildIfNecessary();

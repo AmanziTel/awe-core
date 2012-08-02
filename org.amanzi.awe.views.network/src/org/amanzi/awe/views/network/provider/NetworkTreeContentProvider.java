@@ -16,13 +16,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.amanzi.awe.views.network.messages.NetworkTreePluginMessages;
+import org.amanzi.awe.views.network.NetworkTreePluginMessages;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 /**
@@ -33,6 +34,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
  */
 public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
 
+    private static final Logger LOGGER = Logger.getLogger(NetworkTreeContentProvider.class);
     private Iterable<IDataElement> children = null;
 
     @Override
@@ -47,7 +49,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
         try {
             networkModels = getNetworkModelProvider().findAll(getProjectModelProvider().getActiveProjectModel());
         } catch (ModelException e) {
-            // TODO: LN: 01.08.2012, exception should be logged
+            LOGGER.error("can't get network models ", e);
             MessageDialog.openError(null, NetworkTreePluginMessages.ERROR_TITLE,
                     NetworkTreePluginMessages.COULD_NOT_GET_ALL_NETWORK_MODELS);
             return null;
@@ -66,7 +68,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
             ITreeItem<INetworkModel> item = new TreeViewItem<INetworkModel>(networkModel, dataElement);
             dataElements.add(item);
         }
-        Collections.sort(dataElements, new IDataElementComparator());
+        Collections.sort(dataElements, getDataElementComparator());
         List<Object> res = new ArrayList<Object>(dataElements);
         return res.toArray();
     }

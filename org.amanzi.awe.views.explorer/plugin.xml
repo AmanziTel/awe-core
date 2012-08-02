@@ -12,6 +12,31 @@
       </view>
       
    </extension>
-   
+     <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.awe.views.explorer.view.menu.commands.ShowInTreeCommand"
+            commandId="org.amanzi.awe.views.explorer.menu.showInView">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.awe.views.explorer.menu.showInView"
+            name="ShowView">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.amanzi.awe.views.explorer.view.ProjectExplorerView">
+         <command
+               commandId="org.amanzi.awe.views.explorer.menu.showInView"
+               label="Show in View"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
    
 </plugin>

@@ -3,14 +3,10 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Networktree Plug-in
 Bundle-SymbolicName: org.amanzi.awe.views.network;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Require-Bundle: net.refractions.udig.project.ui;bundle-version="1.1.1",
- org.amanzi.awe.treeview;bundle-version="1.0.0",
- org.amanzi.awe.views.network.messages;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.amanzi.awe.views.network,
  org.amanzi.awe.views.network.provider,
  org.amanzi.awe.views.network.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
-Import-Package: org.amanzi.awe.views.network.messages,
- org.amanzi.awe.views.network.view
+Require-Bundle: org.amanzi.awe.treeview;bundle-version="1.0.0"

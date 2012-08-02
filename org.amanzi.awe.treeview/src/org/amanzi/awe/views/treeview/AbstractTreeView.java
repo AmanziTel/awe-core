@@ -47,9 +47,8 @@ import org.eclipse.ui.part.ViewPart;
 public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener {
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
 
-    // TODO: LN: 01.08.2012, initialize this in Constructor
-    // TODO: LN: 01.08.2012, do not use protected modifer
-    protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    private final IGeneralNodeProperties GENERAL_NODE_PROPERTIES;
+    private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
     /**
      * event manager
      */
@@ -58,14 +57,16 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     private TreeViewer treeViewer;
     private Text tSearch;
 
-    // TODO: LN: 01.08.2012, move constants to the top
-    private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
-
     /**
      * The constructor.
      */
     protected AbstractTreeView() {
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+    }
+
+    protected AbstractTreeView(IGeneralNodeProperties properties) {
         super();
+        GENERAL_NODE_PROPERTIES = properties;
         this.eventManager = AWEEventManager.getManager();
     }
 
@@ -80,7 +81,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * 
      * @param searchText
      */
-    // TODO: LN: 01.08.2012, this method do nothing - make it abstract
+    // TODO: KV: not implemented yet
     protected void searchInTreeView(final String searchText) {
     }
 
@@ -103,8 +104,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
         try {
             init(this.getViewSite());
         } catch (PartInitException e) {
-            // TODO: LN: 01.08.2012, also log exception e
-            LOGGER.error("can't init");
+            LOGGER.error("can't init", e);
         }
     }
 
@@ -120,19 +120,18 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void init(IViewSite site) throws PartInitException {
-        // TODO: LN: 01.08.2012, why it called not in addEventsListeners?
-        eventManager.addListener(this, EventStatus.DATA_UPDATED);
-        // TODO: LN: 01.08.2012, why called two times?
-        addEventListeners();
-        addEventListeners();
-        // TODO: LN: 01.08.2012, super.init should be called first
         super.init(site);
+        addEventListeners();
+
     }
 
     /**
      * added required listeners to event manager
      */
-    protected abstract void addEventListeners();
+    protected void addEventListeners() {
+        getEventManager().addListener(this, EventStatus.PROJECT_CHANGED);
+        eventManager.addListener(this, EventStatus.DATA_UPDATED);
+    }
 
     /**
      * layout components
@@ -212,7 +211,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * @return Returns the generalNodeProperties.
      */
-    protected static IGeneralNodeProperties getGeneralNodeProperties() {
+    protected IGeneralNodeProperties getGeneralNodeProperties() {
         return GENERAL_NODE_PROPERTIES;
     }
 
@@ -221,5 +220,9 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected AWEEventManager getEventManager() {
         return eventManager;
+    }
+
+    @Override
+    public void setFocus() {
     }
 }

@@ -17,6 +17,7 @@ import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
+import org.apache.log4j.Logger;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -29,6 +30,7 @@ import org.eclipse.ui.PlatformUI;
  * @since 1.0.0
  */
 public class NetworkTreeViewListener implements IAWEEventListenter {
+    private static final Logger LOGGER = Logger.getLogger(NetworkTreeViewListener.class);
 
     @Override
     public void onEvent(IEvent event) {
@@ -48,10 +50,7 @@ public class NetworkTreeViewListener implements IAWEEventListenter {
                 break;
             }
         } catch (PartInitException e) {
-            // TODO: LN: 01.08.2012, handle this exception
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("Error when try to oppen view ", e);
         }
     }
-
 }
