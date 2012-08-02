@@ -25,6 +25,7 @@ import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectD
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget.ISelectNetworkListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.internal.DriveDataFileSelector;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -67,11 +68,11 @@ public final class WizardFactory {
                 networkModelProvider));
     }
 
-    public SelectDriveNameWidget getDatasetNameSelectorForDrive(final Composite parent, final ISelectDriveListener listener) {
+    public SelectDriveNameWidget addDatasetNameSelectorForDrive(final Composite parent, final ISelectDriveListener listener) {
         return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
     }
 
-    public SelectDriveResourcesWidget getDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+    public SelectDriveResourcesWidget addDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener) {
         return initializeWidget(new SelectDriveResourcesWidget(parent, listener));
     }
 
@@ -81,13 +82,13 @@ public final class WizardFactory {
         return initializeWidget(new SelectLoaderWidget(true, parent, listener, loaders, projectModelProvider));
     }
 
-    public ResourceSelectorWidget getFileSelector(final Composite parent, final IResourceSelectorListener listener,
+    public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener,
             int numberOfControls, final String... fileExtensions) {
         return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
                 numberOfControls, fileExtensions));
     }
 
-    public ResourceSelectorWidget getDirectorySelector(final Composite parent, final IResourceSelectorListener listener,
+    public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener,
             int numberOfControls) {
         return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider,
                 numberOfControls));
@@ -95,6 +96,10 @@ public final class WizardFactory {
 
     public CRSSelector addCRSSelector(final Composite parent, final ICRSSelectorListener listener) {
         return initializeWidget(new CRSSelector(parent, listener));
+    }
+
+    public DriveDataFileSelector getDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+        return initializeWidget(new DriveDataFileSelector(parent, listener));
     }
 
     protected static <T extends AbstractPageWidget< ? , ? >> T initializeWidget(final T widget) {

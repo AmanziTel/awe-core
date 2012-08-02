@@ -75,7 +75,7 @@ public abstract class AbstractPageWidget<C extends Control, E extends IPageEvent
         return widget;
     }
 
-    protected static GridData getLabelLayout() {
+    protected static GridData getLabelLayoutData() {
         return new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
     }
 

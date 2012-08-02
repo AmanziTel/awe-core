@@ -56,7 +56,7 @@ public abstract class AbstractComboWidget<E extends IPageEventListener> extends 
     @Override
     protected Combo createWidget(final Composite parent, final int style) {
         Label label = new Label(parent, SWT.NONE);
-        label.setLayoutData(getLabelLayout());
+        label.setLayoutData(getLabelLayoutData());
         label.setText(labelText);
 
         Combo combo = new Combo(parent, style);
