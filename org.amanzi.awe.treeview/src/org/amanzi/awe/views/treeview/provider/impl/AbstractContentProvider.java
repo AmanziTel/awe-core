@@ -21,7 +21,6 @@ import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -31,8 +30,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 /**
- * TODO Purpose of
  * <p>
+ * common content provider
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -42,8 +41,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
-    // TODO: LN: 01.08.2012, same as for Providers
-    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+    private IGeneralNodeProperties generalNodeProperties;
+    private final DataElementComparator DATA_ELEMENT_COMPARATOR;
 
     /**
      * <p>
@@ -53,15 +52,13 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    // TODO: LN: 01.08.2012, make constant
-    // TODO: LN: 01.08.2012, why name starts with I? is it inteface?
-    public static class IDataElementComparator implements Comparator<ITreeItem<INetworkModel>> {
+    protected class DataElementComparator implements Comparator<ITreeItem<T>> {
 
         @Override
-        public int compare(ITreeItem<INetworkModel> dataElement1, ITreeItem<INetworkModel> dataElement2) {
+        public int compare(ITreeItem<T> dataElement1, ITreeItem<T> dataElement2) {
             return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
-                    .getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeNameProperty()).toString()
-                    .compareTo(dataElement2.getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeNameProperty()).toString());
+                    .getDataElement().get(getGeneralNodeProperties().getNodeNameProperty()).toString()
+                    .compareTo(dataElement2.getDataElement().get(getGeneralNodeProperties().getNodeNameProperty()).toString());
         }
 
     }
@@ -74,21 +71,22 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @param networkModelProvider
      * @param projectModelProvider
      */
-    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider) {
+    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
+            IGeneralNodeProperties generalNodeProperties) {
         super();
         this.networkModelProvider = networkModelProvider;
         this.projectModelProvider = projectModelProvider;
+        this.generalNodeProperties = generalNodeProperties;
+        this.DATA_ELEMENT_COMPARATOR = new DataElementComparator();
     }
 
     @Override
     public void dispose() {
     }
 
-    // TODO: LN: 01.08.2012, incorrect constructor, children of this class should use protected
-    // constructor
-    @Deprecated
-    public AbstractContentProvider() {
-        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
+    protected AbstractContentProvider() {
+        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
+                .getDefault().getGeneralNodeProperties());
 
     }
 
@@ -121,9 +119,6 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         try {
             ITreeItem<T> item = (ITreeItem<T>)element;
             children = getChildren(item);
-
-            // TODO: LN: 01.08.2012, review code of ArrayUtils.isEmpty and remove unnecessary
-            // condition
             return (children != null) && (!ArrayUtils.isEmpty(children)) && additionalCheckChild(element);
         } catch (ModelException e) {
             LOGGER.error("exception when trying to get child", e);
@@ -183,44 +178,38 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
 
     /**
-     * @return Returns the logger.
-     */
-    // TODO: LN: 01.08.2012, ?????? remove this method, no one should use Logger of this class
-    // except this class
-    public static Logger getLogger() {
-        return LOGGER;
-    }
-
-    /**
      * @return Returns the generalNodeProperties.
      */
-    // TODO: LN: 01.08.2012, this method didn't used anywhere
-    public static IGeneralNodeProperties getGeneralNodeProperties() {
-        return GENERAL_NODE_PROPERTIES;
+    protected IGeneralNodeProperties getGeneralNodeProperties() {
+        return generalNodeProperties;
     }
 
     /**
      * @return Returns the rootList.
      */
-    // TODO: LN: 01.08.2012, make it protected for data protection
-    public List<ITreeItem<T>> getRootList() {
+    protected List<ITreeItem<T>> getRootList() {
         return rootList;
     }
 
     /**
      * @return Returns the networkModelProvider.
      */
-    // TODO: LN: 01.08.2012, make it protected for data protection
-    public INetworkModelProvider getNetworkModelProvider() {
+    protected INetworkModelProvider getNetworkModelProvider() {
         return networkModelProvider;
     }
 
     /**
      * @return Returns the projectModelProvider.
      */
-    // TODO: LN: 01.08.2012, make it protected for data protection
-    public IProjectModelProvider getProjectModelProvider() {
+    protected IProjectModelProvider getProjectModelProvider() {
         return projectModelProvider;
+    }
+
+    /**
+     * @return Returns the DATA_ELEMENT_COMPARATOR.
+     */
+    public DataElementComparator getDataElementComparator() {
+        return DATA_ELEMENT_COMPARATOR;
     };
 
 }

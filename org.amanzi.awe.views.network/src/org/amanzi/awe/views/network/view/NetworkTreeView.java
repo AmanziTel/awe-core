@@ -12,15 +12,10 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.neo.models.distribution.IDistributionBar;
-import org.amanzi.neo.models.distribution.IDistributionModel;
-import org.amanzi.neo.models.distribution.IDistributionalModel;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -49,14 +44,6 @@ public class NetworkTreeView extends AbstractTreeView {
     }
 
     /**
-     * add required Listener
-     */
-    @Override
-    protected void addEventListeners() {
-        getEventManager().addListener(this, EventStatus.PROJECT_CHANGED);
-    }
-
-    /**
      * This is a callback that will allow us to create the viewer and initialize it.
      */
 
@@ -66,46 +53,9 @@ public class NetworkTreeView extends AbstractTreeView {
     }
 
     @Override
-    public void setFocus() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     protected void createControls(Composite parent) {
         settSearch(new Text(parent, SWT.BORDER));
         setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
-        // TODO: LN: 01.08.2012, Distribution is not a part of NetworkTree, remove this code
-        getTreeViewer().setComparer(new IElementComparer() {
-
-            @Override
-            public boolean equals(Object a, Object b) {
-                if ((a instanceof IDistributionalModel) && (b instanceof IDistributionalModel)) {
-                    return ((IDistributionalModel)a).getName().equals(((IDistributionalModel)b).getName());
-                } else if ((a instanceof IDistributionModel) && (b instanceof IDistributionModel)) {
-                    IDistributionModel aa = (IDistributionModel)a;
-                    IDistributionModel bb = (IDistributionModel)b;
-                    return aa.getName().equals(bb.getName())
-                            && aa.getAnalyzedModel().getName().equals(bb.getAnalyzedModel().getName());
-                } else if ((a instanceof IDistributionBar) && (b instanceof IDistributionBar)) {
-                    IDistributionBar aa = (IDistributionBar)a;
-                    IDistributionBar bb = (IDistributionBar)b;
-                    return aa.getName().equals(bb.getName())
-                            && aa.getDistribution().getName().equals(bb.getDistribution().getName())
-                            && aa.getDistribution().getAnalyzedModel().getName()
-                                    .equals(bb.getDistribution().getAnalyzedModel().getName());
-
-                } else {
-                    return a == null ? b == null : a.equals(b);
-                }
-            }
-
-            @Override
-            public int hashCode(Object element) {
-                return 0;
-            }
-        });
-
         setProviders();
         getTreeViewer().setInput(getSite());
         getSite().setSelectionProvider(getTreeViewer());

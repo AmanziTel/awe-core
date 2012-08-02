@@ -15,7 +15,6 @@ package org.amanzi.awe.views.explorer.providers;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.amanzi.awe.views.explorer.ProjectExplorerPluginMessages;
@@ -40,25 +39,6 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
 
     private List<IModel> models;
 
-    /**
-     * <p>
-     * Comparator of IDataElement
-     * </p>
-     * 
-     * @author Kasnitskij_V
-     * @since 1.0.0
-     */
-    // TODO: LN: 01.08.2012, make it constant
-    // TODO: LN: 01.08.2012, why name starts with I? is it inteface?
-    public static class IModelComparator implements Comparator<IModel> {
-
-        @Override
-        public int compare(final IModel dataElement1, final IModel dataElement2) {
-            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.getName().compareTo(dataElement2.getName());
-        }
-
-    }
-
     @Override
     public Object getParent(final Object element) {
         // TODO Need implement
@@ -73,7 +53,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
                 getRootList().add(new TreeViewItem<IProjectModel>(model, model.asDataElement()));
             }
         } catch (ModelException e) {
-            // TODO: LN: 01.08.2012, log exception
+            LOGGER.error("can't get element", e);
             MessageDialog.openError(null, ProjectExplorerPluginMessages.ErrorTitle,
                     ProjectExplorerPluginMessages.GetElementsException);
         }
@@ -89,14 +69,12 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     @Override
     protected Object[] processReturment(IProjectModel t) {
         LOGGER.info("process returment statement for project " + t);
-        // TODO: LN: 01.08.2012, why we need to use new class IModelComparator and sort models, if
-        // we can add ITreeItems and sort using comparator from Abstract Class?
-        Collections.sort(models, new IModelComparator());
-        List<ITreeItem<IModel>> treeItems = new ArrayList<ITreeItem<IModel>>();
+        List<ITreeItem<IProjectModel>> treeItems = new ArrayList<ITreeItem<IProjectModel>>();
         for (IModel model : models) {
-            ITreeItem<IModel> item = new TreeViewItem<IModel>(t, model.asDataElement());
+            ITreeItem<IProjectModel> item = new TreeViewItem<IProjectModel>(t, model.asDataElement());
             treeItems.add(item);
         }
+        Collections.sort(treeItems, getDataElementComparator());
         return treeItems.toArray();
     }
 

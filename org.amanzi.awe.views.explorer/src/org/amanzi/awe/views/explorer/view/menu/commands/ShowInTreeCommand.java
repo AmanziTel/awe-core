@@ -13,21 +13,10 @@
 
 package org.amanzi.awe.views.explorer.view.menu.commands;
 
-import java.util.Iterator;
-
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.treeview.TreeViewsNameFactory;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.network.NetworkElementType;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
  * TODO Purpose of
@@ -37,26 +26,14 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ShowInTreeCommand extends AbstractHandler {
-    protected static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
-
-    @SuppressWarnings("unchecked")
+public class ShowInTreeCommand extends AbstractTreeCommandHandler {
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        // TODO: LN: 01.08.2012, create abstract command that will handle all this actions
-        ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
-        if ((selection != null) & (selection instanceof IStructuredSelection)) {
-            IStructuredSelection strucSelection = (IStructuredSelection)selection;
-            Iterator<Object> elements = strucSelection.iterator();
-            while (elements.hasNext()) {
-                ITreeItem<IModel> element = (ITreeItem<IModel>)elements.next();
-                if (element.getDataElement().get(GENERAL_NODE_PROPERTIES.getNodeTypeProperty())
-                        .equals(NetworkElementType.NETWORK.getId())) {
-                    AWEEventManager.getManager().fireShowInViewEvent(TreeViewsNameFactory.getInstance().getNetworkTreeViewId(),
-                            element.getDataElement());
-                }
-            }
+    protected void handleElement(ITreeItem<IModel> element) {
+        if (element.getDataElement().get(getGeneralNodeProperites().getNodeTypeProperty())
+                .equals(NetworkElementType.NETWORK.getId())) {
+            AWEEventManager.getManager().fireShowInViewEvent(getNetworkTreeViewId(), element.getDataElement());
         }
-        return null;
+
     }
+
 }

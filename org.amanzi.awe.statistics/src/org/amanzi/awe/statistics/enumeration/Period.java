@@ -15,7 +15,6 @@ package org.amanzi.awe.statistics.enumeration;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -300,8 +299,7 @@ public enum Period {
      * @param endTime
      * @return
      */
-    // TODO: LN: 01.08.2012, why collection??????
-    public static Collection<String> getAvailablePeriods(long startTime, long endTime) {
+    public static List<String> getAvailablePeriods(long startTime, long endTime) {
         List<String> periods = new ArrayList<String>();
         long time = (startTime - endTime) / (1000 * 60);
 

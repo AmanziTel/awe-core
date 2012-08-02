@@ -16,9 +16,9 @@ package org.amanzi.awe.views.treeview.provider.impl;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * TODO Purpose of
  * <p>
  * storage for tree items
  * </p>
@@ -54,42 +54,16 @@ public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
 
     @Override
     public int hashCode() {
-        // TODO: LN: 01.08.2012, use HashCodeBuilder from Apache Commons
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((element == null) ? 0 : element.hashCode());
-        return result;
+        return HashCodeBuilder.reflectionHashCode(31, 1, element);
     }
 
     @Override
     public boolean equals(Object obj) {
-        // TODO: LN: 01.08.2012, too much code for this method
-        // you can simply:
-        // if (obj instanceof IDataElement) {
-        // IDataElement element = (IDataElement)obj;
-        // return this.element.equals(element);
-        // }
-        if (this == obj) {
-            return true;
+        if (obj instanceof IDataElement) {
+            IDataElement element = (IDataElement)obj;
+            return this.element.equals(element);
         }
-        if (obj == null) {
-            return false;
-        }
-        // TODO: LN: 01.08.2012, use equals()
-        if (element.getClass() != obj.getClass()) {
-            return false;
-        }
-        IDataElement other = (IDataElement)obj;
-        if (element == null) {
-            if (other != null) {
-                return false;
-            }
-        } else if (!element.equals(other)) {
-            return false;
-        }
-        // TODO: LN: 01.08.2012, remove system.out
-        System.out.println("found");
-        return true;
+        return false;
     }
 
 }

@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.statistics.entities.impl.AggregatedStatistics;
@@ -140,8 +141,7 @@ public class StatisticsView extends ViewPart {
     private AggregatedStatistics statistics;
 
     private Collection<String> groupNames;
-    // TODO: LN: 01.08.2012, use List
-    private ArrayList<String> selection;
+    private List<String> selection;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -187,9 +187,7 @@ public class StatisticsView extends ViewPart {
         long start = model.getMinTimestamp();
         long end = model.getMaxTimestamp();
 
-        // TODO: LN: 01.08.2012, does it make sense to have Collection as result of
-        // Period.getAvailablePeriods? it creates a List into the method
-        Collection<String> periods = Period.getAvailablePeriods(start, end);
+        List<String> periods = Period.getAvailablePeriods(start, end);
         cPeriod.setItems(periods.toArray(new String[periods.size()]));
     }
 
