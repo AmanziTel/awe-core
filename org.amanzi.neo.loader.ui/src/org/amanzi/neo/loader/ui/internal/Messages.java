@@ -46,6 +46,9 @@ public class Messages extends NLS {
 
     public static String SelectDriveNameWidget_Label;
 
+    public static String DriveDataFileSelector_DirectoryFilesLabel;
+    public static String DriveDataFileSelector_ChoosenFilesLabel;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

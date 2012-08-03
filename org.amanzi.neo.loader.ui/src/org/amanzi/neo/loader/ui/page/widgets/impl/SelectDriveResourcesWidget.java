@@ -40,13 +40,15 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Group, ISelec
 
     private final static int NUMBER_OF_COLUMNS = 3;
 
-    private ResourceSelectorWidget resourceSelector;
-
     public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
 
         void onResourcesSelected(List<File> files);
 
     }
+
+    private ResourceSelectorWidget resourceSelector;
+
+    private final ISelectDriveResourceListener listener;
 
     /**
      * @param isEnabled
@@ -56,6 +58,7 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Group, ISelec
      */
     protected SelectDriveResourcesWidget(Composite parent, ISelectDriveResourceListener listener) {
         super(true, parent, listener, null);
+        this.listener = listener;
     }
 
     @Override
@@ -66,7 +69,8 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Group, ISelec
 
         group.setLayout(new GridLayout(3, false));
 
-        resourceSelector = WizardFactory.getInstance().getDirectorySelector(group, this, NUMBER_OF_COLUMNS);
+        resourceSelector = WizardFactory.getInstance().addDirectorySelector(group, this, NUMBER_OF_COLUMNS);
+        WizardFactory.getInstance().addDriveResourceSelector(parent, listener);
 
         return group;
     }

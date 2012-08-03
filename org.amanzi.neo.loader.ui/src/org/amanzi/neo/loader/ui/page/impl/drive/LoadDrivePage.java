@@ -62,10 +62,10 @@ public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
     public void createControl(final Composite parent) {
         super.createControl(parent);
 
-        driveNameCombo = WizardFactory.getInstance().getDatasetNameSelectorForDrive(getMainComposite(), this);
+        driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
         crsSelector = WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
 
-        driveResourceSelector = WizardFactory.getInstance().getDriveResourceSelector(getMainComposite(), this);
+        driveResourceSelector = WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this);
 
         loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
