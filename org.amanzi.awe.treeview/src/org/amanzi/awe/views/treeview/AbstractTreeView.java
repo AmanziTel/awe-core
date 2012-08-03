@@ -31,7 +31,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
@@ -60,6 +59,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
         super();
         generalNodeProperties = properties;
         this.eventManager = AWEEventManager.getManager();
+        addEventListeners();
     }
 
     @Override
@@ -109,13 +109,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * @return content provider
      */
     protected abstract IContentProvider getContentProvider();
-
-    @Override
-    public void init(IViewSite site) throws PartInitException {
-        super.init(site);
-        addEventListeners();
-
-    }
 
     /**
      * added required listeners to event manager
