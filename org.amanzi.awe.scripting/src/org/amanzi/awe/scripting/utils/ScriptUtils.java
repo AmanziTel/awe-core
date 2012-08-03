@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarFile;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
@@ -49,11 +50,13 @@ public class ScriptUtils {
     /*
      * static fields;
      */
-    private static final String JRUBY_PLUGIN_NAME = "org.jruby";
-    private static final String PREFIX_JAR_FILE = "jar:file:";
+    private static final String JRUBY_BUNDLE_NAME = "org.jruby";
+    private static final String NEO4J_BUNDLE_NAME = "org.neo4j";
+    private static final String POSTFIX_JAR = ".jar!/";
     private static final String PREFIX_FILE = "file:";
-    private static final String LIB_PATH = "/lib/ruby/";
+    private static final String LIB_PATH = "lib/ruby/";
     private static final String[] JRUBY_VERSIONS = new String[] {"1.8", "1.9", "2.0", "2.1"};
+
     private String jRubyHome;
     private String jRubyVersion;
 
@@ -76,7 +79,7 @@ public class ScriptUtils {
     public String getJRubyHome() throws ScriptingException {
         try {
             if (jRubyHome == null) {
-                jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
+                jRubyHome = getPluginRoot(JRUBY_BUNDLE_NAME);
             }
         } catch (ScriptingException e) {
             LOGGER.error("Can't ensure jruby.home", e);
@@ -114,8 +117,22 @@ public class ScriptUtils {
 
         List<String> loadPath = new ArrayList<String>();
         String neoRubyGemDir = getPluginRoot(AbstractScriptingPlugin.PLUGIN_ID) + "neo4j";
-        String neo4j = getPluginRoot("org.neo4j");
+        LOGGER.info("Neo4J scripts folder set to < " + neoRubyGemDir + " >");
+        String neo4j = getPluginRoot(NEO4J_BUNDLE_NAME);
+
         loadPath.add(path);
+        loadPath.add(jRubyHome + LIB_PATH + "site_ruby/" + jRubyVersion);
+        loadPath.add(jRubyHome + LIB_PATH + "site_ruby");
+        loadPath.add(jRubyHome + LIB_PATH + jRubyVersion);
+        loadPath.add(jRubyHome + LIB_PATH + jRubyVersion + "/java");
+        loadPath.add(jRubyHome + "lib");
+
+        loadPath.add(neoRubyGemDir + "/lib");
+        loadPath.add(neoRubyGemDir + "/lib/relations");
+        loadPath.add(neoRubyGemDir + "/lib/mixins");
+        loadPath.add(neoRubyGemDir + "/lib/jars");
+        loadPath.add(neoRubyGemDir + "/examples/imdb");
+
         loadPath.add(neoRubyGemDir + "/lib");
         loadPath.add(neoRubyGemDir + "/lib/neo4j");
         loadPath.add(neo4j);
@@ -128,16 +145,50 @@ public class ScriptUtils {
      * 
      * @throws IOException
      */
-    private String findJRubyVersion(String jRubyHome) throws ScriptingException {
+    private String findJRubyVersion(String jRubyHome) throws ScriptingException, IOException {
         String result = null;
+        JarFile jarFile = null;
+        if (jRubyHome.startsWith(PREFIX_FILE) && jRubyHome.endsWith(POSTFIX_JAR)) {
+            String path = prepareJarPath(jRubyHome);
+            jarFile = new JarFile(path);
+        }
         for (String version : JRUBY_VERSIONS) {
-            String path = jRubyHome + LIB_PATH + version;
-            if ((new File(path)).isDirectory()) {
+            if (checkFileExisting(jarFile, jRubyHome, LIB_PATH + version)) {
                 result = version;
                 break;
             }
         }
+        LOGGER.info("Jruby version set to < " + result + " >");
         return result;
+    }
+
+    /**
+     * first check for version folder in jar file. if jar folder not exist -> check for directory in
+     * folderPath
+     * 
+     * @param jarFile
+     * @param version
+     * @param version2
+     */
+    private boolean checkFileExisting(JarFile jarFile, String folderPath, String versionFolder) {
+        if (jarFile == null) {
+            if ((new File(folderPath + versionFolder)).isDirectory()) {
+                return true;
+            }
+        } else if (jarFile.getEntry(versionFolder) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param jRubyHome2
+     * @return
+     */
+    private String prepareJarPath(String jrubyHomePath) {
+        jrubyHomePath = jrubyHomePath.substring(PREFIX_FILE.length(), jrubyHomePath.length() - 2);
+        LOGGER.info("Prepared Path < " + jrubyHomePath + " >");
+        return jrubyHomePath;
     }
 
     /**
@@ -146,25 +197,18 @@ public class ScriptUtils {
      * @param pluginName name of plugin
      * @return path to plugin
      * @throws IOException throws Exception if path cannot be resolved
-     * @author Lagutko_N
+     * @author Kondratenko_Vladislav
      */
     public String getPluginRoot(String pluginName) throws ScriptingException {
         try {
             URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
-            LOGGER.info("Ruby Plugin URL <" + rubyLocationURL + ">");
+            LOGGER.info("Plugin URL < " + rubyLocationURL + " >");
             String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
-            LOGGER.info("Ruby Location <" + rubyLocation + ">");
-            if (rubyLocation.startsWith(PREFIX_JAR_FILE)) {
-                rubyLocation = rubyLocation.substring(PREFIX_JAR_FILE.length());
-                if (!rubyLocation.startsWith(File.separator)) {
-                    rubyLocation = File.separator + rubyLocation;
-                }
-                rubyLocation = PREFIX_FILE + rubyLocation;
-            } else if (rubyLocation.startsWith(PREFIX_FILE)) {
+            LOGGER.info(" Location < " + rubyLocation + " >");
+            if (rubyLocation.startsWith(PREFIX_FILE) && !rubyLocation.endsWith(POSTFIX_JAR)) {
                 rubyLocation = rubyLocation.substring(PREFIX_FILE.length());
             }
-
-            LOGGER.info("Ruby Location <" + rubyLocation + ">");
+            LOGGER.info("File Location < " + rubyLocation + " >");
 
             return rubyLocation;
         } catch (Exception e) {

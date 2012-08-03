@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.views.treeview;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -56,13 +55,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     private TreeViewer treeViewer;
     private Text tSearch;
-
-    /**
-     * The constructor.
-     */
-    protected AbstractTreeView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
-    }
 
     protected AbstractTreeView(IGeneralNodeProperties properties) {
         super();
@@ -129,8 +121,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * added required listeners to event manager
      */
     protected void addEventListeners() {
-        getEventManager().addListener(this, EventStatus.PROJECT_CHANGED);
-        eventManager.addListener(this, EventStatus.DATA_UPDATED);
+        eventManager.addListener(this, EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED);
     }
 
     /**
@@ -195,16 +186,9 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     /**
-     * @return Returns the tSearch.
-     */
-    protected Text gettSearch() {
-        return tSearch;
-    }
-
-    /**
      * @param tSearch The tSearch to set.
      */
-    protected void settSearch(Text tSearch) {
+    protected void setSearchField(Text tSearch) {
         this.tSearch = tSearch;
     }
 

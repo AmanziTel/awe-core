@@ -15,6 +15,8 @@ package org.amanzi.awe.statistics.manager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -47,10 +49,13 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.testing.AbstractAWEDBTest;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -69,13 +74,17 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class StatisticsManagerTests extends AbstractAWEDBTest {
-    private IDriveModel driveModel;
-    private HashSet<String> generatedModels;
-    private Map<String, List<Long>> cellsPeriods;
+
     private static final Logger LOGGER = Logger.getLogger(StatisticsManagerTests.class);
+
+    private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
+    private static final String PROJECT_FOLDER = "awe-scripts";
+    private static final String BUNDLE_ID = "org.amanzi.awe.statistics.testing";
+
     private static final StatisticsManager MANAGER = StatisticsManager.getInstance();
     private static IProjectModel PROJECT_MODEL;
     private static final String DRIVE_MODEL_NAME = "drive";
+    private static final String SCRIPT_ROOT = "/ruby";
     private static final String FILE_NAME = "fileName";
     private static final String TEMPLATE_NAME = "test1:fakeTemplate.t";
     private static final String PREPARATOR_NAME = "test1:testPreparator.t";
@@ -91,6 +100,9 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
             "GT-I9210", "GT-N7000", "Galaxy Nexus", "HTC Desire HD A9191"};
     private static Calendar startTime = Calendar.getInstance();
     private static DatasetService datasetService;
+    private IDriveModel driveModel;
+    private HashSet<String> generatedModels;
+    private Map<String, List<Long>> cellsPeriods;
     private List<Long> expectedRows;
 
     @BeforeClass
@@ -101,6 +113,7 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
         PROJECT_MODEL = ProjectModel.setActiveProject(PROJECT_NAME);
         AbstractModelTest.initServices(StatisticsService.getInstance());
         AbstractEntityTest.initServices(StatisticsService.getInstance());
+        copyTestScripts();
         try {
             StatisticsPlugin.getDefault().getRuntimeWrapper().executeScriptByName(PREPARATOR_NAME);
         } catch (FileNotFoundException e) {
@@ -109,6 +122,26 @@ public class StatisticsManagerTests extends AbstractAWEDBTest {
             LOGGER.error("can't execute script", e);
         }
         new LogStarter().earlyStartup();
+    }
+
+    /**
+     *
+     */
+    private static void copyTestScripts() {
+        try {
+            URL scriptFolderUrl = Platform.getBundle(BUNDLE_ID).getEntry(SCRIPT_ROOT);
+            LOGGER.info("< Script folder founded in boundle <" + scriptFolderUrl + ">");
+            File targetFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+            File rubyFolder = new File(FileLocator.resolve(scriptFolderUrl).getPath());
+            for (File file : rubyFolder.listFiles()) {
+                LOGGER.info("Copy file <" + file.getAbsolutePath() + " to -->" + targetFolder + ">");
+                FileUtils.forceMkdir(targetFolder);
+                FileUtils.copyDirectoryToDirectory(file, targetFolder);
+            }
+
+        } catch (IOException e) {
+            LOGGER.error("Can't copy files to workspace folder", e);
+        }
     }
 
     @Before

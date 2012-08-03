@@ -163,7 +163,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * 
      * @throws IOException
      */
-    public void initRuntime(File scriptFolder) throws ScriptingException {
+    public void initRuntime(final File scriptFolder) throws ScriptingException {
         try {
             Ruby runtime;
             RubyInstanceConfig config = new RubyInstanceConfig() {
@@ -171,12 +171,13 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                     setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
                     setObjectSpaceEnabled(true);
                     setLoader(getClassLoader());
+                    setLoadPaths(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
                 }
             };
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
+//            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
             initRuntimeWithDefaultScripts();
         } catch (Exception e) {

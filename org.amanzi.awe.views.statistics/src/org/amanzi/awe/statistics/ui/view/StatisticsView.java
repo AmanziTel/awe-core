@@ -553,6 +553,8 @@ public class StatisticsView extends ViewPart {
         bReport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelReport);
         bExport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelExport);
         bChartView = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelChartView);
+        // ------- table
+        tableViewer = new TableViewer(mainComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         setEnabled(false, mainComposite);
         setEnabled(true, lDataset, cDataset);
     }
@@ -642,15 +644,12 @@ public class StatisticsView extends ViewPart {
         bottomControlsComposite.setLayout(layout);
         bottomControlsComposite.setLayoutData(gridData);
 
-        // ------- table
-        tableViewer = new TableViewer(mainComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
-
     }
 
     /**
      * @return
      */
-    public String getAggregation() {
+    private String getAggregation() {
         String text = cAggregation.getText();
         return text.startsWith(ASTERISK) ? text.substring(1) : text;
     }

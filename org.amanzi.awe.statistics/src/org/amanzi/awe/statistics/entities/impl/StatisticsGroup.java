@@ -62,7 +62,7 @@ public class StatisticsGroup extends AbstractStorageEntity<StatisticsRow> implem
         LOGGER.info("Start adding row process");
         StatisticsRow newRow = createChildWithName(name, StatisticsNodeTypes.S_ROW);
         newRow.setTimestamp(timestamp);
-        childs.put(name, newRow);
+        children.put(name, newRow);
         LOGGER.info("Added succesefull");
         return newRow;
     }

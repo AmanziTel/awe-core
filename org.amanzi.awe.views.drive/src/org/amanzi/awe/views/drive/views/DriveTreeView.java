@@ -9,10 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.drive.views.view.provider.DriveTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -42,13 +44,17 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
     /**
      * The Constructor
      */
-    public DriveTreeView() {
-        super();
+    protected DriveTreeView() {
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+    }
+
+    protected DriveTreeView(IGeneralNodeProperties properties) {
+        super(properties);
     }
 
     @Override
     protected void createControls(Composite parent) {
-        settSearch(new Text(parent, SWT.BORDER));
+        setSearchField(new Text(parent, SWT.BORDER));
         setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL));
         setProviders();
         getTreeViewer().setInput(getSite());

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.explorer.ProjectExplorerPluginMessages;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
@@ -25,6 +26,9 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.providers.INetworkModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 
@@ -38,6 +42,21 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
 
     private List<IModel> models;
+
+    public ProjectTreeContentProvider() {
+        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
+                .getDefault().getGeneralNodeProperties());
+
+    }
+
+    /**
+     * @param networkModelProvider
+     * @param projectModelProvider
+     */
+    protected ProjectTreeContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
+            IGeneralNodeProperties generalNodeProperties) {
+        super(networkModelProvider, projectModelProvider, generalNodeProperties);
+    }
 
     @Override
     public Object getParent(final Object element) {

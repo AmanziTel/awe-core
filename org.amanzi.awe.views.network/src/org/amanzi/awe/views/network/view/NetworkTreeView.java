@@ -12,9 +12,11 @@
  */
 package org.amanzi.awe.views.network.view;
 
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -34,8 +36,15 @@ public class NetworkTreeView extends AbstractTreeView {
 
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
+    /**
+     * The constructor.
+     */
     public NetworkTreeView() {
-        super();
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+    }
+
+    protected NetworkTreeView(IGeneralNodeProperties properties) {
+        super(properties);
     }
 
     @Override
@@ -54,7 +63,7 @@ public class NetworkTreeView extends AbstractTreeView {
 
     @Override
     protected void createControls(Composite parent) {
-        settSearch(new Text(parent, SWT.BORDER));
+        setSearchField(new Text(parent, SWT.BORDER));
         setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
         setProviders();
         getTreeViewer().setInput(getSite());

@@ -4,8 +4,6 @@ require 'thread'
 require 'delegate'
 require 'forwardable'
 
-# external jars
-require 'neo4j/jars'
 
 # lucene
 require 'lucene'

@@ -14,7 +14,7 @@
 package org.amanzi.awe.statistics.entities.impl;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.awe.statistics.entities.IAggregatedStatisticsEntity;
@@ -37,7 +37,7 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntity> extends AbstractFlaggedEntity {
 
-    protected Map<String, T> childs;
+    protected Map<String, T> children;
     private static final Logger LOGGER = Logger.getLogger(AbstractStorageEntity.class);
 
     /**
@@ -71,8 +71,8 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
             LOGGER.error("name element is null.");
             throw new IllegalArgumentException("timestamp element is null");
         }
-        loadChildIfNecessary();
-        return childs.get(name);
+        loadChildrenIfNecessary();
+        return children.get(name);
     }
 
     /**
@@ -81,24 +81,23 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
      * @return
      */
     public Collection<T> getAllChild() {
-        loadChildIfNecessary();
-        return childs.values();
+        loadChildrenIfNecessary();
+        return children.values();
     }
 
     /**
      * Loads rows if necessary
      */
-    protected void loadChildIfNecessary() {
-        if (childs == null) {
-            // TODO: LN: 01.08.2012, why LinkedHashMap??????
-            childs = new LinkedHashMap<String, T>();
+    protected void loadChildrenIfNecessary() {
+        if (children == null) {
+            children = new HashMap<String, T>();
             Iterable<Node> rowsNodes = statisticService.getChildrenChainTraverser(rootNode);
             if (rowsNodes == null) {
                 return;
             }
             for (Node rowNode : rowsNodes) {
                 String name = (String)statisticService.getNodeProperty(rowNode, StatisticsService.NAME);
-                childs.put(name, instantiateChild(rootNode, rowNode));
+                children.put(name, instantiateChild(rootNode, rowNode));
             }
         }
     }
@@ -119,14 +118,14 @@ public abstract class AbstractStorageEntity<T extends IAggregatedStatisticsEntit
             LOGGER.error("incorrect arguments values");
             throw new IllegalArgumentException("incorrect arguments values");
         }
-        loadChildIfNecessary();
-        if (childs.containsKey(name)) {
+        loadChildrenIfNecessary();
+        if (children.containsKey(name)) {
             LOGGER.error("child with name." + name + "is already exists");
             throw new DuplicateNodeNameException();
         }
         Node entity = statisticService.createEntity(rootNode, entityType, name, Boolean.FALSE);
         T newChild = instantiateChild(rootNode, entity);
-        childs.put(name, newChild);
+        children.put(name, newChild);
         return newChild;
     }
 

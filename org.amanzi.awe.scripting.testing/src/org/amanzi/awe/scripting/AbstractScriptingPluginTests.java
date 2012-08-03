@@ -52,7 +52,6 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
     private static final String TEST_SCRIPT_NAME = "testScript.t";
     private static final double EXPECTED_NUMBER_RESULT = 5.0;
     private static final String TEST1_MODULE_NAME = "test2:";
-    private static final String TEST2_MODULE_NAME = "test1:";
     private static final FileFilter TEMPLATES_FILTER = new FileFilter() {
 
         @Override
@@ -143,7 +142,7 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
 
     @Test
     public void testGetScriptsForProjectifExist() throws IOException {
-        String projectName = TEST2_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
+        String projectName = TEST1_MODULE_NAME.split(SCRIPT_ID_SEPARATOR)[NumberUtils.INTEGER_ZERO];
         File requiredModule = null;
         for (File module : modules) {
             if (module.getName().equals(projectName)) {

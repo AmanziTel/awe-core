@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -45,6 +44,19 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     private final DataElementComparator DATA_ELEMENT_COMPARATOR;
 
     /**
+     * @param networkModelProvider
+     * @param projectModelProvider
+     */
+    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
+            IGeneralNodeProperties generalNodeProperties) {
+        super();
+        this.networkModelProvider = networkModelProvider;
+        this.projectModelProvider = projectModelProvider;
+        this.generalNodeProperties = generalNodeProperties;
+        this.DATA_ELEMENT_COMPARATOR = new DataElementComparator();
+    }
+
+    /**
      * <p>
      * Comparator for treeElements
      * </p>
@@ -67,31 +79,12 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     private INetworkModelProvider networkModelProvider;
     private IProjectModelProvider projectModelProvider;
 
-    /**
-     * @param networkModelProvider
-     * @param projectModelProvider
-     */
-    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
-            IGeneralNodeProperties generalNodeProperties) {
-        super();
-        this.networkModelProvider = networkModelProvider;
-        this.projectModelProvider = projectModelProvider;
-        this.generalNodeProperties = generalNodeProperties;
-        this.DATA_ELEMENT_COMPARATOR = new DataElementComparator();
+    @Override
+    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
     }
 
     @Override
     public void dispose() {
-    }
-
-    protected AbstractContentProvider() {
-        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
-                .getDefault().getGeneralNodeProperties());
-
-    }
-
-    @Override
-    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
     }
 
     @SuppressWarnings("unchecked")

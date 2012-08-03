@@ -7,10 +7,14 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IElementComparer;
@@ -31,11 +35,36 @@ public class ProjectExplorerView extends AbstractTreeView {
      */
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
 
+    private static final IElementComparer TREE_ITEMS_COMPARATOR = new IElementComparer() {
+
+        @Override
+        public int hashCode(final Object element) {
+            return 0;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean equals(final Object a, final Object b) {
+            if ((a instanceof ITreeItem< ? >) && (b instanceof ITreeItem< ? >)) {
+                ITreeItem<IModel> aM = (ITreeItem<IModel>)a;
+                ITreeItem<IModel> bM = (ITreeItem<IModel>)b;
+                IDataElement amElement = aM.getDataElement();
+                IDataElement bmElement = bM.getDataElement();
+                return amElement.getId() == bmElement.getId();
+            }
+            return a == null ? b == null : a.equals(b);
+        }
+    };
+
     /**
      * The constructor.
      */
     public ProjectExplorerView() {
-        super();
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+    }
+
+    protected ProjectExplorerView(IGeneralNodeProperties properties) {
+        super(properties);
     }
 
     @Override
@@ -43,24 +72,7 @@ public class ProjectExplorerView extends AbstractTreeView {
         setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
         setProviders();
         getTreeViewer().setInput(getViewSite());
-        // TODO: LN: 01.08.2012, make a constant
-        getTreeViewer().setComparer(new IElementComparer() {
-
-            @Override
-            public int hashCode(final Object element) {
-                return 0;
-            }
-
-            @Override
-            public boolean equals(final Object a, final Object b) {
-                if ((a instanceof IModel) && (b instanceof IModel)) {
-                    IModel aM = (IModel)a;
-                    IModel bM = (IModel)b;
-                    return aM.getName().equals(bM.getName()) && aM.getClass().equals(bM.getClass());
-                }
-                return a == null ? b == null : a.equals(b);
-            }
-        });
+        getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
         MenuManager menuManager = new MenuManager();
         Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
         getTreeViewer().getControl().setMenu(menu);
