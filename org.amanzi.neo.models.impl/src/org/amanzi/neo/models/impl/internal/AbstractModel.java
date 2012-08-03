@@ -186,6 +186,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         DataElement result = new DataElement(rootNode);
 
         result.setNodeType(getType());
+        result.setName(name);
 
         return result;
     }

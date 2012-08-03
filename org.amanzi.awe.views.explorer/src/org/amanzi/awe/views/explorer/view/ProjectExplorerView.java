@@ -8,7 +8,6 @@
 package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
-import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
@@ -72,13 +71,6 @@ public class ProjectExplorerView extends AbstractTreeView {
         getTreeViewer().getControl().setMenu(menu);
         getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
         getSite().registerContextMenu(menuManager, getTreeViewer());
-    }
-
-    @Override
-    public void dispose() {
-        // TODO: LN: 03.08.2012, look to TODO in NetworkTreeView method dispose()
-        AWEEventManager.getManager().removeListener(this);
-        super.dispose();
     }
 
 }

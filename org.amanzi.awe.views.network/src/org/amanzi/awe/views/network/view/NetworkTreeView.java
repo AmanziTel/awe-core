@@ -13,7 +13,6 @@
 package org.amanzi.awe.views.network.view;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
-import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -43,13 +42,6 @@ public class NetworkTreeView extends AbstractTreeView {
 
     protected NetworkTreeView(IGeneralNodeProperties properties, NetworkTreeContentProvider networkTreeContentProvider) {
         super(properties, networkTreeContentProvider);
-    }
-
-    @Override
-    public void dispose() {
-        // TODO: LN: 03.08.2012, why removing listener not in Abstract? Directly NetworkTreeView
-        // didn't handle any events
-        AWEEventManager.getManager().removeListener(this);
     }
 
     /**

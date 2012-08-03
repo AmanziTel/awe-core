@@ -14,10 +14,12 @@
 package org.amanzi.awe.views.treeview.provider.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -41,7 +43,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
     private final IGeneralNodeProperties generalNodeProperties;
-    private final DataElementComparator DATA_ELEMENT_COMPARATOR;
+    private static final DataElementComparator DATA_ELEMENT_COMPARER = new DataElementComparator();
+    private Iterable<IDataElement> children = null;
 
     /**
      * @param networkModelProvider
@@ -53,8 +56,6 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         this.networkModelProvider = networkModelProvider;
         this.projectModelProvider = projectModelProvider;
         this.generalNodeProperties = generalNodeProperties;
-        // TODO: LN: 03.08.2012, make a constant
-        this.DATA_ELEMENT_COMPARATOR = new DataElementComparator();
     }
 
     /**
@@ -65,21 +66,19 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    protected class DataElementComparator implements Comparator<ITreeItem<T>> {
-
+    @SuppressWarnings("rawtypes")
+    protected static class DataElementComparator implements Comparator<ITreeItem> {
         @Override
-        public int compare(ITreeItem<T> dataElement1, ITreeItem<T> dataElement2) {
-            // TODO: LN: 03.08.2012, add getName method to IDataElement
+        public int compare(ITreeItem dataElement1, ITreeItem dataElement2) {
             return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
-                    .getDataElement().get(getGeneralNodeProperties().getNodeNameProperty()).toString()
-                    .compareTo(dataElement2.getDataElement().get(getGeneralNodeProperties().getNodeNameProperty()).toString());
+                    .getDataElement().getName().compareTo(dataElement2.getDataElement().getName());
         }
-
     }
 
-    private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
     private final INetworkModelProvider networkModelProvider;
     private final IProjectModelProvider projectModelProvider;
+
+    private List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
 
     @Override
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
@@ -132,7 +131,16 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @param t
      * @return
      */
-    protected abstract Object[] processReturment(T t);
+    protected Object[] processReturment(T model) {
+        List<ITreeItem<T>> dataElements = new ArrayList<ITreeItem<T>>();
+        for (IDataElement dataElement : children) {
+            ITreeItem<T> item = new TreeViewItem<T>(model, dataElement);
+            dataElements.add(item);
+        }
+        Collections.sort(dataElements, getDataElementComparer());
+        List<Object> res = new ArrayList<Object>(dataElements);
+        return res.toArray();
+    }
 
     /**
      * handle inner elements
@@ -142,20 +150,29 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      */
     protected abstract void handleInnerElements(ITreeItem<T> parentElement) throws ModelException;
 
-    /**
-     * add to rootElement
-     * 
-     * @param root
-     */
-    protected void addToRoot(T root) {
-        rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
-    }
-
     @Override
     public Object[] getElements(Object inputElement) {
         rootList.clear();
+        List<T> roots = null;
+        try {
+            roots = getRootElements();
+            for (T root : roots) {
+                rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+            }
+        } catch (ModelException e) {
+            LOGGER.error("can't get roots", e);
+        }
+
         return rootList.toArray();
     }
+
+    /**
+     * get root elements
+     * 
+     * @return
+     * @throws ModelException
+     */
+    protected abstract List<T> getRootElements() throws ModelException;
 
     /**
      * check if object in rootList
@@ -203,8 +220,14 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @return Returns the DATA_ELEMENT_COMPARATOR.
      */
-    public DataElementComparator getDataElementComparator() {
-        return DATA_ELEMENT_COMPARATOR;
+    public DataElementComparator getDataElementComparer() {
+        return DATA_ELEMENT_COMPARER;
     };
 
+    /**
+     * @param children
+     */
+    protected void setChildren(Iterable<IDataElement> children) {
+        this.children = children;
+    }
 }

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.explorer.view.menu.commands;
 
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.treeview.command.handlers.AbstractTreeCommandHandler;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
@@ -30,14 +31,15 @@ import org.amanzi.neo.models.network.NetworkElementType;
 public class ShowInTreeCommand extends AbstractTreeCommandHandler {
     private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
+    protected ShowInTreeCommand() {
+        super(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+    }
+
     @Override
     protected void handleElement(ITreeItem<IModel> element) {
-        // TODO: LN: 03.08.2012, why not use IDataElement.getNodeType()
-        if (element.getDataElement().get(getGeneralNodeProperites().getNodeTypeProperty())
-                .equals(NetworkElementType.NETWORK.getId())) {
+        if (element.getDataElement().getNodeType().equals(NetworkElementType.NETWORK)) {
             AWEEventManager.getManager().fireShowInViewEvent(NETWORK_TREE_VIEW_ID, element.getDataElement());
         }
 
     }
-
 }

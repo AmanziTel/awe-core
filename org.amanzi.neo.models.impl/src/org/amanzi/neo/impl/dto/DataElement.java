@@ -37,6 +37,8 @@ public class DataElement implements IDataElement {
 
     private INodeType nodeType;
 
+    private String name;
+
     public DataElement() {
 
     }
@@ -110,5 +112,14 @@ public class DataElement implements IDataElement {
     @Override
     public long getId() {
         return node == null ? -1 : node.getId();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }
