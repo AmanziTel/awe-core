@@ -16,10 +16,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
@@ -60,25 +57,21 @@ public class ProjectExplorerView extends AbstractTreeView {
      * The constructor.
      */
     public ProjectExplorerView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties(), new ProjectTreeContentProvider());
     }
 
-    protected ProjectExplorerView(IGeneralNodeProperties properties) {
-        super(properties);
+    protected ProjectExplorerView(IGeneralNodeProperties properties, ProjectTreeContentProvider projectTreeContentProvider) {
+        super(properties, projectTreeContentProvider);
     }
 
     @Override
     protected void createControls(Composite parent) {
-        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
-        setProviders();
-        getTreeViewer().setInput(getViewSite());
-        getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
+        super.createControls(parent);
         MenuManager menuManager = new MenuManager();
         Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
         getTreeViewer().getControl().setMenu(menu);
+        getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
         getSite().registerContextMenu(menuManager, getTreeViewer());
-        getSite().setSelectionProvider(getTreeViewer());
-        setLayout(parent);
     }
 
     @Override
@@ -86,23 +79,4 @@ public class ProjectExplorerView extends AbstractTreeView {
         AWEEventManager.getManager().removeListener(this);
         super.dispose();
     }
-
-    /**
-     * Passing the focus request to the viewer's control.
-     */
-    @Override
-    public void setFocus() {
-        getTreeViewer().getControl().setFocus();
-    }
-
-    @Override
-    protected IContentProvider getContentProvider() {
-        return new ProjectTreeContentProvider();
-    }
-
-    @Override
-    protected void addEventListeners() {
-        // TODO: LN: 01.08.2012, no event listeners initialized!!!!
-    }
-
 }

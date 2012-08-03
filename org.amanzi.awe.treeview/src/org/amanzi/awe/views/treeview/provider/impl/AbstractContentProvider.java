@@ -112,7 +112,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         try {
             ITreeItem<T> item = (ITreeItem<T>)element;
             children = getChildren(item);
-            return (children != null) && (!ArrayUtils.isEmpty(children)) && additionalCheckChild(element);
+            return !ArrayUtils.isEmpty(children) && additionalCheckChild(element);
         } catch (ModelException e) {
             LOGGER.error("exception when trying to get child", e);
         }
