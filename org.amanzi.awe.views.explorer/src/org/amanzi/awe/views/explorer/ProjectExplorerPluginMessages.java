@@ -19,29 +19,34 @@ import org.eclipse.osgi.util.NLS;
 
 /**
  * Messages for Network Tree
- * 
  */
 
 public class ProjectExplorerPluginMessages extends NLS {
-    
+
     private static final String BUNDLE_NAME = ProjectExplorerPluginMessages.class.getName();
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
-    
+
     public static String NetworkTree_CouldNotBeShown;
     public static String NetworkPropertySheet_Description;
     public static String ErrorTitle;
     public static String GetChildrenException;
     public static String HasChildrenException;
     public static String GetElementsException;
-    
+    public static String showInDistributionAnalyseItem;
+    public static String showInPropertyViewItem;
+    public static String showIndDriveInqureItem;
+    public static String showInN2nViewItem;
+    public static String starToolAnaluse;
+    public static String showOnMap;
+
     private ProjectExplorerPluginMessages() {
     }
 
     public static ResourceBundle getResourceBundle() {
         return resourceBundle;
     }
-    
-    public static String getFormattedString(String key, String ... args) {
+
+    public static String getFormattedString(String key, String... args) {
         return MessageFormat.format(key, (Object[])args);
     }
 
