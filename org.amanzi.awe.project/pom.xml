@@ -32,17 +32,18 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
 				<executions>
 					<execution>
 						<id>copy-resources</id>
-						<!-- here the phase you need -->
 						<phase>validate</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/products/${project.groupId}.${project.artifactId}</outputDirectory>
+							<outputDirectory>${project.build.directory}/products/${project.artifactId}</outputDirectory>
 							<resources>
 								<resource>
 									<directory>icons</directory>
