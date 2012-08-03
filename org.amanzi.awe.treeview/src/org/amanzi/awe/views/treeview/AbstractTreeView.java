@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -31,7 +32,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
@@ -44,8 +44,12 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener {
+
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
+
     private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
+    // TODO: LN: 03.08.2012, variable name
+    private final IContentProvider CONTENT_PROVIDER;
     /**
      * event manager
      */
@@ -56,10 +60,12 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     private TreeViewer treeViewer;
     private Text tSearch;
 
-    protected AbstractTreeView(IGeneralNodeProperties properties) {
+    protected AbstractTreeView(IGeneralNodeProperties properties, IContentProvider provider) {
         super();
         generalNodeProperties = properties;
+        this.CONTENT_PROVIDER = provider;
         this.eventManager = AWEEventManager.getManager();
+        addEventListeners();
     }
 
     @Override
@@ -77,6 +83,11 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     protected void searchInTreeView(final String searchText) {
     }
 
+    /**
+     * select data element in tree view
+     * 
+     * @param dataElement
+     */
     public void selectDataElement(IDataElement dataElement) {
         this.treeViewer.reveal(dataElement);
         this.treeViewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
@@ -86,7 +97,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * set providers to tree view
      */
     protected void setProviders() {
-        this.treeViewer.setContentProvider(getContentProvider());
+        this.treeViewer.setContentProvider(CONTENT_PROVIDER);
         this.treeViewer.setLabelProvider(LABEL_PROVIDER);
     }
 
@@ -103,17 +114,12 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * @param parent
      */
-    protected abstract void createControls(Composite parent);
-
-    /**
-     * @return content provider
-     */
-    protected abstract IContentProvider getContentProvider();
-
-    @Override
-    public void init(IViewSite site) throws PartInitException {
-        super.init(site);
-        addEventListeners();
+    protected void createControls(Composite parent) {
+        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
+        setProviders();
+        getTreeViewer().setInput(getSite());
+        getSite().setSelectionProvider(getTreeViewer());
+        setLayout(parent);
 
     }
 
@@ -208,7 +214,18 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
         return eventManager;
     }
 
+    /**
+     * Passing the focus request to the viewer's control.
+     */
     @Override
     public void setFocus() {
+        getTreeViewer().getControl().setFocus();
+    }
+
+    /**
+     * @return Returns the cONTENT_PROVIDER.
+     */
+    protected IContentProvider getContentProvider() {
+        return CONTENT_PROVIDER;
     }
 }

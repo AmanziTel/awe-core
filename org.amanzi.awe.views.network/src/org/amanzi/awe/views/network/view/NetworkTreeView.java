@@ -17,8 +17,6 @@ import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -40,11 +38,11 @@ public class NetworkTreeView extends AbstractTreeView {
      * The constructor.
      */
     public NetworkTreeView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties(), new NetworkTreeContentProvider());
     }
 
-    protected NetworkTreeView(IGeneralNodeProperties properties) {
-        super(properties);
+    protected NetworkTreeView(IGeneralNodeProperties properties, NetworkTreeContentProvider networkTreeContentProvider) {
+        super(properties, networkTreeContentProvider);
     }
 
     @Override
@@ -59,18 +57,8 @@ public class NetworkTreeView extends AbstractTreeView {
      */
 
     @Override
-    protected IContentProvider getContentProvider() {
-        return new NetworkTreeContentProvider();
-    }
-
-    @Override
     protected void createControls(Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
-        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
-        setProviders();
-        getTreeViewer().setInput(getSite());
-        getSite().setSelectionProvider(getTreeViewer());
-        setLayout(parent);
-
+        super.createControls(parent);
     }
 }

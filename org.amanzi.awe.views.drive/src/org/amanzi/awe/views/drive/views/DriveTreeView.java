@@ -10,20 +10,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
-import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.drive.views.view.provider.DriveTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -33,47 +29,34 @@ import org.eclipse.swt.widgets.Text;
  * 
  * @author Bondoronok_P
  */
-public class DriveTreeView extends AbstractTreeView implements IAWEEventListenter {
+public class DriveTreeView extends AbstractTreeView {
 
     public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.drive.views.DriveTreeView";
     public static final String PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.PropertiesView";
     public static final String DRIVE_MODEL = "drive_model";
 
-    private DriveTreeContentProvider contentProvider = new DriveTreeContentProvider();;
-
     /**
      * The Constructor
      */
     protected DriveTreeView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+        this(AWEUIPlugin.getDefault().getGeneralNodeProperties(), new DriveTreeContentProvider());
     }
 
-    protected DriveTreeView(IGeneralNodeProperties properties) {
-        super(properties);
+    protected DriveTreeView(IGeneralNodeProperties properties, DriveTreeContentProvider driveTreeContentProvider) {
+        super(properties, driveTreeContentProvider);
     }
 
     @Override
     protected void createControls(Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
-        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL));
-        setProviders();
-        getTreeViewer().setInput(getSite());
+        super.createControls(parent);
         initializeListeners();
-        setLayout(parent);
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-     */
-    @Override
-    public void setFocus() {
     }
 
     /**
      * Initialize tree view listeners
      */
+    // TODO KV: need refactoring
     private void initializeListeners() {
         getTreeViewer().addTreeListener(new ITreeViewerListener() {
 
@@ -82,7 +65,7 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
                 String expandedElement = event.getElement().toString();
                 boolean isPrevious = Messages.PreviousElementsTitle.equals(expandedElement);
                 if (Messages.NextElementsTitle.equals(expandedElement) || isPrevious) {
-                    contentProvider.setPreviousPressed(isPrevious);
+                    ((DriveTreeContentProvider)getContentProvider()).setPreviousPressed(isPrevious);
                     getTreeViewer().setInput(getSite());
                 }
             }
@@ -124,21 +107,6 @@ public class DriveTreeView extends AbstractTreeView implements IAWEEventListente
                 }
             }
         });
-    }
-
-    @Override
-    protected IContentProvider getContentProvider() {
-        return contentProvider;
-    }
-
-    @Override
-    protected void addEventListeners() {
-    }
-
-    @Override
-    public void onEvent(IEvent event) {
-        // TODO Auto-generated method stub
-
     }
 
 }
