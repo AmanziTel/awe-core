@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.amanzi</groupId>
-        <artifactId>awe-core</artifactId>
-        <version>${awe-core-version}</version>
+		<artifactId>awe-core</artifactId>
+		<version>${awe-core-version}</version>
 	</parent>
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.awe.project</artifactId>
@@ -32,5 +32,26 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<plugin>
+			<artifactId>maven-resources-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>copy-resources</id>
+					<!-- here the phase you need -->
+					<phase>validate</phase>
+					<goals>
+						<goal>copy-resources</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${project.build.directory}/products/${project.groupId}.${project.artifactId}</outputDirectory>
+						<resources>
+							<resource>
+								<directory>icons</directory>
+							</resource>
+						</resources>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
 	</build>
 </project>
