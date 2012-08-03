@@ -82,6 +82,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
 
     @Override
     protected Object[] processReturment(INetworkModel networkModel) {
+        // TODO: LN: 03.08.2012, duplicated code for all ContentProviders
         List<ITreeItem<INetworkModel>> dataElements = new ArrayList<ITreeItem<INetworkModel>>();
         for (IDataElement dataElement : children) {
             ITreeItem<INetworkModel> item = new TreeViewItem<INetworkModel>(networkModel, dataElement);

@@ -30,11 +30,11 @@
 					<execution>
 						<phase>compile</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<ant antfile="${basedir}/build.xml">
 									<target name="install_jre" />
 								</ant>
-							</tasks>
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>

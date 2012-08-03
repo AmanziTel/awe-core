@@ -49,9 +49,9 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * event manager
      */
-    private AWEEventManager eventManager;
+    private final AWEEventManager eventManager;
 
-    private IGeneralNodeProperties generalNodeProperties;
+    private final IGeneralNodeProperties generalNodeProperties;
 
     private TreeViewer treeViewer;
     private Text tSearch;
@@ -157,6 +157,8 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void onEvent(IEvent event) {
+        // TODO: LN: 03.08.2012, why handled two types of events if this class listens only one
+        // type?
         switch (event.getStatus()) {
         case PROJECT_CHANGED:
         case DATA_UPDATED:

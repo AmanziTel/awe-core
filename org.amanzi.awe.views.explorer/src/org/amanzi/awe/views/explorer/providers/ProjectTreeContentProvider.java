@@ -66,6 +66,8 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
 
     @Override
     public Object[] getElements(final Object inputElement) {
+        // TODO: LN: 03.08.2012, why super.getElements was called? If this call is OK, why you
+        // didn't use result of this method?
         super.getElements(inputElement);
         try {
             for (IProjectModel model : getProjectModelProvider().findAll()) {
@@ -87,6 +89,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
 
     @Override
     protected Object[] processReturment(IProjectModel t) {
+        // TODO: LN: 03.08.2012, duplicated code for all ContentProviders
         LOGGER.info("process returment statement for project " + t);
         List<ITreeItem<IProjectModel>> treeItems = new ArrayList<ITreeItem<IProjectModel>>();
         for (IModel model : models) {

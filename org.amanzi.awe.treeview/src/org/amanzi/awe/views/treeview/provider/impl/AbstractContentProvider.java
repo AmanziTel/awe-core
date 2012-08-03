@@ -40,7 +40,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
-    private IGeneralNodeProperties generalNodeProperties;
+    private final IGeneralNodeProperties generalNodeProperties;
     private final DataElementComparator DATA_ELEMENT_COMPARATOR;
 
     /**
@@ -53,6 +53,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         this.networkModelProvider = networkModelProvider;
         this.projectModelProvider = projectModelProvider;
         this.generalNodeProperties = generalNodeProperties;
+        // TODO: LN: 03.08.2012, make a constant
         this.DATA_ELEMENT_COMPARATOR = new DataElementComparator();
     }
 
@@ -68,6 +69,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
 
         @Override
         public int compare(ITreeItem<T> dataElement1, ITreeItem<T> dataElement2) {
+            // TODO: LN: 03.08.2012, add getName method to IDataElement
             return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
                     .getDataElement().get(getGeneralNodeProperties().getNodeNameProperty()).toString()
                     .compareTo(dataElement2.getDataElement().get(getGeneralNodeProperties().getNodeNameProperty()).toString());
@@ -76,8 +78,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     }
 
     private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
-    private INetworkModelProvider networkModelProvider;
-    private IProjectModelProvider projectModelProvider;
+    private final INetworkModelProvider networkModelProvider;
+    private final IProjectModelProvider projectModelProvider;
 
     @Override
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
@@ -112,6 +114,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         try {
             ITreeItem<T> item = (ITreeItem<T>)element;
             children = getChildren(item);
+            // TODO: LN: 03.08.2012, read ArrayUtils.isEmpty code - and fix this todo
             return (children != null) && (!ArrayUtils.isEmpty(children)) && additionalCheckChild(element);
         } catch (ModelException e) {
             LOGGER.error("exception when trying to get child", e);

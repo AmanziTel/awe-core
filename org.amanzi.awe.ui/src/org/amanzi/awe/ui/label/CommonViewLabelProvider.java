@@ -18,6 +18,7 @@ import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
@@ -28,7 +29,7 @@ import org.eclipse.swt.graphics.Image;
  */
 public class CommonViewLabelProvider extends LabelProvider {
 
-    protected final IGeneralNodeProperties GENERAL_NODES_PROPERTIES;
+    protected final IGeneralNodeProperties generalNodeProperties;
 
     /**
      * Constructor. Gets an instance of IconManager
@@ -36,7 +37,7 @@ public class CommonViewLabelProvider extends LabelProvider {
      * @param viewer of this LabelProvider
      */
     public CommonViewLabelProvider() {
-        GENERAL_NODES_PROPERTIES = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+        generalNodeProperties = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     }
 
     @Override
@@ -44,7 +45,7 @@ public class CommonViewLabelProvider extends LabelProvider {
         if (element instanceof IModel) {
             return ((IModel)element).getName();
         } else if (element instanceof IDataElement) {
-            String name = (String)((IDataElement)element).get(GENERAL_NODES_PROPERTIES.getNodeNameProperty());
+            String name = (String)((IDataElement)element).get(generalNodeProperties.getNodeNameProperty());
             return name != null ? name : element.toString();
         }
         return null;
@@ -61,7 +62,7 @@ public class CommonViewLabelProvider extends LabelProvider {
             return IconManager.getInstance().getImage(model.getType());
         } else if (element instanceof IDataElement) {
             IDataElement dataElement = (IDataElement)element;
-            String type = (String)dataElement.get(GENERAL_NODES_PROPERTIES.getNodeTypeProperty());
+            INodeType type = dataElement.getNodeType();
             return IconManager.getInstance().getImage(type);
         }
         return null;

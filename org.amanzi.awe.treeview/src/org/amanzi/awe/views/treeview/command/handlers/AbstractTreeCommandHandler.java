@@ -35,8 +35,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @since 1.0.0
  */
 public abstract class AbstractTreeCommandHandler extends AbstractHandler {
+    // TODO: LN: 03.08.2012, incorrect name of non-constant variable
     private final IGeneralNodeProperties GENERAL_NODE_PROPERTIES;
 
+    // TODO: LN: 03.08.2012, remove this constructor
     protected AbstractTreeCommandHandler() {
         this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
     }

@@ -49,6 +49,8 @@ public class NetworkTreeView extends AbstractTreeView {
 
     @Override
     public void dispose() {
+        // TODO: LN: 03.08.2012, why removing listener not in Abstract? Directly NetworkTreeView
+        // didn't handle any events
         AWEEventManager.getManager().removeListener(this);
     }
 

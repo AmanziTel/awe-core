@@ -83,6 +83,7 @@ public class ProjectExplorerView extends AbstractTreeView {
 
     @Override
     public void dispose() {
+        // TODO: LN: 03.08.2012, look to TODO in NetworkTreeView method dispose()
         AWEEventManager.getManager().removeListener(this);
         super.dispose();
     }
@@ -92,6 +93,7 @@ public class ProjectExplorerView extends AbstractTreeView {
      */
     @Override
     public void setFocus() {
+        // TODO: LN: 03.08.2012, seem to be general functionality, move to Abstract class
         getTreeViewer().getControl().setFocus();
     }
 

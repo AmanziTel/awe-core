@@ -32,6 +32,7 @@ public class ShowInTreeCommand extends AbstractTreeCommandHandler {
 
     @Override
     protected void handleElement(ITreeItem<IModel> element) {
+        // TODO: LN: 03.08.2012, why not use IDataElement.getNodeType()
         if (element.getDataElement().get(getGeneralNodeProperites().getNodeTypeProperty())
                 .equals(NetworkElementType.NETWORK.getId())) {
             AWEEventManager.getManager().fireShowInViewEvent(NETWORK_TREE_VIEW_ID, element.getDataElement());
