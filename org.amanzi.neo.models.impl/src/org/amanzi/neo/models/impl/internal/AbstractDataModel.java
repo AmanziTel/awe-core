@@ -22,8 +22,6 @@ import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
@@ -86,17 +84,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         try {
             Iterator<Node> childs = getNodeService().getChildren(parentNode);
             while (childs.hasNext()) {
-                Node child = childs.next();
-                String name = getNodeService().getNodeName(child);
-                INodeType type = null;
-                try {
-                    type = getNodeService().getNodeType(child);
-                } catch (NodeTypeNotExistsException e) {
-                    LOGGER.error("can't get type from node " + child, e);
-                }
                 DataElement element = new DataElement(childs.next());
-                element.setName(name);
-                element.setNodeType(type);
                 elements.add(element);
             }
         } catch (ServiceException e) {
