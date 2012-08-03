@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -104,18 +103,14 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     @Override
     public void createPartControl(Composite parent) {
         createControls(parent);
-        try {
-            init(this.getViewSite());
-        } catch (PartInitException e) {
-            LOGGER.error("can't init", e);
-        }
     }
 
     /**
      * @param parent
      */
     protected void createControls(Composite parent) {
-        setTreeViewer(new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL));
+        LOGGER.info("start create controls");
+        treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         setProviders();
         getTreeViewer().setInput(getSite());
         getSite().setSelectionProvider(getTreeViewer());
@@ -136,6 +131,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * @param parent
      */
     protected void setLayout(Composite parent) {
+        LOGGER.info("start layout components");
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -184,13 +180,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected TreeViewer getTreeViewer() {
         return treeViewer;
-    }
-
-    /**
-     * @param treeViewer The treeViewer to set.
-     */
-    protected void setTreeViewer(TreeViewer treeViewer) {
-        this.treeViewer = treeViewer;
     }
 
     /**
