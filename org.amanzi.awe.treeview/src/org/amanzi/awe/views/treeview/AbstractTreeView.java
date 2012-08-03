@@ -89,6 +89,8 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     public void selectDataElement(IDataElement dataElement) {
         this.treeViewer.reveal(dataElement);
+        // TODO: LN: 03.08.2012, why not used StructuredSelection constructor with single object
+        // parameter?
         this.treeViewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
     }
 
