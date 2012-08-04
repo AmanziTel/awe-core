@@ -43,7 +43,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/products/${project.artifactId}</outputDirectory>
+							<outputDirectory>${project.build.directory}/products/awe</outputDirectory>
 							<resources>
 								<resource>
 									<directory>icons</directory>

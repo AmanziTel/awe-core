@@ -35,13 +35,16 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       startupMessageRect="7,230,445,16"
       startupForegroundColor="FFFFFF" />
    <launcher name="awe">
-      <linux icon="/org.amanzi.awe.project/icons/awe_icon_128.xpm"/>
+      <linux icon="/icons/awe_icon_128.xpm"/>
       <solaris/>
       <win useIco="true">
-         <ico path="/org.amanzi.awe.project/icons/awe.ico"/>
+         <ico path="/icons/awe.ico"/>
          <bmp/>
       </win>
    </launcher>
+
+   <vm>
+   </vm>
 
    <plugins>
    </plugins>
