@@ -54,4 +54,9 @@ public interface IDataElement {
     long getId();
 
     INodeType getNodeType();
+
+    /**
+     * @return name
+     */
+    String getName();
 }

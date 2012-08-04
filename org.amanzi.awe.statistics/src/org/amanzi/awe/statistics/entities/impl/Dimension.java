@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.statistics.entities.impl;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.awe.statistics.enumeration.DimensionTypes;
@@ -137,8 +137,7 @@ public class Dimension extends AbstractEntity {
 
     protected void loadChildIfNecessary() throws DatabaseException {
         if (levels == null) {
-            // TODO: LN: 01.08.2012, why LinkedHashMap?????????
-            levels = new LinkedHashMap<String, StatisticsLevel>();
+            levels = new HashMap<String, StatisticsLevel>();
             Iterable<Node> levelNodes = statisticService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.CHILD);
             if (levelNodes == null) {
                 return;

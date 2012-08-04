@@ -47,8 +47,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
 
     private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
-    // TODO: LN: 03.08.2012, variable name
-    private final IContentProvider CONTENT_PROVIDER;
+    private final IContentProvider contentProvider;
     /**
      * event manager
      */
@@ -62,7 +61,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     protected AbstractTreeView(IGeneralNodeProperties properties, IContentProvider provider) {
         super();
         generalNodeProperties = properties;
-        this.CONTENT_PROVIDER = provider;
+        this.contentProvider = provider;
         this.eventManager = AWEEventManager.getManager();
         addEventListeners();
     }
@@ -89,16 +88,14 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     public void selectDataElement(IDataElement dataElement) {
         this.treeViewer.reveal(dataElement);
-        // TODO: LN: 03.08.2012, why not used StructuredSelection constructor with single object
-        // parameter?
-        this.treeViewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
+        this.treeViewer.setSelection(new StructuredSelection(dataElement));
     }
 
     /**
      * set providers to tree view
      */
     protected void setProviders() {
-        this.treeViewer.setContentProvider(CONTENT_PROVIDER);
+        this.treeViewer.setContentProvider(contentProvider);
         this.treeViewer.setLabelProvider(LABEL_PROVIDER);
     }
 
@@ -161,8 +158,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void onEvent(IEvent event) {
-        // TODO: LN: 03.08.2012, why handled two types of events if this class listens only one
-        // type?
         switch (event.getStatus()) {
         case PROJECT_CHANGED:
         case DATA_UPDATED:
@@ -217,6 +212,12 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * @return Returns the cONTENT_PROVIDER.
      */
     protected IContentProvider getContentProvider() {
-        return CONTENT_PROVIDER;
+        return contentProvider;
+    }
+
+    @Override
+    public void dispose() {
+        AWEEventManager.getManager().removeListener(this);
+        super.dispose();
     }
 }

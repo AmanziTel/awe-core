@@ -54,9 +54,7 @@ public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
 
     @Override
     public int hashCode() {
-        // TODO: LN: 03.08.2012, why some magic number used? why not used reflectionHashCode(Object,
-        // boolean)?
-        return HashCodeBuilder.reflectionHashCode(31, 1, element);
+        return HashCodeBuilder.reflectionHashCode(element, false);
     }
 
     @Override

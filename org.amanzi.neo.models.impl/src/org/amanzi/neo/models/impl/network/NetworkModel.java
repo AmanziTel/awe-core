@@ -337,7 +337,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     private ISectorElement getSectorElement(final Node node) throws ServiceException {
         SectorElement element = new SectorElement(node);
         element.setNodeType(NetworkElementType.SECTOR);
-
+        element.setName(getName());
         element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
         element.setBeamwidth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getBeamwidthProperty(), null,
                 false));

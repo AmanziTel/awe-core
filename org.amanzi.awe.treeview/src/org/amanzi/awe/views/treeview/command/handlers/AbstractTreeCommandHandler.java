@@ -15,7 +15,6 @@ package org.amanzi.awe.views.treeview.command.handlers;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -27,7 +26,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
@@ -35,19 +33,13 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @since 1.0.0
  */
 public abstract class AbstractTreeCommandHandler extends AbstractHandler {
-    // TODO: LN: 03.08.2012, incorrect name of non-constant variable
-    private final IGeneralNodeProperties GENERAL_NODE_PROPERTIES;
-
-    // TODO: LN: 03.08.2012, remove this constructor
-    protected AbstractTreeCommandHandler() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties());
-    }
+    private final IGeneralNodeProperties generalNodeProeprties;
 
     /**
      * @param generalNodeProperties
      */
     protected AbstractTreeCommandHandler(IGeneralNodeProperties generalNodeProperties) {
-        GENERAL_NODE_PROPERTIES = generalNodeProperties;
+        generalNodeProeprties = generalNodeProperties;
     }
 
     @SuppressWarnings("unchecked")
@@ -73,7 +65,7 @@ public abstract class AbstractTreeCommandHandler extends AbstractHandler {
      * @return Returns the gENERAL_NODE_PROPERTIES.
      */
     protected IGeneralNodeProperties getGeneralNodeProperites() {
-        return GENERAL_NODE_PROPERTIES;
+        return generalNodeProeprties;
     }
 
 }
