@@ -44,6 +44,7 @@ public class ChooseDatabaseLocationDialog extends Dialog {
 	private boolean isCanceled = false;
 
 	//TODO: LN: 07.08.2012, move messages to bundle
+	//TODO: LN: 07.08.2012, move duplicated Layout Datas to method
 	public ChooseDatabaseLocationDialog(final Shell parent) {
 		super(parent);
 		create();
