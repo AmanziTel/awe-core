@@ -25,19 +25,31 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
  */
 public class TestNodeProperties implements IGeneralNodeProperties {
 
-    @Override
-    public String getNodeNameProperty() {
-        return null;
-    }
+	@Override
+	public String getNodeNameProperty() {
+		return null;
+	}
 
-    @Override
-    public String getNodeTypeProperty() {
-        return null;
-    }
+	@Override
+	public String getNodeTypeProperty() {
+		return null;
+	}
 
-    @Override
-    public String getSizeProperty() {
-        return null;
-    }
+	@Override
+	public String getSizeProperty() {
+		return null;
+	}
+
+	@Override
+	public String getParentIDProperty() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getLastChildID() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
