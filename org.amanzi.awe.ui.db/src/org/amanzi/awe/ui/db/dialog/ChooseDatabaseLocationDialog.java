@@ -38,77 +38,81 @@ import org.eclipse.ui.PlatformUI;
  */
 public class ChooseDatabaseLocationDialog extends Dialog {
 
-    private final DirectoryFieldEditor fileDialog;
-    private final IPreferenceStore store;
-    private static final int LAYOUT_SIZE = 600;
-    private static final int THREE_COLUMN_SIZE = 3;
+	private final DirectoryFieldEditor fileDialog;
+	private final IPreferenceStore store;
+	private static final int LAYOUT_SIZE = 600;
+	private static final int THREE_COLUMN_SIZE = 3;
 
-    private String databaseLocation;
+	private String databaseLocation;
 
-    public ChooseDatabaseLocationDialog(Shell parent, final String defaultLocation) {
-        super(parent);
-        databaseLocation = defaultLocation;
-        super.create();
-        getShell().setText(DatabaseUiPluginMessages.warningDialogName);
+	public ChooseDatabaseLocationDialog(final Shell parent, final String defaultLocation) {
+		super(parent);
+		databaseLocation = defaultLocation;
+		super.create();
+		getShell().setText(DatabaseUiPluginMessages.warningDialogName);
 
-        store = PlatformUI.getPreferenceStore();
-        if (StringUtils.isEmpty(store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey))) {
-            store.putValue(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey, databaseLocation);
-        }
-        getButton(OK).setEnabled(false);
+		store = PlatformUI.getPreferenceStore();
+		if (StringUtils.isEmpty(store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey))) {
+			store.putValue(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey, databaseLocation);
+		}
+		getButton(OK).setEnabled(false);
 
-        Composite warningComposite = createComposite((Composite)getDialogArea(), 1);
-        Label warning = new Label(warningComposite, SWT.NONE);
-        warning.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-        warning.setText(DatabaseUiPluginMessages.warningDialogMessage);
+		Composite warningComposite = createComposite((Composite)getDialogArea(), 1);
+		Label warning = new Label(warningComposite, SWT.NONE);
+		warning.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
+		warning.setText(DatabaseUiPluginMessages.warningDialogMessage);
 
-        final Composite selectionComposite = createComposite(warningComposite, THREE_COLUMN_SIZE);
-        fileDialog = new DirectoryFieldEditor(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey,
-                DatabaseUiPluginMessages.warningDialogChooseDatabaseLabel, selectionComposite);
+		final Composite selectionComposite = createComposite(warningComposite, THREE_COLUMN_SIZE);
+		fileDialog = new DirectoryFieldEditor(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey,
+				DatabaseUiPluginMessages.warningDialogChooseDatabaseLabel, selectionComposite);
 
-        Text textControl = fileDialog.getTextControl(selectionComposite);
-        textControl.setText(store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey));
+		Text textControl = fileDialog.getTextControl(selectionComposite);
+		textControl.setText(store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey));
 
-        textControl.addModifyListener(new ModifyListener() {
+		//TODO: LN: 07.08.2012, make this class as a listener
+		textControl.addModifyListener(new ModifyListener() {
 
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (!((Text)e.getSource()).getText().equals(databaseLocation)) {
-                    getButton(OK).setEnabled(true);
-                }
+			@Override
+			public void modifyText(final ModifyEvent e) {
+				if (!((Text)e.getSource()).getText().equals(databaseLocation)) {
+					getButton(OK).setEnabled(true);
+				}
 
-            }
-        });
+			}
+		});
 
-        getShell().pack();
-    }
+		getShell().pack();
+	}
 
-    /**
-     * @param dialogArea
-     * @param i
-     * @return
-     */
-    private Composite createComposite(Composite parentComposite, int columnCount) {
-        Composite composite = new Composite(parentComposite, SWT.NONE);
-        composite.setLayout(new GridLayout(columnCount, false));
-        GridData data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
-        data.widthHint = LAYOUT_SIZE;
-        composite.setLayoutData(data);
-        return composite;
-    }
+	/**
+	 * @param dialogArea
+	 * @param i
+	 * @return
+	 */
+	private Composite createComposite(final Composite parentComposite, final int columnCount) {
+		Composite composite = new Composite(parentComposite, SWT.NONE);
+		//TODO: LN: 07.08.2012, GridLayout can be moved to constants
+		composite.setLayout(new GridLayout(columnCount, false));
+		//TODO: LN: 07.08.2012, GridData duplicated, NOTE: do not make a constant - just make a method 'createSomeGridData' since SWT changes this object on rendering
+		GridData data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
+		data.widthHint = LAYOUT_SIZE;
+		composite.setLayoutData(data);
+		return composite;
+	}
 
-    @Override
-    protected void okPressed() {
-        databaseLocation = fileDialog.getStringValue();
-        store.putValue(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey, databaseLocation);
-        super.okPressed();
-    }
+	@Override
+	protected void okPressed() {
+		databaseLocation = fileDialog.getStringValue();
+		//TODO: LN: 07.08.2012, key of PreferenceStore value can not be internationalized
+		store.putValue(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey, databaseLocation);
+		super.okPressed();
+	}
 
-    /**
-     * @return Returns the databaseLocation.
-     */
-    public String getDatabaseLocation() {
-        return databaseLocation;
-    }
+	/**
+	 * @return Returns the databaseLocation.
+	 */
+	public String getDatabaseLocation() {
+		return databaseLocation;
+	}
 
 }
