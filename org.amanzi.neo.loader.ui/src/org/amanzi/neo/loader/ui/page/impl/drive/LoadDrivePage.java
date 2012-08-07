@@ -13,8 +13,9 @@
 
 package org.amanzi.neo.loader.ui.page.impl.drive;
 
+
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import org.amanzi.neo.loader.core.impl.MultiFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
@@ -38,59 +39,59 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
-        implements
-            ISelectLoaderListener,
-            ISelectDriveListener,
-            ISelectDriveResourceListener {
+implements
+ISelectLoaderListener,
+ISelectDriveListener,
+ISelectDriveResourceListener {
 
-    private SelectDriveNameWidget driveNameCombo;
+	private SelectDriveNameWidget driveNameCombo;
 
-    private SelectLoaderWidget<MultiFileConfiguration> loaderCombo;
+	private SelectLoaderWidget<MultiFileConfiguration> loaderCombo;
 
-    private CRSSelector crsSelector;
+	private CRSSelector crsSelector;
 
-    private SelectDriveResourcesWidget driveResourceSelector;
+	private SelectDriveResourcesWidget driveResourceSelector;
 
-    /**
-     * @param pageName
-     */
-    public LoadDrivePage() {
-        super(Messages.LoadDrivePage_PageName);
-    }
+	/**
+	 * @param pageName
+	 */
+	public LoadDrivePage() {
+		super(Messages.LoadDrivePage_PageName);
+	}
 
-    @Override
-    public void createControl(final Composite parent) {
-        super.createControl(parent);
+	@Override
+	public void createControl(final Composite parent) {
+		super.createControl(parent);
 
-        driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
-        crsSelector = WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
+		driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
+		crsSelector = WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
 
-        driveResourceSelector = WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this);
+		driveResourceSelector = WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this);
 
-        loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
+		loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
-        update();
-    }
+		update();
+	}
 
-    @Override
-    public void onDriveChanged() {
-        MultiFileConfiguration configuration = getConfiguration();
+	@Override
+	public void onDriveChanged() {
+		MultiFileConfiguration configuration = getConfiguration();
 
-        if (driveNameCombo != null) {
-            configuration.setDatasetName(driveNameCombo.getText());
-        }
+		if (driveNameCombo != null) {
+			configuration.setDatasetName(driveNameCombo.getText());
+		}
 
-        update();
-    }
+		update();
+	}
 
-    @Override
-    public void onLoaderChanged() {
-        update();
+	@Override
+	public void onLoaderChanged() {
+		update();
 
-    }
+	}
 
-    @Override
-    public void onResourcesSelected(List<File> files) {
-    }
+	@Override
+	public void onResourcesSelected(final Collection<File> files) {
+	}
 
 }

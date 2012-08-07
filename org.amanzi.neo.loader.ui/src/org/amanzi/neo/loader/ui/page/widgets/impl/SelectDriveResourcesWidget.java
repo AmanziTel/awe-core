@@ -14,11 +14,12 @@
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.internal.DriveDataFileSelector;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -39,13 +40,15 @@ IResourceSelectorListener {
 
 	public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
 
-		void onResourcesSelected(List<File> files);
+		void onResourcesSelected(Collection<File> files);
 
 	}
 
 	private ResourceSelectorWidget resourceSelector;
 
 	private final ISelectDriveResourceListener listener;
+
+	private DriveDataFileSelector driveDataSelector;
 
 	/**
 	 * @param isEnabled
@@ -65,7 +68,7 @@ IResourceSelectorListener {
 		panel.setLayout(new GridLayout(1, false));
 
 		resourceSelector = WizardFactory.getInstance().addDirectorySelector(getPanel(panel), this);
-		WizardFactory.getInstance().addDriveDataFileSelector(getPanel(panel), listener);
+		driveDataSelector = WizardFactory.getInstance().addDriveDataFileSelector(getPanel(panel), listener);
 
 		return panel;
 	}
@@ -89,7 +92,9 @@ IResourceSelectorListener {
 
 	@Override
 	public void onResourceChanged() {
-		resourceSelector.getFileName();
+		String fileName = resourceSelector.getFileName();
+
+		driveDataSelector.setFiles(new File(fileName));
 	}
 
 }

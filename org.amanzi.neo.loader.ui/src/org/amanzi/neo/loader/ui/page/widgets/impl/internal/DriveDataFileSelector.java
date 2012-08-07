@@ -14,12 +14,16 @@
 package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -35,7 +39,7 @@ import org.eclipse.swt.widgets.List;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectDriveResourcesWidget.ISelectDriveResourceListener> {
+public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectDriveResourcesWidget.ISelectDriveResourceListener> implements SelectionListener {
 
 	protected static final GridLayout FIXED_ONE_ROW_LAYOUT = new GridLayout(1, false);
 
@@ -50,6 +54,10 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
 	private Button removeAllButton;
 
 	private Button removeSelectedButton;
+
+	private final Map<String, File> availableFiles = new HashMap<String, File>();
+
+	private final Map<String, File> selectedFiles = new HashMap<String, File>();
 
 	/**
 	 * @param isEnabled
@@ -95,8 +103,8 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
 		actionPanel.setLayout(FIXED_ONE_ROW_LAYOUT);
 		actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 
-		addSelectedButton = createChooseButton(actionPanel, Messages.DriveDataFileSelector_AddButton);
 		addAllButton = createChooseButton(actionPanel, Messages.DriveDataFileSelector_AddAllButton);
+		addSelectedButton = createChooseButton(actionPanel, Messages.DriveDataFileSelector_AddButton);
 		removeSelectedButton = createChooseButton(actionPanel, Messages.DriveDataFileSelector_RemoveButton);
 		removeAllButton = createChooseButton(actionPanel, Messages.DriveDataFileSelector_RemoveAllButton);
 	}
@@ -106,20 +114,91 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
 		button.setText(label);
 		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 
+		button.addSelectionListener(this);
+
 		return button;
+	}
+
+	private void transferFiles(final String[] fileNames, final Map<String, File> from, final Map<String, File> to) {
+		for (String fileName : fileNames) {
+			File file = from.remove(fileName);
+
+			to.put(fileName, file);
+		}
+
+		updateLists();
 	}
 
 	public void setFiles(final File directory) {
 		assert directory.isDirectory();
 
 		for (File file : directory.listFiles()) {
-			availableFilesList.add(file.getName());
+			if (file.isFile()) {
+				availableFiles.put(file.getName(), file);
+			}
+		}
+
+		updateLists();
+	}
+
+	private void updateLists() {
+		updateList(availableFilesList, availableFiles);
+		updateList(selectedFilesList, selectedFiles);
+	}
+
+	private void updateList(final List list, final Map<String, File> values) {
+		list.removeAll();
+
+		for (String fileName : values.keySet()) {
+			list.add(fileName);
 		}
 	}
 
 	@Override
 	protected int getStyle() {
 		return SWT.FILL;
+	}
+
+	@Override
+	public void widgetSelected(final SelectionEvent e) {
+		Map<String, File> from = null;
+		Map<String, File> to = null;
+		String[] items = null;
+
+		if (e.getSource().equals(addAllButton)) {
+			items = availableFilesList.getItems();
+			from = availableFiles;
+			to = selectedFiles;
+		} else if (e.getSource().equals(addSelectedButton)) {
+			items = availableFilesList.getSelection();
+			from = availableFiles;
+			to = selectedFiles;
+		} else if (e.getSource().equals(removeAllButton)) {
+			items = selectedFilesList.getItems();
+			from = selectedFiles;
+			to = availableFiles;
+		} else if (e.getSource().equals(removeSelectedButton)) {
+			items = selectedFilesList.getSelection();
+			from = selectedFiles;
+			to = availableFiles;
+		}
+
+		if ((from != null) && (to != null) && (items != null)) {
+			transferFiles(items, from, to);
+
+			fireFilesChangedEvent();
+		}
+	}
+
+	private void fireFilesChangedEvent() {
+		for (ISelectDriveResourceListener listener : getListeners()) {
+			listener.onResourcesSelected(selectedFiles.values());
+		}
+	}
+
+	@Override
+	public void widgetDefaultSelected(final SelectionEvent e) {
+		widgetSelected(e);
 	}
 
 }
