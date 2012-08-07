@@ -47,7 +47,9 @@ public class AdvancedFileFieldEditor extends FileFieldEditor {
 		if (state) {
 			File file = new File(getStringValue());
 
-			LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
+			if (file.getParentFile() != null) {
+				LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
+			}
 		}
 
 		return state;
