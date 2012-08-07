@@ -44,9 +44,11 @@ public class Application extends UDIGApplication {
              */
             @Override
             public void initialize(IWorkbenchConfigurer configurer) {
+                AWEEventManager.getManager().fireInitialiseEvent();
                 super.initialize(configurer);
                 configurer.setSaveAndRestore(true);
             }
+
         };
 
         return aweWorkbenchAdivsor;
@@ -63,14 +65,12 @@ public class Application extends UDIGApplication {
         @Override
         public void postStartup() {
             AWEEventManager.getManager().fireAWEStartedEvent();
-
             super.postStartup();
         }
 
         @Override
         public boolean preShutdown() {
             AWEEventManager.getManager().fireAWEStoppedEvent();
-
             return super.preShutdown();
         }
 

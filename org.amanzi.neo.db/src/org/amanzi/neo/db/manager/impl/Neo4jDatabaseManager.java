@@ -197,7 +197,6 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
                 + "accessType = <" + accessType + ">");
 
         fireEvent(EventType.BEFORE_STARTUP);
-
         switch (accessType) {
         case READ_ONLY:
             dbService = new EmbeddedReadOnlyGraphDatabase(databaseLocation, memoryMapping);

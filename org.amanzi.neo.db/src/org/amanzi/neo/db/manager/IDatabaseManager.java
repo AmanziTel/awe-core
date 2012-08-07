@@ -131,4 +131,11 @@ public interface IDatabaseManager {
      * Removes new database event listener
      */
     void removeDatabaseEventListener(IDatabaseEventListener listener);
+
+    /**
+     * return true if database location is already used
+     * 
+     * @return
+     */
+    boolean isAlreadyUsed();
 }

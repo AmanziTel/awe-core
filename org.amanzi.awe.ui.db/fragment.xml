@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.ui.db.listener.Neo4jLocationInitializer">
+         <eventStatus
+               status="INITIALISATION">
+         </eventStatus>
+      </listener>
+   </extension>
+
+</plugin>

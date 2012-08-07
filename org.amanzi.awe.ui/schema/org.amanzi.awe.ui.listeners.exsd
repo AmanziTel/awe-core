@@ -87,6 +87,8 @@
                   </enumeration>
                   <enumeration value="SHOW_IN_VIEW">
                   </enumeration>
+                  <enumeration value="INITIALISATION">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>
