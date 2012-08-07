@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 import java.io.File;
 
 import org.amanzi.neo.loader.ui.internal.LoaderUIPlugin;
+import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -29,34 +30,31 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class AdvancedFileFieldEditor extends FileFieldEditor {
 
-    private final int numberOfControls;
+	/**
+	 * @param name
+	 * @param labelText
+	 * @param parent
+	 */
+	public AdvancedFileFieldEditor(final String name, final String labelText, final Composite parent) {
+		super(name, labelText, parent);
+		setFilterPath(new File(LoaderUIPlugin.getDefault().getDefaultLoadPath()));
+	}
 
-    /**
-     * @param name
-     * @param labelText
-     * @param parent
-     */
-    public AdvancedFileFieldEditor(final String name, final String labelText, final Composite parent, int numberOfControls) {
-        super(name, labelText, parent);
-        setFilterPath(new File(LoaderUIPlugin.getDefault().getDefaultLoadPath()));
-        this.numberOfControls = numberOfControls;
-    }
+	@Override
+	protected boolean checkState() {
+		boolean state = super.checkState();
 
-    @Override
-    protected boolean checkState() {
-        boolean state = super.checkState();
+		if (state) {
+			File file = new File(getStringValue());
 
-        if (state) {
-            File file = new File(getStringValue());
+			LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
+		}
 
-            LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
-        }
+		return state;
+	}
 
-        return state;
-    }
-
-    @Override
-    public int getNumberOfControls() {
-        return numberOfControls;
-    }
+	@Override
+	public int getNumberOfControls() {
+		return AbstractLoaderPage.NUMBER_OF_COLUMNS;
+	}
 }

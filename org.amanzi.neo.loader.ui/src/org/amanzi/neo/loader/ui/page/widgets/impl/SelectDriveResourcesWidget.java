@@ -35,58 +35,55 @@ import org.eclipse.swt.widgets.Group;
  * @since 1.0.0
  */
 public class SelectDriveResourcesWidget extends AbstractPageWidget<Group, ISelectDriveResourceListener>
-        implements
-            IResourceSelectorListener {
+implements
+IResourceSelectorListener {
 
-    private final static int NUMBER_OF_COLUMNS = 3;
+	public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
 
-    public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
+		void onResourcesSelected(List<File> files);
 
-        void onResourcesSelected(List<File> files);
+	}
 
-    }
+	private ResourceSelectorWidget resourceSelector;
 
-    private ResourceSelectorWidget resourceSelector;
+	private final ISelectDriveResourceListener listener;
 
-    private final ISelectDriveResourceListener listener;
+	/**
+	 * @param isEnabled
+	 * @param parent
+	 * @param listener
+	 * @param projectModelProvider
+	 */
+	protected SelectDriveResourcesWidget(final Composite parent, final ISelectDriveResourceListener listener) {
+		super(true, parent, listener, null);
+		this.listener = listener;
+	}
 
-    /**
-     * @param isEnabled
-     * @param parent
-     * @param listener
-     * @param projectModelProvider
-     */
-    protected SelectDriveResourcesWidget(Composite parent, ISelectDriveResourceListener listener) {
-        super(true, parent, listener, null);
-        this.listener = listener;
-    }
+	@Override
+	protected Group createWidget(final Composite parent, final int style) {
+		Group group = new Group(parent, style);
 
-    @Override
-    protected Group createWidget(Composite parent, int style) {
-        Group group = new Group(parent, style);
+		group.setLayoutData(getGroupLayoutData());
 
-        group.setLayoutData(getGroupLayoutData());
+		group.setLayout(new GridLayout(3, false));
 
-        group.setLayout(new GridLayout(3, false));
+		resourceSelector = WizardFactory.getInstance().addDirectorySelector(group, this);
 
-        resourceSelector = WizardFactory.getInstance().addDirectorySelector(group, this, NUMBER_OF_COLUMNS);
-        WizardFactory.getInstance().addDriveResourceSelector(parent, listener);
+		return group;
+	}
 
-        return group;
-    }
+	protected Object getGroupLayoutData() {
+		return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
+	}
 
-    protected Object getGroupLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
-    }
+	@Override
+	protected int getStyle() {
+		return SWT.FILL;
+	}
 
-    @Override
-    protected int getStyle() {
-        return SWT.FILL;
-    }
-
-    @Override
-    public void onResourceChanged() {
-        resourceSelector.getFileName();
-    }
+	@Override
+	public void onResourceChanged() {
+		resourceSelector.getFileName();
+	}
 
 }

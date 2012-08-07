@@ -42,69 +42,65 @@ import org.eclipse.swt.widgets.Composite;
  */
 public final class WizardFactory {
 
-    private static class WizardFactoryHolder {
-        private static volatile WizardFactory instance = new WizardFactory();
-    }
+	private static class WizardFactoryHolder {
+		private static volatile WizardFactory instance = new WizardFactory();
+	}
 
-    private final IProjectModelProvider projectModelProvider;
+	private final IProjectModelProvider projectModelProvider;
 
-    private final INetworkModelProvider networkModelProvider;
+	private final INetworkModelProvider networkModelProvider;
 
-    private final IDriveModelProvider driveModelProvider;
+	private final IDriveModelProvider driveModelProvider;
 
-    private WizardFactory() {
-        projectModelProvider = LoaderCorePlugin.getInstance().getProjectModelProvider();
-        networkModelProvider = LoaderCorePlugin.getInstance().getNetworkModelProvider();
-        driveModelProvider = LoaderCorePlugin.getInstance().getDriveModelProvider();
-    }
+	private WizardFactory() {
+		projectModelProvider = LoaderCorePlugin.getInstance().getProjectModelProvider();
+		networkModelProvider = LoaderCorePlugin.getInstance().getNetworkModelProvider();
+		driveModelProvider = LoaderCorePlugin.getInstance().getDriveModelProvider();
+	}
 
-    public static WizardFactory getInstance() {
-        return WizardFactoryHolder.instance;
-    }
+	public static WizardFactory getInstance() {
+		return WizardFactoryHolder.instance;
+	}
 
-    public SelectNetworkNameWidget addDatasetNameSelectorForNetwork(final Composite parent, final ISelectNetworkListener listener,
-            final boolean isEditable, final boolean isEnabled) {
-        return initializeWidget(new SelectNetworkNameWidget(parent, listener, isEditable, isEnabled, projectModelProvider,
-                networkModelProvider));
-    }
+	public SelectNetworkNameWidget addDatasetNameSelectorForNetwork(final Composite parent, final ISelectNetworkListener listener,
+			final boolean isEditable, final boolean isEnabled) {
+		return initializeWidget(new SelectNetworkNameWidget(parent, listener, isEditable, isEnabled, projectModelProvider,
+				networkModelProvider));
+	}
 
-    public SelectDriveNameWidget addDatasetNameSelectorForDrive(final Composite parent, final ISelectDriveListener listener) {
-        return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
-    }
+	public SelectDriveNameWidget addDatasetNameSelectorForDrive(final Composite parent, final ISelectDriveListener listener) {
+		return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
+	}
 
-    public SelectDriveResourcesWidget addDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener) {
-        return initializeWidget(new SelectDriveResourcesWidget(parent, listener));
-    }
+	public SelectDriveResourcesWidget addDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+		return initializeWidget(new SelectDriveResourcesWidget(parent, listener));
+	}
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T extends IConfiguration> SelectLoaderWidget<T> addLoaderSelector(final Composite parent,
-            final ISelectLoaderListener listener, final List<ILoader<T, ? >> loaders) {
-        return initializeWidget(new SelectLoaderWidget(true, parent, listener, loaders, projectModelProvider));
-    }
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public <T extends IConfiguration> SelectLoaderWidget<T> addLoaderSelector(final Composite parent,
+			final ISelectLoaderListener listener, final List<ILoader<T, ? >> loaders) {
+		return initializeWidget(new SelectLoaderWidget(true, parent, listener, loaders, projectModelProvider));
+	}
 
-    public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener,
-            int numberOfControls, final String... fileExtensions) {
-        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
-                numberOfControls, fileExtensions));
-    }
+	public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener, final String... fileExtensions) {
+		return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider, fileExtensions));
+	}
 
-    public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener,
-            int numberOfControls) {
-        return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider,
-                numberOfControls));
-    }
+	public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener) {
+		return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider));
+	}
 
-    public CRSSelector addCRSSelector(final Composite parent, final ICRSSelectorListener listener) {
-        return initializeWidget(new CRSSelector(parent, listener));
-    }
+	public CRSSelector addCRSSelector(final Composite parent, final ICRSSelectorListener listener) {
+		return initializeWidget(new CRSSelector(parent, listener));
+	}
 
-    public DriveDataFileSelector getDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
-        return initializeWidget(new DriveDataFileSelector(parent, listener));
-    }
+	public DriveDataFileSelector getDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+		return initializeWidget(new DriveDataFileSelector(parent, listener));
+	}
 
-    protected static <T extends AbstractPageWidget< ? , ? >> T initializeWidget(final T widget) {
-        widget.initializeWidget();
-        return widget;
-    }
+	protected static <T extends AbstractPageWidget< ? , ? >> T initializeWidget(final T widget) {
+		widget.initializeWidget();
+		return widget;
+	}
 
 }

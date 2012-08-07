@@ -34,72 +34,69 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResourceSelectorListener> implements ModifyListener {
 
-    public interface IResourceSelectorListener extends AbstractPageWidget.IPageEventListener {
-        void onResourceChanged();
-    }
+	public interface IResourceSelectorListener extends AbstractPageWidget.IPageEventListener {
+		void onResourceChanged();
+	}
 
-    protected enum ResourceType {
-        FILE, DIRECTORY;
-    }
+	protected enum ResourceType {
+		FILE, DIRECTORY;
+	}
 
-    private final ResourceType resourceType;
+	private final ResourceType resourceType;
 
-    private StringButtonFieldEditor editor;
+	private StringButtonFieldEditor editor;
 
-    private final String[] fileExtensions;
+	private final String[] fileExtensions;
 
-    private final int numberOfControls;
+	/**
+	 * @param isEnabled
+	 * @param loaderPage
+	 * @param projectModelProvider
+	 */
+	protected ResourceSelectorWidget(final ResourceType resourceType, final Composite parent,
+			final IResourceSelectorListener listener, final IProjectModelProvider projectModelProvider,
+			final String... fileExtensions) {
+		super(true, parent, listener, projectModelProvider);
+		this.resourceType = resourceType;
+		this.fileExtensions = fileExtensions;
+	}
 
-    /**
-     * @param isEnabled
-     * @param loaderPage
-     * @param projectModelProvider
-     */
-    protected ResourceSelectorWidget(final ResourceType resourceType, final Composite parent,
-            final IResourceSelectorListener listener, final IProjectModelProvider projectModelProvider, int numberOfControls,
-            String... fileExtensions) {
-        super(true, parent, listener, projectModelProvider);
-        this.resourceType = resourceType;
-        this.fileExtensions = fileExtensions;
-        this.numberOfControls = numberOfControls;
-    }
+	@Override
+	protected Composite createWidget(final Composite parent, final int style) {
+		switch (resourceType) {
+		case DIRECTORY:
+			editor = new DirectoryFieldEditor("resource", Messages.ResourceSelectorWidget_SelectDirectoryTitle, parent); //$NON-NLS-1$
+			break;
+		case FILE:
+			AdvancedFileFieldEditor fileEditor = new AdvancedFileFieldEditor(
+					"resource", Messages.ResourceSelectorWidget_SelectFileTitle, parent); //$NON-NLS-1$
+			fileEditor.setFileExtensions(fileExtensions);
 
-    @Override
-    protected Composite createWidget(final Composite parent, final int style) {
-        switch (resourceType) {
-        case DIRECTORY:
-            editor = new DirectoryFieldEditor("resource", Messages.ResourceSelectorWidget_SelectDirectoryTitle, parent); //$NON-NLS-1$
-            break;
-        case FILE:
-            AdvancedFileFieldEditor fileEditor = new AdvancedFileFieldEditor(
-                    "resource", Messages.ResourceSelectorWidget_SelectFileTitle, parent, numberOfControls); //$NON-NLS-1$
-            fileEditor.setFileExtensions(fileExtensions);
+			editor = fileEditor;
+			break;
+		default:
+			break;
+		}
 
-            editor = fileEditor;
-            break;
-        default:
-            break;
-        }
+		editor.getTextControl(parent).addModifyListener(this);
 
-        editor.getTextControl(parent).addModifyListener(this);
+		return parent;
+	}
 
-        return parent;
-    }
+	@Override
+	protected int getStyle() {
+		return 0;
+	}
 
-    @Override
-    protected int getStyle() {
-        return 0;
-    }
+	@Override
+	public void modifyText(final ModifyEvent e) {
+		for (IResourceSelectorListener listener : getListeners()) {
+			listener.onResourceChanged();
+		}
+	}
 
-    @Override
-    public void modifyText(ModifyEvent e) {
-        for (IResourceSelectorListener listener : getListeners()) {
-            listener.onResourceChanged();
-        }
-    }
-
-    public String getFileName() {
-        return editor.getStringValue();
-    }
+	public String getFileName() {
+		return editor.getStringValue();
+	}
 
 }
