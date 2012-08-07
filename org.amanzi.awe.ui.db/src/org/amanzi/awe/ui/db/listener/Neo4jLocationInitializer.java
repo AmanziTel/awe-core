@@ -18,6 +18,7 @@ import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
 
 /**
@@ -29,7 +30,7 @@ import org.eclipse.ui.PlatformUI;
  */
 public class Neo4jLocationInitializer implements IAWEEventListenter {
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
         case INITIALISATION:
             relocateDatabase(null);
@@ -40,7 +41,7 @@ public class Neo4jLocationInitializer implements IAWEEventListenter {
 
     }
 
-    private void relocateDatabase(String path) {
+    private void relocateDatabase(final String path) {
         boolean isUsed = false;
         if (StringUtils.isEmpty(path)) {
             isUsed = DatabaseManagerFactory.getDatabaseManager().isAlreadyUsed();
@@ -49,12 +50,19 @@ public class Neo4jLocationInitializer implements IAWEEventListenter {
         }
         if (isUsed) {
             ChooseDatabaseLocationDialog dialog = new ChooseDatabaseLocationDialog(PlatformUI.getWorkbench().getDisplay()
-                    .getActiveShell());
-            dialog.open();
-            if (dialog.isCanceled()) {
-                return;
+                    .getActiveShell(), DatabaseManagerFactory.getDatabaseManager().getLocation());
+            int opennResult = dialog.open();
+            switch (opennResult) {
+            case Window.CANCEL:
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().close();
+                break;
+            case Window.OK:
+                relocateDatabase(dialog.getDatabaseLocation());
+                break;
+            default:
+                break;
             }
-            relocateDatabase(dialog.getDatabaseLocation());
+
         }
     }
 }

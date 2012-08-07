@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -140,7 +143,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
 	}
 
-	protected static final class LongProperty extends Property<Long> {
+	protected static class LongProperty extends Property<Long> {
 
 		/**
 		 * @param headerName
@@ -158,6 +161,33 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 				return null;
 			}
 			return Long.parseLong(getValue(data));
+		}
+
+	}
+
+	protected static class TimestampProperty extends Property<Long> {
+
+		private static final DateFormat DATE_TIME_PATTERN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+		public TimestampProperty(final String headerName, final String propertyName) {
+			super(headerName, propertyName);
+		}
+
+		@Override
+		protected Long parse(final IMappedStringData data) {
+			String value = getValue(data);
+
+			if (StringUtils.isEmpty(value)) {
+				return null;
+			}
+
+			//convert to time
+			try {
+				return DATE_TIME_PATTERN.parse(value).getTime();
+			} catch (ParseException e) {
+				return null;
+			}
+
 		}
 
 	}
@@ -340,6 +370,8 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 			return new LongProperty(propertyName, header);
 		case STRING:
 			return new StringProperty(propertyName, header);
+		case TIMESTAMP:
+			return new TimestampProperty(propertyName, header);
 		default:
 			return new UndefinedProperty(header);
 		}

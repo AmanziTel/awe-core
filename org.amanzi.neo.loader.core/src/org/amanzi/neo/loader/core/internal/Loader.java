@@ -54,6 +54,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 		try {
 			for (ISaver<C, D> saver : savers) {
 				saver.init(configuration);
+				parser.addFileParsingListener(saver);
 			}
 		} catch (ModelException e) {
 			throw new SaverInitializationException(e);
@@ -72,9 +73,10 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
 				for (ISaver<C, D> saver : savers) {
 					saver.save(data);
-					parser.addFileParsingListener(saver);
 				}
 			}
+		} catch (Exception e) {
+			LOGGER.error("Error on saving", e);
 		} finally {
 			finishUp();
 		}
@@ -126,7 +128,6 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 
 		for (ISaver<C, D> saver : savers) {
 			saver.finishUp();
-			parser.removeFileParsingListener(saver);
 		}
 	}
 

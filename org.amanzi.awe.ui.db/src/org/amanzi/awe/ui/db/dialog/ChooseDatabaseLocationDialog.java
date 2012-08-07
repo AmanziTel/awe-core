@@ -13,20 +13,23 @@
 
 package org.amanzi.awe.ui.db.dialog;
 
+import org.amanzi.awe.ui.db.DatabaseUiPluginMessages;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
@@ -35,50 +38,62 @@ import org.eclipse.ui.PlatformUI;
  */
 public class ChooseDatabaseLocationDialog extends Dialog {
 
-    private DirectoryFieldEditor fileDialog;
-    private String databaseLocation = System.getProperty("user.home") + "/.amanzi/neo";
-    private IPreferenceStore store;
-    private static final String DATABASE_LOCATION_PATH = "databaseLocation";
+    private final DirectoryFieldEditor fileDialog;
+    private final IPreferenceStore store;
+    private static final int LAYOUT_SIZE = 600;
 
-    private boolean isCanceled = false;
+    private String databaseLocation;
 
-    public ChooseDatabaseLocationDialog(Shell parent) {
+    public ChooseDatabaseLocationDialog(Shell parent, final String defaultLocation) {
         super(parent);
-        create();
-        getShell().setText("Change database location");
-        
+        databaseLocation = defaultLocation;
+        super.create();
+        getShell().setText(DatabaseUiPluginMessages.warningDialogName);
+
         store = PlatformUI.getPreferenceStore();
-        if (StringUtils.isEmpty(store.getString(DATABASE_LOCATION_PATH))) {
-            store.putValue(DATABASE_LOCATION_PATH, databaseLocation);
+        if (StringUtils.isEmpty(store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey))) {
+            store.putValue(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey, databaseLocation);
         }
+        getButton(OK).setEnabled(false);
+
         Composite warningComposite = new Composite((Composite)getDialogArea(), SWT.NONE);
         warningComposite.setLayout(new GridLayout(1, false));
         warningComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-        
+
         Label warning = new Label(warningComposite, SWT.NONE);
-        warning.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-        warning.setText("Database path already used. Please select another database location");
-        
-        Composite selectionComposite = new Composite(warningComposite, SWT.NONE);
+        warning.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
+        warning.setText(DatabaseUiPluginMessages.warningDialogMessage);
+
+        final Composite selectionComposite = new Composite(warningComposite, SWT.NONE);
         selectionComposite.setLayout(new GridLayout(3, false));
-        selectionComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-        
-        fileDialog = new DirectoryFieldEditor(DATABASE_LOCATION_PATH, "Choose db location", selectionComposite);
-        fileDialog.getTextControl(selectionComposite).setText(store.getString(DATABASE_LOCATION_PATH));
+        GridData data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
+        data.widthHint = LAYOUT_SIZE;
+        selectionComposite.setLayoutData(data);
+
+        fileDialog = new DirectoryFieldEditor(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey,
+                DatabaseUiPluginMessages.warningDialogChooseDatabaseLabel, selectionComposite);
+        fileDialog.getTextControl(selectionComposite).setText(
+                store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey));
+        fileDialog.getTextControl(selectionComposite).setSize(600, 50);
+        fileDialog.getTextControl(selectionComposite).addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (!((Text)e.getSource()).getText().equals(databaseLocation)) {
+                    getButton(OK).setEnabled(true);
+                }
+
+            }
+        });
+
         getShell().pack();
     }
 
     @Override
     protected void okPressed() {
         databaseLocation = fileDialog.getStringValue();
-        store.putValue(DATABASE_LOCATION_PATH, databaseLocation);
+        store.putValue(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey, databaseLocation);
         super.okPressed();
-    }
-
-    @Override
-    protected void cancelPressed() {
-        isCanceled = true;
-        super.cancelPressed();
     }
 
     /**
@@ -88,10 +103,4 @@ public class ChooseDatabaseLocationDialog extends Dialog {
         return databaseLocation;
     }
 
-    /**
-     * @return Returns the isCancel.
-     */
-    public boolean isCanceled() {
-        return isCanceled;
-    }
 }

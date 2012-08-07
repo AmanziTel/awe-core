@@ -14,17 +14,17 @@
 package org.amanzi.neo.loader.ui.page.widgets.impl;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.internal.DriveDataFileSelector;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 
 /**
  * TODO Purpose of
@@ -34,59 +34,73 @@ import org.eclipse.swt.widgets.Group;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SelectDriveResourcesWidget extends AbstractPageWidget<Group, ISelectDriveResourceListener>
-        implements
-            IResourceSelectorListener {
+public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, ISelectDriveResourceListener>
+implements
+IResourceSelectorListener {
 
-    private final static int NUMBER_OF_COLUMNS = 3;
+	public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
 
-    public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
+		void onResourcesSelected(Collection<File> files);
 
-        void onResourcesSelected(List<File> files);
+		void onDirectorySelected(String directoryName);
 
-    }
+	}
 
-    private ResourceSelectorWidget resourceSelector;
+	private ResourceSelectorWidget resourceSelector;
 
-    private final ISelectDriveResourceListener listener;
+	private final ISelectDriveResourceListener listener;
 
-    /**
-     * @param isEnabled
-     * @param parent
-     * @param listener
-     * @param projectModelProvider
-     */
-    protected SelectDriveResourcesWidget(Composite parent, ISelectDriveResourceListener listener) {
-        super(true, parent, listener, null);
-        this.listener = listener;
-    }
+	private DriveDataFileSelector driveDataSelector;
 
-    @Override
-    protected Group createWidget(Composite parent, int style) {
-        Group group = new Group(parent, style);
+	/**
+	 * @param isEnabled
+	 * @param parent
+	 * @param listener
+	 * @param projectModelProvider
+	 */
+	protected SelectDriveResourcesWidget(final Composite parent, final ISelectDriveResourceListener listener) {
+		super(true, parent, listener, null);
+		this.listener = listener;
+	}
 
-        group.setLayoutData(getGroupLayoutData());
+	@Override
+	protected Composite createWidget(final Composite parent, final int style) {
+		Composite panel = new Composite(parent, style);
+		panel.setLayoutData(getGroupLayoutData());
+		panel.setLayout(new GridLayout(1, false));
 
-        group.setLayout(new GridLayout(3, false));
+		resourceSelector = WizardFactory.getInstance().addDirectorySelector(getPanel(panel), this);
+		driveDataSelector = WizardFactory.getInstance().addDriveDataFileSelector(getPanel(panel), listener);
 
-        resourceSelector = WizardFactory.getInstance().addDirectorySelector(group, this, NUMBER_OF_COLUMNS);
-        WizardFactory.getInstance().addDriveResourceSelector(parent, listener);
+		return panel;
+	}
 
-        return group;
-    }
+	private Composite getPanel(final Composite parent) {
+		Composite panel = new Composite(parent, SWT.NONE);
+		panel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		panel.setLayout(new GridLayout(3, false));
 
-    protected Object getGroupLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
-    }
+		return panel;
+	}
 
-    @Override
-    protected int getStyle() {
-        return SWT.FILL;
-    }
+	protected Object getGroupLayoutData() {
+		return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
+	}
 
-    @Override
-    public void onResourceChanged() {
-        resourceSelector.getFileName();
-    }
+	@Override
+	protected int getStyle() {
+		return SWT.NONE;
+	}
+
+	@Override
+	public void onResourceChanged() {
+		String directoryName = resourceSelector.getFileName();
+
+		for (ISelectDriveResourceListener listener : getListeners()) {
+			listener.onDirectorySelected(directoryName);
+		}
+
+		driveDataSelector.setFiles(new File(directoryName));
+	}
 
 }

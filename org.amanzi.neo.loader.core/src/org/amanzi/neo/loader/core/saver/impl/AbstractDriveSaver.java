@@ -103,23 +103,25 @@ public abstract class AbstractDriveSaver extends AbstractSynonymsSaver<IConfigur
 		Map<String, Object> properties = getElementProperties(driveModel.getMainMeasurementNodeType(), data, true);
 
 		if (!properties.isEmpty()) {
-			double lat = (Double)properties.remove(geoNodeProperties.getLatitideProperty());
-			double lon = (Double)properties.remove(geoNodeProperties.getLongitudeProperty());
+			Double lat = (Double)properties.remove(geoNodeProperties.getLatitideProperty());
+			Double lon = (Double)properties.remove(geoNodeProperties.getLongitudeProperty());
 			long timestamp = (Long)properties.get(timePeriodNodeProperties.getTimestampProperty());
 
 			IDataElement measurement = driveModel.addMeasurement(rootElement, properties);
 
-			if ((location == null) || isCoordinatesChanged(lat, lon)) {
-				location = driveModel.createLocation(measurement, lat, lon, timestamp);
-				previousLat = lat;
-				previousLon = lon;
-			} else {
-				driveModel.addToLocation(measurement, location);
+			if ((lat != null) && (lon != null)) {
+				if ((location == null) || isCoordinatesChanged(lat, lon)) {
+					location = driveModel.createLocation(measurement, lat, lon, timestamp);
+					previousLat = lat;
+					previousLon = lon;
+				} else {
+					driveModel.addToLocation(measurement, location);
+				}
 			}
 		}
 	}
 
-	private boolean isCoordinatesChanged(final double lat, final double lon) {
+	private boolean isCoordinatesChanged(final Double lat, final Double lon) {
 		return !Precision.equals(lat, previousLat, COORDINATE_VALUE_PRECISION)
 				|| !Precision.equals(lon, previousLon, COORDINATE_VALUE_PRECISION);
 	}

@@ -30,20 +30,20 @@ import org.amanzi.neo.loader.core.parser.impl.internal.MultiStreamParser;
  * @since 1.0.0
  */
 public class MultiCSVParser
-        extends
-            MultiStreamParser<ISingleFileConfiguration, CSVParser, IMultiFileConfiguration, IMappedStringData> {
+extends
+MultiStreamParser<ISingleFileConfiguration, CSVParser, IMultiFileConfiguration, IMappedStringData> {
 
-    @Override
-    protected CSVParser createParserInstance() {
-        return new CSVParser();
-    }
+	@Override
+	protected CSVParser createParserInstance() {
+		return new CSVParser();
+	}
 
-    @Override
-    protected ISingleFileConfiguration createSingleFileConfiguration(final File file, final IMultiFileConfiguration configuration) {
-        SingleFileConfiguration singleFileConfiguration = new SingleFileConfiguration();
-        singleFileConfiguration.setDatasetName(configuration.getDatasetName());
-        singleFileConfiguration.setFile(file);
-        return singleFileConfiguration;
-    }
+	@Override
+	protected ISingleFileConfiguration createSingleFileConfiguration(final File file, final IMultiFileConfiguration configuration) {
+		SingleFileConfiguration singleFileConfiguration = new SingleFileConfiguration();
+		singleFileConfiguration.setDatasetName(configuration.getDatasetName());
+		singleFileConfiguration.setFile(file);
+		return singleFileConfiguration;
+	}
 
 }

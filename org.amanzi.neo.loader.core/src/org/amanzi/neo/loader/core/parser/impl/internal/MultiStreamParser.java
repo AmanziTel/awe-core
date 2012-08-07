@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.IMultiFileConfiguration;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
+import org.amanzi.neo.loader.core.parser.IParser.IFileParsingStartedListener;
 
 /**
  * TODO Purpose of
@@ -32,7 +33,7 @@ import org.amanzi.neo.loader.core.parser.IParser;
  */
 public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P extends IParser<S, D>, C extends IMultiFileConfiguration, D extends IData>
 extends
-AbstractParser<C, D> {
+AbstractParser<C, D> implements IFileParsingStartedListener {
 
 	private final class ParserIterator implements Iterator<P> {
 
@@ -72,7 +73,7 @@ AbstractParser<C, D> {
 
 	@Override
 	protected D parseNextElement() throws IOException {
-		if (currentParser.hasNext()) {
+		if ((currentParser != null) && currentParser.hasNext()) {
 			return currentParser.next();
 		} else {
 			if (parserIterator.hasNext()) {
@@ -88,12 +89,19 @@ AbstractParser<C, D> {
 		S configuration = createSingleFileConfiguration(file, getConfiguration());
 		currentParser.init(configuration);
 
+		currentParser.addFileParsingListener(this);
+
 		return currentParser;
 	}
 
 	protected abstract P createParserInstance();
 
 	protected abstract S createSingleFileConfiguration(File file, C configuration);
+
+	@Override
+	public void onFileParsingStarted(final File file) {
+		onNewFileParsingStarted(file);
+	}
 
 	@Override
 	protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {

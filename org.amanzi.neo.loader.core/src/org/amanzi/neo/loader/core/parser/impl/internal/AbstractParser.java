@@ -115,9 +115,10 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 	@Override
 	public void finishUp() {
 		monitor.done();
+		listeners.clear();
 	}
 
-	private void onNewFileParsingStarted(final File file) {
+	protected void onNewFileParsingStarted(final File file) {
 		for (IFileParsingStartedListener listener : listeners) {
 			listener.onFileParsingStarted(file);
 		}
@@ -126,10 +127,5 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 	@Override
 	public void addFileParsingListener(final IFileParsingStartedListener listener) {
 		listeners.add(listener);
-	}
-
-	@Override
-	public void removeFileParsingListener(final IFileParsingStartedListener listener) {
-		listeners.remove(listener);
 	}
 }

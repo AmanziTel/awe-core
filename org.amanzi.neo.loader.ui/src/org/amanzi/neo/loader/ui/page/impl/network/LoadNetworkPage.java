@@ -39,80 +39,80 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
-        implements
-            ISelectLoaderListener,
-            ISelectNetworkListener,
-            IResourceSelectorListener {
+implements
+ISelectLoaderListener,
+ISelectNetworkListener,
+IResourceSelectorListener {
 
-    private SelectNetworkNameWidget networkNameCombo;
+	private SelectNetworkNameWidget networkNameCombo;
 
-    private SelectLoaderWidget<SingleFileConfiguration> loaderCombo;
+	private SelectLoaderWidget<SingleFileConfiguration> loaderCombo;
 
-    private ResourceSelectorWidget resourceEditor;
+	private ResourceSelectorWidget resourceEditor;
 
-    /**
-     * @param pageName
-     */
-    public LoadNetworkPage() {
-        super(Messages.LoadNetworkPage_PageName);
-    }
+	/**
+	 * @param pageName
+	 */
+	public LoadNetworkPage() {
+		super(Messages.LoadNetworkPage_PageName);
+	}
 
-    @Override
-    public void createControl(final Composite parent) {
-        super.createControl(parent);
+	@Override
+	public void createControl(final Composite parent) {
+		super.createControl(parent);
 
-        networkNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
-        WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
+		networkNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
+		WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
 
-        resourceEditor = WizardFactory.getInstance().addFileSelector(getMainComposite(), this, NUMBER_OF_COLUMNS);
+		resourceEditor = WizardFactory.getInstance().addFileSelector(getMainComposite(), this);
 
-        loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
+		loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
-        update();
-    }
+		update();
+	}
 
-    @Override
-    public void setCurrentLoader(final ILoader<SingleFileConfiguration, ? > currentLoader) {
-        super.setCurrentLoader(currentLoader);
-        loaderCombo.updateData();
-    }
+	@Override
+	public void setCurrentLoader(final ILoader<SingleFileConfiguration, ? > currentLoader) {
+		super.setCurrentLoader(currentLoader);
+		loaderCombo.updateData();
+	}
 
-    @Override
-    public void onResourceChanged() {
-        ISingleFileConfiguration configuration = getConfiguration();
+	@Override
+	public void onResourceChanged() {
+		ISingleFileConfiguration configuration = getConfiguration();
 
-        File file = new File(resourceEditor.getFileName());
+		File file = new File(resourceEditor.getFileName());
 
-        configuration.setFile(file);
-        networkNameCombo.setText(FilenameUtils.getBaseName(resourceEditor.getFileName()));
+		configuration.setFile(file);
+		networkNameCombo.setText(FilenameUtils.getBaseName(resourceEditor.getFileName()));
 
-        autodefineLoader();
+		autodefineLoader();
 
-        if (getCurrentLoader() != null) {
-            loaderCombo.setText(getCurrentLoader().getName());
-        }
-    }
+		if (getCurrentLoader() != null) {
+			loaderCombo.setText(getCurrentLoader().getName());
+		}
+	}
 
-    @Override
-    public void onNetworkChanged() {
-        ISingleFileConfiguration configuration = getConfiguration();
+	@Override
+	public void onNetworkChanged() {
+		ISingleFileConfiguration configuration = getConfiguration();
 
-        if (networkNameCombo != null) {
-            configuration.setDatasetName(networkNameCombo.getText());
-        }
+		if (networkNameCombo != null) {
+			configuration.setDatasetName(networkNameCombo.getText());
+		}
 
-        update();
-    }
+		update();
+	}
 
-    @Override
-    public void onLoaderChanged() {
-        update();
-    }
+	@Override
+	public void onLoaderChanged() {
+		update();
+	}
 
-    @Override
-    public void dispose() {
-        networkNameCombo.finishUp();
-        loaderCombo.finishUp();
-        resourceEditor.finishUp();
-    }
+	@Override
+	public void dispose() {
+		networkNameCombo.finishUp();
+		loaderCombo.finishUp();
+		resourceEditor.finishUp();
+	}
 }
