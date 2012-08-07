@@ -193,10 +193,11 @@ public class NodeService extends AbstractService implements INodeService {
 		T result = null;
 
 		try {
-			if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
+			boolean exists = node.hasProperty(propertyName);
+			if (throwExceptionIfNotExist && !exists) {
 				throwPropertyNotFoundException = true;
 			} else {
-				if (defaultValue == null) {
+				if (exists) {
 					result = (T)node.getProperty(propertyName);
 				} else {
 					result = (T)node.getProperty(propertyName, defaultValue);
@@ -436,13 +437,13 @@ public class NodeService extends AbstractService implements INodeService {
 			tx.failure();
 			throw new DatabaseException(e);
 		} finally {
-			tx.success();
+			tx.finish();
 		}
 
 		updateProperty(parentNode, getGeneralNodeProperties().getLastChildID(), childNode.getId());
 		updateProperty(childNode, getGeneralNodeProperties().getParentIDProperty(), parentNode.getId());
 
-		return null;
+		return childNode;
 	}
 
 	@Override

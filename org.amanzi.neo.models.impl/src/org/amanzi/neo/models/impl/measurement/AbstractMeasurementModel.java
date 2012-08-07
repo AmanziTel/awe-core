@@ -119,7 +119,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 	@Override
 	public ILocationElement createLocation(final IDataElement parent, final double latitude, final double longitude,
 			final long timestamp) throws ModelException {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
