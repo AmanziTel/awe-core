@@ -142,6 +142,9 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
 			Node locationNode = getNodeService().createNode(measurementNode, MeasurementNodeType.MP, MeasurementRelationshipType.LOCATION, properties);
 
+			getIndexModel().indexInMultiProperty(MeasurementNodeType.MP, locationNode, Double.class, getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
+			updateLocation(latitude, longitude);
+
 			location = getLocationElement(locationNode);
 		} catch (ServiceException e) {
 			processException("Exception on creating Location", e);
@@ -198,6 +201,8 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 			result = getDataElement(measurementNode, null, null);
 
 			getIndexModel().indexInMultiProperty(MeasurementNodeType.M, measurementNode, Long.class, timePeriodNodeProperties.getTimestampProperty());
+
+			getPropertyStatisticsModel().indexElement(MeasurementNodeType.M, properties);
 		} catch (ServiceException e) {
 			processException("Error on adding Measurement", e);
 		}

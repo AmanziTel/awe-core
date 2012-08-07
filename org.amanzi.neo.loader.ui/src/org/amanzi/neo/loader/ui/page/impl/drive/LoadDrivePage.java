@@ -102,4 +102,10 @@ ISelectDriveResourceListener {
 		driveNameCombo.setText(FilenameUtils.getBaseName(directoryName));
 	}
 
+	@Override
+	public void dispose() {
+		loaderCombo.finishUp();
+		driveNameCombo.finishUp();
+	}
+
 }

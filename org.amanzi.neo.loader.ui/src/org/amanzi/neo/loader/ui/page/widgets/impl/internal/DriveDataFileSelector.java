@@ -91,7 +91,7 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
 
 		List list = new List(panel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gridData.minimumWidth = 150;
+		gridData.minimumWidth = 200;
 		gridData.minimumHeight = 300;
 		list.setLayoutData(gridData);
 
