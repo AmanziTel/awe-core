@@ -22,6 +22,8 @@ import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.exception.impl.FileNotFoundException;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CountingInputStream;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -33,45 +35,60 @@ import org.apache.commons.io.IOUtils;
  */
 public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D extends IData> extends AbstractParser<C, D> {
 
-    private InputStream stream;
+	private CountingInputStream stream;
 
-    private InputStreamReader reader;
+	private InputStreamReader reader;
 
-    protected InputStream getStream() {
-        if (stream == null) {
-            stream = initializeStream(getConfiguration());
-        }
-        return stream;
-    }
+	protected CountingInputStream getStream() {
+		if (stream == null) {
+			stream = initializeStream(getConfiguration());
+		}
+		return stream;
+	}
 
-    protected InputStreamReader getReader() {
-        if (reader == null) {
-            reader = initializeReader(getStream());
-        }
+	protected InputStreamReader getReader() {
+		if (reader == null) {
+			reader = initializeReader(getStream());
+		}
+		return reader;
+	}
 
-        return reader;
-    }
+	protected CountingInputStream initializeStream(final C configuration) {
+		try {
+			return new CountingInputStream(new FileInputStream(configuration.getFile()));
+		} catch (java.io.FileNotFoundException e) {
+			throw new FileNotFoundException(configuration.getFile(), e);
+		}
+	}
 
-    protected InputStream initializeStream(final C configuration) {
-        try {
-            return new FileInputStream(configuration.getFile());
-        } catch (java.io.FileNotFoundException e) {
-            throw new FileNotFoundException(configuration.getFile(), e);
-        }
-    }
+	protected InputStreamReader initializeReader(final InputStream stream) {
+		return new InputStreamReader(stream);
+	}
 
-    protected InputStreamReader initializeReader(final InputStream stream) {
-        return new InputStreamReader(stream);
-    }
+	@Override
+	public D next() {
+		D result = super.next();
 
-    @Override
-    public void finishUp() {
-        IOUtils.closeQuietly(reader);
-        IOUtils.closeQuietly(stream);
-    }
+		work(stream.getCount());
 
-    @Override
-    protected File getFileFromConfiguration(final ISingleFileConfiguration configuration) {
-        return configuration.getFile();
-    }
+		return result;
+	}
+
+	@Override
+	public void setProgressMonitor(final String monitorName, final IProgressMonitor monitor) {
+		monitor.beginTask(monitorName, (int)getFileFromConfiguration(getConfiguration()).length());
+
+		super.setProgressMonitor(monitorName, monitor);
+	}
+
+	@Override
+	public void finishUp() {
+		IOUtils.closeQuietly(reader);
+		IOUtils.closeQuietly(stream);
+	}
+
+	@Override
+	protected File getFileFromConfiguration(final ISingleFileConfiguration configuration) {
+		return configuration.getFile();
+	}
 }

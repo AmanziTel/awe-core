@@ -47,6 +47,8 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
 	private boolean parsingStarted = false;
 
+	private int previousWork = 0;
+
 	@Override
 	public boolean hasNext() {
 		if (!actual) {
@@ -66,6 +68,11 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 			fireFileParsingEvent();
 		}
 		actual = false;
+
+		if (monitor.isCanceled()) {
+			nextElement = null;
+		}
+
 		return nextElement;
 	}
 
@@ -104,8 +111,15 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 	}
 
 	@Override
-	public void setProgressMonitor(final IProgressMonitor monitor) {
+	public void setProgressMonitor(final String monitorName, final IProgressMonitor monitor) {
 		this.monitor = monitor;
+	}
+
+	protected void work(final int ticks) {
+		int work = ticks - previousWork;
+		previousWork = ticks;
+
+		monitor.worked(work);
 	}
 
 	protected C getConfiguration() {

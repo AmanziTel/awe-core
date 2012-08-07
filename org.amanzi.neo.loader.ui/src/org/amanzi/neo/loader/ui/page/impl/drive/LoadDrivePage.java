@@ -106,6 +106,8 @@ ISelectDriveResourceListener {
 	public void dispose() {
 		loaderCombo.finishUp();
 		driveNameCombo.finishUp();
+
+		super.dispose();
 	}
 
 }

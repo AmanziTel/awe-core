@@ -36,116 +36,116 @@ import org.mockito.stubbing.Answer;
  */
 public class AbstractParserTest extends AbstractMockitoTest {
 
-    private static final int NEXT_TIMES = 3;
+	private static final int NEXT_TIMES = 3;
 
-    /**
-     * TODO Purpose of
-     * <p>
-     * </p>
-     * 
-     * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
-     * @since 1.0.0
-     */
-    private final class TestParserIterator implements Answer<IData> {
-        /** IData data field */
-        private final IData data;
+	/**
+	 * TODO Purpose of
+	 * <p>
+	 * </p>
+	 * 
+	 * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+	 * @since 1.0.0
+	 */
+	private final class TestParserIterator implements Answer<IData> {
+		/** IData data field */
+		private final IData data;
 
-        /**
-         * @param data
-         */
-        private TestParserIterator(final IData data) {
-            this.data = data;
-        }
+		/**
+		 * @param data
+		 */
+		private TestParserIterator(final IData data) {
+			this.data = data;
+		}
 
-        @Override
-        public IData answer(final InvocationOnMock invocation) {
-            if (++parsedTimes < NEXT_TIMES) {
-                return data;
-            }
-            return null;
-        }
-    }
+		@Override
+		public IData answer(final InvocationOnMock invocation) {
+			if (++parsedTimes < NEXT_TIMES) {
+				return data;
+			}
+			return null;
+		}
+	}
 
-    public static class TestParser extends AbstractParser<IConfiguration, IData> {
+	public static class TestParser extends AbstractParser<IConfiguration, IData> {
 
-        @Override
-        protected IData parseNextElement() throws IOException {
-            return null;
-        }
+		@Override
+		protected IData parseNextElement() throws IOException {
+			return null;
+		}
 
-        @Override
-        protected File getFileFromConfiguration(final IConfiguration configuration) {
-            // TODO Auto-generated method stub
-            return null;
-        }
+		@Override
+		protected File getFileFromConfiguration(final IConfiguration configuration) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 
-    }
+	}
 
-    private TestParser parser;
+	private TestParser parser;
 
-    private int parsedTimes;
+	private int parsedTimes;
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        parser = spy(new TestParser());
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Before
+	public void setUp() throws Exception {
+		parser = spy(new TestParser());
 
-        final IData data = mock(IData.class);
+		final IData data = mock(IData.class);
 
-        parsedTimes = 0;
+		parsedTimes = 0;
 
-        when(parser.parseNextElement()).thenAnswer(new TestParserIterator(data));
-    }
+		when(parser.parseNextElement()).thenAnswer(new TestParserIterator(data));
+	}
 
-    @Test
-    public void testCheckParsedFewTimeOnMultiNext() throws Exception {
-        for (int i = 0; i < NEXT_TIMES; i++) {
-            parser.next();
-        }
+	@Test
+	public void testCheckParsedFewTimeOnMultiNext() throws Exception {
+		for (int i = 0; i < NEXT_TIMES; i++) {
+			parser.next();
+		}
 
-        verify(parser, times(NEXT_TIMES)).parseNextElement();
-    }
+		verify(parser, times(NEXT_TIMES)).parseNextElement();
+	}
 
-    @Test
-    public void testCheckOneTimeParsingOnHasNext() throws Exception {
-        for (int i = 0; i < NEXT_TIMES; i++) {
-            parser.hasNext();
-        }
+	@Test
+	public void testCheckOneTimeParsingOnHasNext() throws Exception {
+		for (int i = 0; i < NEXT_TIMES; i++) {
+			parser.hasNext();
+		}
 
-        verify(parser).parseNextElement();
-    }
+		verify(parser).parseNextElement();
+	}
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testCheckExceptionOnRemove() {
-        parser.remove();
-    }
+	@Test(expected = UnsupportedOperationException.class)
+	public void testCheckExceptionOnRemove() {
+		parser.remove();
+	}
 
-    @Test
-    public void testCheckIterationForAllElements() {
-        for (int i = 0; i < (NEXT_TIMES - 1); i++) {
-            assertTrue("next element should exists", parser.hasNext());
-            parser.next();
-        }
+	@Test
+	public void testCheckIterationForAllElements() {
+		for (int i = 0; i < (NEXT_TIMES - 1); i++) {
+			assertTrue("next element should exists", parser.hasNext());
+			parser.next();
+		}
 
-        assertFalse("next element should not exists", parser.hasNext());
-    }
+		assertFalse("next element should not exists", parser.hasNext());
+	}
 
-    @Test
-    public void testCheckActivityOnFinishUp() {
-        IProgressMonitor monitor = mock(IProgressMonitor.class);
-        parser.setProgressMonitor(monitor);
+	@Test
+	public void testCheckActivityOnFinishUp() {
+		IProgressMonitor monitor = mock(IProgressMonitor.class);
+		parser.setProgressMonitor("Loader name", monitor);
 
-        parser.finishUp();
+		parser.finishUp();
 
-        verify(monitor).done();
-    }
+		verify(monitor).done();
+	}
 
-    @Test(expected = GeneralParsingException.class)
-    public void testCheckGeneralParsingException() throws Exception {
-        doThrow(new IOException()).when(parser).parseNextElement();
+	@Test(expected = GeneralParsingException.class)
+	public void testCheckGeneralParsingException() throws Exception {
+		doThrow(new IOException()).when(parser).parseNextElement();
 
-        parser.parseToNextElement();
-    }
+		parser.parseToNextElement();
+	}
 }

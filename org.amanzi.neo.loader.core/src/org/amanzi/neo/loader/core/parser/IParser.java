@@ -36,7 +36,7 @@ public interface IParser<C extends IConfiguration, D extends IData> extends Iter
 
 	void init(C configuration);
 
-	void setProgressMonitor(IProgressMonitor monitor);
+	void setProgressMonitor(String monitorName, IProgressMonitor monitor);
 
 	void finishUp();
 

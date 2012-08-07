@@ -65,7 +65,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 	public void run(final IProgressMonitor monitor) {
 		long timeBefore = System.currentTimeMillis();
 
-		parser.setProgressMonitor(monitor);
+		parser.setProgressMonitor(getName(), monitor);
 
 		try {
 			while (parser.hasNext()) {
