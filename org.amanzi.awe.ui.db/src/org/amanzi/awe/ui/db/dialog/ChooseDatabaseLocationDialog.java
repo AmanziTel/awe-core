@@ -35,59 +35,62 @@ import org.eclipse.ui.PlatformUI;
  */
 public class ChooseDatabaseLocationDialog extends Dialog {
 
-    private DirectoryFieldEditor fileDialog;
-    private String databaseLocation = System.getProperty("user.home") + "/.amanzi/neo";
-    private IPreferenceStore store;
-    private static final String DATABASE_LOCATION_PATH = "databaseLocation";
+	private final DirectoryFieldEditor fileDialog;
+	//TODO: LN: 07.08.2012, duplicated, should be used path from current DatabaseManager
+	private String databaseLocation = System.getProperty("user.home") + "/.amanzi/neo";
+	private final IPreferenceStore store;
+	private static final String DATABASE_LOCATION_PATH = "databaseLocation";
 
-    private boolean isCanceled = false;
+	private boolean isCanceled = false;
 
-    public ChooseDatabaseLocationDialog(Shell parent) {
-        super(parent);
-        create();
-        getShell().setText("Change database location");
-        store = PlatformUI.getPreferenceStore();
-        if (StringUtils.isEmpty(store.getString(DATABASE_LOCATION_PATH))) {
-            store.putValue(DATABASE_LOCATION_PATH, databaseLocation);
-        }
-        Composite warningComposite = new Composite((Composite)getDialogArea(), SWT.NONE);
-        warningComposite.setLayout(new GridLayout(1, false));
-        warningComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-        Label warning = new Label(warningComposite, SWT.NONE);
-        warning.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-        warning.setText("Database path already used. Please select another database location");
-        Composite selectionComposite = new Composite(warningComposite, SWT.NONE);
-        selectionComposite.setLayout(new GridLayout(3, false));
-        selectionComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-        fileDialog = new DirectoryFieldEditor(DATABASE_LOCATION_PATH, "Choose db location", selectionComposite);
-        fileDialog.getTextControl(selectionComposite).setText(store.getString(DATABASE_LOCATION_PATH));
-        getShell().pack();
-    }
+	//TODO: LN: 07.08.2012, move messages to bundle
+	public ChooseDatabaseLocationDialog(final Shell parent) {
+		super(parent);
+		create();
+		getShell().setText("Change database location");
+		store = PlatformUI.getPreferenceStore();
+		if (StringUtils.isEmpty(store.getString(DATABASE_LOCATION_PATH))) {
+			store.putValue(DATABASE_LOCATION_PATH, databaseLocation);
+		}
+		Composite warningComposite = new Composite((Composite)getDialogArea(), SWT.NONE);
+		warningComposite.setLayout(new GridLayout(1, false));
+		warningComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
+		Label warning = new Label(warningComposite, SWT.NONE);
+		warning.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		warning.setText("Database path already used. Please select another database location");
+		Composite selectionComposite = new Composite(warningComposite, SWT.NONE);
+		selectionComposite.setLayout(new GridLayout(3, false));
+		selectionComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
+		fileDialog = new DirectoryFieldEditor(DATABASE_LOCATION_PATH, "Choose db location", selectionComposite);
+		fileDialog.getTextControl(selectionComposite).setText(store.getString(DATABASE_LOCATION_PATH));
+		getShell().pack();
+	}
 
-    @Override
-    protected void okPressed() {
-        databaseLocation = fileDialog.getStringValue();
-        store.putValue(DATABASE_LOCATION_PATH, databaseLocation);
-        super.okPressed();
-    }
+	@Override
+	protected void okPressed() {
+		databaseLocation = fileDialog.getStringValue();
+		store.putValue(DATABASE_LOCATION_PATH, databaseLocation);
+		super.okPressed();
+	}
 
-    @Override
-    protected void cancelPressed() {
-        isCanceled = true;
-        super.cancelPressed();
-    }
+	@Override
+	protected void cancelPressed() {
+		isCanceled = true;
+		super.cancelPressed();
+	}
 
-    /**
-     * @return Returns the databaseLocation.
-     */
-    public String getDatabaseLocation() {
-        return databaseLocation;
-    }
+	/**
+	 * @return Returns the databaseLocation.
+	 */
+	public String getDatabaseLocation() {
+		return databaseLocation;
+	}
 
-    /**
-     * @return Returns the isCancel.
-     */
-    public boolean isCanceled() {
-        return isCanceled;
-    }
+	/**
+	 * @return Returns the isCancel.
+	 */
+	//TODO: LN: 07.08.2012, why such way used? method open() returns state OK/Cancel
+	public boolean isCanceled() {
+		return isCanceled;
+	}
 }

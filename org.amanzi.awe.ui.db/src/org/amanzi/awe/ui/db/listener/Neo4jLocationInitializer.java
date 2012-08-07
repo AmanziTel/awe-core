@@ -28,33 +28,34 @@ import org.eclipse.ui.PlatformUI;
  * @since 1.0.0
  */
 public class Neo4jLocationInitializer implements IAWEEventListenter {
-    @Override
-    public void onEvent(IEvent event) {
-        switch (event.getStatus()) {
-        case INITIALISATION:
-            relocateDatabase(null);
-            break;
-        default:
-            break;
-        }
+	@Override
+	public void onEvent(final IEvent event) {
+		switch (event.getStatus()) {
+		case INITIALISATION:
+			relocateDatabase(null);
+			break;
+		default:
+			break;
+		}
 
-    }
+	}
 
-    private void relocateDatabase(String path) {
-        boolean isUsed = false;
-        if (StringUtils.isEmpty(path)) {
-            isUsed = DatabaseManagerFactory.getDatabaseManager().isAlreadyUsed();
-        } else {
-            isUsed = DatabaseManagerFactory.getDatabaseManager(path, true).isAlreadyUsed();
-        }
-        if (isUsed) {
-            ChooseDatabaseLocationDialog dialog = new ChooseDatabaseLocationDialog(PlatformUI.getWorkbench().getDisplay()
-                    .getActiveShell());
-            dialog.open();
-            if (dialog.isCanceled()) {
-                return;
-            }
-            relocateDatabase(dialog.getDatabaseLocation());
-        }
-    }
+	private void relocateDatabase(final String path) {
+		boolean isUsed = false;
+		if (StringUtils.isEmpty(path)) {
+			isUsed = DatabaseManagerFactory.getDatabaseManager().isAlreadyUsed();
+		} else {
+			isUsed = DatabaseManagerFactory.getDatabaseManager(path, true).isAlreadyUsed();
+		}
+		if (isUsed) {
+			ChooseDatabaseLocationDialog dialog = new ChooseDatabaseLocationDialog(PlatformUI.getWorkbench().getDisplay()
+					.getActiveShell());
+			dialog.open();
+			if (dialog.isCanceled()) {
+				//TODO: LN: 07.08.2012, what happened if User Cancels this Dialog????
+				return;
+			}
+			relocateDatabase(dialog.getDatabaseLocation());
+		}
+	}
 }
