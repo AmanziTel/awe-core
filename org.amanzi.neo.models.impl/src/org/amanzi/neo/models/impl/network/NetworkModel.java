@@ -110,7 +110,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         // validate input
         if (latitude == null) {
-            throw new ParameterInconsistencyException(getGeoNodeProperties().getLatitideProperty());
+            throw new ParameterInconsistencyException(getGeoNodeProperties().getLatitudeProperty());
         }
         if (longitude == null) {
             throw new ParameterInconsistencyException(getGeoNodeProperties().getLongitudeProperty());
@@ -120,7 +120,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         if (result != null) {
             getIndexModel().indexInMultiProperty(NetworkElementType.SITE, result.getNode(), Double.class,
-                    getGeoNodeProperties().getLatitideProperty(), getGeoNodeProperties().getLongitudeProperty());
+                    getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
             updateLocation(latitude, longitude);
         }
 
@@ -212,7 +212,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
             result = createSector(parent, name, lac, ci, properties);
         } else if (elementType == NetworkElementType.SITE) {
-            Double lat = (Double)properties.get(getGeoNodeProperties().getLatitideProperty());
+            Double lat = (Double)properties.get(getGeoNodeProperties().getLatitudeProperty());
             Double lon = (Double)properties.get(getGeoNodeProperties().getLongitudeProperty());
 
             result = createSite(parent, name, lat, lon, properties);
@@ -228,7 +228,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     protected Map<String, Object> removeIgnoredProperties(final Map<String, Object> properties) {
-        properties.remove(getGeoNodeProperties().getLatitideProperty());
+        properties.remove(getGeoNodeProperties().getLatitudeProperty());
         properties.remove(getGeoNodeProperties().getLongitudeProperty());
 
         return properties;
@@ -297,7 +297,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
 
         Iterator<Node> nodeIterator = getIndexModel().getNodes(NetworkElementType.SITE, Double.class, min, max,
-                getGeoNodeProperties().getLatitideProperty(), getGeoNodeProperties().getLongitudeProperty());
+                getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
 
         return new LocationIterator(nodeIterator).toIterable();
     }
@@ -314,7 +314,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         site.setNodeType(NetworkElementType.SITE);
 
         try {
-            site.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitideProperty(), null,
+            site.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitudeProperty(), null,
                     true));
             site.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
                     true));

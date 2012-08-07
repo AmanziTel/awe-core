@@ -33,6 +33,7 @@ import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService.MeasurementRelationshipType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -119,14 +120,57 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 	@Override
 	public ILocationElement createLocation(final IDataElement parent, final double latitude, final double longitude,
 			final long timestamp) throws ModelException {
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStartLogStatement("createLocation", parent, latitude, longitude, timestamp));
+		}
 
-		return null;
+		// validate input
+		if (parent == null) {
+			throw new ParameterInconsistencyException("parent");
+		}
+
+		ILocationElement location = null;
+
+		try {
+			DataElement measurementElement = (DataElement)parent;
+			Node measurementNode = measurementElement.getNode();
+
+			Map<String, Object> properties = new HashMap<String, Object>();
+			properties.put(getGeoNodeProperties().getLatitudeProperty(), latitude);
+			properties.put(getGeoNodeProperties().getLongitudeProperty(), longitude);
+			properties.put(timePeriodNodeProperties.getTimestampProperty(), timestamp);
+
+			Node locationNode = getNodeService().createNode(measurementNode, MeasurementNodeType.MP, MeasurementRelationshipType.LOCATION, properties);
+
+			location = getLocationElement(locationNode);
+		} catch (ServiceException e) {
+			processException("Exception on creating Location", e);
+		}
+
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getFinishLogStatement("createLocation"));
+		}
+		return location;
 	}
 
 	@Override
 	public void addToLocation(final IDataElement measurement, final ILocationElement location) throws ModelException {
-		// TODO Auto-generated method stub
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStartLogStatement("addToLocation", measurement, location));
+		}
 
+		try {
+			DataElement measurementElement = (DataElement)measurement;
+			DataElement locationElement = (DataElement)location;
+
+			getNodeService().linkNodes(measurementElement.getNode(), locationElement.getNode(), MeasurementRelationshipType.LOCATION);
+		} catch (ServiceException e) {
+			processException("Error on adding Location to Measurement", e);
+		}
+
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getFinishLogStatement("addToLocation"));
+		}
 	}
 
 	@Override
@@ -151,7 +195,9 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
 			Node measurementNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.M, properties);
 
-			result = getDataElement(measurementNode, MeasurementNodeType.M, null);
+			result = getDataElement(measurementNode, null, null);
+
+			getIndexModel().indexInMultiProperty(MeasurementNodeType.M, measurementNode, Long.class, timePeriodNodeProperties.getTimestampProperty());
 		} catch (ServiceException e) {
 			processException("Error on adding Measurement", e);
 		}

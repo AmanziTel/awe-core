@@ -23,7 +23,7 @@ package org.amanzi.neo.nodeproperties;
  */
 public interface IGeoNodeProperties extends INodeProperties {
 
-    String getLatitideProperty();
+    String getLatitudeProperty();
 
     String getLongitudeProperty();
 

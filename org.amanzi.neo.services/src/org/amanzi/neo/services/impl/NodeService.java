@@ -53,6 +53,10 @@ public class NodeService extends AbstractService implements INodeService {
 		CHILD, NEXT;
 	}
 
+	public enum MeasurementRelationshipType implements RelationshipType {
+		LOCATION;
+	}
+
 	private static final TraversalDescription OUTGOING_LEVEL_1_TRAVERSAL = Traversal.description().breadthFirst()
 			.evaluator(Evaluators.atDepth(1));
 
@@ -543,5 +547,27 @@ public class NodeService extends AbstractService implements INodeService {
 		parameters.put(getGeneralNodeProperties().getNodeNameProperty(), name);
 
 		return createNodeInChain(parentNode, nodeType, parameters);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.amanzi.neo.services.INodeService#linkNodes(org.neo4j.graphdb.Node, org.neo4j.graphdb.Node, org.neo4j.graphdb.RelationshipType)
+	 */
+	@Override
+	public void linkNodes(final Node startNode, final Node endNode,
+			final RelationshipType relationshipType) throws ServiceException {
+		assert startNode != null;
+		assert endNode != null;
+		assert relationshipType != null;
+
+		Transaction tx = getGraphDb().beginTx();
+		try {
+			startNode.createRelationshipTo(endNode, relationshipType);
+			tx.success();
+		} catch (Exception e) {
+			tx.failure();
+			throw new DatabaseException(e);
+		} finally {
+			tx.finish();
+		}
 	}
 }

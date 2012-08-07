@@ -130,4 +130,6 @@ public interface INodeService extends IService {
 	 */
 	Iterator<Node> getChildren(Node parentNode) throws ServiceException;
 
+	void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
+
 }

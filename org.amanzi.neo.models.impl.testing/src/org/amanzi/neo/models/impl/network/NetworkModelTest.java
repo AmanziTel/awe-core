@@ -184,7 +184,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
         networkModel.createSite(parentElement, DEFAULT_ELEMENT_NAME, Double.MAX_VALUE, Double.MIN_VALUE, properties);
         verify(indexModel).indexInMultiProperty(NetworkElementType.SITE, mockedSite.getNode(), Double.class,
-                GEO_NODE_PROPERTIES.getLatitideProperty(), GEO_NODE_PROPERTIES.getLongitudeProperty());
+                GEO_NODE_PROPERTIES.getLatitudeProperty(), GEO_NODE_PROPERTIES.getLongitudeProperty());
         verify(networkModel).createDefaultElement(NetworkElementType.SITE, parentElement, DEFAULT_ELEMENT_NAME, properties);
     }
 
@@ -252,7 +252,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
         parentElement = new DataElement(getNodeMock());
 
         Map<String, Object> properties = getProperties();
-        properties.put(GEO_NODE_PROPERTIES.getLatitideProperty(), Double.MIN_VALUE);
+        properties.put(GEO_NODE_PROPERTIES.getLatitudeProperty(), Double.MIN_VALUE);
         properties.put(GEO_NODE_PROPERTIES.getLongitudeProperty(), Double.MAX_VALUE);
         properties.put(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), DEFAULT_ELEMENT_NAME);
 
@@ -263,7 +263,7 @@ public class NetworkModelTest extends AbstractMockitoTest {
 
         networkModel.createElement(NetworkElementType.SITE, parentElement, DEFAULT_ELEMENT_NAME, properties);
         verify(networkModel).createSite(parentElement, DEFAULT_ELEMENT_NAME,
-                (Double)properties.get(GEO_NODE_PROPERTIES.getLatitideProperty()),
+                (Double)properties.get(GEO_NODE_PROPERTIES.getLatitudeProperty()),
                 (Double)properties.get(GEO_NODE_PROPERTIES.getLongitudeProperty()), properties);
 
     }
@@ -340,14 +340,14 @@ public class NetworkModelTest extends AbstractMockitoTest {
         Envelope env = new Envelope(Double.MIN_EXPONENT, Double.MAX_EXPONENT, Double.MIN_NORMAL, Double.MAX_VALUE);
         List<Node> nodes = new ArrayList<Node>();
         Map<String, Object> properties = getProperties();
-        properties.put(GEO_NODE_PROPERTIES.getLatitideProperty(), Double.MIN_VALUE);
+        properties.put(GEO_NODE_PROPERTIES.getLatitudeProperty(), Double.MIN_VALUE);
         properties.put(GEO_NODE_PROPERTIES.getLongitudeProperty(), Double.MAX_VALUE);
         Node mockedNode = getNodeMock(properties);
         nodes.add(mockedNode);
         Double[] min = new Double[] {env.getMinY(), env.getMinX()};
         Double[] max = new Double[] {env.getMaxY(), env.getMaxX()};
         doReturn(nodes.iterator()).when(indexModel).getNodes(NetworkElementType.SITE, Double.class, min, max,
-                GEO_NODE_PROPERTIES.getLatitideProperty(), GEO_NODE_PROPERTIES.getLongitudeProperty());
+                GEO_NODE_PROPERTIES.getLatitudeProperty(), GEO_NODE_PROPERTIES.getLongitudeProperty());
 
     }
 

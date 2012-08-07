@@ -40,7 +40,7 @@ public class GeoNodeProperties implements IGeoNodeProperties {
     private static final String CRS = "crs";
 
     @Override
-    public String getLatitideProperty() {
+    public String getLatitudeProperty() {
         return LATITUDE_PROPERTY;
     }
 
