@@ -101,6 +101,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void createPartControl(Composite parent) {
+        // TODO: LN: 07.08.2012, does it make sense to create new method?
         createControls(parent);
     }
 
@@ -189,13 +190,16 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * @return Returns the generalNodeProperties.
      */
+    // TODO: LN: 07.08.2012, is someone use this method?
     protected IGeneralNodeProperties getGeneralNodeProperties() {
+        // TODO: LN: 07.08.2012, is someone use this field?
         return generalNodeProperties;
     }
 
     /**
      * @return Returns the eventManager.
      */
+    // TODO: LN: 07.08.2012, is someone use this method?
     protected AWEEventManager getEventManager() {
         return eventManager;
     }

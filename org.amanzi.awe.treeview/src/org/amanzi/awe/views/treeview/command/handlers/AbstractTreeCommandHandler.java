@@ -33,6 +33,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @since 1.0.0
  */
 public abstract class AbstractTreeCommandHandler extends AbstractHandler {
+    // TODO: LN: 07.08.2012, is someone use this field?
     private final IGeneralNodeProperties generalNodeProeprties;
 
     /**

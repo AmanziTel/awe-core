@@ -49,6 +49,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * logger initialization
      */
     private static final Logger LOGGER = Logger.getLogger(AbstractScriptingPlugin.class);
+
+    public static final String PLUGIN_ID = "org.amanzi.awe.scripting";
     /*
      * constants definition
      */
@@ -56,7 +58,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static final String SCRIPTS_FOLDER = "awe-scripts";
     private static final String RUBY_SCRIPT_FOLDER = "ruby";
     private static final String COMMON_SCRIPTS_FOLDER = "common";
-    public static final String PLUGIN_ID = "org.amanzi.awe.scripting";
     private static final String PATH_SEPARATOR = "/";
     private static final String NEO4J_ENTRY = "neo4j";
     private static final String NEO4J_RB_PATH = "/lib/neo4j.rb";
@@ -69,6 +70,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     /**
      * initialize plugin
      */
+    // TODO: LN: 07.08.2012, do you need this method?
     protected abstract void initPlugin();
 
     /**
@@ -177,7 +179,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-//            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
+            // TODO: LN: 07.08.2012, remove commented lines
+            // runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
             initRuntimeWithDefaultScripts();
         } catch (Exception e) {
@@ -234,8 +237,9 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @since 1.0.0
      */
     private static class ScriptingManager {
-        private File scriptsFolder;
+
         private static final String SCRIPT_NAME_FORMAT = "%s:%s";
+        // TODO: LN: 07.08.2012, try to use FileFilterUtils from ApacheCommons
         private static final FileFilter ALL_RUBY_FILES = new FileFilter() {
 
             @Override
@@ -252,6 +256,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                 return name.endsWith(".t");
             }
         };
+
+        private File scriptsFolder;
 
         /**
          * initialize scripts workspace;
@@ -274,10 +280,12 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                     continue;
                 }
                 String scriptFolderName = source.getAbsolutePath();
+                // TODO: LN: 07.08.2012, what about source.getParent().getName() ?
                 scriptFolderName = scriptFolderName.substring(0, scriptFolderName.length());
                 scriptFolderName = scriptFolderName.substring(scriptFolderName.lastIndexOf(File.separator) + 1,
                         scriptFolderName.length());
                 File destination;
+                // TODO: LN: 07.08.2012, what about constructore of File with two parameters?
                 String createScriptFolder = scriptsFolder.getAbsolutePath() + File.separator + scriptFolderName;
                 destination = new File(createScriptFolder);
                 FileUtils.forceMkdir(destination);
@@ -298,6 +306,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * @return
          */
         public Map<String, File> getAllWorkspaceScripts(FileFilter filter) {
+            // TODO: LN: 07.08.2012, what about constructore of File with two parameters?
             File projectFolder = new File(WORKSPACE_FOLDER + File.separator + SCRIPTS_FOLDER);
             File[] modules = projectFolder.listFiles();
             Map<String, File> fileList = new HashMap<String, File>();

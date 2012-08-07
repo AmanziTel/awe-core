@@ -35,6 +35,7 @@ public class ProjectExplorerView extends AbstractTreeView {
 
         @Override
         public int hashCode(final Object element) {
+            // TODO: LN: 07.08.2012, need to be implemented
             return 0;
         }
 
@@ -42,10 +43,12 @@ public class ProjectExplorerView extends AbstractTreeView {
         @Override
         public boolean equals(final Object a, final Object b) {
             if ((a instanceof ITreeItem< ? >) && (b instanceof ITreeItem< ? >)) {
+                // TODO: LN: 07.08.2012, why not implement equals in TreeItem ?
                 ITreeItem<IModel> aM = (ITreeItem<IModel>)a;
                 ITreeItem<IModel> bM = (ITreeItem<IModel>)b;
                 IDataElement amElement = aM.getDataElement();
                 IDataElement bmElement = bM.getDataElement();
+                // TODO: LN: 07.08.2012, why not use amElement.equals(bmElement) ?
                 return amElement.getId() == bmElement.getId();
             }
             return a == null ? b == null : a.equals(b);

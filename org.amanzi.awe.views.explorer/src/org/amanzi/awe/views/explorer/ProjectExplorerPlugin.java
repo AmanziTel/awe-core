@@ -12,8 +12,6 @@
  */
 package org.amanzi.awe.views.explorer;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -30,7 +28,6 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
 
     // The shared instance
     private static ProjectExplorerPlugin plugin;
-   
 
     /**
      * The constructor
@@ -42,18 +39,20 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        plugin = this;    
+        plugin = this;
     }
 
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
+    @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
-        super.stop(context);        
+        super.stop(context);
     }
 
     /**
@@ -73,17 +72,6 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
      */
     public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
-    }
-
-    /**
-     * Print a message and information about exception to Log
-     * 
-     * @param message message
-     * @param e exception
-     */
-
-    public static void error(String message, Throwable e) {
-        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
     }
 
 }

@@ -28,7 +28,6 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
-import org.apache.log4j.Logger;
 
 /**
  * content provider for project explorer
@@ -37,62 +36,61 @@ import org.apache.log4j.Logger;
  */
 public class ProjectTreeContentProvider extends AbstractContentProvider<IProjectModel> {
 
-	private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
+    private final IDriveModelProvider driveModelProvider;
 
-	private final IDriveModelProvider driveModelProvider;
+    public ProjectTreeContentProvider() {
+        this(AWEUIPlugin.getDefault().getDriveModelProvider(), AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin
+                .getDefault().getProjectModelProvider(), AWEUIPlugin.getDefault().getGeneralNodeProperties());
 
-	public ProjectTreeContentProvider() {
-		this(AWEUIPlugin.getDefault().getDriveModelProvider(), AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
-				.getDefault().getGeneralNodeProperties());
+    }
 
-	}
+    /**
+     * @param networkModelProvider
+     * @param projectModelProvider
+     */
+    protected ProjectTreeContentProvider(final IDriveModelProvider driveModelProvider,
+            final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider,
+            final IGeneralNodeProperties generalNodeProperties) {
+        super(networkModelProvider, projectModelProvider, generalNodeProperties);
 
-	/**
-	 * @param networkModelProvider
-	 * @param projectModelProvider
-	 */
-	protected ProjectTreeContentProvider(final IDriveModelProvider driveModelProvider, final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider,
-			final IGeneralNodeProperties generalNodeProperties) {
-		super(networkModelProvider, projectModelProvider, generalNodeProperties);
+        this.driveModelProvider = driveModelProvider;
+    }
 
-		this.driveModelProvider = driveModelProvider;
-	}
+    @Override
+    public Object getParent(final Object element) {
+        // TODO Need implement
+        return null;
+    }
 
-	@Override
-	public Object getParent(final Object element) {
-		// TODO Need implement
-		return null;
-	}
+    @Override
+    protected boolean additionalCheckChild(final Object element) throws ModelException {
+        return true;
+    }
 
-	@Override
-	protected boolean additionalCheckChild(final Object element) throws ModelException {
-		return true;
-	}
+    @Override
+    protected void handleInnerElements(final ITreeItem<IProjectModel> item) throws ModelException {
+        List<IDataElement> models = new ArrayList<IDataElement>();
+        if (!item.getParent().asDataElement().equals(item.getDataElement())) {
+            return;
+        }
+        for (INetworkModel model : getNetworkModelProvider().findAll(item.getParent())) {
+            models.add(model.asDataElement());
+        }
+        for (IDriveModel model : driveModelProvider.findAll(item.getParent())) {
+            models.add(model.asDataElement());
+        }
 
-	@Override
-	protected void handleInnerElements(final ITreeItem<IProjectModel> item) throws ModelException {
-		List<IDataElement> models = new ArrayList<IDataElement>();
-		if (!item.getParent().asDataElement().equals(item.getDataElement())) {
-			return;
-		}
-		for (INetworkModel model : getNetworkModelProvider().findAll(item.getParent())) {
-			models.add(model.asDataElement());
-		}
-		for (IDriveModel model : driveModelProvider.findAll(item.getParent())) {
-			models.add(model.asDataElement());
-		}
+        setChildren(models);
+    }
 
-		setChildren(models);
-	}
+    @Override
+    protected void handleRoot(final ITreeItem<IProjectModel> item) throws ModelException {
+        handleInnerElements(item);
+    }
 
-	@Override
-	protected void handleRoot(final ITreeItem<IProjectModel> item) throws ModelException {
-		handleInnerElements(item);
-	}
-
-	@Override
-	protected List<IProjectModel> getRootElements() throws ModelException {
-		return getProjectModelProvider().findAll();
-	}
+    @Override
+    protected List<IProjectModel> getRootElements() throws ModelException {
+        return getProjectModelProvider().findAll();
+    }
 
 }

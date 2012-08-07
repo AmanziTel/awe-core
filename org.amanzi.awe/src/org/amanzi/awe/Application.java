@@ -38,7 +38,9 @@ public class Application extends UDIGApplication {
      */
     @Override
     protected WorkbenchAdvisor createWorkbenchAdvisor() {
-        AWEWorkbenchAdivsor aweWorkbenchAdivsor = new AWEWorkbenchAdivsor() {
+        AWEWorkbenchAdvivsor aweWorkbenchAdivsor = new AWEWorkbenchAdvivsor() {
+            // TODO: LN: 07.08.2012, why you override this method in anonymous class if you can add
+            // this method to AWEWorkbenchAdvisor?
             /**
              * @see org.eclipse.ui.application.WorkbenchAdvisor#initialize(org.eclipse.ui.application.IWorkbenchConfigurer)
              */
@@ -54,11 +56,10 @@ public class Application extends UDIGApplication {
         return aweWorkbenchAdivsor;
     }
 
-    private class AWEWorkbenchAdivsor extends UDIGWorkbenchAdvisor {
+    private class AWEWorkbenchAdvivsor extends UDIGWorkbenchAdvisor {
 
         @Override
         public String getInitialWindowPerspectiveId() {
-
             return PerspectiveFactory.AWE_PERSPECTIVE;
         }
 
