@@ -41,6 +41,7 @@ public class ChooseDatabaseLocationDialog extends Dialog {
     private final DirectoryFieldEditor fileDialog;
     private final IPreferenceStore store;
     private static final int LAYOUT_SIZE = 600;
+    private static final int THREE_COLUMN_SIZE = 3;
 
     private String databaseLocation;
 
@@ -56,26 +57,19 @@ public class ChooseDatabaseLocationDialog extends Dialog {
         }
         getButton(OK).setEnabled(false);
 
-        Composite warningComposite = new Composite((Composite)getDialogArea(), SWT.NONE);
-        warningComposite.setLayout(new GridLayout(1, false));
-        warningComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
-
+        Composite warningComposite = createComposite((Composite)getDialogArea(), 1);
         Label warning = new Label(warningComposite, SWT.NONE);
         warning.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
         warning.setText(DatabaseUiPluginMessages.warningDialogMessage);
 
-        final Composite selectionComposite = new Composite(warningComposite, SWT.NONE);
-        selectionComposite.setLayout(new GridLayout(3, false));
-        GridData data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
-        data.widthHint = LAYOUT_SIZE;
-        selectionComposite.setLayoutData(data);
-
+        final Composite selectionComposite = createComposite(warningComposite, THREE_COLUMN_SIZE);
         fileDialog = new DirectoryFieldEditor(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey,
                 DatabaseUiPluginMessages.warningDialogChooseDatabaseLabel, selectionComposite);
-        fileDialog.getTextControl(selectionComposite).setText(
-                store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey));
-        fileDialog.getTextControl(selectionComposite).setSize(600, 50);
-        fileDialog.getTextControl(selectionComposite).addModifyListener(new ModifyListener() {
+
+        Text textControl = fileDialog.getTextControl(selectionComposite);
+        textControl.setText(store.getString(DatabaseUiPluginMessages.preferencePageDatabaseLocationKey));
+
+        textControl.addModifyListener(new ModifyListener() {
 
             @Override
             public void modifyText(ModifyEvent e) {
@@ -87,6 +81,20 @@ public class ChooseDatabaseLocationDialog extends Dialog {
         });
 
         getShell().pack();
+    }
+
+    /**
+     * @param dialogArea
+     * @param i
+     * @return
+     */
+    private Composite createComposite(Composite parentComposite, int columnCount) {
+        Composite composite = new Composite(parentComposite, SWT.NONE);
+        composite.setLayout(new GridLayout(columnCount, false));
+        GridData data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
+        data.widthHint = LAYOUT_SIZE;
+        composite.setLayoutData(data);
+        return composite;
     }
 
     @Override
