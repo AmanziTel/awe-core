@@ -42,6 +42,8 @@ IResourceSelectorListener {
 
 		void onResourcesSelected(Collection<File> files);
 
+		void onDirectorySelected(String directoryName);
+
 	}
 
 	private ResourceSelectorWidget resourceSelector;
@@ -92,9 +94,13 @@ IResourceSelectorListener {
 
 	@Override
 	public void onResourceChanged() {
-		String fileName = resourceSelector.getFileName();
+		String directoryName = resourceSelector.getFileName();
 
-		driveDataSelector.setFiles(new File(fileName));
+		for (ISelectDriveResourceListener listener : getListeners()) {
+			listener.onDirectorySelected(directoryName);
+		}
+
+		driveDataSelector.setFiles(new File(directoryName));
 	}
 
 }

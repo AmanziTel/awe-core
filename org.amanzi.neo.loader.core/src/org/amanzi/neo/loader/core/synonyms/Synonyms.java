@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.synonyms;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -27,76 +28,76 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class Synonyms {
 
-    public enum SynonymType {
-        UNKOWN(null), STRING(String.class), INTEGER(Integer.class), DOUBLE(Double.class), BOOLEAN(Boolean.class), LONG(Long.class);
+	public enum SynonymType {
+		UNKOWN(null), STRING(String.class), INTEGER(Integer.class), DOUBLE(Double.class), BOOLEAN(Boolean.class), LONG(Long.class), TIMESTAMP(Timestamp.class);
 
-        private Class< ? > clazz;
+		private Class< ? > clazz;
 
-        private SynonymType(final Class< ? > clazz) {
-            this.clazz = clazz;
-        }
+		private SynonymType(final Class< ? > clazz) {
+			this.clazz = clazz;
+		}
 
-        public Class< ? > getSynonymClass() {
-            return clazz;
-        }
+		public Class< ? > getSynonymClass() {
+			return clazz;
+		}
 
-        public static SynonymType findByClass(final String clazz) {
-            for (SynonymType singleType : values()) {
-                if ((singleType.clazz != null) && singleType.clazz.getSimpleName().equals(clazz)) {
-                    return singleType;
-                }
-            }
+		public static SynonymType findByClass(final String clazz) {
+			for (SynonymType singleType : values()) {
+				if ((singleType.clazz != null) && singleType.clazz.getSimpleName().equals(clazz)) {
+					return singleType;
+				}
+			}
 
-            return null;
-        }
-    }
+			return null;
+		}
+	}
 
-    private final SynonymType synonymType;
+	private final SynonymType synonymType;
 
-    private final String propertyName;
+	private final String propertyName;
 
-    private final String[] possibleHeaders;
+	private final String[] possibleHeaders;
 
-    private final boolean isMandatory;
+	private final boolean isMandatory;
 
-    /**
-     * 
-     */
-    public Synonyms(final String propertyName, final SynonymType synonymType, final boolean isMandatory,
-            final String[] possibleHeaders) {
-        this.propertyName = propertyName;
-        this.synonymType = synonymType;
-        this.possibleHeaders = Arrays.copyOf(possibleHeaders, possibleHeaders.length);
-        this.isMandatory = isMandatory;
-    }
+	/**
+	 * 
+	 */
+	 public Synonyms(final String propertyName, final SynonymType synonymType, final boolean isMandatory,
+			 final String[] possibleHeaders) {
+		 this.propertyName = propertyName;
+		 this.synonymType = synonymType;
+		 this.possibleHeaders = Arrays.copyOf(possibleHeaders, possibleHeaders.length);
+		 this.isMandatory = isMandatory;
+	 }
 
-    public Synonyms(final String propertyName, final String[] possibleHeaders) {
-        this(propertyName, SynonymType.UNKOWN, false, possibleHeaders);
-    }
+	 public Synonyms(final String propertyName, final String[] possibleHeaders) {
+		 this(propertyName, SynonymType.UNKOWN, false, possibleHeaders);
+	 }
 
-    /**
-     * @return Returns the synonymType.
-     */
-    public SynonymType getSynonymType() {
-        return synonymType;
-    }
+	 /**
+	  * @return Returns the synonymType.
+	  */
+	 public SynonymType getSynonymType() {
+		 return synonymType;
+	 }
 
-    /**
-     * @return Returns the propertyName.
-     */
-    public String getPropertyName() {
-        return propertyName;
-    }
+	 /**
+	  * @return Returns the propertyName.
+	  */
+	 public String getPropertyName() {
+		 return propertyName;
+	 }
 
-    /**
-     * @return Returns the possibleHeaders.
-     */
-    public String[] getPossibleHeaders() {
-        return ArrayUtils.clone(possibleHeaders);
-    }
+	 /**
+	  * @return Returns the possibleHeaders.
+	  */
+	 public String[] getPossibleHeaders() {
+		 return ArrayUtils.clone(possibleHeaders);
+	 }
 
-    public boolean isMandatory() {
-        return isMandatory;
-    }
+	 public boolean isMandatory() {
+		 return isMandatory;
+	 }
 
 }

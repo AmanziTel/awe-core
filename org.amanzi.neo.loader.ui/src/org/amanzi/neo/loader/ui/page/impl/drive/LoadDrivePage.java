@@ -20,14 +20,13 @@ import java.util.Collection;
 import org.amanzi.neo.loader.core.impl.MultiFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
-import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
-import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -48,10 +47,6 @@ ISelectDriveResourceListener {
 
 	private SelectLoaderWidget<MultiFileConfiguration> loaderCombo;
 
-	private CRSSelector crsSelector;
-
-	private SelectDriveResourcesWidget driveResourceSelector;
-
 	/**
 	 * @param pageName
 	 */
@@ -64,9 +59,9 @@ ISelectDriveResourceListener {
 		super.createControl(parent);
 
 		driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
-		crsSelector = WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
+		WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
 
-		driveResourceSelector = WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this);
+		WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this);
 
 		loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
@@ -87,11 +82,24 @@ ISelectDriveResourceListener {
 	@Override
 	public void onLoaderChanged() {
 		update();
-
 	}
 
 	@Override
 	public void onResourcesSelected(final Collection<File> files) {
+		MultiFileConfiguration configuration = getConfiguration();
+
+		configuration.addFiles(files);
+
+		autodefineLoader();
+
+		if (getCurrentLoader() != null) {
+			loaderCombo.setText(getCurrentLoader().getName());
+		}
+	}
+
+	@Override
+	public void onDirectorySelected(final String directoryName) {
+		driveNameCombo.setText(FilenameUtils.getBaseName(directoryName));
 	}
 
 }

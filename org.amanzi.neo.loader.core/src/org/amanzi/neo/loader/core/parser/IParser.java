@@ -42,6 +42,4 @@ public interface IParser<C extends IConfiguration, D extends IData> extends Iter
 
 	void addFileParsingListener(IFileParsingStartedListener listener);
 
-	void removeFileParsingListener(IFileParsingStartedListener listener);
-
 }
