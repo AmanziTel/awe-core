@@ -11,12 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.db.ui.listener;
+package org.amanzi.awe.ui.db.listener;
 
+import org.amanzi.awe.ui.db.dialog.ChooseDatabaseLocationDialog;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
-import org.amanzi.neo.db.ui.dialog.ChooseDatabaseLocationDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.ui.PlatformUI;
 

@@ -4,7 +4,7 @@
    <extension
          point="org.amanzi.awe.ui.listeners">
       <listener
-            class="org.amanzi.neo.db.ui.listener.Neo4jLocationInitializer">
+            class="org.amanzi.awe.ui.db.listener.Neo4jLocationInitializer">
          <eventStatus
                status="INITIALISATION">
          </eventStatus>

@@ -5,5 +5,5 @@ Bundle-SymbolicName: org.amanzi.awe.ui.db;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Fragment-Host: org.amanzi.awe.ui;bundle-version="1.0.0.qualifier"
-Export-Package: org.amanzi.neo.db.ui.dialog,
- org.amanzi.neo.db.ui.listener
+Export-Package: org.amanzi.awe.ui.db.dialog,
+ org.amanzi.awe.ui.db.listener
