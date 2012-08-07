@@ -35,13 +35,13 @@ public class ProjectChangedListener implements IAWEEventListenter {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectChangedListener.class);
 
-    private final IProjectModelProvider projectModelProvider;
+    private IProjectModelProvider projectModelProvider;
 
-    /**
-     * 
-     */
-    public ProjectChangedListener() {
-        this(AWEUIPlugin.getDefault().getProjectModelProvider());
+    protected IProjectModelProvider getProjectModelProvider() {
+        if (projectModelProvider == null) {
+            projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
+        }
+        return projectModelProvider;
     }
 
     protected ProjectChangedListener(final IProjectModelProvider projectModelProvider) {
@@ -66,13 +66,13 @@ public class ProjectChangedListener implements IAWEEventListenter {
         String name = event.getNewProjectName();
 
         try {
-            IProjectModel projectModel = projectModelProvider.findProjectByName(name);
+            IProjectModel projectModel = getProjectModelProvider().findProjectByName(name);
             if (projectModel == null) {
-                projectModel = projectModelProvider.createProjectModel(name);
+                projectModel = getProjectModelProvider().createProjectModel(name);
                 AWEEventManager.getManager().fireDataUpdatedEvent();
             }
 
-            projectModelProvider.setActiveProjectModel(projectModel);
+            getProjectModelProvider().setActiveProjectModel(projectModel);
         } catch (ModelException e) {
             LOGGER.error("Error on switching active UDIG Proejct", e);
         }

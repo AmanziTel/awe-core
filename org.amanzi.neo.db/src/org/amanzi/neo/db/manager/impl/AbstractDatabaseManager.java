@@ -50,6 +50,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      * Listeners for Database Events
      */
     private final List<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+    private boolean isAlreadyUsed = false;
 
     public AbstractDatabaseManager() {
 
@@ -157,6 +158,27 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         }
 
         return databaseDirectory.getAbsolutePath();
+    }
+
+    /**
+     * @return Returns the isAlreadyUsed.
+     */
+    public boolean isAlreadyUsed() {
+        try {
+            getDatabaseService();
+            isAlreadyUsed = false;
+        } catch (java.lang.IllegalStateException e) {
+            isAlreadyUsed = true;
+        }
+
+        return isAlreadyUsed;
+    }
+
+    /**
+     * @param isAlreadyUsed The isAlreadyUsed to set.
+     */
+    protected void setAlreadyUsed(boolean isAlreadyUsed) {
+        this.isAlreadyUsed = isAlreadyUsed;
     }
 
 }

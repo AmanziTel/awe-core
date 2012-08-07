@@ -44,7 +44,8 @@ public class ApplicationActivityListener implements IAWEEventListenter {
         }
     }
 
-    private void stopDatabase() {
+    private synchronized void stopDatabase() {
         DatabaseManagerFactory.getDatabaseManager().shutdown();
     }
+
 }

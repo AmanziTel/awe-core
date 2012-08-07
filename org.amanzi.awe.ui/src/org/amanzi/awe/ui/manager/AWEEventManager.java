@@ -24,6 +24,7 @@ import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
 import org.amanzi.awe.ui.events.impl.AWEStoppedEvent;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
+import org.amanzi.awe.ui.events.impl.InitialiseEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
@@ -66,6 +67,8 @@ public final class AWEEventManager {
     private static final IEvent AWE_STOPPED_EVENT = new AWEStoppedEvent();
 
     public static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
+
+    private static final IEvent INITIALISE_EVENT = new InitialiseEvent();
 
     private final Map<EventStatus, Set<IAWEEventListenter>> listeners = new HashMap<EventStatus, Set<IAWEEventListenter>>();
 
@@ -156,6 +159,10 @@ public final class AWEEventManager {
         fireEvent(new ShowInViewEvent(viewName, element), true);
     }
 
+    public synchronized void fireInitialiseEvent() {
+        fireEvent(INITIALISE_EVENT, true);
+    }
+
     public synchronized void fireEventChain(final EventChain eventChain) {
         ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -203,4 +210,5 @@ public final class AWEEventManager {
     protected Map<EventStatus, Set<IAWEEventListenter>> getListeners() {
         return listeners;
     }
+
 }

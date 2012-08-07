@@ -11,17 +11,27 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.ui.events.impl;
+
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public enum EventStatus {
+public class InitialiseEvent extends AbstractEvent {
 
-    AWE_STARTED, AWE_STOPPED, PROJECT_CHANGED, DATA_UPDATED, SHOW_GIS_ON_MAP, SHOW_IN_VIEW, INITIALISATION;
+    /**
+     * @param status
+     * @param isAsync
+     */
+    public InitialiseEvent() {
+        super(EventStatus.INITIALISATION, false);
+    }
+
 }
