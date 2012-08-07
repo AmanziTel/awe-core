@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.exception.impl.FileNotFoundException;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.apache.commons.io.input.CountingInputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,7 +50,7 @@ public class AbstractStreamParserTest extends AbstractMockitoTest {
 
     private TestStreamParser parser;
 
-    private InputStream stream;
+    private CountingInputStream stream;
 
     private InputStreamReader reader;
 
@@ -65,7 +66,7 @@ public class AbstractStreamParserTest extends AbstractMockitoTest {
         file = File.createTempFile("aspt", "file");
         when(configuration.getFile()).thenReturn(file);
 
-        stream = mock(InputStream.class);
+        stream = mock(CountingInputStream.class);
         reader = mock(InputStreamReader.class);
 
         parser = spy(new TestStreamParser());

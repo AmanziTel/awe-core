@@ -23,6 +23,8 @@ import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -108,6 +110,7 @@ public class CSVParserTest extends AbstractMockitoTest {
     public void testCheckCSVReaderActionsOnParsing() throws Exception {
         doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
         parser.init(configuration);
+        parser.setProgressMonitor(StringUtils.EMPTY, new NullProgressMonitor());
 
         while (parser.hasNext()) {
             parser.next();
@@ -120,6 +123,7 @@ public class CSVParserTest extends AbstractMockitoTest {
     public void testCheckCountOfParsing() throws Exception {
         doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
         parser.init(configuration);
+        parser.setProgressMonitor(StringUtils.EMPTY, new NullProgressMonitor());
 
         int count = 0;
         while (parser.hasNext()) {
@@ -134,6 +138,7 @@ public class CSVParserTest extends AbstractMockitoTest {
     public void testCheckResultOfParsing() throws Exception {
         doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class), any(File.class));
         parser.init(configuration);
+        parser.setProgressMonitor(StringUtils.EMPTY, new NullProgressMonitor());
 
         int count = 0;
         while (parser.hasNext()) {

@@ -40,186 +40,189 @@ import org.mockito.stubbing.Answer;
 @SuppressWarnings("unchecked")
 public class LoaderTest extends AbstractMockitoTest {
 
-	/**
-	 * TODO Purpose of
-	 * <p>
-	 * </p>
-	 * 
-	 * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
-	 * @since 1.0.0
-	 */
-	private final class ParserAnswer implements Answer<Boolean> {
-		@Override
-		public Boolean answer(final InvocationOnMock invocation) {
-			if (++hasNextCall > ELEMENT_NUMBER) {
-				return Boolean.FALSE;
-			}
+    private static final String LOADER_NAME = "Loader Name";
 
-			return Boolean.TRUE;
-		}
-	}
+    /**
+     * TODO Purpose of
+     * <p>
+     * </p>
+     * 
+     * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+     * @since 1.0.0
+     */
+    private final class ParserAnswer implements Answer<Boolean> {
+        @Override
+        public Boolean answer(final InvocationOnMock invocation) {
+            if (++hasNextCall > ELEMENT_NUMBER) {
+                return Boolean.FALSE;
+            }
 
-	private static final int SAVER_NUMBER = 3;
+            return Boolean.TRUE;
+        }
+    }
 
-	private static final int ELEMENT_NUMBER = 3;
+    private static final int SAVER_NUMBER = 3;
 
-	private Loader<IConfiguration, IData> loader;
+    private static final int ELEMENT_NUMBER = 3;
 
-	private IParser<IConfiguration, IData> parser;
+    private Loader<IConfiguration, IData> loader;
 
-	private List<ISaver<IConfiguration, IData>> savers;
+    private IParser<IConfiguration, IData> parser;
 
-	private IConfiguration configuration;
+    private List<ISaver<IConfiguration, IData>> savers;
 
-	private IData data;
+    private IConfiguration configuration;
 
-	private IValidator<IConfiguration> validator;
+    private IData data;
 
-	private int hasNextCall;
+    private IValidator<IConfiguration> validator;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		loader = new Loader<IConfiguration, IData>();
+    private int hasNextCall;
 
-		parser = mock(IParser.class);
-		loader.setParser(parser);
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        loader = new Loader<IConfiguration, IData>();
+        loader.setName(LOADER_NAME);
 
-		savers = new ArrayList<ISaver<IConfiguration, IData>>();
-		for (int i = 0; i < SAVER_NUMBER; i++) {
-			ISaver<IConfiguration, IData> saver = mock(ISaver.class);
-			savers.add(saver);
+        parser = mock(IParser.class);
+        loader.setParser(parser);
 
-			loader.addSaver(saver);
-		}
-		validator = mock(IValidator.class);
-		loader.setValidator(validator);
+        savers = new ArrayList<ISaver<IConfiguration, IData>>();
+        for (int i = 0; i < SAVER_NUMBER; i++) {
+            ISaver<IConfiguration, IData> saver = mock(ISaver.class);
+            savers.add(saver);
 
-		configuration = mock(IConfiguration.class);
-		data = mock(IData.class);
+            loader.addSaver(saver);
+        }
+        validator = mock(IValidator.class);
+        loader.setValidator(validator);
 
-		hasNextCall = 0;
-		when(parser.next()).thenReturn(data);
-		when(parser.hasNext()).thenAnswer(new ParserAnswer());
-	}
+        configuration = mock(IConfiguration.class);
+        data = mock(IData.class);
 
-	@Test
-	public void testCheckLoaderActivityOnInitialization() throws Exception {
-		loader.init(configuration);
+        hasNextCall = 0;
+        when(parser.next()).thenReturn(data);
+        when(parser.hasNext()).thenAnswer(new ParserAnswer());
+    }
 
-		verify(parser).init(configuration);
-		for (ISaver<IConfiguration, IData> saver : savers) {
-			verify(saver).init(configuration);
-		}
-	}
+    @Test
+    public void testCheckLoaderActivityOnInitialization() throws Exception {
+        loader.init(configuration);
 
-	@Test
-	public void testCheckActivityOnRun() throws Exception {
-		IProgressMonitor monitor = mock(IProgressMonitor.class);
+        verify(parser).init(configuration);
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            verify(saver).init(configuration);
+        }
+    }
 
-		loader.run(monitor);
+    @Test
+    public void testCheckActivityOnRun() throws Exception {
+        IProgressMonitor monitor = mock(IProgressMonitor.class);
 
-		verify(parser).setProgressMonitor("Loader Name", monitor);
+        loader.run(monitor);
 
-		verify(parser, times(ELEMENT_NUMBER + 1)).hasNext();
-		verify(parser, times(ELEMENT_NUMBER)).next();
+        verify(parser).setProgressMonitor(LOADER_NAME, monitor);
 
-		for (ISaver<IConfiguration, IData> saver : savers) {
-			verify(saver, times(ELEMENT_NUMBER)).save(data);
-		}
-	}
+        verify(parser, times(ELEMENT_NUMBER + 1)).hasNext();
+        verify(parser, times(ELEMENT_NUMBER)).next();
 
-	@Test
-	public void testCheckActivityOnValidationWithSuccessConfiguration() throws Exception {
-		when(configuration.isValid()).thenReturn(IValidationResult.SUCCESS);
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            verify(saver, times(ELEMENT_NUMBER)).save(data);
+        }
+    }
 
-		loader.validate(configuration);
+    @Test
+    public void testCheckActivityOnValidationWithSuccessConfiguration() throws Exception {
+        when(configuration.isValid()).thenReturn(IValidationResult.SUCCESS);
 
-		verify(configuration).isValid();
-		verify(validator).validate(configuration);
-	}
+        loader.validate(configuration);
 
-	@Test
-	public void testCheckActivityOnValidationWithFailedConfiguration() throws Exception {
-		when(configuration.isValid()).thenReturn(IValidationResult.FAIL);
+        verify(configuration).isValid();
+        verify(validator).validate(configuration);
+    }
 
-		loader.validate(configuration);
+    @Test
+    public void testCheckActivityOnValidationWithFailedConfiguration() throws Exception {
+        when(configuration.isValid()).thenReturn(IValidationResult.FAIL);
 
-		verify(configuration).isValid();
-		verify(validator, never()).validate(configuration);
-	}
+        loader.validate(configuration);
 
-	@Test
-	public void testCheckResultOnValidation() throws Exception {
-		IValidationResult validationResult = IValidationResult.SUCCESS;
+        verify(configuration).isValid();
+        verify(validator, never()).validate(configuration);
+    }
 
-		when(configuration.isValid()).thenReturn(validationResult);
-		when(validator.validate(configuration)).thenReturn(validationResult);
+    @Test
+    public void testCheckResultOnValidation() throws Exception {
+        IValidationResult validationResult = IValidationResult.SUCCESS;
 
-		IValidationResult result = loader.validate(configuration);
+        when(configuration.isValid()).thenReturn(validationResult);
+        when(validator.validate(configuration)).thenReturn(validationResult);
 
-		assertEquals("Unexpected validation result", validationResult, result);
-	}
+        IValidationResult result = loader.validate(configuration);
 
-	@Test
-	public void testCheckActivityOnIsAppropriate() throws Exception {
-		when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
+        assertEquals("Unexpected validation result", validationResult, result);
+    }
 
-		loader.isAppropriate(configuration);
+    @Test
+    public void testCheckActivityOnIsAppropriate() throws Exception {
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
 
-		verify(validator).appropriate(configuration);
-	}
+        loader.isAppropriate(configuration);
 
-	@Test
-	public void testCheckSuccessResultOnIsAppropriate() throws Exception {
-		when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
+        verify(validator).appropriate(configuration);
+    }
 
-		boolean result = loader.isAppropriate(configuration);
+    @Test
+    public void testCheckSuccessResultOnIsAppropriate() throws Exception {
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
 
-		assertTrue("validation result should be true", result);
-	}
+        boolean result = loader.isAppropriate(configuration);
 
-	@Test
-	public void testCheckFailResultOnIsAppropriate() throws Exception {
-		when(validator.appropriate(configuration)).thenReturn(IValidationResult.FAIL);
+        assertTrue("validation result should be true", result);
+    }
 
-		boolean result = loader.isAppropriate(configuration);
+    @Test
+    public void testCheckFailResultOnIsAppropriate() throws Exception {
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.FAIL);
 
-		assertFalse("validation result should be false", result);
-	}
+        boolean result = loader.isAppropriate(configuration);
 
-	@Test
-	public void testCheckUnkonwnResultOnIsAppropriate() throws Exception {
-		when(validator.appropriate(configuration)).thenReturn(IValidationResult.UNKNOWN);
+        assertFalse("validation result should be false", result);
+    }
 
-		boolean result = loader.isAppropriate(configuration);
+    @Test
+    public void testCheckUnkonwnResultOnIsAppropriate() throws Exception {
+        when(validator.appropriate(configuration)).thenReturn(IValidationResult.UNKNOWN);
 
-		assertTrue("validation result should be true", result);
-	}
+        boolean result = loader.isAppropriate(configuration);
 
-	@Test
-	public void testCheckFinishUpAction() throws Exception {
-		IProgressMonitor monitor = mock(IProgressMonitor.class);
+        assertTrue("validation result should be true", result);
+    }
 
-		loader.run(monitor);
+    @Test
+    public void testCheckFinishUpAction() throws Exception {
+        IProgressMonitor monitor = mock(IProgressMonitor.class);
 
-		verify(parser).finishUp();
-		for (ISaver<IConfiguration, IData> saver : savers) {
-			verify(saver).finishUp();
-		}
-	}
+        loader.run(monitor);
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testCheckFinishUpWhenException() throws Exception {
-		when(parser.next()).thenThrow(new IllegalArgumentException());
+        verify(parser).finishUp();
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            verify(saver).finishUp();
+        }
+    }
 
-		loader.run(null);
+    @Test(expected = IllegalArgumentException.class)
+    public void testCheckFinishUpWhenException() throws Exception {
+        when(parser.next()).thenThrow(new IllegalArgumentException());
 
-		verify(parser).finishUp();
-		for (ISaver<IConfiguration, IData> saver : savers) {
-			verify(saver).finishUp();
-		}
-	}
+        loader.run(null);
+
+        verify(parser).finishUp();
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            verify(saver).finishUp();
+        }
+    }
 }
