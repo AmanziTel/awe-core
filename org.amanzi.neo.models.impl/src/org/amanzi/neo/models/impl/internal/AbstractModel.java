@@ -42,173 +42,182 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class AbstractModel extends AbstractLoggable implements IModel {
-    /** String INITIALIZE_METHOD_NAME field */
-    protected static final String INITIALIZE_METHOD_NAME = "initialize";
+	/** String INITIALIZE_METHOD_NAME field */
+	protected static final String INITIALIZE_METHOD_NAME = "initialize";
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
+	private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
 
-    private String name;
-    private Node rootNode;
-    private INodeType nodeType;
-    private Node parentNode;
+	private String name;
+	private Node rootNode;
+	private INodeType nodeType;
+	private Node parentNode;
 
-    private final INodeService nodeService;
-    private final IGeneralNodeProperties generalNodeProperties;
+	private final INodeService nodeService;
+	private final IGeneralNodeProperties generalNodeProperties;
 
-    private IDataElement dataElement;
+	private IDataElement dataElement;
 
-    public AbstractModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
-        this.nodeService = nodeService;
-        this.generalNodeProperties = generalNodeProperties;
-    }
+	public AbstractModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
+		this.nodeService = nodeService;
+		this.generalNodeProperties = generalNodeProperties;
+	}
 
-    protected void initialize(final Node parentNode, final String name, final INodeType nodeType) throws ModelException {
-        assert parentNode != null;
-        assert !StringUtils.isEmpty(name);
-        assert nodeType != null;
+	protected void initialize(final Node parentNode, final String name, final INodeType nodeType) throws ModelException {
+		assert parentNode != null;
+		assert !StringUtils.isEmpty(name);
+		assert nodeType != null;
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, parentNode, name, nodeType));
-        }
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, parentNode, name, nodeType));
+		}
 
-        this.name = name;
-        this.nodeType = nodeType;
-        this.parentNode = parentNode;
+		this.name = name;
+		this.nodeType = nodeType;
+		this.parentNode = parentNode;
 
-        try {
-            rootNode = createNode(parentNode, nodeType, name);
-        } catch (ServiceException e) {
-            processException("Error on initializing new node for Model", e);
-        }
+		try {
+			rootNode = createNode(parentNode, nodeType, name);
+		} catch (ServiceException e) {
+			processException("Error on initializing new node for Model", e);
+		}
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
-        }
-    }
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
+		}
+	}
 
-    protected Node createNode(final Node parentNode, final INodeType nodeType, final String name) throws ServiceException {
-        return nodeService.createNode(parentNode, nodeType, NodeServiceRelationshipType.CHILD, name);
-    }
+	protected Node createNode(final Node parentNode, final INodeType nodeType, final String name) throws ServiceException {
+		return nodeService.createNode(parentNode, nodeType, NodeServiceRelationshipType.CHILD, name);
+	}
 
-    public void initialize(final Node rootNode) throws ModelException {
-        assert rootNode != null;
+	public void initialize(final Node rootNode) throws ModelException {
+		assert rootNode != null;
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, rootNode));
-        }
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, rootNode));
+		}
 
-        try {
-            this.rootNode = rootNode;
-            name = nodeService.getNodeName(rootNode);
-            nodeType = nodeService.getNodeType(rootNode);
-            parentNode = getParent(rootNode);
-        } catch (Exception e) {
-            processException("An error occured on Model Initialization", e);
-        }
+		try {
+			this.rootNode = rootNode;
+			name = nodeService.getNodeName(rootNode);
+			nodeType = nodeService.getNodeType(rootNode);
+			parentNode = getParent(rootNode);
+		} catch (Exception e) {
+			processException("An error occured on Model Initialization", e);
+		}
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
-        }
-    }
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
+		}
+	}
 
-    protected Node getParent(final Node rootNode) throws ServiceException {
-        return nodeService.getParent(rootNode, NodeServiceRelationshipType.CHILD);
-    }
+	protected Node getParent(final Node rootNode) throws ServiceException {
+		return nodeService.getParent(rootNode, NodeServiceRelationshipType.CHILD);
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public INodeType getType() {
-        return nodeType;
-    }
+	@Override
+	public INodeType getType() {
+		return nodeType;
+	}
 
-    @Override
-    public String toString() {
-        return "<" + getClass().getSimpleName() + "> " + getName();
-    }
+	@Override
+	public String toString() {
+		return "<" + getClass().getSimpleName() + "> " + getName();
+	}
 
-    public Node getRootNode() {
-        return rootNode;
-    }
+	public Node getRootNode() {
+		return rootNode;
+	}
 
-    public void setRootNode(final Node rootNode) {
-        this.rootNode = rootNode;
-    }
+	public void setRootNode(final Node rootNode) {
+		this.rootNode = rootNode;
+	}
 
-    public Node getParentNode() {
-        return parentNode;
-    }
+	public Node getParentNode() {
+		return parentNode;
+	}
 
-    protected void processException(final String logMessage, final Exception e) throws ModelException {
-        LOGGER.error(logMessage, e);
+	protected void processException(final String logMessage, final Exception e) throws ModelException {
+		LOGGER.error(logMessage, e);
 
-        if (e instanceof ServiceException) {
-            ServiceException serviceException = (ServiceException)e;
-            switch (serviceException.getReason()) {
-            case DATABASE_EXCEPTION:
-                throw new FatalException(serviceException);
-            case PROPERTY_NOT_FOUND:
-            case INCORRECT_PARENT:
-            case INCORRECT_PROPERTY:
-                throw new DataInconsistencyException(serviceException);
-            case DUPLICATED_NODE:
-                DuplicatedNodeException error = (DuplicatedNodeException)e;
-                throw new DuplicatedModelException(getClass(), error.getPropertyName(), error.getDuplicatedValue());
-            default:
-                // do nothing
-            }
-        } else if (e instanceof NodeTypeNotExistsException) {
-            throw new FatalException(e);
-        } else {
-            throw new RuntimeException(e);
-        }
-    }
+		if (e instanceof ServiceException) {
+			ServiceException serviceException = (ServiceException)e;
+			switch (serviceException.getReason()) {
+			case DATABASE_EXCEPTION:
+				throw new FatalException(serviceException);
+			case PROPERTY_NOT_FOUND:
+			case INCORRECT_PARENT:
+			case INCORRECT_PROPERTY:
+				throw new DataInconsistencyException(serviceException);
+			case DUPLICATED_NODE:
+				DuplicatedNodeException error = (DuplicatedNodeException)e;
+				throw new DuplicatedModelException(getClass(), error.getPropertyName(), error.getDuplicatedValue());
+			default:
+				// do nothing
+			}
+		} else if (e instanceof NodeTypeNotExistsException) {
+			throw new FatalException(e);
+		} else {
+			throw new RuntimeException(e);
+		}
+	}
 
-    protected INodeService getNodeService() {
-        return nodeService;
-    }
+	protected INodeService getNodeService() {
+		return nodeService;
+	}
 
-    protected IGeneralNodeProperties getGeneralNodeProperties() {
-        return generalNodeProperties;
-    }
+	protected IGeneralNodeProperties getGeneralNodeProperties() {
+		return generalNodeProperties;
+	}
 
-    @Override
-    public IDataElement asDataElement() {
-        dataElement = dataElement == null ? rootNode == null ? null : toDataElement() : dataElement;
+	@Override
+	public IDataElement asDataElement() {
+		dataElement = dataElement == null ? rootNode == null ? null : toDataElement() : dataElement;
 
-        return dataElement;
-    }
+		return dataElement;
+	}
 
-    protected IDataElement toDataElement() {
-        DataElement result = new DataElement(rootNode);
+	protected IDataElement toDataElement() {
+		DataElement result = new DataElement(rootNode);
 
-        result.setNodeType(getType());
-        result.setName(name);
+		result.setNodeType(getType());
+		result.setName(name);
 
-        return result;
-    }
+		return result;
+	}
 
-    @Override
-    public boolean isRenderable() {
-        return this instanceof IRenderableModel;
-    }
+	@Override
+	public boolean isRenderable() {
+		return this instanceof IRenderableModel;
+	}
 
-    @Override
-    public int hashCode() {
-        return getName().hashCode();
-    }
+	@Override
+	public int hashCode() {
+		return getName().hashCode();
+	}
 
-    @Override
-    public boolean equals(final Object o) {
-        if (o instanceof IModel) {
-            IModel model = (IModel)o;
+	@Override
+	public boolean equals(final Object o) {
+		if (o instanceof IModel) {
+			IModel model = (IModel)o;
 
-            return model.asDataElement().equals(asDataElement());
-        }
+			return model.asDataElement().equals(asDataElement());
+		}
 
-        return false;
-    }
+		return false;
+	}
+
+	protected IDataElement getDataElement(final Node node, final INodeType nodeType, final String name) {
+		DataElement result = new DataElement(node);
+
+		result.setNodeType(nodeType);
+		result.setName(name);
+
+		return result;
+	}
 }

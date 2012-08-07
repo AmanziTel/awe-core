@@ -25,11 +25,11 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @since 1.0.0
  */
 public enum MeasurementNodeType implements INodeType {
-    DRIVE, M, MP;
+	DRIVE, M, MP, FILE;
 
-    @Override
-    public String getId() {
-        return NodeTypeUtils.getTypeId(this);
-    }
+	@Override
+	public String getId() {
+		return NodeTypeUtils.getTypeId(this);
+	}
 
 }

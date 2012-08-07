@@ -23,10 +23,14 @@ package org.amanzi.neo.nodeproperties;
  */
 public interface IGeneralNodeProperties extends INodeProperties {
 
-    String getNodeNameProperty();
+	String getNodeNameProperty();
 
-    String getNodeTypeProperty();
+	String getNodeTypeProperty();
 
-    String getSizeProperty();
+	String getSizeProperty();
+
+	String getParentIDProperty();
+
+	String getLastChildID();
 
 }

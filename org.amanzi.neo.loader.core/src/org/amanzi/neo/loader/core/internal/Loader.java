@@ -75,8 +75,6 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
 					saver.save(data);
 				}
 			}
-		} catch (Exception e) {
-			LOGGER.error("Error on saving", e);
 		} finally {
 			finishUp();
 		}

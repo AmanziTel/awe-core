@@ -167,7 +167,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
 	protected static class TimestampProperty extends Property<Long> {
 
-		private static final DateFormat DATE_TIME_PATTERN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		protected static final DateFormat DATE_TIME_PATTERN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 		public TimestampProperty(final String headerName, final String propertyName) {
 			super(headerName, propertyName);
@@ -263,12 +263,20 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 					try {
 						result = currentProperty.parse(data);
 					} catch (NumberFormatException e3) {
-						currentProperty = new BooleanProperty(getPropertyName(), getPropertyName());
-
+						//try timestamp
+						currentProperty = new TimestampProperty(getPropertyName(), getPropertyName());
 						result = currentProperty.parse(data);
+
 						if (result == null) {
-							currentProperty = new StringProperty(getPropertyName(), getPropertyName());
+							//try boolean
+							currentProperty = new BooleanProperty(getPropertyName(), getPropertyName());
+
 							result = currentProperty.parse(data);
+							if (result == null) {
+								//to string
+								currentProperty = new StringProperty(getPropertyName(), getPropertyName());
+								result = currentProperty.parse(data);
+							}
 						}
 					}
 				}

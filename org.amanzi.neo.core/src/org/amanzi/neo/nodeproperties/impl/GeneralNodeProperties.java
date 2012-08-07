@@ -25,25 +25,39 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
  */
 public final class GeneralNodeProperties implements IGeneralNodeProperties {
 
-    private static final String NODE_NAME = "name";
+	private static final String NODE_NAME = "name";
 
-    private static final String NODE_TYPE = "type";
+	private static final String NODE_TYPE = "type";
 
-    private static final String SIZE = "size";
+	private static final String SIZE = "size";
 
-    @Override
-    public String getNodeNameProperty() {
-        return NODE_NAME;
-    }
+	private static final String PARENT_ID = "parent_id";
 
-    @Override
-    public String getNodeTypeProperty() {
-        return NODE_TYPE;
-    }
+	private static final String LAST_CHILD_ID = "last_child_id";
 
-    @Override
-    public String getSizeProperty() {
-        return SIZE;
-    }
+	@Override
+	public String getNodeNameProperty() {
+		return NODE_NAME;
+	}
+
+	@Override
+	public String getNodeTypeProperty() {
+		return NODE_TYPE;
+	}
+
+	@Override
+	public String getSizeProperty() {
+		return SIZE;
+	}
+
+	@Override
+	public String getParentIDProperty() {
+		return PARENT_ID;
+	}
+
+	@Override
+	public String getLastChildID() {
+		return LAST_CHILD_ID;
+	}
 
 }
