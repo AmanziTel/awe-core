@@ -26,38 +26,42 @@ import org.eclipse.osgi.util.NLS;
  * @since 1.0.0
  */
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "org.amanzi.neo.loader.ui.internal.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.amanzi.neo.loader.ui.internal.messages"; //$NON-NLS-1$
 
-    public static String AbstractLoaderPage_LoaderNotSelectedError;
+	public static String AbstractLoaderPage_LoaderNotSelectedError;
 
-    public static String LoaderWizardHandler_NoWizardIdError;
-    public static String LoaderWizardHandler_NoWizardByIdError;
+	public static String LoaderWizardHandler_NoWizardIdError;
+	public static String LoaderWizardHandler_NoWizardByIdError;
 
-    public static String LoadNetworkPage_PageName;
-    public static String LoadDrivePage_PageName;
+	public static String LoadNetworkPage_PageName;
+	public static String LoadDrivePage_PageName;
 
-    public static String ResourceSelectorWidget_SelectDirectoryTitle;
+	public static String ResourceSelectorWidget_SelectDirectoryTitle;
 
-    public static String ResourceSelectorWidget_SelectFileTitle;
+	public static String ResourceSelectorWidget_SelectFileTitle;
 
-    public static String SelectLoaderWidget_Label;
+	public static String SelectLoaderWidget_Label;
 
-    public static String SelectNetworkNameWidget_Label;
+	public static String SelectNetworkNameWidget_Label;
 
-    public static String SelectDriveNameWidget_Label;
+	public static String SelectDriveNameWidget_Label;
 
-    public static String DriveDataFileSelector_DirectoryFilesLabel;
-    public static String DriveDataFileSelector_SelectedFilesLabel;
+	public static String DriveDataFileSelector_DirectoryFilesLabel;
+	public static String DriveDataFileSelector_SelectedFilesLabel;
+	public static String DriveDataFileSelector_AddButton;
+	public static String DriveDataFileSelector_AddAllButton;
+	public static String DriveDataFileSelector_RemoveButton;
+	public static String DriveDataFileSelector_RemoveAllButton;
 
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-    }
+	static {
+		// initialize resource bundle
+		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+	}
 
-    private Messages() {
-    }
+	private Messages() {
+	}
 
-    public static String formatString(final String pattern, final Object... parameters) {
-        return MessageFormat.format(pattern, parameters);
-    }
+	public static String formatString(final String pattern, final Object... parameters) {
+		return MessageFormat.format(pattern, parameters);
+	}
 }

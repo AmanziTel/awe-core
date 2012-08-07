@@ -94,7 +94,7 @@ public final class WizardFactory {
 		return initializeWidget(new CRSSelector(parent, listener));
 	}
 
-	public DriveDataFileSelector getDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+	public DriveDataFileSelector addDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
 		return initializeWidget(new DriveDataFileSelector(parent, listener));
 	}
 

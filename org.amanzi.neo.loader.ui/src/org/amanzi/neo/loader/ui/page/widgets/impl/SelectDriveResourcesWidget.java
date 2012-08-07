@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 
 /**
  * TODO Purpose of
@@ -34,7 +33,7 @@ import org.eclipse.swt.widgets.Group;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SelectDriveResourcesWidget extends AbstractPageWidget<Group, ISelectDriveResourceListener>
+public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, ISelectDriveResourceListener>
 implements
 IResourceSelectorListener {
 
@@ -60,16 +59,23 @@ IResourceSelectorListener {
 	}
 
 	@Override
-	protected Group createWidget(final Composite parent, final int style) {
-		Group group = new Group(parent, style);
+	protected Composite createWidget(final Composite parent, final int style) {
+		Composite panel = new Composite(parent, style);
+		panel.setLayoutData(getGroupLayoutData());
+		panel.setLayout(new GridLayout(1, false));
 
-		group.setLayoutData(getGroupLayoutData());
+		resourceSelector = WizardFactory.getInstance().addDirectorySelector(getPanel(panel), this);
+		WizardFactory.getInstance().addDriveDataFileSelector(getPanel(panel), listener);
 
-		group.setLayout(new GridLayout(3, false));
+		return panel;
+	}
 
-		resourceSelector = WizardFactory.getInstance().addDirectorySelector(group, this);
+	private Composite getPanel(final Composite parent) {
+		Composite panel = new Composite(parent, SWT.NONE);
+		panel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		panel.setLayout(new GridLayout(3, false));
 
-		return group;
+		return panel;
 	}
 
 	protected Object getGroupLayoutData() {
@@ -78,7 +84,7 @@ IResourceSelectorListener {
 
 	@Override
 	protected int getStyle() {
-		return SWT.FILL;
+		return SWT.NONE;
 	}
 
 	@Override
