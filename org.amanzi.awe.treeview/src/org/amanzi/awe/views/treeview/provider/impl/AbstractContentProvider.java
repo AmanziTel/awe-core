@@ -40,194 +40,195 @@ import org.eclipse.jface.viewers.Viewer;
  */
 public abstract class AbstractContentProvider<T extends IModel> implements ITreeContentProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
+	private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
-    private final IGeneralNodeProperties generalNodeProperties;
-    private static final DataElementComparator DATA_ELEMENT_COMPARER = new DataElementComparator();
-    private Iterable<IDataElement> children = null;
+	private final IGeneralNodeProperties generalNodeProperties;
+	private static final DataElementComparator DATA_ELEMENT_COMPARER = new DataElementComparator();
+	private Iterable<IDataElement> children = null;
 
-    /**
-     * @param networkModelProvider
-     * @param projectModelProvider
-     */
-    protected AbstractContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
-            IGeneralNodeProperties generalNodeProperties) {
-        super();
-        this.networkModelProvider = networkModelProvider;
-        this.projectModelProvider = projectModelProvider;
-        this.generalNodeProperties = generalNodeProperties;
-    }
+	/**
+	 * @param networkModelProvider
+	 * @param projectModelProvider
+	 */
+	protected AbstractContentProvider(final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider,
+			final IGeneralNodeProperties generalNodeProperties) {
+		super();
+		this.networkModelProvider = networkModelProvider;
+		this.projectModelProvider = projectModelProvider;
+		this.generalNodeProperties = generalNodeProperties;
+	}
 
-    /**
-     * <p>
-     * Comparator for treeElements
-     * </p>
-     * 
-     * @author Kondratenko_Vladislav
-     * @since 1.0.0
-     */
-    @SuppressWarnings("rawtypes")
-    protected static class DataElementComparator implements Comparator<ITreeItem> {
-        @Override
-        public int compare(ITreeItem dataElement1, ITreeItem dataElement2) {
-            return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
-                    .getDataElement().getName().compareTo(dataElement2.getDataElement().getName());
-        }
-    }
+	/**
+	 * <p>
+	 * Comparator for treeElements
+	 * </p>
+	 * 
+	 * @author Kondratenko_Vladislav
+	 * @since 1.0.0
+	 */
+	@SuppressWarnings("rawtypes")
+	protected static class DataElementComparator implements Comparator<ITreeItem> {
+		@Override
+		public int compare(final ITreeItem dataElement1, final ITreeItem dataElement2) {
+			return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
+					.getDataElement().getName().compareTo(dataElement2.getDataElement().getName());
+		}
+	}
 
-    private final INetworkModelProvider networkModelProvider;
-    private final IProjectModelProvider projectModelProvider;
+	//TODO: LN: 07.08.2012, why this fields declared there if they didn't used in this class????
+	private final INetworkModelProvider networkModelProvider;
+	private final IProjectModelProvider projectModelProvider;
 
-    private List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
+	private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
 
-    @Override
-    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-    }
+	@Override
+	public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
+	}
 
-    @Override
-    public void dispose() {
-    }
+	@Override
+	public void dispose() {
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object[] getChildren(Object parentElement) {
-        ITreeItem<T> item = (ITreeItem<T>)parentElement;
-        try {
-            if (isInRootList(item)) {
-                handleRoot(item);
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object[] getChildren(final Object parentElement) {
+		ITreeItem<T> item = (ITreeItem<T>)parentElement;
+		try {
+			if (isInRootList(item)) {
+				handleRoot(item);
 
-            } else {
-                handleInnerElements(item);
-            }
-        } catch (ModelException e) {
-            LOGGER.error("can't get child for parentElement " + parentElement, e);
-            return null;
-        }
-        return processReturment(item.getParent());
-    }
+			} else {
+				handleInnerElements(item);
+			}
+		} catch (ModelException e) {
+			LOGGER.error("can't get child for parentElement " + parentElement, e);
+			return null;
+		}
+		return processReturment(item.getParent());
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public boolean hasChildren(Object element) {
-        Object[] children = null;
-        try {
-            ITreeItem<T> item = (ITreeItem<T>)element;
-            children = getChildren(item);
-            return !ArrayUtils.isEmpty(children) && additionalCheckChild(element);
-        } catch (ModelException e) {
-            LOGGER.error("exception when trying to get child", e);
-        }
-        return false;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean hasChildren(final Object element) {
+		Object[] children = null;
+		try {
+			ITreeItem<T> item = (ITreeItem<T>)element;
+			children = getChildren(item);
+			return !ArrayUtils.isEmpty(children) && additionalCheckChild(element);
+		} catch (ModelException e) {
+			LOGGER.error("exception when trying to get child", e);
+		}
+		return false;
+	}
 
-    /**
-     * @param element
-     * @return
-     * @throws ModelException
-     */
-    protected abstract boolean additionalCheckChild(Object element) throws ModelException;
+	/**
+	 * @param element
+	 * @return
+	 * @throws ModelException
+	 */
+	protected abstract boolean additionalCheckChild(Object element) throws ModelException;
 
-    /**
-     * @param t
-     * @return
-     */
-    protected Object[] processReturment(T model) {
-        List<ITreeItem<T>> dataElements = new ArrayList<ITreeItem<T>>();
-        for (IDataElement dataElement : children) {
-            ITreeItem<T> item = new TreeViewItem<T>(model, dataElement);
-            dataElements.add(item);
-        }
-        Collections.sort(dataElements, getDataElementComparer());
-        List<Object> res = new ArrayList<Object>(dataElements);
-        return res.toArray();
-    }
+	/**
+	 * @param t
+	 * @return
+	 */
+	protected Object[] processReturment(final T model) {
+		List<ITreeItem<T>> dataElements = new ArrayList<ITreeItem<T>>();
+		for (IDataElement dataElement : children) {
+			ITreeItem<T> item = new TreeViewItem<T>(model, dataElement);
+			dataElements.add(item);
+		}
+		Collections.sort(dataElements, getDataElementComparer());
+		List<Object> res = new ArrayList<Object>(dataElements);
+		return res.toArray();
+	}
 
-    /**
-     * handle inner elements
-     * 
-     * @param parentElement
-     * @throws ModelException
-     */
-    protected abstract void handleInnerElements(ITreeItem<T> parentElement) throws ModelException;
+	/**
+	 * handle inner elements
+	 * 
+	 * @param parentElement
+	 * @throws ModelException
+	 */
+	protected abstract void handleInnerElements(ITreeItem<T> parentElement) throws ModelException;
 
-    @Override
-    public Object[] getElements(Object inputElement) {
-        rootList.clear();
-        List<T> roots = null;
-        try {
-            roots = getRootElements();
-            for (T root : roots) {
-                rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
-            }
-        } catch (ModelException e) {
-            LOGGER.error("can't get roots", e);
-        }
+	@Override
+	public Object[] getElements(final Object inputElement) {
+		rootList.clear();
+		List<T> roots = null;
+		try {
+			roots = getRootElements();
+			for (T root : roots) {
+				rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+			}
+		} catch (ModelException e) {
+			LOGGER.error("can't get roots", e);
+		}
 
-        return rootList.toArray();
-    }
+		return rootList.toArray();
+	}
 
-    /**
-     * get root elements
-     * 
-     * @return
-     * @throws ModelException
-     */
-    protected abstract List<T> getRootElements() throws ModelException;
+	/**
+	 * get root elements
+	 * 
+	 * @return
+	 * @throws ModelException
+	 */
+	protected abstract List<T> getRootElements() throws ModelException;
 
-    /**
-     * check if object in rootList
-     * 
-     * @param object
-     * @return
-     */
-    private boolean isInRootList(Object object) {
-        return rootList.contains(object);
-    }
+	/**
+	 * check if object in rootList
+	 * 
+	 * @param object
+	 * @return
+	 */
+	private boolean isInRootList(final Object object) {
+		return rootList.contains(object);
+	}
 
-    /**
-     * handle get roots element child
-     */
-    protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
+	/**
+	 * handle get roots element child
+	 */
+	protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
 
-    /**
-     * @return Returns the generalNodeProperties.
-     */
-    protected IGeneralNodeProperties getGeneralNodeProperties() {
-        return generalNodeProperties;
-    }
+	/**
+	 * @return Returns the generalNodeProperties.
+	 */
+	protected IGeneralNodeProperties getGeneralNodeProperties() {
+		return generalNodeProperties;
+	}
 
-    /**
-     * @return Returns the rootList.
-     */
-    protected List<ITreeItem<T>> getRootList() {
-        return rootList;
-    }
+	/**
+	 * @return Returns the rootList.
+	 */
+	protected List<ITreeItem<T>> getRootList() {
+		return rootList;
+	}
 
-    /**
-     * @return Returns the networkModelProvider.
-     */
-    protected INetworkModelProvider getNetworkModelProvider() {
-        return networkModelProvider;
-    }
+	/**
+	 * @return Returns the networkModelProvider.
+	 */
+	protected INetworkModelProvider getNetworkModelProvider() {
+		return networkModelProvider;
+	}
 
-    /**
-     * @return Returns the projectModelProvider.
-     */
-    protected IProjectModelProvider getProjectModelProvider() {
-        return projectModelProvider;
-    }
+	/**
+	 * @return Returns the projectModelProvider.
+	 */
+	protected IProjectModelProvider getProjectModelProvider() {
+		return projectModelProvider;
+	}
 
-    /**
-     * @return Returns the DATA_ELEMENT_COMPARATOR.
-     */
-    public DataElementComparator getDataElementComparer() {
-        return DATA_ELEMENT_COMPARER;
-    };
+	/**
+	 * @return Returns the DATA_ELEMENT_COMPARATOR.
+	 */
+	public DataElementComparator getDataElementComparer() {
+		return DATA_ELEMENT_COMPARER;
+	};
 
-    /**
-     * @param children
-     */
-    protected void setChildren(Iterable<IDataElement> children) {
-        this.children = children;
-    }
+	/**
+	 * @param children
+	 */
+	protected void setChildren(final Iterable<IDataElement> children) {
+		this.children = children;
+	}
 }

@@ -20,10 +20,12 @@ import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
@@ -35,55 +37,62 @@ import org.apache.log4j.Logger;
  */
 public class ProjectTreeContentProvider extends AbstractContentProvider<IProjectModel> {
 
-    private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
+	private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
 
-    public ProjectTreeContentProvider() {
-        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
-                .getDefault().getGeneralNodeProperties());
+	private final IDriveModelProvider driveModelProvider;
 
-    }
+	public ProjectTreeContentProvider() {
+		this(AWEUIPlugin.getDefault().getDriveModelProvider(), AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
+				.getDefault().getGeneralNodeProperties());
 
-    /**
-     * @param networkModelProvider
-     * @param projectModelProvider
-     */
-    protected ProjectTreeContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
-            IGeneralNodeProperties generalNodeProperties) {
-        super(networkModelProvider, projectModelProvider, generalNodeProperties);
-    }
+	}
 
-    @Override
-    public Object getParent(final Object element) {
-        // TODO Need implement
-        return null;
-    }
+	/**
+	 * @param networkModelProvider
+	 * @param projectModelProvider
+	 */
+	protected ProjectTreeContentProvider(final IDriveModelProvider driveModelProvider, final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider,
+			final IGeneralNodeProperties generalNodeProperties) {
+		super(networkModelProvider, projectModelProvider, generalNodeProperties);
 
-    @Override
-    protected boolean additionalCheckChild(Object element) throws ModelException {
-        return true;
-    }
+		this.driveModelProvider = driveModelProvider;
+	}
 
-    @Override
-    protected void handleInnerElements(ITreeItem<IProjectModel> item) throws ModelException {
-        List<IDataElement> models = new ArrayList<IDataElement>();
-        if (!item.getParent().asDataElement().equals(item.getDataElement())) {
-            return;
-        }
-        for (INetworkModel model : getNetworkModelProvider().findAll(item.getParent())) {
-            LOGGER.info("add model " + model + " to project node");
-            models.add(model.asDataElement());
-        }
-        setChildren(models);
-    }
+	@Override
+	public Object getParent(final Object element) {
+		// TODO Need implement
+		return null;
+	}
 
-    @Override
-    protected void handleRoot(ITreeItem<IProjectModel> item) throws ModelException {
-        handleInnerElements(item);
-    }
+	@Override
+	protected boolean additionalCheckChild(final Object element) throws ModelException {
+		return true;
+	}
 
-    @Override
-    protected List<IProjectModel> getRootElements() throws ModelException {
-        return getProjectModelProvider().findAll();
-    }
+	@Override
+	protected void handleInnerElements(final ITreeItem<IProjectModel> item) throws ModelException {
+		List<IDataElement> models = new ArrayList<IDataElement>();
+		if (!item.getParent().asDataElement().equals(item.getDataElement())) {
+			return;
+		}
+		for (INetworkModel model : getNetworkModelProvider().findAll(item.getParent())) {
+			models.add(model.asDataElement());
+		}
+		for (IDriveModel model : driveModelProvider.findAll(item.getParent())) {
+			models.add(model.asDataElement());
+		}
+
+		setChildren(models);
+	}
+
+	@Override
+	protected void handleRoot(final ITreeItem<IProjectModel> item) throws ModelException {
+		handleInnerElements(item);
+	}
+
+	@Override
+	protected List<IProjectModel> getRootElements() throws ModelException {
+		return getProjectModelProvider().findAll();
+	}
 
 }
