@@ -67,8 +67,8 @@ public class Application extends UDIGApplication {
          */
         @Override
         public void initialize(IWorkbenchConfigurer configurer) {
-            AWEEventManager.getManager().fireInitialiseEvent();
             super.initialize(configurer);
+            AWEEventManager.getManager().fireInitialiseEvent();
             configurer.setSaveAndRestore(true);
         }
 

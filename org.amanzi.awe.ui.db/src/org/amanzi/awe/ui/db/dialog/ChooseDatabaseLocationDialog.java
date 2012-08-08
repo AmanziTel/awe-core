@@ -69,8 +69,8 @@ public class ChooseDatabaseLocationDialog extends Dialog implements ModifyListen
                 DatabaseUiPluginMessages.warningDialogChooseDatabaseLabel, selectionComposite);
 
         Text textControl = fileDialog.getTextControl(selectionComposite);
+        textControl.addModifyListener(this);
         textControl.setText(store.getString(PREFERENCE_KEY_DATABASE_LOCATION));
-
         getShell().pack();
     }
 

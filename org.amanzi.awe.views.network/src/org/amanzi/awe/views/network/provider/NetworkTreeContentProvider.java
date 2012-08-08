@@ -19,7 +19,6 @@ import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 
@@ -33,8 +32,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     INetworkModelProvider networkModelProvider;
 
     public NetworkTreeContentProvider() {
-        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider(), AWEUIPlugin
-                .getDefault().getGeneralNodeProperties());
+        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
 
     }
 
@@ -42,9 +40,8 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
      * @param networkModelProvider
      * @param projectModelProvider
      */
-    protected NetworkTreeContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider,
-            IGeneralNodeProperties generalNodeProperties) {
-        super(projectModelProvider, generalNodeProperties);
+    protected NetworkTreeContentProvider(INetworkModelProvider networkModelProvider, IProjectModelProvider projectModelProvider) {
+        super(projectModelProvider);
         this.networkModelProvider = networkModelProvider;
     }
 
