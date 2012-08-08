@@ -13,10 +13,8 @@
 
 package org.amanzi.neo.models.impl.measurement;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.filters.IFilter;
@@ -24,6 +22,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.dto.FileElement;
 import org.amanzi.neo.impl.dto.LocationElement;
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
@@ -55,6 +54,22 @@ import com.vividsolutions.jts.geom.Envelope;
 public abstract class AbstractMeasurementModel extends AbstractDatasetModel implements IMeasurementModel {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractMeasurementModel.class);
+
+    protected final class MeasurementIterator extends AbstractDataElementIterator<IDataElement> {
+
+        /**
+         * @param nodeIterator
+         */
+        public MeasurementIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IDataElement createDataElement(final Node node) {
+            return convertToDataElement(node);
+        }
+
+    }
 
     private int locationCount;
 
@@ -263,39 +278,44 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     }
 
     @Override
-    // TODO: LN: 08.08.2012, refactor to use NodeIterator
     public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
         assert parentElement != null;
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getChildren", parentElement));
         }
-        List<IDataElement> elements = new ArrayList<IDataElement>();
-        Node parentNode = ((DataElement)parentElement).getNode();
+
+        Iterable<IDataElement> result = null;
+
         try {
-            Iterator<Node> childs = getNodeService().getChildrenChain(parentNode);
+            DataElement parent = (DataElement)parentElement;
+            Node parentNode = parent.getNode();
 
-            while (childs.hasNext()) {
-                Node child = childs.next();
-
-                INodeType type = getNodeService().getNodeType(child);
-
-                IDataElement element = null;
-
-                if (type.equals(MeasurementNodeType.M)) {
-                    element = getDataElement(child, type, null);
-                } else if (type.equals(MeasurementNodeType.FILE)) {
-                    String name = getNodeService().getNodeName(child);
-                    String path = getNodeService().getNodeProperty(child, measurementNodeProperties.getFilePath(), null, false);
-
-                    element = getFileElement(child, name, path);
-                }
-
-                elements.add(element);
-            }
-        } catch (Exception e) {
+            result = new MeasurementIterator(getNodeService().getChildrenChain(parentNode)).toIterable();
+        } catch (ServiceException e) {
             processException("An error occured on search child for parent Element", e);
         }
-        return elements;
+        return result;
+    }
+
+    private IDataElement convertToDataElement(Node node) {
+        IDataElement element = null;
+
+        try {
+            INodeType type = getNodeService().getNodeType(node);
+
+            if (type.equals(MeasurementNodeType.M)) {
+                element = getDataElement(node, type, null);
+            } else if (type.equals(MeasurementNodeType.FILE)) {
+                String name = getNodeService().getNodeName(node);
+                String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePath(), null, false);
+
+                element = getFileElement(node, name, path);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error on converting Node to Measurement Element", e);
+        }
+
+        return element;
     }
 
 }

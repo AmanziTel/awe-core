@@ -52,6 +52,45 @@ import org.neo4j.kernel.Traversal;
  */
 public class NodeService extends AbstractService implements INodeService {
 
+    /**
+     * TODO Purpose of 
+     * <p>
+     *
+     * </p>
+     * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+     * @since 1.0.0
+     */
+    private static final class ChainEvaluator implements Evaluator {
+        /** Node node field */
+        private final Node node;
+
+        /**
+         * @param node
+         */
+        private ChainEvaluator(Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public Evaluation evaluate(Path path) {
+            boolean toContinue = true;
+            boolean include = true;
+            if (path.lastRelationship() != null) {
+                Relationship relation = path.lastRelationship();
+                if (relation.getStartNode().getId() == node.getId()) {
+                    toContinue = relation.isType(NodeServiceRelationshipType.CHILD);
+                } else {
+                    toContinue = relation.isType(NodeServiceRelationshipType.NEXT);
+                }
+                include = toContinue;
+            } else {
+                include = false;
+            }
+
+            return Evaluation.of(include, toContinue);
+        }
+    }
+
     public enum NodeServiceRelationshipType implements RelationshipType {
         CHILD, NEXT;
     }
@@ -172,27 +211,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     protected TraversalDescription getChildrenChainTraversal(final Node node) {
-        return CHAIN_TRAVERSAL.evaluator(new Evaluator() {
-
-            @Override
-            public Evaluation evaluate(Path path) {
-                boolean toContinue = true;
-                boolean include = true;
-                if (path.lastRelationship() != null) {
-                    Relationship relation = path.lastRelationship();
-                    if (relation.getStartNode().getId() == node.getId()) {
-                        toContinue = relation.isType(NodeServiceRelationshipType.CHILD);
-                    } else {
-                        toContinue = relation.isType(NodeServiceRelationshipType.NEXT);
-                    }
-                    include = toContinue;
-                } else {
-                    include = false;
-                }
-
-                return Evaluation.of(include, toContinue);
-            }
-        });
+        return CHAIN_TRAVERSAL.evaluator(new ChainEvaluator(node));
     }
 
     protected TraversalDescription getDownlinkTraversal() {
