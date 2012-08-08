@@ -56,7 +56,6 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      */
     protected AbstractContentProvider(final IProjectModelProvider projectModelProvider,
             final IGeneralNodeProperties generalNodeProperties) {
-        super();
         this.projectModelProvider = projectModelProvider;
     }
 
