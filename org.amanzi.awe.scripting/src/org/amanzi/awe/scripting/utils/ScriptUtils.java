@@ -227,6 +227,8 @@ public class ScriptUtils {
      * @throws FileNotFoundException
      */
     public String getScript(String scriptName, File destination) throws FileNotFoundException, ScriptingException {
+        LOGGER.info("< Start searching script" + scriptName + " in destination  " + destination.getAbsolutePath() + " children "
+                + destination.list() + " >");
         File requiredFile = null;
         for (File script : destination.listFiles()) {
             if (script.getName().equals(scriptName)) {

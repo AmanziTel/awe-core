@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jruby.Ruby;
@@ -39,8 +40,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class JRubyRuntimeWrapper {
     private static final Logger LOGGER = Logger.getLogger(JRubyRuntimeWrapper.class);
     private static final String NAME_SEPARATOR = ":";
-    private static final int ZERO_ELEMENT_INDEX = NumberUtils.INTEGER_ZERO;
-    private static final int FIRST_ELEMNT_INDEX = NumberUtils.INTEGER_ONE;
+    private static final int MODULE_ELEMENT_INDEX = NumberUtils.INTEGER_ZERO;
+    private static final int SCRIPT_NAME_ELEMENT_INDEX = NumberUtils.INTEGER_ONE;
 
     private final Ruby runtime;
     private final File destination;
@@ -62,19 +63,18 @@ public class JRubyRuntimeWrapper {
      * @throws FileNotFoundException
      */
     public Object executeScriptByName(String scriptId) throws FileNotFoundException, ScriptingException {
-        // TODO: LN: 01.08.2012, bad check, if you checking script name format - please check
-        // everything
-        if (!scriptId.contains(NAME_SEPARATOR)) {
+        if (StringUtils.isEmpty(scriptId) && !scriptId.contains(NAME_SEPARATOR)) {
             LOGGER.error(scriptId + " has incorrect format. Correct format is <MODULE>:<SCRIPT_NAME>");
         }
         String[] splittedName = scriptId.split(NAME_SEPARATOR);
-        String project = splittedName[ZERO_ELEMENT_INDEX];
-        File destination = checkForExistance(project);
+        String moduleName = splittedName[MODULE_ELEMENT_INDEX];
+        File destination = getModuleFolder(moduleName);
         if (destination == null) {
-            LOGGER.error("Module " + project + " doesn't exists in script folder");
-            throw new FileNotFoundException("Module " + project + " doesn't exists in script folder");
+            LOGGER.error("Module " + moduleName + " doesn't exists in script folder");
+            throw new FileNotFoundException("Module " + moduleName + " doesn't exists in script folder "
+                    + this.destination.getAbsolutePath());
         }
-        String scriptName = splittedName[FIRST_ELEMNT_INDEX];
+        String scriptName = splittedName[SCRIPT_NAME_ELEMENT_INDEX];
         String script = ScriptUtils.getInstance().getScript(scriptName, destination);
         return executeScript(script);
     }
@@ -96,8 +96,10 @@ public class JRubyRuntimeWrapper {
      * 
      * @param name
      */
-    private File checkForExistance(String name) {
+    private File getModuleFolder(String name) {
         File[] existedModules = destination.listFiles();
+        LOGGER.info("< Start searching " + name + " in destination  " + destination.getAbsolutePath() + " children "
+                + destination.list() + " >");
         for (File module : existedModules) {
             if (module.getName().equals(name)) {
                 return module;

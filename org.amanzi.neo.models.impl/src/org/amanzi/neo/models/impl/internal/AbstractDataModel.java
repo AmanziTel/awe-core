@@ -94,7 +94,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
                 } catch (NodeTypeNotExistsException e) {
                     LOGGER.error("can't get type from node " + child, e);
                 }
-                DataElement element = new DataElement(childs.next());
+                DataElement element = new DataElement(child);
                 element.setName(name);
                 element.setNodeType(type);
                 elements.add(element);

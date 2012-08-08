@@ -225,7 +225,6 @@ public class StatisticsModel extends AbstractModel {
         try {
             statisticService.setAnyProperty(rootNode, NODES_USED, noUsedNodes);
             usedNodes = noUsedNodes;
-            // TODO: LN: 01.08.2012, catch AWEException instead of Exception
         } catch (AWEException e) {
             LOGGER.error("can't set nodes_used property because of", e);
         }

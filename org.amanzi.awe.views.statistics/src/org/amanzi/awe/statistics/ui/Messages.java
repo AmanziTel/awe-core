@@ -45,6 +45,7 @@ public final class Messages extends NLS {
     public static String statisticsViewLabelReport;
     public static String statisticsViewLabelExport;
     public static String statisticsViewLabelChartView;
+    public static String statisticsViewErrorMessage;
     public static String sortingDialogLabelOk;
     public static String sortingDialogLableClose;
     public static String sortingDialogLableClear;

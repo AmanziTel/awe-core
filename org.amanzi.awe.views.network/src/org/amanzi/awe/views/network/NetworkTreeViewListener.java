@@ -29,7 +29,7 @@ public class NetworkTreeViewListener extends AbstractShowViewListener {
     /**
      * @param requiredView
      */
-    protected NetworkTreeViewListener() {
+    public NetworkTreeViewListener() {
         super(NetworkTreeView.NETWORK_TREE_VIEW_ID);
     }
 

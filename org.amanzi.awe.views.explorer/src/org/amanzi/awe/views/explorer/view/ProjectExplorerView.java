@@ -7,13 +7,11 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.swt.widgets.Composite;
@@ -35,21 +33,16 @@ public class ProjectExplorerView extends AbstractTreeView {
 
         @Override
         public int hashCode(final Object element) {
-            // TODO: LN: 07.08.2012, need to be implemented
-            return 0;
+            return HashCodeBuilder.reflectionHashCode(element, false);
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(final Object a, final Object b) {
             if ((a instanceof ITreeItem< ? >) && (b instanceof ITreeItem< ? >)) {
-                // TODO: LN: 07.08.2012, why not implement equals in TreeItem ?
                 ITreeItem<IModel> aM = (ITreeItem<IModel>)a;
                 ITreeItem<IModel> bM = (ITreeItem<IModel>)b;
-                IDataElement amElement = aM.getDataElement();
-                IDataElement bmElement = bM.getDataElement();
-                // TODO: LN: 07.08.2012, why not use amElement.equals(bmElement) ?
-                return amElement.getId() == bmElement.getId();
+                return aM.equals(bM);
             }
             return a == null ? b == null : a.equals(b);
         }
@@ -59,16 +52,16 @@ public class ProjectExplorerView extends AbstractTreeView {
      * The constructor.
      */
     public ProjectExplorerView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties(), new ProjectTreeContentProvider());
+        this(new ProjectTreeContentProvider());
     }
 
-    protected ProjectExplorerView(IGeneralNodeProperties properties, ProjectTreeContentProvider projectTreeContentProvider) {
-        super(properties, projectTreeContentProvider);
+    protected ProjectExplorerView(ProjectTreeContentProvider projectTreeContentProvider) {
+        super(projectTreeContentProvider);
     }
 
     @Override
-    protected void createControls(Composite parent) {
-        super.createControls(parent);
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
         MenuManager menuManager = new MenuManager();
         Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
         getTreeViewer().getControl().setMenu(menu);

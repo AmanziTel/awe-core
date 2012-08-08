@@ -9,10 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.drive.views.view.provider.DriveTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -38,18 +36,18 @@ public class DriveTreeView extends AbstractTreeView {
     /**
      * The Constructor
      */
-    protected DriveTreeView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties(), new DriveTreeContentProvider());
+    public DriveTreeView() {
+        this(new DriveTreeContentProvider());
     }
 
-    protected DriveTreeView(IGeneralNodeProperties properties, DriveTreeContentProvider driveTreeContentProvider) {
-        super(properties, driveTreeContentProvider);
+    protected DriveTreeView(DriveTreeContentProvider driveTreeContentProvider) {
+        super(driveTreeContentProvider);
     }
 
     @Override
-    protected void createControls(Composite parent) {
+    public void createPartControl(Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
-        super.createControls(parent);
+        super.createPartControl(parent);
         initializeListeners();
     }
 

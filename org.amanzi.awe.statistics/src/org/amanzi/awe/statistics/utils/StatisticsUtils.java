@@ -33,7 +33,6 @@ public class StatisticsUtils {
     private static StatisticsUtils utils;
 
     private static final String YEAR_MONTH_DAY_PATTERN = "yyyy-MM-dd";
-    private static final String HOURS_MINUTES_PATTERN = "HH:mm";
     private static final String WEEK = "Week ";
     private static final String MONTH = "Month";
     private static final String TO = " to ";
@@ -84,8 +83,6 @@ public class StatisticsUtils {
             return getNameForDailySRow(startTime);
         case WEEKLY:
             return getNameForWeeklySRow(startTime, endTime);
-        case QUATER_HOUR:
-            return getNameFor15MinSRow(startTime, endTime);
         default:
             break;
         }
@@ -120,30 +117,6 @@ public class StatisticsUtils {
             sb.append(sf.format(startTimeCal.getTime()));
             sb.append(TO).append(sfMulDay2.format(endTimeCal.getTime()));
         }
-        return sb.toString();
-    }
-
-    /**
-     * Gets the name for 15-minutes statistics row.
-     * 
-     * @param startTime the start time
-     * @param endTime the end time
-     * @param dayFormat the day format
-     * @return the name for hourly s row
-     */
-    private String getNameFor15MinSRow(Long startTime, Long endTime) {
-        Calendar endTimeCal = Calendar.getInstance();
-        endTimeCal.setTimeInMillis(endTime);
-
-        Calendar startTimeCal = Calendar.getInstance();
-        startTimeCal.setTimeInMillis(startTime);
-
-        String pattern = HOURS_MINUTES_PATTERN;
-        SimpleDateFormat sf = new SimpleDateFormat(pattern);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(sf.format(startTimeCal.getTime()));
-        sb.append(DEFIS_SEPARATOR).append(sf.format(endTimeCal.getTime()));
         return sb.toString();
     }
 

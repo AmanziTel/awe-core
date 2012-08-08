@@ -33,15 +33,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @since 1.0.0
  */
 public abstract class AbstractTreeCommandHandler extends AbstractHandler {
-    // TODO: LN: 07.08.2012, is someone use this field?
-    private final IGeneralNodeProperties generalNodeProeprties;
-
-    /**
-     * @param generalNodeProperties
-     */
-    protected AbstractTreeCommandHandler(IGeneralNodeProperties generalNodeProperties) {
-        generalNodeProeprties = generalNodeProperties;
-    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -61,12 +52,5 @@ public abstract class AbstractTreeCommandHandler extends AbstractHandler {
     }
 
     protected abstract void handleElement(ITreeItem<IModel> element);
-
-    /**
-     * @return Returns the gENERAL_NODE_PROPERTIES.
-     */
-    protected IGeneralNodeProperties getGeneralNodeProperites() {
-        return generalNodeProeprties;
-    }
 
 }
