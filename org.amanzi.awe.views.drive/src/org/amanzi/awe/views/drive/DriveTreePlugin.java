@@ -12,8 +12,6 @@
  */
 package org.amanzi.awe.views.drive;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -21,26 +19,27 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class DriveInquirerPlugin extends AbstractUIPlugin {
+public class DriveTreePlugin extends AbstractUIPlugin {
 
-	public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
-	
+    public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
+
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.views.drive";
 
     // The shared instance
-    private static DriveInquirerPlugin plugin;
+    private static DriveTreePlugin plugin;
 
     /**
      * The constructor
      */
-    public DriveInquirerPlugin() {
+    public DriveTreePlugin() {
     }
 
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
@@ -50,6 +49,7 @@ public class DriveInquirerPlugin extends AbstractUIPlugin {
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
+    @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
@@ -60,7 +60,7 @@ public class DriveInquirerPlugin extends AbstractUIPlugin {
      * 
      * @return the shared instance
      */
-    public static DriveInquirerPlugin getDefault() {
+    public static DriveTreePlugin getDefault() {
         return plugin;
     }
 
@@ -72,16 +72,5 @@ public class DriveInquirerPlugin extends AbstractUIPlugin {
      */
     public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
-    }
-
-    /**
-     * Print a message and information about exception to Log
-     * 
-     * @param message message
-     * @param e exception
-     */
-
-    public static void error(String message, Throwable e) {
-        getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message == null ? "" : message, e)); //$NON-NLS-1$
     }
 }

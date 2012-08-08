@@ -22,12 +22,6 @@ public class PerspectiveFactory extends AbstractPerspectiveFactory {
 
     public static final String AWE_PERSPECTIVE = "org.amanzi.awe.perspective"; //$NON-NLS-1$
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
-    private static final String DATABASE_PROJECT_EXPLORER = "org.amanzi.awe.views.explorer.view.ProjectExplorerView";
-    private static final String NETWORK_TREE = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
-    private static final String DRIVE_TREE = "org.amanzi.awe.views.drive.views.DriveTreeView";
-    private static final String N2N = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
-    private static final String DISTRIBUTION = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
-    private static final String PROPERTIES = "org.eclipse.ui.views.PropertySheet";
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
 
     /**
@@ -47,23 +41,13 @@ public class PerspectiveFactory extends AbstractPerspectiveFactory {
         String editorArea = layout.getEditorArea();
 
         IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, getTopLeft(), editorArea);
-        topLeft.addView(DATABASE_PROJECT_EXPLORER);
-
-        IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, getBottom(), editorArea);
-        bottom.addView(CATALOG);
-        bottom.addView(PROPERTIES);
-        bottom.addView(N2N);
-        bottom.addView(DISTRIBUTION);
+        topLeft.addView(LAYERS);
 
         // Here we are making folder layout to show three views side by side
-        IFolderLayout bottomLeft = layout
-                .createFolder("bottomLeft", IPageLayout.BOTTOM, getBottomLeft(), DATABASE_PROJECT_EXPLORER);
-        bottomLeft.addView(LAYERS);
-        bottomLeft.addView(NETWORK_TREE);
-        bottomLeft.addView(DRIVE_TREE);
+        IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, getBottomLeft(), editorArea);
+        bottomLeft.addView(CATALOG);
 
         layout.addPerspectiveShortcut(AWE_PERSPECTIVE);
         layout.addPerspectiveShortcut(MapPerspective.ID_PERSPECTIVE);
     }
-
 }

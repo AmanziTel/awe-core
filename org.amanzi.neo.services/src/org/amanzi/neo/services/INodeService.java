@@ -33,103 +33,104 @@ import org.neo4j.graphdb.RelationshipType;
  */
 public interface INodeService extends IService {
 
-	/**
-	 * Returns a Name property of Node
-	 * 
-	 * @param node
-	 * @return
-	 * @throws ServiceException in case of Name Property not found
-	 */
-	String getNodeName(Node node) throws ServiceException;
+    /**
+     * Returns a Name property of Node
+     * 
+     * @param node
+     * @return
+     * @throws ServiceException in case of Name Property not found
+     */
+    String getNodeName(Node node) throws ServiceException;
 
-	/**
-	 * Returns a NodeType property of Node
-	 * 
-	 * @param node
-	 * @return
-	 * @throws ServiceException in case of Type Property not found
-	 */
-	INodeType getNodeType(Node node) throws ServiceException, NodeTypeNotExistsException;
+    /**
+     * Returns a NodeType property of Node
+     * 
+     * @param node
+     * @return
+     * @throws ServiceException in case of Type Property not found
+     */
+    INodeType getNodeType(Node node) throws ServiceException, NodeTypeNotExistsException;
 
-	/**
-	 * Returns a Paret of Node Parent is a Node that stand on higher hierarchy level for provided
-	 * node Searching for a Parent based on 'parent' property of a Child Node containing ID of
-	 * Parent Node
-	 * 
-	 * @param child
-	 * @return
-	 * @throws ServiceException in case 'parent' property node found
-	 * @deprecated
-	 */
-	@Deprecated
-	Node getParent(Node child) throws ServiceException;
+    /**
+     * Returns a Paret of Node Parent is a Node that stand on higher hierarchy level for provided
+     * node Searching for a Parent based on 'parent' property of a Child Node containing ID of
+     * Parent Node
+     * 
+     * @param child
+     * @return
+     * @throws ServiceException in case 'parent' property node found
+     * @deprecated
+     */
+    @Deprecated
+    Node getParent(Node child) throws ServiceException;
 
-	Node getParent(Node child, RelationshipType relationshipType) throws ServiceException;
+    Node getParent(Node child, RelationshipType relationshipType) throws ServiceException;
 
-	Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException;
+    Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException;
 
-	Iterator<Node> getChildren(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
+    Iterator<Node> getChildren(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
 
-	Node getChildInChainByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
+    Node getChildInChainByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 
-	Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
+    Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 
-	Node getChildByName(Node parentNode, String name, INodeType nodeType, RelationshipType relationshipType)
-			throws ServiceException;
+    Node getChildByName(Node parentNode, String name, INodeType nodeType, RelationshipType relationshipType)
+            throws ServiceException;
 
-	Node getSingleChild(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
+    Node getSingleChild(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
 
-	Node getReferencedNode() throws ServiceException;
+    Node getReferencedNode() throws ServiceException;
 
-	Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
 
-	Node createNodeInChain(Node parentNode, INodeType nodeType) throws ServiceException;
+    Node createNodeInChain(Node parentNode, INodeType nodeType) throws ServiceException;
 
-	Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name) throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name) throws ServiceException;
 
-	Node createNodeInChain(Node parentNode, INodeType nodeType, String name) throws ServiceException;
+    Node createNodeInChain(Node parentNode, INodeType nodeType, String name) throws ServiceException;
 
-	Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name,
-			Map<String, Object> parameters) throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name,
+            Map<String, Object> parameters) throws ServiceException;
 
-	Node createNodeInChain(Node parentNode, INodeType nodeType, String name,
-			Map<String, Object> parameters) throws ServiceException;
+    Node createNodeInChain(Node parentNode, INodeType nodeType, String name, Map<String, Object> parameters)
+            throws ServiceException;
 
-	Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
-			throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
+            throws ServiceException;
 
-	Node createNodeInChain(Node parentNode, INodeType nodeType, Map<String, Object> parameters)
-			throws ServiceException;
+    Node createNodeInChain(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException;
 
-	void updateProperty(Node node, String propertyName, Object newValue) throws ServiceException;
+    void updateProperty(Node node, String propertyName, Object newValue) throws ServiceException;
 
-	<T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
-			final boolean throwExceptionIfNotExist) throws ServiceException;
+    <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
+            final boolean throwExceptionIfNotExist) throws ServiceException;
 
-	void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExist) throws ServiceException;
+    void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExist) throws ServiceException;
 
-	void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExist)
-			throws ServiceException;
+    void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExist)
+            throws ServiceException;
 
-	/**
-	 * get all children from parent node with {@link RelationshipType}
-	 * 
-	 * @param parentNode
-	 * @param relationshipType
-	 * @return
-	 * @throws ServiceException
-	 */
-	Iterator<Node> getChildren(Node parentNode, RelationshipType relationshipType) throws ServiceException;
+    /**
+     * get all children from parent node with {@link RelationshipType}
+     * 
+     * @param parentNode
+     * @param relationshipType
+     * @return
+     * @throws ServiceException
+     */
+    Iterator<Node> getChildren(Node parentNode, RelationshipType relationshipType) throws ServiceException;
 
-	/**
-	 * return all children from parent node with CHILD {@link RelationshipType}
-	 * 
-	 * @param parentNode
-	 * @return
-	 * @throws ServiceException
-	 */
-	Iterator<Node> getChildren(Node parentNode) throws ServiceException;
+    /**
+     * return all children from parent node with CHILD {@link RelationshipType}
+     * 
+     * @param parentNode
+     * @return
+     * @throws ServiceException
+     */
+    Iterator<Node> getChildren(Node parentNode) throws ServiceException;
 
-	void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
+    Iterator<Node> getChildrenChain(Node parentNode) throws ServiceException;
+
+    void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
 
 }

@@ -70,7 +70,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         @Override
         public int compare(final ITreeItem dataElement1, final ITreeItem dataElement2) {
             return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
-                    .getDataElement().getName().compareTo(dataElement2.getDataElement().getName());
+                    .getDataElement().compareTo(dataElement2.getDataElement());
         }
     }
 
@@ -132,8 +132,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
             dataElements.add(item);
         }
         Collections.sort(dataElements, getDataElementComparer());
-        List<Object> res = new ArrayList<Object>(dataElements);
-        return res.toArray();
+        return dataElements.toArray();
     }
 
     /**
@@ -149,9 +148,11 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         rootList.clear();
         List<T> roots = null;
         try {
-            roots = getRootElements();
-            for (T root : roots) {
-                rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+            if (getActiveProjectModel() != null) {
+                roots = getRootElements();
+                for (T root : roots) {
+                    rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+                }
             }
         } catch (ModelException e) {
             LOGGER.error("can't get roots", e);

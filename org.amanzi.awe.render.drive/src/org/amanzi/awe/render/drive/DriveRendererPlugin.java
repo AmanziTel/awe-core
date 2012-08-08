@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.render.drive;
 
-import org.amanzi.awe.console.AweConsolePlugin;
+import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -21,7 +21,7 @@ import org.osgi.framework.BundleContext;
  * 
  * @author Vladislav_Kondratenko
  */
-public class DriveRendererPlugin extends AweConsolePlugin {
+public class DriveRendererPlugin extends Plugin {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.render.drive";

@@ -17,7 +17,6 @@ import java.util.Iterator;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

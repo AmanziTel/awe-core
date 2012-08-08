@@ -26,7 +26,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 public abstract class AbstractPerspectiveFactory implements IPerspectiveFactory {
 
     /** float BOTTOM_LEFT_SIZE field */
-    private static final float BOTTOM_LEFT_SIZE = 0.25f;
+    private static final float BOTTOM_LEFT_SIZE = 0.65f;
     /** float BOTTOM_SIZE field */
     private static final float BOTTOM_SIZE = 0.65f;
     /** float TOP_LEFT_SIZE field */

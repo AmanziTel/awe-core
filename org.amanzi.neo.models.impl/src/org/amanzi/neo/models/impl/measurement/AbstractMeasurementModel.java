@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.impl.measurement;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.awe.filters.IFilter;
@@ -21,6 +22,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.dto.FileElement;
 import org.amanzi.neo.impl.dto.LocationElement;
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
@@ -31,6 +33,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.MeasurementRelationshipType;
@@ -50,203 +53,269 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public abstract class AbstractMeasurementModel extends AbstractDatasetModel implements IMeasurementModel {
 
-	private static final Logger LOGGER = Logger.getLogger(AbstractMeasurementModel.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractMeasurementModel.class);
 
-	private int locationCount;
+    protected final class MeasurementIterator extends AbstractDataElementIterator<IDataElement> {
 
-	private final ITimePeriodNodeProperties timePeriodNodeProperties;
+        /**
+         * @param nodeIterator
+         */
+        public MeasurementIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
 
-	private final IMeasurementNodeProperties measurementNodeProperties;
+        @Override
+        protected IDataElement createDataElement(final Node node) {
+            return convertToDataElement(node);
+        }
 
-	/**
-	 * @param nodeService
-	 * @param generalNodeProperties
-	 * @param geoNodeProperties
-	 */
-	protected AbstractMeasurementModel(final ITimePeriodNodeProperties timePeriodNodeProperties,
-			final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
-			final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProperties) {
-		super(nodeService, generalNodeProperties, geoNodeProperties);
-		this.timePeriodNodeProperties = timePeriodNodeProperties;
-		this.measurementNodeProperties = measurementNodeProperties;
-	}
+    }
 
-	@Override
-	public IFileElement getFile(final IDataElement parent, final String name, final String path) throws ModelException {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getStartLogStatement("getFile", parent, name, path));
-		}
+    private int locationCount;
 
-		// validate input
-		if (parent == null) {
-			throw new ParameterInconsistencyException("parent");
-		}
-		if (StringUtils.isEmpty(name)) {
-			throw new ParameterInconsistencyException(getGeneralNodeProperties().getNodeNameProperty(), name);
-		}
-		if (StringUtils.isEmpty(path)) {
-			throw new ParameterInconsistencyException(measurementNodeProperties.getFilePath(), path);
-		}
+    private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
-		IFileElement result = null;
+    private final IMeasurementNodeProperties measurementNodeProperties;
 
-		try {
-			DataElement parentElement = (DataElement)parent;
-			Node parentNode = parentElement.getNode();
+    /**
+     * @param nodeService
+     * @param generalNodeProperties
+     * @param geoNodeProperties
+     */
+    protected AbstractMeasurementModel(final ITimePeriodNodeProperties timePeriodNodeProperties,
+            final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
+            final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProperties) {
+        super(nodeService, generalNodeProperties, geoNodeProperties);
+        this.timePeriodNodeProperties = timePeriodNodeProperties;
+        this.measurementNodeProperties = measurementNodeProperties;
+    }
 
-			Node fileNode = getNodeService().getChildInChainByName(parentNode, name, MeasurementNodeType.FILE);
+    @Override
+    public IFileElement getFile(final IDataElement parent, final String name, final String path) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getFile", parent, name, path));
+        }
 
-			if (fileNode == null) {
-				Map<String, Object> properties = new HashMap<String, Object>();
+        // validate input
+        if (parent == null) {
+            throw new ParameterInconsistencyException("parent");
+        }
+        if (StringUtils.isEmpty(name)) {
+            throw new ParameterInconsistencyException(getGeneralNodeProperties().getNodeNameProperty(), name);
+        }
+        if (StringUtils.isEmpty(path)) {
+            throw new ParameterInconsistencyException(measurementNodeProperties.getFilePath(), path);
+        }
 
-				properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
-				properties.put(measurementNodeProperties.getFilePath(), path);
+        IFileElement result = null;
 
-				fileNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.FILE, properties);
-			}
+        try {
+            DataElement parentElement = (DataElement)parent;
+            Node parentNode = parentElement.getNode();
 
-			result = getFileElement(fileNode, name, path);
-		} catch (ServiceException e) {
-			processException("Error on adding new File", e);
-		}
+            Node fileNode = getNodeService().getChildInChainByName(parentNode, name, MeasurementNodeType.FILE);
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getFinishLogStatement("getFile"));
-		}
+            if (fileNode == null) {
+                Map<String, Object> properties = new HashMap<String, Object>();
 
-		return result;
-	}
+                properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
+                properties.put(measurementNodeProperties.getFilePath(), path);
 
-	@Override
-	public ILocationElement createLocation(final IDataElement parent, final double latitude, final double longitude,
-			final long timestamp) throws ModelException {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getStartLogStatement("createLocation", parent, latitude, longitude, timestamp));
-		}
+                fileNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.FILE, properties);
+            }
 
-		// validate input
-		if (parent == null) {
-			throw new ParameterInconsistencyException("parent");
-		}
+            result = getFileElement(fileNode, name, path);
+        } catch (ServiceException e) {
+            processException("Error on adding new File", e);
+        }
 
-		ILocationElement location = null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getFile"));
+        }
 
-		try {
-			DataElement measurementElement = (DataElement)parent;
-			Node measurementNode = measurementElement.getNode();
+        return result;
+    }
 
-			Map<String, Object> properties = new HashMap<String, Object>();
-			properties.put(getGeoNodeProperties().getLatitudeProperty(), latitude);
-			properties.put(getGeoNodeProperties().getLongitudeProperty(), longitude);
-			properties.put(timePeriodNodeProperties.getTimestampProperty(), timestamp);
+    @Override
+    public ILocationElement createLocation(final IDataElement parent, final double latitude, final double longitude,
+            final long timestamp) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createLocation", parent, latitude, longitude, timestamp));
+        }
 
-			Node locationNode = getNodeService().createNode(measurementNode, MeasurementNodeType.MP, MeasurementRelationshipType.LOCATION, properties);
+        // validate input
+        if (parent == null) {
+            throw new ParameterInconsistencyException("parent");
+        }
 
-			getIndexModel().indexInMultiProperty(MeasurementNodeType.MP, locationNode, Double.class, getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
-			updateLocation(latitude, longitude);
+        ILocationElement location = null;
 
-			location = getLocationElement(locationNode);
-		} catch (ServiceException e) {
-			processException("Exception on creating Location", e);
-		}
+        try {
+            DataElement measurementElement = (DataElement)parent;
+            Node measurementNode = measurementElement.getNode();
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getFinishLogStatement("createLocation"));
-		}
-		return location;
-	}
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put(getGeoNodeProperties().getLatitudeProperty(), latitude);
+            properties.put(getGeoNodeProperties().getLongitudeProperty(), longitude);
+            properties.put(timePeriodNodeProperties.getTimestampProperty(), timestamp);
 
-	@Override
-	public void addToLocation(final IDataElement measurement, final ILocationElement location) throws ModelException {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getStartLogStatement("addToLocation", measurement, location));
-		}
+            Node locationNode = getNodeService().createNode(measurementNode, MeasurementNodeType.MP,
+                    MeasurementRelationshipType.LOCATION, properties);
 
-		try {
-			DataElement measurementElement = (DataElement)measurement;
-			DataElement locationElement = (DataElement)location;
+            getIndexModel().indexInMultiProperty(MeasurementNodeType.MP, locationNode, Double.class,
+                    getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
+            updateLocation(latitude, longitude);
 
-			getNodeService().linkNodes(measurementElement.getNode(), locationElement.getNode(), MeasurementRelationshipType.LOCATION);
-		} catch (ServiceException e) {
-			processException("Error on adding Location to Measurement", e);
-		}
+            location = getLocationElement(locationNode);
+        } catch (ServiceException e) {
+            processException("Exception on creating Location", e);
+        }
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getFinishLogStatement("addToLocation"));
-		}
-	}
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createLocation"));
+        }
+        return location;
+    }
 
-	@Override
-	public IDataElement addMeasurement(final IDataElement parent, final Map<String, Object> properties) throws ModelException {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getStartLogStatement("addMeasurement", parent, properties));
-		}
+    @Override
+    public void addToLocation(final IDataElement measurement, final ILocationElement location) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("addToLocation", measurement, location));
+        }
 
-		// validate input
-		if (parent == null) {
-			throw new ParameterInconsistencyException("parent");
-		}
-		if ((properties == null) || properties.isEmpty()) {
-			throw new ParameterInconsistencyException("properties", properties);
-		}
+        try {
+            DataElement measurementElement = (DataElement)measurement;
+            DataElement locationElement = (DataElement)location;
 
-		IDataElement result = null;
+            getNodeService().linkNodes(measurementElement.getNode(), locationElement.getNode(),
+                    MeasurementRelationshipType.LOCATION);
+        } catch (ServiceException e) {
+            processException("Error on adding Location to Measurement", e);
+        }
 
-		try {
-			DataElement parentElement = (DataElement)parent;
-			Node parentNode = parentElement.getNode();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("addToLocation"));
+        }
+    }
 
-			Node measurementNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.M, properties);
+    @Override
+    public IDataElement addMeasurement(final IDataElement parent, final Map<String, Object> properties) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("addMeasurement", parent, properties));
+        }
 
-			result = getDataElement(measurementNode, null, null);
+        // validate input
+        if (parent == null) {
+            throw new ParameterInconsistencyException("parent");
+        }
+        if ((properties == null) || properties.isEmpty()) {
+            throw new ParameterInconsistencyException("properties", properties);
+        }
 
-			getIndexModel().indexInMultiProperty(MeasurementNodeType.M, measurementNode, Long.class, timePeriodNodeProperties.getTimestampProperty());
+        IDataElement result = null;
 
-			getPropertyStatisticsModel().indexElement(MeasurementNodeType.M, properties);
-		} catch (ServiceException e) {
-			processException("Error on adding Measurement", e);
-		}
+        try {
+            DataElement parentElement = (DataElement)parent;
+            Node parentNode = parentElement.getNode();
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(getFinishLogStatement("addMeasurement"));
-		}
-		return result;
-	}
+            Node measurementNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.M, properties);
 
-	@Override
-	public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+            result = getDataElement(measurementNode, null, null);
 
-	@Override
-	public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+            getIndexModel().indexInMultiProperty(MeasurementNodeType.M, measurementNode, Long.class,
+                    timePeriodNodeProperties.getTimestampProperty());
 
-	@Override
-	public int getRenderableElementCount() {
-		return locationCount;
-	}
+            getPropertyStatisticsModel().indexElement(MeasurementNodeType.M, properties);
+        } catch (ServiceException e) {
+            processException("Error on adding Measurement", e);
+        }
 
-	protected IFileElement getFileElement(final Node node, final String name, final String path) {
-		FileElement file = new FileElement(node);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("addMeasurement"));
+        }
+        return result;
+    }
 
-		file.setName(name);
-		file.setPath(path);
-		file.setNodeType(MeasurementNodeType.FILE);
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
+        Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
+        Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
 
-		return file;
-	}
+        Iterator<Node> nodeIterator = getIndexModel().getNodes(MeasurementNodeType.MP, Double.class, min, max,
+                getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
 
-	@Override
-	protected ILocationElement getLocationElement(final Node node) {
-		LocationElement location = new LocationElement(node);
+        return new LocationIterator(nodeIterator).toIterable();
+    }
 
-		location.setNodeType(MeasurementNodeType.MP);
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-		return location;
-	}
+    @Override
+    public int getRenderableElementCount() {
+        return locationCount;
+    }
+
+    protected IFileElement getFileElement(final Node node, final String name, final String path) {
+        FileElement file = new FileElement(node);
+
+        file.setName(name);
+        file.setPath(path);
+        file.setNodeType(MeasurementNodeType.FILE);
+
+        return file;
+    }
+
+    @Override
+    protected ILocationElement getLocationElement(final Node node) {
+        LocationElement location = new LocationElement(node);
+
+        location.setNodeType(MeasurementNodeType.MP);
+
+        return location;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+        assert parentElement != null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getChildren", parentElement));
+        }
+
+        Iterable<IDataElement> result = null;
+
+        try {
+            DataElement parent = (DataElement)parentElement;
+            Node parentNode = parent.getNode();
+
+            result = new MeasurementIterator(getNodeService().getChildrenChain(parentNode)).toIterable();
+        } catch (ServiceException e) {
+            processException("An error occured on search child for parent Element", e);
+        }
+        return result;
+    }
+
+    private IDataElement convertToDataElement(Node node) {
+        IDataElement element = null;
+
+        try {
+            INodeType type = getNodeService().getNodeType(node);
+
+            if (type.equals(MeasurementNodeType.M)) {
+                element = getDataElement(node, type, null);
+            } else if (type.equals(MeasurementNodeType.FILE)) {
+                String name = getNodeService().getNodeName(node);
+                String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePath(), null, false);
+
+                element = getFileElement(node, name, path);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error on converting Node to Measurement Element", e);
+        }
+
+        return element;
+    }
 
 }

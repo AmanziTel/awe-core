@@ -21,8 +21,7 @@ import net.refractions.udig.project.render.IRenderContext;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
-import org.amanzi.neo.services.model.IMeasurementModel;
-import org.amanzi.neo.services.model.IRenderableModel;
+import org.amanzi.neo.models.drive.IDriveModel;
 
 /**
  * metrics factory for drive rendere
@@ -34,6 +33,7 @@ public class DriveRendererMetricsFactory implements IRenderMetricsFactory {
     /**
      * @return a DriveRendererMetrics constructed on this context
      */
+    @Override
     public AbstractRenderMetrics createMetrics(IRenderContext context) {
         return new DriveRenderMetrics(context, this);
     }
@@ -41,6 +41,7 @@ public class DriveRendererMetricsFactory implements IRenderMetricsFactory {
     /**
      * @return DriveRenderer.class
      */
+    @Override
     public Class< ? extends IRenderer> getRendererType() {
         return DriveRenderer.class;
     }
@@ -48,10 +49,7 @@ public class DriveRendererMetricsFactory implements IRenderMetricsFactory {
     @Override
     public boolean canRender(IRenderContext context) throws IOException {
         for (IGeoResource resource : context.getLayer().getGeoResources()) {
-            if (resource.canResolve(IRenderableModel.class) && resource.canResolve(IMeasurementModel.class)) {
-                return true;
-                // return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
-            }
+            return resource.canResolve(IDriveModel.class);
         }
         return false;
     }

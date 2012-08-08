@@ -29,6 +29,7 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  * @since 1.0.0
  */
 public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
+    // TODO: LN: 08.08.2012, where is access modifier?
     INetworkModelProvider networkModelProvider;
 
     public NetworkTreeContentProvider() {
@@ -53,7 +54,6 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     @Override
     protected void handleInnerElements(ITreeItem<INetworkModel> item) throws ModelException {
         setChildren(item.getParent().getChildren(item.getDataElement()));
-
     }
 
     @Override

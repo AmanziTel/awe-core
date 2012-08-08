@@ -147,10 +147,12 @@ public enum Period {
 
     private final String id;
     private static final Period[] SORTED_PERIODS;
+
     static {
         SORTED_PERIODS = Period.values();
         ArrayUtils.reverse(SORTED_PERIODS);
     }
+
     private Period underlyingPeriod;
 
     private int underlyingPeriodCalendarField;
