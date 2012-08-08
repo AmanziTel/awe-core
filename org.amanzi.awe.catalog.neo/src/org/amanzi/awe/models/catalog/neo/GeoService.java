@@ -24,10 +24,12 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.IServiceInfo;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -68,6 +70,14 @@ public class GeoService extends IService {
         return url;
     }
 
+    private void addAllGIS(IRenderableModel model, List<IGeoResource> resourcesList) {
+        for (IGISModel gisModel : model.getAllGIS()) {
+            if (checkForExistCoordinateElement(gisModel)) {
+                resourcesList.add(new GeoResource(this, gisModel));
+            }
+        }
+    }
+
     @Override
     public List< ? extends IGeoResource> resources(IProgressMonitor monitor) throws IOException {
         if (members == null) {
@@ -80,11 +90,10 @@ public class GeoService extends IService {
                     if (activeProject != null) {
                         for (INetworkModel networkModel : NeoCatalogPlugin.getDefault().getNetworkModelProvider()
                                 .findAll(activeProject)) {
-                            for (IGISModel gisModel : networkModel.getAllGIS()) {
-                                if (checkForExistCoordinateElement(gisModel)) {
-                                    result.add(new GeoResource(this, gisModel));
-                                }
-                            }
+                            addAllGIS(networkModel, result);
+                        }
+                        for (IDriveModel driveModel : NeoCatalogPlugin.getDefault().getDriveModelProvider().findAll(activeProject)) {
+                            addAllGIS(driveModel, result);
                         }
                     }
                 } catch (ModelException e) {
