@@ -43,5 +43,5 @@ public class DateFormatTableContentProvider implements IStructuredContentProvide
     public Object[] getElements(Object inputElement) {
         return ArrayUtils.toArray(inputElement);
     }
-    
+
 }

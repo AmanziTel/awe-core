@@ -29,8 +29,7 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  * @since 1.0.0
  */
 public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
-    // TODO: LN: 08.08.2012, where is access modifier?
-    INetworkModelProvider networkModelProvider;
+    private INetworkModelProvider networkModelProvider;
 
     public NetworkTreeContentProvider() {
         this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());

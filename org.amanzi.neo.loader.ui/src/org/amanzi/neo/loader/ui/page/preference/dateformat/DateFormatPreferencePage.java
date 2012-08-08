@@ -47,6 +47,9 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
             DateFormatPreferencePageTableColumns.EXAMPLE_COLUMN);
     private static final DateFormatTableColumnProvider FORMAT_COLUMN_LABEL_PROVIDER = new DateFormatTableColumnProvider(
             DateFormatPreferencePageTableColumns.FORMAT_COLUMN);
+    
+    
+    
     private TableViewer tableViewer;
 
     @Override
