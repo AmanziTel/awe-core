@@ -61,7 +61,7 @@ public class NodeService extends AbstractService implements INodeService {
             .evaluator(Evaluators.atDepth(1));
 
     private static final TraversalDescription CHAIN_TRAVERSAL = Traversal.description().depthFirst()
-            .relationships(NodeServiceRelationshipType.CHILD, Direction.OUTGOING)
+            .evaluator(Evaluators.excludeStartPosition()).relationships(NodeServiceRelationshipType.CHILD, Direction.OUTGOING)
             .relationships(NodeServiceRelationshipType.NEXT, Direction.OUTGOING);
 
     /**
