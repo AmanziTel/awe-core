@@ -25,7 +25,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDataElement {
+public interface IDataElement extends Comparable<IDataElement> {
 
     /**
      * Gets a property value.

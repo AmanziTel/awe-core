@@ -36,7 +36,7 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
 
     @Override
     protected boolean additionalCheckChild(Object element) throws ModelException {
-        return false;
+        return true;
     }
 
     @Override

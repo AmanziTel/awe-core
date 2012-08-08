@@ -122,4 +122,16 @@ public class DataElement implements IDataElement {
     public String getName() {
         return name;
     }
+
+    @Override
+    public int compareTo(IDataElement o) {
+        if (name != null) {
+            return name.compareTo(o.getName());
+        } else if (node != null) {
+            DataElement element = (DataElement)o;
+
+            return element.getNode() == null ? 1 : new Long(node.getId()).compareTo(element.getNode().getId());
+        }
+        return 0;
+    }
 }

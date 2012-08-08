@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.models.impl.measurement;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.filters.IFilter;
@@ -32,6 +34,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.MeasurementRelationshipType;
@@ -257,6 +260,30 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         location.setNodeType(MeasurementNodeType.MP);
 
         return location;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+        assert parentElement != null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getChildren", parentElement));
+        }
+        List<IDataElement> elements = new ArrayList<IDataElement>();
+        Node parentNode = ((DataElement)parentElement).getNode();
+        try {
+            Iterator<Node> childs = getNodeService().getChildrenChain(parentNode);
+            while (childs.hasNext()) {
+                Node child = childs.next();
+
+                INodeType type = getNodeService().getNodeType(child);
+
+                IDataElement element = getDataElement(child, type, null);
+                elements.add(element);
+            }
+        } catch (Exception e) {
+            processException("An error occured on search child for parent Element", e);
+        }
+        return elements;
     }
 
 }
