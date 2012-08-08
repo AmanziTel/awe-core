@@ -39,7 +39,6 @@ public class Application extends UDIGApplication {
     @Override
     protected WorkbenchAdvisor createWorkbenchAdvisor() {
         AWEWorkbenchAdvivsor aweWorkbenchAdivsor = new AWEWorkbenchAdvivsor();
-
         return aweWorkbenchAdivsor;
     }
 
