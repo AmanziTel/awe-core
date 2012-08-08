@@ -4,17 +4,10 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Drive"
-            icon="icons/drive.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.drive.views.DriveInquirerView"
-            id="org.amanzi.awe.views.DriveInquirerView">
-      </view>
-      <view
-            category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.drive.views.DriveTreeView"
+            class="org.amanzi.awe.views.drive.view.DriveTreeView"
             icon="icons/drive.png"
-            id="org.amanzi.awe.views.drive.views.DriveTreeView"
+            id="org.amanzi.awe.views.drive.DriveTreeView"
             name="Drive Tree">
       </view>
    </extension>
@@ -23,15 +16,6 @@
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
-         <view
-               id="org.amanzi.awe.views.DriveInquirerView"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.DriveInquirerView">
-         </viewShortcut>
          <view
                id="org.amanzi.awe.views.drive.views.DriveTreeView"
                relationship="stack"

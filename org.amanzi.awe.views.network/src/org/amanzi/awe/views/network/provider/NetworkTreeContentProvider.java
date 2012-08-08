@@ -54,7 +54,6 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     @Override
     protected void handleInnerElements(ITreeItem<INetworkModel> item) throws ModelException {
         setChildren(item.getParent().getChildren(item.getDataElement()));
-
     }
 
     @Override
