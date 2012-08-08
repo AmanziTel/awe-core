@@ -28,7 +28,7 @@ import org.amanzi.neo.models.network.NetworkElementType;
  * @since 1.0.0
  */
 public class ShowInTreeCommand extends AbstractTreeCommandHandler {
-    private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
+    private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
 
     public ShowInTreeCommand() {
         super();

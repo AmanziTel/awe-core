@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Text;
 
 public class NetworkTreeView extends AbstractTreeView {
 
-    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
+    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
 
     /**
      * The constructor.

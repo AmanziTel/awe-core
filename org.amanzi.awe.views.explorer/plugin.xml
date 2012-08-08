@@ -38,5 +38,19 @@
          </command>
       </menuContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
+               minimized="false"
+               ratio="0.35"
+               relationship="top"
+               relative="net.refractions.udig.project.ui.layerManager"
+               visible="true">
+         </view>
+      </perspectiveExtension>
+   </extension>
    
 </plugin>

@@ -17,13 +17,14 @@
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
          <view
-               id="org.amanzi.awe.views.drive.views.DriveTreeView"
+               closeable="true"
+               id="org.amanzi.awe.views.drive.DriveTreeView"
                relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
+               relative="net.refractions.udig.project.ui.layerManager"
                visible="true">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.drive.views.DriveTreeView">
+               id="org.amanzi.awe.views.drive.DriveTreeView">
          </viewShortcut>
       </perspectiveExtension>
    </extension>

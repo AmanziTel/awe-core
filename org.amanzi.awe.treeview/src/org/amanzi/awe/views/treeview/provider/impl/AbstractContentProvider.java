@@ -149,9 +149,11 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         rootList.clear();
         List<T> roots = null;
         try {
-            roots = getRootElements();
-            for (T root : roots) {
-                rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+            if (getActiveProjectModel() != null) {
+                roots = getRootElements();
+                for (T root : roots) {
+                    rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+                }
             }
         } catch (ModelException e) {
             LOGGER.error("can't get roots", e);
