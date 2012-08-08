@@ -263,6 +263,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     }
 
     @Override
+    // TODO: LN: 08.08.2012, refactor to use NodeIterator
     public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
         assert parentElement != null;
         if (LOGGER.isDebugEnabled()) {
@@ -272,12 +273,23 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         Node parentNode = ((DataElement)parentElement).getNode();
         try {
             Iterator<Node> childs = getNodeService().getChildrenChain(parentNode);
+
             while (childs.hasNext()) {
                 Node child = childs.next();
 
                 INodeType type = getNodeService().getNodeType(child);
 
-                IDataElement element = getDataElement(child, type, null);
+                IDataElement element = null;
+
+                if (type.equals(MeasurementNodeType.M)) {
+                    element = getDataElement(child, type, null);
+                } else if (type.equals(MeasurementNodeType.FILE)) {
+                    String name = getNodeService().getNodeName(child);
+                    String path = getNodeService().getNodeProperty(child, measurementNodeProperties.getFilePath(), null, false);
+
+                    element = getFileElement(child, name, path);
+                }
+
                 elements.add(element);
             }
         } catch (Exception e) {

@@ -32,9 +32,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
@@ -164,8 +167,32 @@ public class NodeService extends AbstractService implements INodeService {
         return getDownlinkTraversal().relationships(relationshipType, Direction.OUTGOING);
     }
 
-    protected TraversalDescription getChildrenChainTraversal(final INodeType nodeType) {
-        return CHAIN_TRAVERSAL.evaluator(getPropertyEvaluatorForType(nodeType));
+    protected TraversalDescription getChildrenChainTraversal(final INodeType nodeType, final Node node) {
+        return getChildrenChainTraversal(node).evaluator(getPropertyEvaluatorForType(nodeType));
+    }
+
+    protected TraversalDescription getChildrenChainTraversal(final Node node) {
+        return CHAIN_TRAVERSAL.evaluator(new Evaluator() {
+
+            @Override
+            public Evaluation evaluate(Path path) {
+                boolean toContinue = true;
+                boolean include = true;
+                if (path.lastRelationship() != null) {
+                    Relationship relation = path.lastRelationship();
+                    if (relation.getStartNode().getId() == node.getId()) {
+                        toContinue = relation.isType(NodeServiceRelationshipType.CHILD);
+                    } else {
+                        toContinue = relation.isType(NodeServiceRelationshipType.NEXT);
+                    }
+                    include = toContinue;
+                } else {
+                    include = false;
+                }
+
+                return Evaluation.of(include, toContinue);
+            }
+        });
     }
 
     protected TraversalDescription getDownlinkTraversal() {
@@ -428,7 +455,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert parentNode != null;
 
         try {
-            return CHAIN_TRAVERSAL.traverse(parentNode).nodes().iterator();
+            return getChildrenChainTraversal(parentNode).traverse(parentNode).nodes().iterator();
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
@@ -473,7 +500,7 @@ public class NodeService extends AbstractService implements INodeService {
         boolean throwDuplicatedException = false;
 
         try {
-            Iterator<Node> nodes = getChildrenChainTraversal(nodeType)
+            Iterator<Node> nodes = getChildrenChainTraversal(nodeType, parentNode)
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
                     .nodes().iterator();
 
