@@ -30,4 +30,6 @@ public interface IMultiFileConfiguration extends IConfiguration {
 
     Iterator<File> getFileIterator();
 
+    int getFileCount();
+
 }

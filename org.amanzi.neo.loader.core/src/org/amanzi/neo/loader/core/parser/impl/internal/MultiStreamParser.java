@@ -22,6 +22,8 @@ import org.amanzi.neo.loader.core.IMultiFileConfiguration;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.parser.IParser.IFileParsingStartedListener;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -32,80 +34,91 @@ import org.amanzi.neo.loader.core.parser.IParser.IFileParsingStartedListener;
  * @since 1.0.0
  */
 public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P extends IParser<S, D>, C extends IMultiFileConfiguration, D extends IData>
-extends
-AbstractParser<C, D> implements IFileParsingStartedListener {
+        extends
+            AbstractParser<C, D> implements IFileParsingStartedListener {
 
-	private final class ParserIterator implements Iterator<P> {
+    private final class ParserIterator implements Iterator<P> {
 
-		private final Iterator<File> fileIterator;
+        private final Iterator<File> fileIterator;
 
-		public ParserIterator(final Iterator<File> fileIterator) {
-			this.fileIterator = fileIterator;
-		}
+        public ParserIterator(final Iterator<File> fileIterator) {
+            this.fileIterator = fileIterator;
+        }
 
-		@Override
-		public boolean hasNext() {
-			return fileIterator.hasNext();
-		}
+        @Override
+        public boolean hasNext() {
+            return fileIterator.hasNext();
+        }
 
-		@Override
-		public P next() {
-			return createParser(fileIterator.next());
-		}
+        @Override
+        public P next() {
+            return createParser(fileIterator.next());
+        }
 
-		@Override
-		public void remove() {
-			fileIterator.remove();
-		}
+        @Override
+        public void remove() {
+            fileIterator.remove();
+        }
 
-	}
+    }
 
-	private ParserIterator parserIterator;
+    private ParserIterator parserIterator;
 
-	private P currentParser;
+    private P currentParser;
 
-	@Override
-	public void init(final C configuration) {
-		super.init(configuration);
+    @Override
+    public void init(final C configuration) {
+        super.init(configuration);
 
-		parserIterator = new ParserIterator(configuration.getFileIterator());
-	}
+        parserIterator = new ParserIterator(configuration.getFileIterator());
+    }
 
-	@Override
-	protected D parseNextElement() throws IOException {
-		if ((currentParser != null) && currentParser.hasNext()) {
-			return currentParser.next();
-		} else {
-			if (parserIterator.hasNext()) {
-				parserIterator.next();
-				return parseNextElement();
-			}
-		}
-		return null;
-	}
+    @Override
+    protected D parseNextElement() throws IOException {
+        if ((currentParser != null) && currentParser.hasNext()) {
+            return currentParser.next();
+        } else {
+            if (parserIterator.hasNext()) {
+                parserIterator.next();
+                return parseNextElement();
+            }
+        }
+        return null;
+    }
 
-	private P createParser(final File file) {
-		currentParser = createParserInstance();
-		S configuration = createSingleFileConfiguration(file, getConfiguration());
-		currentParser.init(configuration);
+    private P createParser(final File file) {
+        currentParser = createParserInstance();
+        S configuration = createSingleFileConfiguration(file, getConfiguration());
+        currentParser.init(configuration);
+        currentParser.addFileParsingListener(this);
 
-		currentParser.addFileParsingListener(this);
+        SubProgressMonitor monitor = new SubProgressMonitor(getProgressMonitor(), 1);
+        currentParser.setProgressMonitor(file.getName(), monitor);
 
-		return currentParser;
-	}
+        work(1);
 
-	protected abstract P createParserInstance();
+        return currentParser;
+    }
 
-	protected abstract S createSingleFileConfiguration(File file, C configuration);
+    protected abstract P createParserInstance();
 
-	@Override
-	public void onFileParsingStarted(final File file) {
-		onNewFileParsingStarted(file);
-	}
+    protected abstract S createSingleFileConfiguration(File file, C configuration);
 
-	@Override
-	protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {
-		return null;
-	}
+    @Override
+    public void onFileParsingStarted(final File file) {
+        onNewFileParsingStarted(file);
+    }
+
+    @Override
+    public void setProgressMonitor(final String monitorName, final IProgressMonitor monitor) {
+        monitor.beginTask(monitorName, getConfiguration().getFileCount());
+
+        super.setProgressMonitor(monitorName, monitor);
+    }
+
+    @Override
+    protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {
+        return null;
+    }
 
 }

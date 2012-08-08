@@ -47,4 +47,9 @@ public class MultiFileConfiguration extends AbstractConfiguration implements IMu
         return files.iterator();
     }
 
+    @Override
+    public int getFileCount() {
+        return files.size();
+    }
+
 }

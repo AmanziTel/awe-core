@@ -53,6 +53,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
         switch (event.getStatus()) {
         case AWE_STARTED:
         case DATA_UPDATED:
+        case PROJECT_CHANGED:
             updateCatalog();
             break;
         case SHOW_GIS_ON_MAP:

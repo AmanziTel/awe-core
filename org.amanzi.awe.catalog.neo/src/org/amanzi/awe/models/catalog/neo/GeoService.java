@@ -77,11 +77,13 @@ public class GeoService extends IService {
                     IProjectModel activeProject = NeoCatalogPlugin.getDefault().getProjectModelProvider().getActiveProjectModel();
 
                     // add all network models
-                    for (INetworkModel networkModel : NeoCatalogPlugin.getDefault().getNetworkModelProvider()
-                            .findAll(activeProject)) {
-                        for (IGISModel gisModel : networkModel.getAllGIS()) {
-                            if (checkForExistCoordinateElement(gisModel)) {
-                                result.add(new GeoResource(this, gisModel));
+                    if (activeProject != null) {
+                        for (INetworkModel networkModel : NeoCatalogPlugin.getDefault().getNetworkModelProvider()
+                                .findAll(activeProject)) {
+                            for (IGISModel gisModel : networkModel.getAllGIS()) {
+                                if (checkForExistCoordinateElement(gisModel)) {
+                                    result.add(new GeoResource(this, gisModel));
+                                }
                             }
                         }
                     }
