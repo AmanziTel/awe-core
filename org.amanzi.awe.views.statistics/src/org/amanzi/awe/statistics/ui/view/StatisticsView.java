@@ -87,7 +87,6 @@ import org.eclipse.ui.part.ViewPart;
  */
 public class StatisticsView extends ViewPart {
 
-    private static final ControlsFactory CONTROLS_FACTORY = ControlsFactory.getInstance();
     private static final Logger LOGGER = Logger.getLogger(StatisticsView.class);
     private static final String ASTERISK = "*";
     private static final String SEPARATOR = "----------";
@@ -488,8 +487,7 @@ public class StatisticsView extends ViewPart {
                     statistics = statisticsManager.processStatistics(templateName, model, property, period, monitor);
                 } catch (StatisticsException e) {
                     LOGGER.error("can't build statistics because of", e);
-                    // TODO: LN: 01.08.2012, return error status
-                    return Status.CANCEL_STATUS;
+                    return new Status(IStatus.ERROR, StatisticsPlugin.PLUGIN_ID, Messages.statisticsViewErrorMessage);
                 }
                 return Status.OK_STATUS;
             }
@@ -528,31 +526,31 @@ public class StatisticsView extends ViewPart {
         /*
          * top controls
          */
-        lDataset = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelDataset);
-        cDataset = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        bRefreshDatasets = CONTROLS_FACTORY.getButton(topControlsComposite, StringUtils.EMPTY);
+        lDataset = createLabel(topControlsComposite, Messages.statisticsViewLabelDataset);
+        cDataset = createCombobox(topControlsComposite);
+        bRefreshDatasets = createButton(topControlsComposite, StringUtils.EMPTY);
         bRefreshDatasets.setImage(StatisticsPlugin.getImageDescriptor(Messages.pathToRefreshButtonImg).createImage());
-        lTemplate = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelTemplate);
-        cTemplate = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        lAggregation = CONTROLS_FACTORY.getLabel(topControlsComposite, Messages.statisticsViewLabelAggregation);
-        cAggregation = CONTROLS_FACTORY.getCombobox(topControlsComposite);
-        bBuild = CONTROLS_FACTORY.getButton(topControlsComposite, Messages.statisticsViewLabelBuild);
+        lTemplate = createLabel(topControlsComposite, Messages.statisticsViewLabelTemplate);
+        cTemplate = createCombobox(topControlsComposite);
+        lAggregation = createLabel(topControlsComposite, Messages.statisticsViewLabelAggregation);
+        cAggregation = createCombobox(topControlsComposite);
+        bBuild = createButton(topControlsComposite, Messages.statisticsViewLabelBuild);
         /*
          * bottom controls
          */
-        lPeriod = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelPeriod);
-        cPeriod = CONTROLS_FACTORY.getCombobox(bottomControlsComposite);
-        lStartTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelStartTime);
-        dDateStart = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        dTimeStart = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        bResetStart = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
-        lEndTime = CONTROLS_FACTORY.getLabel(bottomControlsComposite, Messages.statisticsViewLabelEndTime);
-        dDateEnd = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        dTimeEnd = CONTROLS_FACTORY.getDateTime(bottomControlsComposite);
-        bResetEnd = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
-        bReport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelReport);
-        bExport = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelExport);
-        bChartView = CONTROLS_FACTORY.getButton(bottomControlsComposite, Messages.statisticsViewLabelChartView);
+        lPeriod = createLabel(bottomControlsComposite, Messages.statisticsViewLabelPeriod);
+        cPeriod = createCombobox(bottomControlsComposite);
+        lStartTime = createLabel(bottomControlsComposite, Messages.statisticsViewLabelStartTime);
+        dDateStart = createDateTime(bottomControlsComposite);
+        dTimeStart = createDateTime(bottomControlsComposite);
+        bResetStart = createButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
+        lEndTime = createLabel(bottomControlsComposite, Messages.statisticsViewLabelEndTime);
+        dDateEnd = createDateTime(bottomControlsComposite);
+        dTimeEnd = createDateTime(bottomControlsComposite);
+        bResetEnd = createButton(bottomControlsComposite, Messages.statisticsViewLabelResetButton);
+        bReport = createButton(bottomControlsComposite, Messages.statisticsViewLabelReport);
+        bExport = createButton(bottomControlsComposite, Messages.statisticsViewLabelExport);
+        bChartView = createButton(bottomControlsComposite, Messages.statisticsViewLabelChartView);
         // ------- table
         tableViewer = new TableViewer(mainComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         setEnabled(false, mainComposite);
@@ -720,5 +718,44 @@ public class StatisticsView extends ViewPart {
         } else {
             bReport.setEnabled(groupNames.size() < MAX_GROUPS_PER_CHART);
         }
+    }
+
+    /**
+     * create combobox control
+     */
+    public Combo createCombobox(Composite layout) {
+        return new Combo(layout, SWT.NONE);
+    }
+
+    /**
+     * create label control
+     * 
+     * @param layout
+     * @param name
+     * @return
+     */
+    public Label createLabel(Composite layout, String name) {
+        Label label = new Label(layout, SWT.NONE);
+        label.setText(name);
+        return label;
+    }
+
+    /**
+     * create combobox control
+     */
+    public Button createButton(Composite layout, String name) {
+        Button button = new Button(layout, SWT.NONE);
+        button.setText(name);
+        return button;
+    }
+
+    /**
+     * create DateTime control
+     * 
+     * @param layout
+     * @return
+     */
+    public DateTime createDateTime(Composite layout) {
+        return new DateTime(layout, SWT.NONE);
     }
 }

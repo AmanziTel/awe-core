@@ -18,6 +18,8 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 /**
  * <p>
  * Time periods
@@ -27,29 +29,6 @@ import java.util.List;
  * @since 1.0.0
  */
 public enum Period {
-    // 15 min
-    QUATER_HOUR("15min", null, -1) {
-        @Override
-        public Long addPeriod(Long time) {
-            Calendar cl = Calendar.getInstance();
-            cl.setTimeInMillis(time);
-            cl.add(Calendar.MINUTE, 15);
-            return cl.getTimeInMillis();
-        }
-
-        @Override
-        public Long getStartTime(Long time) {
-            GregorianCalendar cl = new GregorianCalendar();
-            cl.setTimeInMillis(time);
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MILLISECOND, 0);
-            int min = cl.get(Calendar.MINUTE);
-            min = min - (min % 15);
-            cl.set(Calendar.MINUTE, min);
-            return cl.getTimeInMillis();
-        }
-
-    },
     // 1 hour
     HOURLY(Messages.ctrHourly, null, -1) {
         @Override
@@ -167,9 +146,11 @@ public enum Period {
     };
 
     private final String id;
-    // TODO: LN: 01.08.2012, do we need it? we can just sort Period.values by odd()
-    private static final Period[] SORTED_PERIODS = new Period[] {Period.ALL, Period.YEARLY, Period.MONTHLY, WEEKLY, Period.DAILY,
-            Period.HOURLY};
+    private static final Period[] SORTED_PERIODS;
+    static {
+        SORTED_PERIODS = Period.values();
+        ArrayUtils.reverse(SORTED_PERIODS);
+    }
     private Period underlyingPeriod;
 
     private int underlyingPeriodCalendarField;
@@ -252,7 +233,6 @@ public enum Period {
         // starting with highest period
         Period highestPeriod;
         Period result = null;
-
         for (int i = 0; (i < SORTED_PERIODS.length) && (result == null); i++) {
             highestPeriod = SORTED_PERIODS[i];
 

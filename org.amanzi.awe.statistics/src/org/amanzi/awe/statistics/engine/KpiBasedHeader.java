@@ -65,7 +65,6 @@ public class KpiBasedHeader implements IStatisticsHeader {
 
     @Override
     public String toString() {
-        // TODO: LN: 01.08.2012, to constant
         return String.format(TO_STRING_PATTERN, name, kpiName);
     }
 

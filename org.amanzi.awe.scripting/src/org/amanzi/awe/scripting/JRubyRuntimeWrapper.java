@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.jruby.Ruby;
@@ -62,9 +63,7 @@ public class JRubyRuntimeWrapper {
      * @throws FileNotFoundException
      */
     public Object executeScriptByName(String scriptId) throws FileNotFoundException, ScriptingException {
-        // TODO: LN: 01.08.2012, bad check, if you checking script name format - please check
-        // everything
-        if (!scriptId.contains(NAME_SEPARATOR)) {
+        if (StringUtils.isEmpty(scriptId) && !scriptId.contains(NAME_SEPARATOR)) {
             LOGGER.error(scriptId + " has incorrect format. Correct format is <MODULE>:<SCRIPT_NAME>");
         }
         String[] splittedName = scriptId.split(NAME_SEPARATOR);

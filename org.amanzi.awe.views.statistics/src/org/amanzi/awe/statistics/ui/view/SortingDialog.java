@@ -16,6 +16,8 @@ package org.amanzi.awe.statistics.ui.view;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.awe.statistics.entities.impl.StatisticsCell;
 import org.amanzi.awe.statistics.entities.impl.StatisticsGroup;
@@ -23,11 +25,14 @@ import org.amanzi.awe.statistics.entities.impl.StatisticsRow;
 import org.amanzi.awe.statistics.ui.Messages;
 import org.amanzi.awe.statistics.ui.StatisticsPlugin;
 import org.amanzi.awe.statistics.ui.view.table.StatisticsComparator;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -58,7 +63,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * sorting table dialog TODO Purpose of
+ * sorting table dialog
  * <p>
  * </p>
  * 
@@ -69,6 +74,75 @@ public class SortingDialog extends Shell {
     private static final Image sortAscImage = StatisticsPlugin.getImageDescriptor("icons/Asc.png").createImage();
     private static final Image sortDescImage = StatisticsPlugin.getImageDescriptor("icons/Desc.png").createImage();
     private static final RegexViewerFilter regexFilter = new RegexViewerFilter();
+    private static final String MATCHES_PATTERN = ".*%s.*";
+    protected static final ViewerFilter[] EMPTY_FILTERS_ARRAY = new ViewerFilter[] {};
+    private static final IContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            return null;
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            return false;
+        }
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            @SuppressWarnings("unchecked")
+            List<String> input = (List<String>)inputElement;
+            int size = input.size();
+            Object[] elements = new Object[size + 1];
+            elements = ArrayUtils.addAll(input.toArray(), elements);
+            elements[0] = Messages.sortingDialogLabelSelectAll;
+            return elements;
+        }
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        }
+
+    };
+    private static final IBaseLabelProvider LABEL_PROVIDER = new ILabelProvider() {
+
+        @Override
+        public Image getImage(Object element) {
+            return null;
+        }
+
+        @Override
+        public String getText(Object element) {
+            return (String)element;
+        }
+
+        @Override
+        public void addListener(ILabelProviderListener listener) {
+        }
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+
+        @Override
+        public void removeListener(ILabelProviderListener listener) {
+        }
+
+    };
 
     private Table table;
     private final Point location;
@@ -90,19 +164,17 @@ public class SortingDialog extends Shell {
     private final TableColumn currentColumn;
     private final TableViewer tableViewer;
     private final boolean isAditionalColumnNecessary;
-    // TODO: LN: 01.08.2012, move to the top
-    private static final String MATCHES_PATTERN = ".*%s.*";
 
     public SortingDialog(TableViewer viewer, Collection<String> selectionList, Collection<String> groups, int colNum,
             boolean isAditionalColumnNecessary) {
         super(viewer.getTable().getShell(), SWT.BORDER);
         this.tableViewer = viewer;
+        this.table = tableViewer.getTable();
         this.selection = selectionList;
         this.groups = groups;
         this.colNum = colNum;
         this.isAditionalColumnNecessary = isAditionalColumnNecessary;
 
-        // TODO: LN: 01.08.2012, possible NPE - this field is not initialized
         table.getColumn(colNum);
         this.currentColumn = viewer.getTable().getColumn(colNum);
         location = table.getDisplay().getCursorLocation();
@@ -120,7 +192,6 @@ public class SortingDialog extends Shell {
 
             @Override
             public void mouseDown(MouseEvent e) {
-                // TODO: LN: 01.08.2012, using SWT constants for direction is not clear
                 updateSorting(table, colNum, currentColumn, SWT.DOWN);
                 close();
             }
@@ -129,7 +200,6 @@ public class SortingDialog extends Shell {
 
             @Override
             public void mouseDown(MouseEvent e) {
-                // TODO: LN: 01.08.2012, using SWT constants for direction is not clear
                 updateSorting(table, colNum, currentColumn, SWT.UP);
                 close();
             }
@@ -141,8 +211,7 @@ public class SortingDialog extends Shell {
             public void mouseDown(MouseEvent e) {
                 selection.clear();
                 selection.addAll(groups);
-                // TODO: LN: 01.08.2012, make a constant with empty array
-                tableViewer.setFilters(new ViewerFilter[] {});
+                tableViewer.setFilters(EMPTY_FILTERS_ARRAY);
                 tableViewer.getTable().getShell().notifyListeners(TableListenersType.UPDATE_BUTTON, null);
                 close();
             }
@@ -176,12 +245,9 @@ public class SortingDialog extends Shell {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 selection = new ArrayList<String>();
-
+                String txtSearchText = txtSearch.getText();
                 for (Object element : treeViewer.getCheckedElements()) {
-                    // TODO: LN: 01.08.2012, do compute txtSearch.getText() and
-                    // txtSearch.getText().isEmpty each iteration
-                    if (txtSearch.getText().isEmpty()
-                            || (!txtSearch.getText().isEmpty() && matches(txtSearch.getText(), (String)element))) {
+                    if (txtSearchText.isEmpty() || matches(txtSearchText, (String)element)) {
                         selection.add((String)element);
 
                     }
@@ -352,77 +418,8 @@ public class SortingDialog extends Shell {
      * @param treeViewer tree viewer to configure
      */
     private void configureTreeViewer(final CheckboxTreeViewer treeViewer) {
-        // TODO: LN: 01.08.2012, move to constant
-        treeViewer.setContentProvider(new ITreeContentProvider() {
-
-            @Override
-            public Object[] getChildren(Object parentElement) {
-                return null;
-            }
-
-            @Override
-            public Object getParent(Object element) {
-                return null;
-            }
-
-            @Override
-            public boolean hasChildren(Object element) {
-                return false;
-            }
-
-            @Override
-            public Object[] getElements(Object inputElement) {
-                @SuppressWarnings("unchecked")
-                List<String> input = (List<String>)inputElement;
-                int size = input.size();
-                // TODO: LN: 01.08.2012, use here simple '1' or '0' for better reading
-                Object[] elements = new Object[size + NumberUtils.INTEGER_ONE];
-                // TODO: LN: 01.08.2012, use ArrayUtils
-                System.arraycopy(input.toArray(), NumberUtils.INTEGER_ZERO, elements, NumberUtils.INTEGER_ONE, size);
-                elements[0] = Messages.sortingDialogLabelSelectAll;
-                return elements;
-            }
-
-            @Override
-            public void dispose() {
-            }
-
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-
-        });
-        // TODO: LN: 01.08.2012, move to constant
-        treeViewer.setLabelProvider(new ILabelProvider() {
-
-            @Override
-            public Image getImage(Object element) {
-                return null;
-            }
-
-            @Override
-            public String getText(Object element) {
-                return (String)element;
-            }
-
-            @Override
-            public void addListener(ILabelProviderListener listener) {
-            }
-
-            @Override
-            public void dispose() {
-            }
-
-            @Override
-            public boolean isLabelProperty(Object element, String property) {
-                return false;
-            }
-
-            @Override
-            public void removeListener(ILabelProviderListener listener) {
-            }
-
-        });
+        treeViewer.setContentProvider(CONTENT_PROVIDER);
+        treeViewer.setLabelProvider(LABEL_PROVIDER);
         treeViewer.setInput(groups);
         treeViewer.addCheckStateListener(new ICheckStateListener() {
 
@@ -468,9 +465,9 @@ public class SortingDialog extends Shell {
      * @return true if matches
      */
     private static boolean matches(String filterText, String textToCompare) {
-        // TODO: LN: 01.08.2012, do is it make sense to call toLowerCase if we can use IgnoreCase in
-        // Pattern?
-        return textToCompare.toLowerCase().matches(String.format(MATCHES_PATTERN, filterText));
+        Pattern pattern = Pattern.compile(String.format(MATCHES_PATTERN, filterText), Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(filterText);
+        return matcher.matches();
     }
 
     /**

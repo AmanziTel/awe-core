@@ -22,8 +22,8 @@ import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -44,13 +44,8 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
 
     private static final DataElementComparator DATA_ELEMENT_COMPARER = new DataElementComparator();
 
-    // TODO: LN: 07.08.2012, is someone use this field?
-    private final IGeneralNodeProperties generalNodeProperties;
     private Iterable<IDataElement> children = null;
 
-    // TODO: LN: 07.08.2012, why this fields declared there if they didn't used in this class????
-    private final INetworkModelProvider networkModelProvider;
-    // TODO: LN: 07.08.2012, why this fields declared there if they didn't used in this class????
     private final IProjectModelProvider projectModelProvider;
 
     private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
@@ -59,12 +54,10 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @param networkModelProvider
      * @param projectModelProvider
      */
-    protected AbstractContentProvider(final INetworkModelProvider networkModelProvider,
-            final IProjectModelProvider projectModelProvider, final IGeneralNodeProperties generalNodeProperties) {
+    protected AbstractContentProvider(final IProjectModelProvider projectModelProvider,
+            final IGeneralNodeProperties generalNodeProperties) {
         super();
-        this.networkModelProvider = networkModelProvider;
         this.projectModelProvider = projectModelProvider;
-        this.generalNodeProperties = generalNodeProperties;
     }
 
     /**
@@ -194,24 +187,10 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
 
     /**
-     * @return Returns the generalNodeProperties.
-     */
-    protected IGeneralNodeProperties getGeneralNodeProperties() {
-        return generalNodeProperties;
-    }
-
-    /**
      * @return Returns the rootList.
      */
     protected List<ITreeItem<T>> getRootList() {
         return rootList;
-    }
-
-    /**
-     * @return Returns the networkModelProvider.
-     */
-    protected INetworkModelProvider getNetworkModelProvider() {
-        return networkModelProvider;
     }
 
     /**
@@ -233,5 +212,9 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      */
     protected void setChildren(final Iterable<IDataElement> children) {
         this.children = children;
+    }
+
+    protected IProjectModel getActiveProjectModel() {
+        return projectModelProvider.getActiveProjectModel();
     }
 }

@@ -38,20 +38,7 @@ public class Application extends UDIGApplication {
      */
     @Override
     protected WorkbenchAdvisor createWorkbenchAdvisor() {
-        AWEWorkbenchAdvivsor aweWorkbenchAdivsor = new AWEWorkbenchAdvivsor() {
-            // TODO: LN: 07.08.2012, why you override this method in anonymous class if you can add
-            // this method to AWEWorkbenchAdvisor?
-            /**
-             * @see org.eclipse.ui.application.WorkbenchAdvisor#initialize(org.eclipse.ui.application.IWorkbenchConfigurer)
-             */
-            @Override
-            public void initialize(IWorkbenchConfigurer configurer) {
-                AWEEventManager.getManager().fireInitialiseEvent();
-                super.initialize(configurer);
-                configurer.setSaveAndRestore(true);
-            }
-
-        };
+        AWEWorkbenchAdvivsor aweWorkbenchAdivsor = new AWEWorkbenchAdvivsor();
 
         return aweWorkbenchAdivsor;
     }
@@ -73,6 +60,16 @@ public class Application extends UDIGApplication {
         public boolean preShutdown() {
             AWEEventManager.getManager().fireAWEStoppedEvent();
             return super.preShutdown();
+        }
+
+        /**
+         * @see org.eclipse.ui.application.WorkbenchAdvisor#initialize(org.eclipse.ui.application.IWorkbenchConfigurer)
+         */
+        @Override
+        public void initialize(IWorkbenchConfigurer configurer) {
+            AWEEventManager.getManager().fireInitialiseEvent();
+            super.initialize(configurer);
+            configurer.setSaveAndRestore(true);
         }
 
         @Override

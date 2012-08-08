@@ -37,6 +37,7 @@ import org.amanzi.neo.providers.IProjectModelProvider;
 public class ProjectTreeContentProvider extends AbstractContentProvider<IProjectModel> {
 
     private final IDriveModelProvider driveModelProvider;
+    private final INetworkModelProvider networkModelProvider;
 
     public ProjectTreeContentProvider() {
         this(AWEUIPlugin.getDefault().getDriveModelProvider(), AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin
@@ -51,8 +52,8 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     protected ProjectTreeContentProvider(final IDriveModelProvider driveModelProvider,
             final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider,
             final IGeneralNodeProperties generalNodeProperties) {
-        super(networkModelProvider, projectModelProvider, generalNodeProperties);
-
+        super(projectModelProvider, generalNodeProperties);
+        this.networkModelProvider = networkModelProvider;
         this.driveModelProvider = driveModelProvider;
     }
 
@@ -73,7 +74,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
         if (!item.getParent().asDataElement().equals(item.getDataElement())) {
             return;
         }
-        for (INetworkModel model : getNetworkModelProvider().findAll(item.getParent())) {
+        for (INetworkModel model : networkModelProvider.findAll(item.getParent())) {
             models.add(model.asDataElement());
         }
         for (IDriveModel model : driveModelProvider.findAll(item.getParent())) {

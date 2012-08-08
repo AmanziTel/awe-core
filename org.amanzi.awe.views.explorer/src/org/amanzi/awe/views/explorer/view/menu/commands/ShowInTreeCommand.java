@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.views.explorer.view.menu.commands;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.treeview.command.handlers.AbstractTreeCommandHandler;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
@@ -32,7 +31,7 @@ public class ShowInTreeCommand extends AbstractTreeCommandHandler {
     private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
     public ShowInTreeCommand() {
-        super(AWEUIPlugin.getDefault().getGeneralNodeProperties());
+        super();
     }
 
     @Override
