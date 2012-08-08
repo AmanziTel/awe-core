@@ -23,7 +23,6 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -54,8 +53,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @param networkModelProvider
      * @param projectModelProvider
      */
-    protected AbstractContentProvider(final IProjectModelProvider projectModelProvider,
-            final IGeneralNodeProperties generalNodeProperties) {
+    protected AbstractContentProvider(final IProjectModelProvider projectModelProvider) {
         this.projectModelProvider = projectModelProvider;
     }
 

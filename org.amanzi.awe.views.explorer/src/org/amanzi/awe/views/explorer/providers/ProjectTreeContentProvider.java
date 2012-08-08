@@ -24,7 +24,6 @@ import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -36,12 +35,13 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  */
 public class ProjectTreeContentProvider extends AbstractContentProvider<IProjectModel> {
 
+    private static final Iterable<IDataElement> EMPTY_ELEMENTS_COLLECTION = new ArrayList<IDataElement>();
     private final IDriveModelProvider driveModelProvider;
     private final INetworkModelProvider networkModelProvider;
 
     public ProjectTreeContentProvider() {
         this(AWEUIPlugin.getDefault().getDriveModelProvider(), AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin
-                .getDefault().getProjectModelProvider(), AWEUIPlugin.getDefault().getGeneralNodeProperties());
+                .getDefault().getProjectModelProvider());
 
     }
 
@@ -50,9 +50,8 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
      * @param projectModelProvider
      */
     protected ProjectTreeContentProvider(final IDriveModelProvider driveModelProvider,
-            final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider,
-            final IGeneralNodeProperties generalNodeProperties) {
-        super(projectModelProvider, generalNodeProperties);
+            final INetworkModelProvider networkModelProvider, final IProjectModelProvider projectModelProvider) {
+        super(projectModelProvider);
         this.networkModelProvider = networkModelProvider;
         this.driveModelProvider = driveModelProvider;
     }
@@ -72,6 +71,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     protected void handleInnerElements(final ITreeItem<IProjectModel> item) throws ModelException {
         List<IDataElement> models = new ArrayList<IDataElement>();
         if (!item.getParent().asDataElement().equals(item.getDataElement())) {
+            setChildren(EMPTY_ELEMENTS_COLLECTION);
             return;
         }
         for (INetworkModel model : networkModelProvider.findAll(item.getParent())) {
