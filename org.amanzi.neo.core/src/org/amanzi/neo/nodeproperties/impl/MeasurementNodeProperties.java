@@ -27,12 +27,19 @@ public class MeasurementNodeProperties implements IMeasurementNodeProperties {
 
     private static final String FILE_PATH_PROPERTY = "path";
 
+    private static final String PRIMARY_TYPE_PROPERTY = "primary_type";
+
     /**
      * @return Returns the filePathProperty.
      */
     @Override
-    public String getFilePath() {
+    public String getFilePathProperty() {
         return FILE_PATH_PROPERTY;
+    }
+
+    @Override
+    public String getPrimaryTypeProperty() {
+        return PRIMARY_TYPE_PROPERTY;
     }
 
 }

@@ -34,6 +34,7 @@ import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.MeasurementRelationshipType;
@@ -54,6 +55,8 @@ import com.vividsolutions.jts.geom.Envelope;
 public abstract class AbstractMeasurementModel extends AbstractDatasetModel implements IMeasurementModel {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractMeasurementModel.class);
+
+    private static final INodeType DEFAULT_PRIMARY_TYPE = MeasurementNodeType.M;
 
     protected final class MeasurementIterator extends AbstractDataElementIterator<IDataElement> {
 
@@ -76,6 +79,12 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
     private final IMeasurementNodeProperties measurementNodeProperties;
+
+    private long minTimestamp = Long.MAX_VALUE;
+
+    private long maxTimestamp = Long.MIN_VALUE;
+
+    private INodeType primaryType = DEFAULT_PRIMARY_TYPE;
 
     /**
      * @param nodeService
@@ -104,7 +113,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             throw new ParameterInconsistencyException(getGeneralNodeProperties().getNodeNameProperty(), name);
         }
         if (StringUtils.isEmpty(path)) {
-            throw new ParameterInconsistencyException(measurementNodeProperties.getFilePath(), path);
+            throw new ParameterInconsistencyException(measurementNodeProperties.getFilePathProperty(), path);
         }
 
         IFileElement result = null;
@@ -119,7 +128,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
                 Map<String, Object> properties = new HashMap<String, Object>();
 
                 properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
-                properties.put(measurementNodeProperties.getFilePath(), path);
+                properties.put(measurementNodeProperties.getFilePathProperty(), path);
 
                 fileNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.FILE, properties);
             }
@@ -218,14 +227,17 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             DataElement parentElement = (DataElement)parent;
             Node parentNode = parentElement.getNode();
 
-            Node measurementNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.M, properties);
+            Node measurementNode = getNodeService().createNodeInChain(parentNode, getMainMeasurementNodeType(), properties);
 
             result = getDataElement(measurementNode, null, null);
 
-            getIndexModel().indexInMultiProperty(MeasurementNodeType.M, measurementNode, Long.class,
+            getIndexModel().indexInMultiProperty(getMainMeasurementNodeType(), measurementNode, Long.class,
                     timePeriodNodeProperties.getTimestampProperty());
 
-            getPropertyStatisticsModel().indexElement(MeasurementNodeType.M, properties);
+            getPropertyStatisticsModel().indexElement(getMainMeasurementNodeType(), properties);
+
+            Long timestamp = (Long)properties.get(timePeriodNodeProperties.getTimestampProperty());
+            updateTimestamp(timestamp);
         } catch (ServiceException e) {
             processException("Error on adding Measurement", e);
         }
@@ -234,6 +246,11 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             LOGGER.debug(getFinishLogStatement("addMeasurement"));
         }
         return result;
+    }
+
+    private void updateTimestamp(long timestamp) {
+        minTimestamp = Math.min(minTimestamp, timestamp);
+        maxTimestamp = Math.max(maxTimestamp, timestamp);
     }
 
     @Override
@@ -303,11 +320,11 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         try {
             INodeType type = getNodeService().getNodeType(node);
 
-            if (type.equals(MeasurementNodeType.M)) {
+            if (type.equals(getMainMeasurementNodeType())) {
                 element = getDataElement(node, type, null);
             } else if (type.equals(MeasurementNodeType.FILE)) {
                 String name = getNodeService().getNodeName(node);
-                String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePath(), null, false);
+                String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePathProperty(), null, false);
 
                 element = getFileElement(node, name, path);
             }
@@ -318,4 +335,38 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         return element;
     }
 
+    @Override
+    public INodeType getMainMeasurementNodeType() {
+        return primaryType;
+    }
+
+    @Override
+    public void initialize(Node node) throws ModelException {
+        try {
+            super.initialize(node);
+
+            minTimestamp = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getMinTimestampProperty(),
+                    Long.MAX_VALUE, false);
+            maxTimestamp = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getMaxTimestampProperty(),
+                    Long.MIN_VALUE, false);
+            String primaryTypeName = getNodeService().getNodeProperty(node, measurementNodeProperties.getPrimaryTypeProperty(),
+                    DEFAULT_PRIMARY_TYPE.getId(), false);
+            primaryType = NodeTypeManager.getInstance().getType(primaryTypeName);
+        } catch (Exception e) {
+            processException("Error on initialization of Measurement Model", e);
+        }
+    }
+
+    @Override
+    public void finishUp() throws ModelException {
+        try {
+            getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getMinTimestampProperty(), minTimestamp);
+            getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getMaxTimestampProperty(), maxTimestamp);
+            getNodeService().updateProperty(getRootNode(), measurementNodeProperties.getPrimaryTypeProperty(), primaryType.getId());
+
+            super.finishUp();
+        } catch (ServiceException e) {
+            processException("Exception on finishin up Measurement Model", e);
+        }
+    }
 }

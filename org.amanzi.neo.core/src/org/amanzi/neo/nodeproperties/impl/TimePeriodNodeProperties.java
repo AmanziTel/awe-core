@@ -27,9 +27,23 @@ public class TimePeriodNodeProperties implements ITimePeriodNodeProperties {
 
     private static final String TIMESTAMP_PROPERTY = "timestamp";
 
+    private static final String MIN_TIMESTAMP_PROPERTY = "min_timestamp";
+
+    private static final String MAX_TIMESTAMP_PROPERTY = "max_timestamp";
+
     @Override
     public String getTimestampProperty() {
         return TIMESTAMP_PROPERTY;
+    }
+
+    @Override
+    public String getMinTimestampProperty() {
+        return MIN_TIMESTAMP_PROPERTY;
+    }
+
+    @Override
+    public String getMaxTimestampProperty() {
+        return MAX_TIMESTAMP_PROPERTY;
     }
 
 }

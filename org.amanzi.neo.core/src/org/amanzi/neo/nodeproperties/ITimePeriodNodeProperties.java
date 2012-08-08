@@ -25,4 +25,8 @@ public interface ITimePeriodNodeProperties extends INodeProperties {
 
     String getTimestampProperty();
 
+    String getMinTimestampProperty();
+
+    String getMaxTimestampProperty();
+
 }
