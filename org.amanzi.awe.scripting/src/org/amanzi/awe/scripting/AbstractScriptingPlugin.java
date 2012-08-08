@@ -25,6 +25,8 @@ import java.util.Map;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
@@ -66,12 +68,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     private JRubyRuntimeWrapper runtimeWrapper;
     private final ScriptingManager manager = new ScriptingManager();
-
-    /**
-     * initialize plugin
-     */
-    // TODO: LN: 07.08.2012, do you need this method?
-    protected abstract void initPlugin();
 
     /**
      * initialize runtime with required scripts from ruby/common folder
@@ -179,8 +175,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-            // TODO: LN: 07.08.2012, remove commented lines
-            // runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
             initRuntimeWithDefaultScripts();
         } catch (Exception e) {
@@ -239,24 +233,10 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static class ScriptingManager {
 
         private static final String SCRIPT_NAME_FORMAT = "%s:%s";
-        // TODO: LN: 07.08.2012, try to use FileFilterUtils from ApacheCommons
-        private static final FileFilter ALL_RUBY_FILES = new FileFilter() {
 
-            @Override
-            public boolean accept(File pathname) {
-                final String name = pathname.getName();
-                return name.endsWith(".rb") || name.endsWith(".t");
-            }
-        };
-        private static final FileFilter FILE_FILTER_TO_LOAD = new FileFilter() {
-
-            @Override
-            public boolean accept(File pathname) {
-                final String name = pathname.getName();
-                return name.endsWith(".t");
-            }
-        };
-
+        private static final IOFileFilter FILE_FILTER_TO_LOAD = FileFilterUtils.suffixFileFilter(".t");
+        private static final FileFilter ALL_RUBY_FILES = FileFilterUtils.orFileFilter(FILE_FILTER_TO_LOAD,
+                FileFilterUtils.suffixFileFilter(".rb"));
         private File scriptsFolder;
 
         /**
@@ -267,30 +247,27 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * @throws IOException
          */
         public void initWorkspace() throws IOException {
-            scriptsFolder = new File(WORKSPACE_FOLDER + File.separator + SCRIPTS_FOLDER);
+
+            scriptsFolder = new File(WORKSPACE_FOLDER, SCRIPTS_FOLDER);
             if (!scriptsFolder.exists()) {
                 FileUtils.forceMkdir(scriptsFolder);
             }
         }
 
         public void copySources(URL rubyScriptingFolder) throws IOException {
+            LOGGER.info("< start copy modules folder to" + scriptsFolder + " >");
             File rubyFolder = new File(rubyScriptingFolder.getPath());
-            for (File source : rubyFolder.listFiles()) {
-                if (!source.isDirectory() || source.getName().equals(COMMON_SCRIPTS_FOLDER)) {
+            for (File module : rubyFolder.listFiles()) {
+                if (!module.isDirectory() || module.getName().equals(COMMON_SCRIPTS_FOLDER)) {
                     continue;
                 }
-                String scriptFolderName = source.getAbsolutePath();
-                // TODO: LN: 07.08.2012, what about source.getParent().getName() ?
-                scriptFolderName = scriptFolderName.substring(0, scriptFolderName.length());
-                scriptFolderName = scriptFolderName.substring(scriptFolderName.lastIndexOf(File.separator) + 1,
-                        scriptFolderName.length());
-                File destination;
-                // TODO: LN: 07.08.2012, what about constructore of File with two parameters?
-                String createScriptFolder = scriptsFolder.getAbsolutePath() + File.separator + scriptFolderName;
-                destination = new File(createScriptFolder);
+                String scriptFolderName = module.getName();
+                File destination = new File(scriptsFolder.getAbsolutePath(), scriptFolderName);
                 FileUtils.forceMkdir(destination);
-                FileUtils.copyDirectory(source, destination, ALL_RUBY_FILES);
+                FileUtils.copyDirectory(module, destination, ALL_RUBY_FILES);
+                LOGGER.info("<  modules" + module.getName() + " copyed to " + scriptsFolder.getName() + " >");
             }
+            LOGGER.info("<  All modules coppyed " + scriptsFolder.list() + " >");
         }
 
         /**
@@ -306,8 +283,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * @return
          */
         public Map<String, File> getAllWorkspaceScripts(FileFilter filter) {
-            // TODO: LN: 07.08.2012, what about constructore of File with two parameters?
-            File projectFolder = new File(WORKSPACE_FOLDER + File.separator + SCRIPTS_FOLDER);
+            File projectFolder = new File(WORKSPACE_FOLDER, SCRIPTS_FOLDER);
             File[] modules = projectFolder.listFiles();
             Map<String, File> fileList = new HashMap<String, File>();
             for (File module : modules) {

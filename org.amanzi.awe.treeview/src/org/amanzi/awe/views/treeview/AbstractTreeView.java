@@ -19,7 +19,6 @@ import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -53,14 +52,11 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     private final AWEEventManager eventManager;
 
-    private final IGeneralNodeProperties generalNodeProperties;
-
     private TreeViewer treeViewer;
     private Text tSearch;
 
-    protected AbstractTreeView(IGeneralNodeProperties properties, IContentProvider provider) {
+    protected AbstractTreeView(IContentProvider provider) {
         super();
-        generalNodeProperties = properties;
         this.contentProvider = provider;
         this.eventManager = AWEEventManager.getManager();
         addEventListeners();
@@ -101,21 +97,12 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void createPartControl(Composite parent) {
-        // TODO: LN: 07.08.2012, does it make sense to create new method?
-        createControls(parent);
-    }
-
-    /**
-     * @param parent
-     */
-    protected void createControls(Composite parent) {
         LOGGER.info("start create controls");
         treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         setProviders();
         getTreeViewer().setInput(getSite());
         getSite().setSelectionProvider(getTreeViewer());
         setLayout(parent);
-
     }
 
     /**
@@ -185,23 +172,6 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected void setSearchField(Text tSearch) {
         this.tSearch = tSearch;
-    }
-
-    /**
-     * @return Returns the generalNodeProperties.
-     */
-    // TODO: LN: 07.08.2012, is someone use this method?
-    protected IGeneralNodeProperties getGeneralNodeProperties() {
-        // TODO: LN: 07.08.2012, is someone use this field?
-        return generalNodeProperties;
-    }
-
-    /**
-     * @return Returns the eventManager.
-     */
-    // TODO: LN: 07.08.2012, is someone use this method?
-    protected AWEEventManager getEventManager() {
-        return eventManager;
     }
 
     /**

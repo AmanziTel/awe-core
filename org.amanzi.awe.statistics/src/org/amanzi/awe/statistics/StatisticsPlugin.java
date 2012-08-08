@@ -55,9 +55,4 @@ public class StatisticsPlugin extends AbstractScriptingPlugin {
         return plugin;
     }
 
-    @Override
-    protected void initPlugin() {
-
-    }
-
 }

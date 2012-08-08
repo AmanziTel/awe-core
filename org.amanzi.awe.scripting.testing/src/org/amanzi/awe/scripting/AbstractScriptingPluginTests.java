@@ -84,7 +84,7 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
 
     @Test
     public void testProjectScriptFolderCreated() {
-        File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+        File projectFolder = new File(WORKSPACE_FOLDER, PROJECT_FOLDER);
         boolean isExist = false;
         for (File module : modules) {
             isExist = false;
@@ -94,7 +94,7 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
                 }
             }
             if (!isExist) {
-                Assert.fail("some modules not exists in workspace");
+                Assert.fail("module " + module.getName() + " doesn't exist in " + projectFolder.getAbsolutePath());
             }
         }
         Assert.assertTrue("Destination folder and source folder have different structure",
@@ -103,7 +103,7 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
 
     @Test
     public void testProjectScriptFolderContainsAllScripts() {
-        File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+        File projectFolder = new File(WORKSPACE_FOLDER, PROJECT_FOLDER);
         List<File> destinationRbFiles = new ArrayList<File>();
         for (File destProject : projectFolder.listFiles()) {
             destinationRbFiles.addAll(Arrays.asList(destProject.listFiles()));
@@ -119,9 +119,8 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
                 }
             }
             if (!isExist) {
-                Assert.assertTrue("file" + source.getParentFile().getName() + File.separator + source.getName()
-                        + "doesn't exist in " + projectFolder.getName() + File.separator + source.getParentFile().getName()
-                        + " directory", isExist);
+                Assert.assertTrue("file " + source.getParentFile().getName() + File.separator + source.getName()
+                        + " doesn't exist in " + projectFolder.getAbsolutePath() + " directory", isExist);
             }
         }
     }
@@ -149,7 +148,7 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
                 requiredModule = module;
             }
         }
-        Assert.assertEquals("Not expected count of files", TestActivator.getDefault().getScriptsForProject(projectName).size(),
+        Assert.assertEquals("Not expected count of files ", TestActivator.getDefault().getScriptsForProject(projectName).size(),
                 requiredModule.listFiles().length);
 
     }

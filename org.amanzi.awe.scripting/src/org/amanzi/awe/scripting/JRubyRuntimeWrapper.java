@@ -39,8 +39,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class JRubyRuntimeWrapper {
     private static final Logger LOGGER = Logger.getLogger(JRubyRuntimeWrapper.class);
     private static final String NAME_SEPARATOR = ":";
-    private static final int ZERO_ELEMENT_INDEX = NumberUtils.INTEGER_ZERO;
-    private static final int FIRST_ELEMNT_INDEX = NumberUtils.INTEGER_ONE;
+    private static final int MODULE_ELEMENT_INDEX = NumberUtils.INTEGER_ZERO;
+    private static final int SCRIPT_NAME_ELEMENT_INDEX = NumberUtils.INTEGER_ONE;
 
     private final Ruby runtime;
     private final File destination;
@@ -68,13 +68,14 @@ public class JRubyRuntimeWrapper {
             LOGGER.error(scriptId + " has incorrect format. Correct format is <MODULE>:<SCRIPT_NAME>");
         }
         String[] splittedName = scriptId.split(NAME_SEPARATOR);
-        String project = splittedName[ZERO_ELEMENT_INDEX];
-        File destination = checkForExistance(project);
+        String moduleName = splittedName[MODULE_ELEMENT_INDEX];
+        File destination = getModuleFolder(moduleName);
         if (destination == null) {
-            LOGGER.error("Module " + project + " doesn't exists in script folder");
-            throw new FileNotFoundException("Module " + project + " doesn't exists in script folder");
+            LOGGER.error("Module " + moduleName + " doesn't exists in script folder");
+            throw new FileNotFoundException("Module " + moduleName + " doesn't exists in script folder "
+                    + this.destination.getAbsolutePath());
         }
-        String scriptName = splittedName[FIRST_ELEMNT_INDEX];
+        String scriptName = splittedName[SCRIPT_NAME_ELEMENT_INDEX];
         String script = ScriptUtils.getInstance().getScript(scriptName, destination);
         return executeScript(script);
     }
@@ -96,8 +97,10 @@ public class JRubyRuntimeWrapper {
      * 
      * @param name
      */
-    private File checkForExistance(String name) {
+    private File getModuleFolder(String name) {
         File[] existedModules = destination.listFiles();
+        LOGGER.info("< Start searching " + name + " in destination  " + destination.getAbsolutePath() + " children "
+                + destination.list() + " >");
         for (File module : existedModules) {
             if (module.getName().equals(name)) {
                 return module;

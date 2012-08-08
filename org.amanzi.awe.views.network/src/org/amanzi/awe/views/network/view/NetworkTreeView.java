@@ -12,10 +12,8 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -37,20 +35,19 @@ public class NetworkTreeView extends AbstractTreeView {
      * The constructor.
      */
     public NetworkTreeView() {
-        this(AWEUIPlugin.getDefault().getGeneralNodeProperties(), new NetworkTreeContentProvider());
+        this(new NetworkTreeContentProvider());
     }
 
-    protected NetworkTreeView(IGeneralNodeProperties properties, NetworkTreeContentProvider networkTreeContentProvider) {
-        super(properties, networkTreeContentProvider);
+    protected NetworkTreeView(NetworkTreeContentProvider networkTreeContentProvider) {
+        super(networkTreeContentProvider);
     }
 
     /**
      * This is a callback that will allow us to create the viewer and initialize it.
      */
-
     @Override
-    protected void createControls(Composite parent) {
+    public void createPartControl(Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
-        super.createControls(parent);
+        super.createPartControl(parent);
     }
 }

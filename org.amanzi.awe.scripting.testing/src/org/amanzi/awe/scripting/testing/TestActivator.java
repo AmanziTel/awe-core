@@ -52,9 +52,4 @@ public class TestActivator extends AbstractScriptingPlugin {
         return plugin;
     }
 
-    @Override
-    protected void initPlugin() {
-
-    }
-
 }

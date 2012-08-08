@@ -29,41 +29,40 @@ import org.eclipse.ui.PlatformUI;
  * @since 1.0.0
  */
 public class Neo4jLocationInitializer implements IAWEEventListenter {
-	@Override
-	public void onEvent(final IEvent event) {
-		switch (event.getStatus()) {
-		case INITIALISATION:
-			relocateDatabase(null);
-			break;
-		default:
-			break;
-		}
+    @Override
+    public void onEvent(final IEvent event) {
+        switch (event.getStatus()) {
+        case INITIALISATION:
+            relocateDatabase(null);
+            break;
+        default:
+            break;
+        }
 
-	}
+    }
 
-	private void relocateDatabase(final String path) {
-		boolean isUsed = false;
-		if (StringUtils.isEmpty(path)) {
-			isUsed = DatabaseManagerFactory.getDatabaseManager().isAlreadyUsed();
-		} else {
-			isUsed = DatabaseManagerFactory.getDatabaseManager(path, true).isAlreadyUsed();
-		}
-		if (isUsed) {
-			ChooseDatabaseLocationDialog dialog = new ChooseDatabaseLocationDialog(PlatformUI.getWorkbench().getDisplay()
-					.getActiveShell(), DatabaseManagerFactory.getDatabaseManager().getLocation());
-			//TODO: LN: 07.08.2012, spelling mistake
-			int opennResult = dialog.open();
-			switch (opennResult) {
-			case Window.CANCEL:
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().close();
-				break;
-			case Window.OK:
-				relocateDatabase(dialog.getDatabaseLocation());
-				break;
-			default:
-				break;
-			}
+    private void relocateDatabase(final String path) {
+        boolean isUsed = false;
+        if (StringUtils.isEmpty(path)) {
+            isUsed = DatabaseManagerFactory.getDatabaseManager().isAlreadyUsed();
+        } else {
+            isUsed = DatabaseManagerFactory.getDatabaseManager(path, true).isAlreadyUsed();
+        }
+        if (isUsed) {
+            ChooseDatabaseLocationDialog dialog = new ChooseDatabaseLocationDialog(PlatformUI.getWorkbench().getDisplay()
+                    .getActiveShell(), DatabaseManagerFactory.getDatabaseManager().getLocation());
+            int openResult = dialog.open();
+            switch (openResult) {
+            case Window.CANCEL:
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().close();
+                break;
+            case Window.OK:
+                relocateDatabase(dialog.getDatabaseLocation());
+                break;
+            default:
+                break;
+            }
 
-		}
-	}
+        }
+    }
 }
