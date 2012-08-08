@@ -38,9 +38,7 @@ public class Application extends UDIGApplication {
      */
     @Override
     protected WorkbenchAdvisor createWorkbenchAdvisor() {
-        AWEWorkbenchAdvivsor aweWorkbenchAdivsor = new AWEWorkbenchAdvivsor();
-
-        return aweWorkbenchAdivsor;
+        return new AWEWorkbenchAdvivsor();
     }
 
     private class AWEWorkbenchAdvivsor extends UDIGWorkbenchAdvisor {
@@ -62,13 +60,11 @@ public class Application extends UDIGApplication {
             return super.preShutdown();
         }
 
-        /**
-         * @see org.eclipse.ui.application.WorkbenchAdvisor#initialize(org.eclipse.ui.application.IWorkbenchConfigurer)
-         */
         @Override
         public void initialize(IWorkbenchConfigurer configurer) {
-            AWEEventManager.getManager().fireInitialiseEvent();
             super.initialize(configurer);
+
+            AWEEventManager.getManager().fireInitialiseEvent();
             configurer.setSaveAndRestore(true);
         }
 

@@ -272,6 +272,7 @@ public class ScriptUtils {
      * @throws IOException
      */
     private String inputStreamToString(InputStream stream) throws ScriptingException {
+        // TODO: LN: 08.08.2012, use IOUtils
         BufferedReader reader = null;
         try {
             StringBuffer buffer = new StringBuffer();
