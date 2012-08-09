@@ -13,7 +13,9 @@
 
 package org.amanzi.neo.models.impl.drive;
 
+import org.amanzi.neo.models.drive.DriveType;
 import org.amanzi.neo.models.drive.IDriveModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.measurement.AbstractMeasurementModel;
 import org.amanzi.neo.models.measurement.MeasurementNodeType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -22,6 +24,9 @@ import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -33,31 +38,58 @@ import org.amanzi.neo.services.INodeService;
  */
 public class DriveModel extends AbstractMeasurementModel implements IDriveModel {
 
-    private IDriveType driveType;
+	private IDriveType driveType;
 
-    /**
-     * @param nodeService
-     * @param generalNodeProperties
-     * @param geoNodeProperties
-     */
-    public DriveModel(final ITimePeriodNodeProperties timePeriodNodeProperties,
-            final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
-            final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProperties) {
-        super(timePeriodNodeProperties, measurementNodeProperties, nodeService, generalNodeProperties, geoNodeProperties);
-    }
+	/**
+	 * @param nodeService
+	 * @param generalNodeProperties
+	 * @param geoNodeProperties
+	 */
+	public DriveModel(final ITimePeriodNodeProperties timePeriodNodeProperties,
+			final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
+			final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProperties) {
+		super(timePeriodNodeProperties, measurementNodeProperties, nodeService, generalNodeProperties, geoNodeProperties);
+	}
 
-    @Override
-    protected INodeType getModelType() {
-        return MeasurementNodeType.DRIVE;
-    }
+	@Override
+	protected INodeType getModelType() {
+		return MeasurementNodeType.DRIVE;
+	}
 
-    public void setDriveType(final IDriveType driveType) {
-        this.driveType = driveType;
-    }
+	public void setDriveType(final IDriveType driveType) {
+		this.driveType = driveType;
+	}
 
-    @Override
-    public IDriveType getDriveType() {
-        return driveType;
-    }
+	@Override
+	public IDriveType getDriveType() {
+		return driveType;
+	}
+
+	@Override
+	public void initialize(final Node node) throws ModelException {
+		super.initialize(node);
+
+		try {
+			String driveTypeName = getNodeService().getNodeProperty(node, getMeasurementNodeProperties().getDriveTypeProperty(), StringUtils.EMPTY, false);
+			this.driveType = getDriveType(driveTypeName);
+		} catch (ServiceException e) {
+			processException("Error on initializing Drive Model", e);
+		}
+	}
+
+	@Override
+	public void finishUp() throws ModelException {
+		try {
+			getNodeService().updateProperty(getRootNode(), getMeasurementNodeProperties().getDriveTypeProperty(), driveType.toString());
+		} catch (ServiceException e) {
+			processException("Error on finishing up Drive Model", e);
+		}
+
+		super.finishUp();
+	}
+
+	protected IDriveType getDriveType(final String driveType) {
+		return DriveType.valueOf(driveType);
+	}
 
 }
