@@ -71,8 +71,12 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
     }
 
     public void setModel(final IMeasurementModel model) {
-        this.propertyModel = model.getPropertyStatistics();
-        this.nodeType = model.getMainMeasurementNodeType();
+        if (model != null) {
+            this.propertyModel = model.getPropertyStatistics();
+            this.nodeType = model.getMainMeasurementNodeType();
+
+            fillCombo();
+        }
     }
 
     public void setModel(final IPropertyStatisticalModel model, final INodeType nodeType) {

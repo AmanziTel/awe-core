@@ -83,6 +83,12 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     }
 
     protected D getSelectedItem() {
+        String itemText = getControl().getText();
+
+        if (!StringUtils.isEmpty(itemText)) {
+            selectedItem = items.get(itemText);
+        }
+
         return selectedItem;
     }
 
@@ -120,6 +126,8 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         }
 
         getControl().setText(text);
+
+        fireEvent();
     }
 
     protected abstract Collection<D> getItems();
