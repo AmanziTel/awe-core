@@ -19,30 +19,33 @@
 			</activation>
 
 			<build>
-				<plugin>
-					<artifactId>maven-antrun-plugin</artifactId>
-					<version>1.6</version>
-					<executions>
-						<execution>
-							<id>update-zip-files</id>
-							<phase>install</phase>
-							<configuration>
-								<target>
-									<move verbose="true" todir="${project.build.directory}/products">
-										<mapper type="regexp" from="^(awe.*-)(.*)$$" to="\${project.parent.version}-${BUILD_NUMBER}-\2" />
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>update-zip-files</id>
+								<phase>install</phase>
+								<configuration>
+									<target>
+										<move verbose="true" todir="${project.build.directory}/products">
+											<mapper type="regexp" from="^(awe.*-)(.*)$$"
+												to="\${project.parent.version}-${BUILD_NUMBER}-\2" />
 
-										<fileset dir="${project.build.directory}/products">
-											<include name="*.zip" />
-										</fileset>
-									</move>
-								</target>
-							</configuration>
-							<goals>
-								<goal>run</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
+											<fileset dir="${project.build.directory}/products">
+												<include name="*.zip" />
+											</fileset>
+										</move>
+									</target>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>
