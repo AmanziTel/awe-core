@@ -15,6 +15,8 @@ package org.amanzi.awe.ui.view.widget;
 
 import java.util.Collection;
 
+import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectedListener;
+import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget;
 import org.amanzi.awe.ui.view.widget.internal.AbstractDatasetComboWidget;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -33,9 +35,15 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveComboWidget extends AbstractDatasetComboWidget<IDriveModel> {
+public class DriveComboWidget extends AbstractDatasetComboWidget<IDriveModel, IDriveSelectedListener> {
 
     private static final Logger LOGGER = Logger.getLogger(DriveComboWidget.class);
+
+    public interface IDriveSelectedListener extends AbstractComboWidget.IComboSelectionListener {
+
+        void onDriveModelSelected(IDriveModel model);
+
+    }
 
     private final IDriveModelProvider driveModelProvider;
 
@@ -63,5 +71,9 @@ public class DriveComboWidget extends AbstractDatasetComboWidget<IDriveModel> {
         return CollectionUtils.EMPTY_COLLECTION;
     }
 
+    @Override
+    protected void fireListener(final IDriveSelectedListener listener, final IDriveModel selectedItem) {
+        listener.onDriveModelSelected(selectedItem);
+    }
 
 }

@@ -13,13 +13,6 @@
 
 package org.amanzi.awe.ui.view;
 
-import org.amanzi.awe.ui.events.EventStatus;
-import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.listener.IAWEEventListenter;
-import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.providers.IProjectModelProvider;
-import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
@@ -31,37 +24,19 @@ import org.eclipse.ui.part.ViewPart;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractAWEView extends ViewPart implements IAWEEventListenter {
+public abstract class AbstractAWEView extends ViewPart {
 
-    private static final EventStatus[] SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
-
-    private final IProjectModelProvider projectModelProvider;
-
-    protected AbstractAWEView(final IProjectModelProvider projectModelProvider) {
-        this.projectModelProvider = projectModelProvider;
-    }
-
-    @Override
-    public void onEvent(final IEvent event) {
-        if (ArrayUtils.contains(SUPPORTED_EVENTS, event.getStatus())) {
-            update();
-        }
+    protected AbstractAWEView() {
     }
 
     @Override
     public void createPartControl(final Composite parent) {
 
 
-        addEvents();
-    }
-
-    protected void addEvents() {
-        AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
     }
 
     @Override
     public void dispose() {
-        AWEEventManager.getManager().removeListener(this);
     }
 
     @Override
@@ -70,9 +45,5 @@ public abstract class AbstractAWEView extends ViewPart implements IAWEEventListe
     }
 
     protected abstract void update();
-
-    protected IProjectModel getActiveProject() {
-        return projectModelProvider.getActiveProjectModel();
-    }
 
 }

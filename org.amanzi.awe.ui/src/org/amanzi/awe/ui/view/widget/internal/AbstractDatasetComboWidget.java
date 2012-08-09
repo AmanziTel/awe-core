@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.ui.view.widget.internal;
 
+import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget.IComboSelectionListener;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -26,7 +27,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetComboWidget<D extends IModel> extends AbstractComboWidget<D> {
+public abstract class AbstractDatasetComboWidget<D extends IModel, L extends IComboSelectionListener> extends AbstractComboWidget<D, L> {
 
     private final IProjectModelProvider projectModelProvider;
 

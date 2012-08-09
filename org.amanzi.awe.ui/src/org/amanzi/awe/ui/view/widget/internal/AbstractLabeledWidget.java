@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.ui.view.widget.internal;
 
+import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget.IAWEWidgetListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,7 +29,7 @@ import org.eclipse.swt.widgets.Label;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractLabeledWidget<C extends Control> extends AbstractAWEWidget<Composite> {
+public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWidgetListener> extends AbstractAWEWidget<Composite, L> {
 
     private static final GridLayout DEFAULT_LABELED_COMBO_LAYOUT = new GridLayout(2, false);
 
@@ -48,7 +49,7 @@ public abstract class AbstractLabeledWidget<C extends Control> extends AbstractA
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
         Composite composite = new Composite(parent, style);
-        composite.setLayoutData(DEFAULT_LABELED_COMBO_LAYOUT);
+        composite.setLayout(DEFAULT_LABELED_COMBO_LAYOUT);
 
         Label comboLabel = new Label(composite, SWT.NONE);
         comboLabel.setText(label);

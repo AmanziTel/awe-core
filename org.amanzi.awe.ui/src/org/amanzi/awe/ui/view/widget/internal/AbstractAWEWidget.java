@@ -13,6 +13,10 @@
 
 package org.amanzi.awe.ui.view.widget.internal;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget.IAWEWidgetListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
@@ -25,11 +29,26 @@ import org.eclipse.swt.widgets.Layout;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractAWEWidget<C extends Control> {
+public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetListener> {
 
-    private final C widget;
+    protected interface IAWEWidgetListener {
+
+    }
+
+    private C widget;
+
+    private final Composite parent;
+
+    private final int style;
+
+    private final Set<L> listeners = new HashSet<L>();
 
     protected AbstractAWEWidget(final Composite parent, final int style) {
+        this.parent = parent;
+        this.style = style;
+    }
+
+    public void initializeWidget() {
         widget = createWidget(parent, style);
     }
 
@@ -39,6 +58,16 @@ public abstract class AbstractAWEWidget<C extends Control> {
         widget.setLayoutData(layout);
     }
 
-    protected abstract void dispose();
+    public void addListener(final L listener) {
+        listeners.add(listener);
+    }
+
+    protected Set<L> getListeners() {
+        return listeners;
+    }
+
+    protected void dispose() {
+        listeners.clear();
+    }
 
 }

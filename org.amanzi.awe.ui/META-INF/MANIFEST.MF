@@ -11,14 +11,15 @@ Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reex
  org.amanzi.neo.db;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.ui,
- org.amanzi.awe.ui.events,
+Export-Package: org.amanzi.awe.ui.events,
  org.amanzi.awe.ui.events.impl,
  org.amanzi.awe.ui.icons,
  org.amanzi.awe.ui.label,
  org.amanzi.awe.ui.listener,
  org.amanzi.awe.ui.manager,
  org.amanzi.awe.ui.util,
- org.amanzi.awe.ui.view
+ org.amanzi.awe.ui.view,
+ org.amanzi.awe.ui.view.widget,
+ org.amanzi.awe.ui.view.widget.internal
 Eclipse-ExtensibleAPI: true
  
