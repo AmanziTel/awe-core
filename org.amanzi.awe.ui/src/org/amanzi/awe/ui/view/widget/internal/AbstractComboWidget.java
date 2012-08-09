@@ -1,0 +1,121 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+package org.amanzi.awe.ui.view.widget.internal;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+
+/**
+ * TODO Purpose of
+ * <p>
+ *
+ * </p>
+ * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @since 1.0.0
+ */
+public abstract class AbstractComboWidget<D extends Object> extends AbstractLabeledWidget<Combo> implements IAWEEventListenter {
+
+    private static final EventStatus[] SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
+
+    private final Map<String, D> items = new HashMap<String, D>();
+
+    private D selectedItem;
+
+    /**
+     * @param parent
+     * @param label
+     */
+    protected AbstractComboWidget(final Composite parent, final String label) {
+        super(parent, label);
+
+        AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        if (ArrayUtils.contains(SUPPORTED_EVENTS, event.getStatus())) {
+            fillCombo();
+        }
+    }
+
+    @Override
+    protected Combo createControl(final Composite parent) {
+        Combo combo = new Combo(parent, SWT.NONE);
+
+        fillCombo();
+
+        return combo;
+    }
+
+    public D getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void fillCombo() {
+        getControl().removeAll();
+        items.clear();
+
+        for (D item : getItems()) {
+            String name = getItemName(item);
+
+            items.put(name, item);
+            getControl().add(name);
+        }
+
+        updateSelection();
+    }
+
+    private void updateSelection() {
+        String text = null;
+
+        if (selectedItem == null) {
+            String selectedItemName = getItemName(selectedItem);
+
+            if (ArrayUtils.contains(getControl().getItems(), selectedItemName)) {
+                text = selectedItemName;
+            }
+        }
+
+        if (text == null) {
+            if (getControl().getItemCount() > 0) {
+                text = getControl().getItem(0);
+            } else {
+                text = StringUtils.EMPTY;
+            }
+        }
+
+        getControl().setText(text);
+    }
+
+    protected abstract Collection<D> getItems();
+
+    protected abstract String getItemName(D item);
+
+    @Override
+    protected void dispose() {
+        AWEEventManager.getManager().removeListener(this);
+    }
+
+}
