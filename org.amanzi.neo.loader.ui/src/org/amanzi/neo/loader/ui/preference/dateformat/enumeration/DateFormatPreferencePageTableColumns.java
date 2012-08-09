@@ -33,7 +33,6 @@ public enum DateFormatPreferencePageTableColumns {
         this.name = name;
     }
 
-
     /**
      * @return Returns the name.
      */
