@@ -25,28 +25,30 @@ import org.amanzi.neo.loader.ui.LoaderUiPluginMessages;
  */
 public enum DateFormatPreferencePageTableColumns {
 
-    FORMAT_COLUMN(0, LoaderUiPluginMessages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(1,
-            LoaderUiPluginMessages.dateTypesPreferencePageExampleColumnName);
-    private int columnIndex;
-    private String name;
+	FORMAT_COLUMN(0, LoaderUiPluginMessages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(1,
+			LoaderUiPluginMessages.dateTypesPreferencePageExampleColumnName);
 
-    private DateFormatPreferencePageTableColumns(int columnIndex, String name) {
-        this.columnIndex = columnIndex;
-        this.name = name;
-    }
+	//TODO: LN: 09.08.2012, why not use ordinal() ?
+	private int columnIndex;
+	private String name;
 
-    /**
-     * @return Returns the columnIndex.
-     */
-    public int getColumnIndex() {
-        return columnIndex;
-    }
+	private DateFormatPreferencePageTableColumns(final int columnIndex, final String name) {
+		this.columnIndex = columnIndex;
+		this.name = name;
+	}
 
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
+	/**
+	 * @return Returns the columnIndex.
+	 */
+	public int getColumnIndex() {
+		return columnIndex;
+	}
+
+	/**
+	 * @return Returns the name.
+	 */
+	public String getName() {
+		return name;
+	}
 
 }

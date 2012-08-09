@@ -39,69 +39,71 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class DateFormatPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
-    private static final int EXAMPLE_COLUMN_WIDTH = 300;
-    private static final int FORMAT_COLUMN_WIDTH = 200;
-    private static final Layout LAYOUT_FOR_ONE_COMPONENTS = new GridLayout(1, false);;
-    private static final IContentProvider CONTENT_PROVIDER = new DateFormatTableContentProvider();
-    private static final DateFormatTableColumnProvider EXAMPLE_COLUMN_LABEL_PROVIDER = new DateFormatTableColumnProvider(
-            DateFormatPreferencePageTableColumns.EXAMPLE_COLUMN);
-    private static final DateFormatTableColumnProvider FORMAT_COLUMN_LABEL_PROVIDER = new DateFormatTableColumnProvider(
-            DateFormatPreferencePageTableColumns.FORMAT_COLUMN);
-    
-    
-    
-    private TableViewer tableViewer;
+	private static final int EXAMPLE_COLUMN_WIDTH = 300;
+	private static final int FORMAT_COLUMN_WIDTH = 200;
 
-    @Override
-    public void init(IWorkbench workbench) {
+	//TODO: maybe it make sense to create some LayoutManager and move all constants in this class?
+	private static final Layout LAYOUT_FOR_ONE_COMPONENTS = new GridLayout(1, false);;
+	private static final IContentProvider CONTENT_PROVIDER = new DateFormatTableContentProvider();
+	private static final DateFormatTableColumnProvider EXAMPLE_COLUMN_LABEL_PROVIDER = new DateFormatTableColumnProvider(
+			DateFormatPreferencePageTableColumns.EXAMPLE_COLUMN);
+	private static final DateFormatTableColumnProvider FORMAT_COLUMN_LABEL_PROVIDER = new DateFormatTableColumnProvider(
+			DateFormatPreferencePageTableColumns.FORMAT_COLUMN);
 
-    }
 
-    @Override
-    protected Control createContents(Composite parent) {
-        createTable(parent);
-        return parent;
-    }
 
-    /**
-     * @param parent
-     */
-    private void createTable(Composite parent) {
-        Composite tableViewerComposite = new Composite(parent, SWT.NONE);
-        tableViewerComposite.setLayout(LAYOUT_FOR_ONE_COMPONENTS);
-        tableViewerComposite.setLayoutData(createGridData());
+	private TableViewer tableViewer;
 
-        tableViewer = new TableViewer(tableViewerComposite, SWT.FULL_SELECTION | SWT.BORDER);
-        Table table = tableViewer.getTable();
-        table.setLayoutData(createGridData());
-        createTableColumn(EXAMPLE_COLUMN_WIDTH, tableViewer, EXAMPLE_COLUMN_LABEL_PROVIDER);
-        createTableColumn(FORMAT_COLUMN_WIDTH, tableViewer, FORMAT_COLUMN_LABEL_PROVIDER);
-        table.setHeaderVisible(true);
-        tableViewer.setContentProvider(CONTENT_PROVIDER);
-        tableViewer.add(new String[] {"f", "b", "c"});
-    }
+	@Override
+	public void init(final IWorkbench workbench) {
 
-    /**
-     * @param columnName
-     * @param columnWidth
-     * @param tableViewer2
-     * @return
-     */
-    private TableViewerColumn createTableColumn(int columnWidth, TableViewer viewer, DateFormatTableColumnProvider provider) {
-        TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.RIGHT);
-        TableColumn column = viewerColumn.getColumn();
-        column.setText(provider.getColumnName());
-        column.setWidth(columnWidth);
-        column.setResizable(true);
-        viewerColumn.setLabelProvider(provider);
-        return viewerColumn;
-    }
+	}
 
-    /**
-     * @return
-     */
-    private GridData createGridData() {
-        return new GridData(SWT.FILL, SWT.FILL, true, true);
-    }
+	@Override
+	protected Control createContents(final Composite parent) {
+		createTable(parent);
+		return parent;
+	}
+
+	/**
+	 * @param parent
+	 */
+	private void createTable(final Composite parent) {
+		Composite tableViewerComposite = new Composite(parent, SWT.NONE);
+		tableViewerComposite.setLayout(LAYOUT_FOR_ONE_COMPONENTS);
+		tableViewerComposite.setLayoutData(createGridData());
+
+		tableViewer = new TableViewer(tableViewerComposite, SWT.FULL_SELECTION | SWT.BORDER);
+		Table table = tableViewer.getTable();
+		table.setLayoutData(createGridData());
+		createTableColumn(EXAMPLE_COLUMN_WIDTH, tableViewer, EXAMPLE_COLUMN_LABEL_PROVIDER);
+		createTableColumn(FORMAT_COLUMN_WIDTH, tableViewer, FORMAT_COLUMN_LABEL_PROVIDER);
+		table.setHeaderVisible(true);
+		tableViewer.setContentProvider(CONTENT_PROVIDER);
+		tableViewer.add(new String[] {"f", "b", "c"});
+	}
+
+	/**
+	 * @param columnName
+	 * @param columnWidth
+	 * @param tableViewer2
+	 * @return
+	 */
+	private TableViewerColumn createTableColumn(final int columnWidth, final TableViewer viewer, final DateFormatTableColumnProvider provider) {
+		TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.RIGHT);
+		TableColumn column = viewerColumn.getColumn();
+		column.setText(provider.getColumnName());
+		column.setWidth(columnWidth);
+		column.setResizable(true);
+		viewerColumn.setLabelProvider(provider);
+		return viewerColumn;
+	}
+
+	/**
+	 * @return
+	 */
+	private GridData createGridData() {
+		return new GridData(SWT.FILL, SWT.FILL, true, true);
+	}
 
 }
