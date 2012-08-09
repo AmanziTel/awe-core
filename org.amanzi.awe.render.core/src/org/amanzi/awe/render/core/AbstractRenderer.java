@@ -56,7 +56,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public abstract class AbstractRenderer extends RendererImpl {
-    private static Logger LOGGER = Logger.getLogger(AbstractRenderer.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractRenderer.class);
     protected static BaseNeoStyle style;
 
     protected IGISModel model;
@@ -397,14 +397,14 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     private void setCrsTransforms(final CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1
-                                // (otherwise we get error:
-                                // bursa wolf parameters required
+        // (otherwise we get error:
+        // bursa wolf parameters required
         CoordinateReferenceSystem worldCrs = context.getCRS();
         transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
         transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could
-                                                                           // use
-                                                                           // transform_d2w.inverse()
-                                                                           // also
+        // use
+        // transform_d2w.inverse()
+        // also
     }
 
     /**
