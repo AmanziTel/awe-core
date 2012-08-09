@@ -51,11 +51,6 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
         return MeasurementNodeType.DRIVE;
     }
 
-    @Override
-    public INodeType getMainMeasurementNodeType() {
-        return MeasurementNodeType.M;
-    }
-
     public void setDriveType(final IDriveType driveType) {
         this.driveType = driveType;
     }
