@@ -41,8 +41,8 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
      * @param parent
      * @param style
      */
-    protected AbstractLabeledWidget(final Composite parent, final String label) {
-        super(parent, SWT.NONE);
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label) {
+        super(parent, SWT.NONE, listener);
         this.label = label;
     }
 
@@ -64,7 +64,7 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
     protected abstract C createControl(Composite parent);
 
     private GridData getElementLayoutData() {
-        return new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
+        return new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
     }
 
     private GridData getLabelLayoutData() {

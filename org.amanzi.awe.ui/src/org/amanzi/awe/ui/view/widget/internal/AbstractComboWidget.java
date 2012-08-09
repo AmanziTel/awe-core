@@ -54,8 +54,8 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
      * @param parent
      * @param label
      */
-    protected AbstractComboWidget(final Composite parent, final String label) {
-        super(parent, label);
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label) {
+        super(parent, listener, label);
 
         AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
     }
@@ -98,7 +98,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
 
         Collection<D> items = getItems();
         if (items != null) {
-            for (D item : getItems()) {
+            for (D item : items) {
                 String name = getItemName(item);
 
                 itemsMap.put(name, item);
@@ -138,7 +138,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     protected abstract String getItemName(D item);
 
     @Override
-    protected void dispose() {
+    public void dispose() {
         AWEEventManager.getManager().removeListener(this);
     }
 

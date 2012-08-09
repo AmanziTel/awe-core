@@ -11,7 +11,8 @@ Export-Package: org.amanzi.awe.statistics.entities,
  org.amanzi.awe.statistics.factory,
  org.amanzi.awe.statistics.manager,
  org.amanzi.awe.statistics.model,
- org.amanzi.awe.statistics.service
+ org.amanzi.awe.statistics.service,
+ org.amanzi.awe.statistics.template
 Require-Bundle: org.amanzi.neo.services.impl;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.awe.scripting;bundle-version="1.0.0";visibility:=reexport
 Bundle-Activator: org.amanzi.awe.statistics.StatisticsPlugin

@@ -35,8 +35,8 @@ public abstract class AbstractDatasetComboWidget<D extends IModel, L extends ICo
      * @param parent
      * @param label
      */
-    protected AbstractDatasetComboWidget(final Composite parent, final String label, final IProjectModelProvider projectModelProvider) {
-        super(parent, label);
+    protected AbstractDatasetComboWidget(final Composite parent, final L listener, final String label, final IProjectModelProvider projectModelProvider) {
+        super(parent, listener, label);
         this.projectModelProvider = projectModelProvider;
     }
 

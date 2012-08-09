@@ -14,6 +14,8 @@
 package org.amanzi.awe.ui.view.widget;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -47,12 +49,12 @@ public final class AWEWidgetFactory {
         return WizardFactoryHolder.instance;
     }
 
-    public DriveComboWidget addDriveComboWidget(final String labelText, final Composite parent) {
-        return initializeWidget(new DriveComboWidget(parent, labelText, projectModelProvider, driveModelProvider));
+    public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText, final Composite parent) {
+        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider));
     }
 
-    public PropertyComboWidget addPropertyComboWidget(final String labelText, final Composite parent) {
-        return initializeWidget(new PropertyComboWidget(parent, labelText));
+    public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText, final Composite parent) {
+        return initializeWidget(new PropertyComboWidget(parent, listener, labelText));
     }
 
     private <T extends AbstractAWEWidget<?, ?>> T initializeWidget(final T widget) {

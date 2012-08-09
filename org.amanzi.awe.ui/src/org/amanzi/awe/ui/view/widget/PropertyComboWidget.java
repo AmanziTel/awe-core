@@ -47,8 +47,8 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
      * @param parent
      * @param label
      */
-    protected PropertyComboWidget(final Composite parent, final String label) {
-        super(parent, label);
+    protected PropertyComboWidget(final Composite parent, final IPropertySelectionListener listener, final String label) {
+        super(parent, listener, label);
     }
 
     @Override
@@ -74,6 +74,9 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
             this.nodeType = model.getMainMeasurementNodeType();
 
             fillCombo();
+            setEnabled(true);
+        } else {
+            setEnabled(false);
         }
     }
 

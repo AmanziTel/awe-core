@@ -19,7 +19,6 @@ import java.util.Set;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget.IAWEWidgetListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Layout;
 
 /**
  * TODO Purpose of
@@ -43,9 +42,11 @@ public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetL
 
     private final Set<L> listeners = new HashSet<L>();
 
-    protected AbstractAWEWidget(final Composite parent, final int style) {
+    protected AbstractAWEWidget(final Composite parent, final int style, final L listener) {
         this.parent = parent;
         this.style = style;
+
+        addListener(listener);
     }
 
     public void initializeWidget() {
@@ -54,8 +55,8 @@ public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetL
 
     protected abstract C createWidget(Composite parent, int style);
 
-    public void setLayout(final Layout layout) {
-        widget.setLayoutData(layout);
+    public void setLayoutData(final Object layoutData) {
+        widget.setLayoutData(layoutData);
     }
 
     public void addListener(final L listener) {
@@ -66,8 +67,12 @@ public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetL
         return listeners;
     }
 
-    protected void dispose() {
+    public void dispose() {
         listeners.clear();
+    }
+
+    public void setEnabled(final boolean isEnabled) {
+        widget.setEnabled(isEnabled);
     }
 
 }

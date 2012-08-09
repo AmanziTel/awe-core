@@ -16,6 +16,7 @@ package org.amanzi.awe.statistics.template;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.awe.statistics.engine.IStatisticsHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
@@ -58,35 +59,35 @@ public class Template {
         }
     }
 
-    private String templateName;
+    private final String templateName;
     private String author;
     private String date;
     private DataType type;
-    private HashMap<String, String> metadata = new HashMap<String, String>();
-    private List<TemplateColumn> columns = new ArrayList<TemplateColumn>();
+    private Map<String, String> metadata = new HashMap<String, String>();
+    private final List<TemplateColumn> columns = new ArrayList<TemplateColumn>();
 
-    public Template(String name, DataType type) {
+    public Template(final String name, final DataType type) {
         this.templateName = name;
         this.type = type;
     }
 
-    public Template(String name) {
+    public Template(final String name) {
         this.templateName = name;
     }
 
-    public void add(IStatisticsHeader header, AggregationFunctions function, String name) {
+    public void add(final IStatisticsHeader header, final AggregationFunctions function, final String name) {
         columns.add(new TemplateColumn(header, function, name));
     }
 
-    public void add(IStatisticsHeader header, String functionName, String name) {
+    public void add(final IStatisticsHeader header, final String functionName, final String name) {
         columns.add(new TemplateColumn(header, AggregationFunctions.valueOf(functionName), name));
     }
 
-    public void add(IStatisticsHeader header, AggregationFunctions function, Threshold threshold, String name) {
+    public void add(final IStatisticsHeader header, final AggregationFunctions function, final Threshold threshold, final String name) {
         columns.add(new TemplateColumn(header, function, threshold, name));
     }
 
-    public void add(TemplateColumn column) {
+    public void add(final TemplateColumn column) {
         columns.add(column);
     }
 
@@ -115,7 +116,7 @@ public class Template {
         return type;
     }
 
-    public TemplateColumn getColumnByName(String name) {
+    public TemplateColumn getColumnByName(final String name) {
         for (TemplateColumn col : columns) {
             if (col.getName().equals(name)) {
                 return col;
@@ -127,14 +128,14 @@ public class Template {
     /**
      * @return Returns the metadata.
      */
-    public HashMap<String, String> getMetadata() {
+    public Map<String, String> getMetadata() {
         return metadata;
     }
 
     /**
      * @param metadata The metadata to set.
      */
-    public void setMetadata(HashMap<String, String> metadata) {
+    public void setMetadata(final HashMap<String, String> metadata) {
         this.metadata = metadata;
     }
 
@@ -148,7 +149,7 @@ public class Template {
     /**
      * @param author The author to set.
      */
-    public void setAuthor(String author) {
+    public void setAuthor(final String author) {
         this.author = author;
     }
 
@@ -162,7 +163,7 @@ public class Template {
     /**
      * @param date The date to set.
      */
-    public void setDate(String date) {
+    public void setDate(final String date) {
         this.date = date;
     }
 

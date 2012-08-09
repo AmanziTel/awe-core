@@ -286,7 +286,7 @@ public enum Period {
         //TODO: LN: 09.08.2012, algorithm of detecting available periods is in correct since it depends on numbers (at least in month we can have more or less than 30 days)
 
         List<Period> periods = new ArrayList<Period>();
-        long time = (startTime - endTime) / (1000 * 60);
+        long time = (endTime - startTime) / (1000 * 60);
 
         if ((time = time / 60) >= 0) {
             periods.add(HOURLY);

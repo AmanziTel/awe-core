@@ -31,13 +31,19 @@ public final class NodeTypeUtils {
         // hide consturctor
     }
 
-    public static String getTypeId(Enum< ? extends INodeType> enumItem) {
+    public static String getTypeId(final Enum< ? extends INodeType> enumItem) {
         assert enumItem != null;
 
         return enumItem.name().toLowerCase(Locale.getDefault());
     }
 
-    public static String getTypeName(String id) {
+    public static String getTypeId(final String enumName) {
+        assert enumName != null;
+
+        return enumName.toLowerCase(Locale.getDefault());
+    }
+
+    public static String getTypeName(final String id) {
         assert !StringUtils.isEmpty(id);
 
         return id.trim().toUpperCase(Locale.getDefault());

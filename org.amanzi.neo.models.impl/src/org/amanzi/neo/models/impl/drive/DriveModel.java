@@ -38,58 +38,58 @@ import org.neo4j.graphdb.Node;
  */
 public class DriveModel extends AbstractMeasurementModel implements IDriveModel {
 
-	private IDriveType driveType;
+    private IDriveType driveType;
 
-	/**
-	 * @param nodeService
-	 * @param generalNodeProperties
-	 * @param geoNodeProperties
-	 */
-	public DriveModel(final ITimePeriodNodeProperties timePeriodNodeProperties,
-			final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
-			final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProperties) {
-		super(timePeriodNodeProperties, measurementNodeProperties, nodeService, generalNodeProperties, geoNodeProperties);
-	}
+    /**
+     * @param nodeService
+     * @param generalNodeProperties
+     * @param geoNodeProperties
+     */
+    public DriveModel(final ITimePeriodNodeProperties timePeriodNodeProperties,
+            final IMeasurementNodeProperties measurementNodeProperties, final INodeService nodeService,
+            final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProperties) {
+        super(timePeriodNodeProperties, measurementNodeProperties, nodeService, generalNodeProperties, geoNodeProperties);
+    }
 
-	@Override
-	protected INodeType getModelType() {
-		return MeasurementNodeType.DRIVE;
-	}
+    @Override
+    protected INodeType getModelType() {
+        return MeasurementNodeType.DRIVE;
+    }
 
-	public void setDriveType(final IDriveType driveType) {
-		this.driveType = driveType;
-	}
+    public void setDriveType(final IDriveType driveType) {
+        this.driveType = driveType;
+    }
 
-	@Override
-	public IDriveType getDriveType() {
-		return driveType;
-	}
+    @Override
+    public IDriveType getDriveType() {
+        return driveType;
+    }
 
-	@Override
-	public void initialize(final Node node) throws ModelException {
-		super.initialize(node);
+    @Override
+    public void initialize(final Node node) throws ModelException {
+        super.initialize(node);
 
-		try {
-			String driveTypeName = getNodeService().getNodeProperty(node, getMeasurementNodeProperties().getDriveTypeProperty(), StringUtils.EMPTY, false);
-			this.driveType = getDriveType(driveTypeName);
-		} catch (ServiceException e) {
-			processException("Error on initializing Drive Model", e);
-		}
-	}
+        try {
+            String driveTypeName = getNodeService().getNodeProperty(node, getMeasurementNodeProperties().getDriveTypeProperty(), StringUtils.EMPTY, false);
+            this.driveType = getDriveType(driveTypeName);
+        } catch (ServiceException e) {
+            processException("Error on initializing Drive Model", e);
+        }
+    }
 
-	@Override
-	public void finishUp() throws ModelException {
-		try {
-			getNodeService().updateProperty(getRootNode(), getMeasurementNodeProperties().getDriveTypeProperty(), driveType.toString());
-		} catch (ServiceException e) {
-			processException("Error on finishing up Drive Model", e);
-		}
+    @Override
+    public void finishUp() throws ModelException {
+        try {
+            getNodeService().updateProperty(getRootNode(), getMeasurementNodeProperties().getDriveTypeProperty(), driveType.getId());
+        } catch (ServiceException e) {
+            processException("Error on finishing up Drive Model", e);
+        }
 
-		super.finishUp();
-	}
+        super.finishUp();
+    }
 
-	protected IDriveType getDriveType(final String driveType) {
-		return DriveType.valueOf(driveType);
-	}
+    protected IDriveType getDriveType(final String driveType) {
+        return DriveType.findById(driveType);
+    }
 
 }

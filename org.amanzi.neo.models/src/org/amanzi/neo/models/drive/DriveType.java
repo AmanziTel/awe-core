@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.drive;
 
 import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -26,5 +27,20 @@ import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
 public enum DriveType implements IDriveType {
 
     GEOPTIMA;
+
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(name());
+    }
+
+    public static DriveType findById(final String name) {
+        for (DriveType value : values()) {
+            if (NodeTypeUtils.getTypeId(value.name()).equals(name)) {
+                return value;
+            }
+        }
+
+        return null;
+    }
 
 }
