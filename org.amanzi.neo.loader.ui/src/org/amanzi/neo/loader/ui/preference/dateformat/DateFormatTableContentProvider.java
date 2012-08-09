@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.preference.dateformat;
+package org.amanzi.neo.loader.ui.preference.dateformat;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jface.viewers.IStructuredContentProvider;

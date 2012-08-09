@@ -87,14 +87,19 @@
             commandId="org.amanzi.command.launchLoader">
       </handler>
    </extension>
-   
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.neo.loader.ui.internal.PreferenceStoreInitialiser">
+      </initializer>
+   </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
           <page
             class="org.amanzi.neo.loader.ui.page.preference.dateformat.DateFormatPreferencePage"
             id="org.amanzi.neo.loader.ui.preference.page.dateformat.DateFormatPreferencePage"
             name="Date format definition"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
+            >
       </page>
    </extension>
 </plugin>
