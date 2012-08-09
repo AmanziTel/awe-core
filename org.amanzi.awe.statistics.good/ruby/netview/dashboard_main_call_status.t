@@ -1,6 +1,6 @@
 load 'netview/dashboards_formulas.rb'
 template 'Dashboards templates' do |t|
-  t.metadata :type=>:dataset,:drive_type=>:geoptima
+  t.metadata :type=>:drive,:drive_type=>:geoptima
 	  t.column 'mobile originated call' do |c|
 	    c.formula='KPI::Dashboards.mobile_originated_call'
 	    c.aggregation=:sum

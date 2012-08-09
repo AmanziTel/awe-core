@@ -1,6 +1,6 @@
 load 'netview/geoptima_formulas.rb'
 template 'Geoptima calls template' do |t|
-  t.metadata :type=>:dataset,:drive_type=>:geoptima
+  t.metadata :type=>:drive,:drive_type=>:geoptima
   
   t.column 'call events' do |c|
     c.formula='KPI::Geoptima.call_events'

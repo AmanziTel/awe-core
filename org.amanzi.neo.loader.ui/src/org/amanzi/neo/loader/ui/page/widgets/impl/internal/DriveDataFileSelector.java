@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISe
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -141,7 +143,11 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
         IOFileFilter fmtFilter = FileFilterUtils.suffixFileFilter("*.fmt");
         FileFilter filter = FileFilterUtils.orFileFilter(csvFilter, fmtFilter);
 
-        for (File file : directory.listFiles(filter)) {
+        File[] files = directory.listFiles(filter);
+
+        Arrays.sort(files);
+
+        for (File file : files) {
             if (file.isFile()) {
                 availableFiles.put(file.getName(), file);
             }
