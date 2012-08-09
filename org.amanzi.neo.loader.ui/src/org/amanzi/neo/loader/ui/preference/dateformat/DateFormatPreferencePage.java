@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
 import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -50,6 +51,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
 
     private static final int EXAMPLE_COLUMN_WIDTH = 300;
     private static final int FORMAT_COLUMN_WIDTH = 200;
+    private static final int TEXT_FIELD_WITDH = 300;
     private static final Layout LAYOUT_FOR_ONE_COMPONENTS = new GridLayout(1, false);
     private static final Layout LAYOUT_FOR_TWO_COMPONENTS = new GridLayout(2, false);
     private static final IContentProvider CONTENT_PROVIDER = new DateFormatTableContentProvider();
@@ -62,12 +64,13 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     private Composite tableViewerComposite;
     private Text inputField;
     private Button addButton;
-    private DateFormatManager formatManaget;
+    private DateFormatManager formatManager;
     private List<String> addedFormats;
+    private String defaultFormat;
 
     @Override
     public void init(IWorkbench workbench) {
-        formatManaget = DateFormatManager.getInstance();
+        formatManager = DateFormatManager.getInstance();
         addedFormats = new ArrayList<String>();
     }
 
@@ -89,7 +92,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         controlsComposite.setLayoutData(data);
         inputField = new Text(controlsComposite, SWT.NONE);
         data = createGridData();
-        data.widthHint = EXAMPLE_COLUMN_WIDTH;
+        data.widthHint = TEXT_FIELD_WITDH;
         inputField.setLayoutData(data);
         addButton = new Button(controlsComposite, SWT.NONE);
         addButton.setText(Messages.dateTypesPreferencePageAddButton);
@@ -111,7 +114,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         createTableColumn(FORMAT_COLUMN_WIDTH, tableViewer, FORMAT_COLUMN_LABEL_PROVIDER);
         table.setHeaderVisible(true);
         tableViewer.setContentProvider(CONTENT_PROVIDER);
-        tableViewer.add(formatManaget.getAllDateFormats().toArray());
+        tableViewer.add(formatManager.getAllDateFormats().toArray());
 
     }
 
@@ -143,8 +146,10 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         switch (event.type) {
         case SWT.MouseUp:
             String format = inputField.getText();
-            addedFormats.add(format);
-            tableViewer.add(format);
+            if (!StringUtils.isEmpty(format)) {
+                addedFormats.add(format);
+                tableViewer.add(format);
+            }
         }
     }
 
@@ -152,7 +157,10 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     protected void performApply() {
         super.performApply();
         for (String newFormat : addedFormats) {
-            formatManaget.addNewFormat(newFormat);
+            formatManager.addNewFormat(newFormat);
+        }
+        if (!StringUtils.isEmpty(defaultFormat)) {
+            formatManager.setDefaultFormat(defaultFormat);
         }
     }
 }

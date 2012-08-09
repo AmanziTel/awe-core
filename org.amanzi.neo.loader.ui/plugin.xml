@@ -96,8 +96,8 @@
    <extension
          point="org.eclipse.ui.preferencePages">
           <page
-            class="org.amanzi.neo.loader.ui.page.preference.dateformat.DateFormatPreferencePage"
-            id="org.amanzi.neo.loader.ui.preference.page.dateformat.DateFormatPreferencePage"
+            class="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
+            id="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
             name="Date format definition"
             >
       </page>

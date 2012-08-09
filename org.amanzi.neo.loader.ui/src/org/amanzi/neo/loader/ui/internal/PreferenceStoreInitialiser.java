@@ -13,15 +13,18 @@
 
 package org.amanzi.neo.loader.ui.internal;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
@@ -29,15 +32,38 @@ import org.eclipse.jface.preference.IPreferenceStore;
  * @since 1.0.0
  */
 public class PreferenceStoreInitialiser extends AbstractPreferenceInitializer {
+    private static final Logger LOGGER = Logger.getLogger(PreferenceStoreInitialiser.class);
+
     private static final IPreferenceStore PREFERENCE_STORE = LoaderUIPlugin.getDefault().getPreferenceStore();
-    private List<String> formatList = Arrays.asList("yyyy/MM/dd//hh", "yyyy/dd/MM/HH:mm:ss", "dd:mm:hh");
+    private static final String PROPERTIES_FILE_NAME = "datesformat";
 
     @Override
     public void initializeDefaultPreferences() {
+        List<String> formatList = processFormatListFromProperties();
         PREFERENCE_STORE.setDefault(DateFormatManager.FORMATS_SIZE_KEY, formatList.size());
         for (int i = 0; i < formatList.size(); i++) {
             PREFERENCE_STORE.setDefault(DateFormatManager.DATE_KEY_PREFIX + i, formatList.get(i));
         }
     }
 
+    /**
+     *
+     */
+    private List<String> processFormatListFromProperties() {
+        LOGGER.info("start processFormatListFromProperties");
+        InputStream inputStream = null;
+        try {
+            inputStream = this.getClass().getResourceAsStream(PROPERTIES_FILE_NAME);
+            Scanner scanner = new Scanner(inputStream);
+            List<String> formatList = new ArrayList<String>();
+            while (scanner.hasNext()) {
+                formatList.add(scanner.nextLine());
+            }
+            inputStream.close();
+            return formatList;
+        } catch (IOException e) {
+            LOGGER.error("Can't execute processFormatListFromProperties", e);
+        }
+        return null;
+    }
 }
