@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.preference.dateformat.enumeration;
+package org.amanzi.neo.loader.ui.preference.dateformat.enumeration;
 
-import org.amanzi.neo.loader.ui.LoaderUiPluginMessages;
+import org.amanzi.neo.loader.ui.internal.Messages;
 
 /**
  * <p>
@@ -25,8 +25,8 @@ import org.amanzi.neo.loader.ui.LoaderUiPluginMessages;
  */
 public enum DateFormatPreferencePageTableColumns {
 
-    FORMAT_COLUMN(0, LoaderUiPluginMessages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(1,
-            LoaderUiPluginMessages.dateTypesPreferencePageExampleColumnName);
+    FORMAT_COLUMN(0, Messages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(1,
+            Messages.dateTypesPreferencePageExampleColumnName);
     private int columnIndex;
     private String name;
 

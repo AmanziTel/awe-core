@@ -11,9 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.preference.dateformat;
+package org.amanzi.neo.loader.ui.preference.dateformat;
 
-import org.amanzi.neo.loader.ui.page.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
+import java.util.Calendar;
+import java.util.Date;
+
+import org.amanzi.neo.loader.ui.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
+import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 
@@ -25,13 +29,14 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class DateFormatTableColumnProvider extends ColumnLabelProvider {
+public class DateFormatTableLabelProvider extends ColumnLabelProvider {
     private DateFormatPreferencePageTableColumns columnType;
+    private static final Date sampleDate = Calendar.getInstance().getTime();
 
     /**
      * @param integer
      */
-    public DateFormatTableColumnProvider(DateFormatPreferencePageTableColumns columnType) {
+    public DateFormatTableLabelProvider(DateFormatPreferencePageTableColumns columnType) {
         this.columnType = columnType;
     }
 
@@ -39,6 +44,8 @@ public class DateFormatTableColumnProvider extends ColumnLabelProvider {
     public String getText(Object element) {
         switch (columnType) {
         case EXAMPLE_COLUMN:
+            return DateFormatManager.getInstance().parseDateToString(sampleDate, element.toString());
+        case FORMAT_COLUMN:
             return element.toString();
         default:
             break;
