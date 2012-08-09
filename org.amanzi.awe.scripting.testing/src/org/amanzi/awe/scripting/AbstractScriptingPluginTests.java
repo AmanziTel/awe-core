@@ -78,8 +78,8 @@ public class AbstractScriptingPluginTests extends AbstractAWEDBTest {
     }
 
     public void clearWS() throws IOException {
-        File ws = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
-        FileUtils.deleteDirectory(ws);
+        File ws = new File(WORKSPACE_FOLDER, PROJECT_FOLDER);
+        FileUtils.forceDelete(ws);
     }
 
     @Test

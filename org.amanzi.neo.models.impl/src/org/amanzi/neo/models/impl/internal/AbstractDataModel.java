@@ -13,17 +13,15 @@
 
 package org.amanzi.neo.models.impl.internal;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
@@ -40,6 +38,32 @@ import org.neo4j.graphdb.Node;
 public abstract class AbstractDataModel extends AbstractModel implements IDataModel {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractDataModel.class);
+
+    protected final class DataElementIterator extends AbstractDataElementIterator<IDataElement> {
+
+        /**
+         * @param nodeIterator
+         */
+        public DataElementIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IDataElement createDataElement(final Node node) {
+            String name = null;
+            INodeType type = null;
+
+            try {
+                name = getNodeService().getNodeName(node);
+                type = getNodeService().getNodeType(node);
+            } catch (Exception e) {
+                LOGGER.error("can't get required property from node " + node, e);
+                return null;
+            }
+
+            return getDataElement(node, type, name);
+        }
+    }
 
     /**
      * @param nodeService
@@ -81,27 +105,13 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getChildren", parentElement));
         }
-        List<IDataElement> elements = new ArrayList<IDataElement>();
         Node parentNode = ((DataElement)parentElement).getNode();
+        Iterator<Node> childs = null;
         try {
-            Iterator<Node> childs = getNodeService().getChildren(parentNode);
-            while (childs.hasNext()) {
-                Node child = childs.next();
-                String name = getNodeService().getNodeName(child);
-                INodeType type = null;
-                try {
-                    type = getNodeService().getNodeType(child);
-                } catch (NodeTypeNotExistsException e) {
-                    LOGGER.error("can't get type from node " + child, e);
-                }
-                DataElement element = new DataElement(child);
-                element.setName(name);
-                element.setNodeType(type);
-                elements.add(element);
-            }
+            childs = getNodeService().getChildren(parentNode);
         } catch (ServiceException e) {
-            processException("An error occured on search child for parent Element", e);
+            processException("Service exception found", e);
         }
-        return elements;
+        return new DataElementIterator(childs).toIterable();
     }
 }

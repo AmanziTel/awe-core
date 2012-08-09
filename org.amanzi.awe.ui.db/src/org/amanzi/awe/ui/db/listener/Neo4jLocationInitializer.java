@@ -54,7 +54,8 @@ public class Neo4jLocationInitializer implements IAWEEventListenter {
             int openResult = dialog.open();
             switch (openResult) {
             case Window.CANCEL:
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().close();
+                PlatformUI.getWorkbench().close();
+                System.exit(0);
                 break;
             case Window.OK:
                 relocateDatabase(dialog.getDatabaseLocation());

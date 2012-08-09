@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.scripting.utils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,6 +26,7 @@ import java.util.jar.JarFile;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
@@ -272,25 +272,12 @@ public class ScriptUtils {
      * @throws IOException
      */
     private String inputStreamToString(InputStream stream) throws ScriptingException {
-        // TODO: LN: 08.08.2012, use IOUtils
-        BufferedReader reader = null;
         try {
-            StringBuffer buffer = new StringBuffer();
-            reader = new BufferedReader(new InputStreamReader(stream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line).append("\n");
-            }
-
-            return buffer.toString();
+            String result = IOUtils.toString(new InputStreamReader(stream));
+            stream.close();
+            return result;
         } catch (Exception e) {
             throw new ScriptingException(e);
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                throw new ScriptingException(e);
-            }
         }
     }
 }
