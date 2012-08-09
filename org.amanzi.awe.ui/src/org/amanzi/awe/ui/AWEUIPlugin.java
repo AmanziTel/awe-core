@@ -3,6 +3,7 @@ package org.amanzi.awe.ui;
 import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
 
+//TODO: LN: 09.08.2012, remove from exported in this plugin
 public class AWEUIPlugin extends AbstractProviderPlugin {
 
     private static final String PLUGIN_ID = "org.amanzi.awe.ui";

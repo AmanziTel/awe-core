@@ -21,7 +21,6 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.apache.commons.collections.CollectionUtils;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -52,7 +51,6 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
         super(parent, label);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Collection<String> getItems() {
         if (propertyModel != null) {
@@ -62,7 +60,7 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
                 return propertyModel.getPropertyNames(nodeType);
             }
         }
-        return CollectionUtils.EMPTY_COLLECTION;
+        return null;
     }
 
     @Override

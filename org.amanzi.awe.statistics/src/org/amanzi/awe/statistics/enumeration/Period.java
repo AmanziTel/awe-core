@@ -32,12 +32,12 @@ public enum Period {
     // 1 hour
     HOURLY(Messages.ctrHourly, null, -1) {
         @Override
-        public Long addPeriod(Long time) {
+        public Long addPeriod(final Long time) {
             return addOnePeriod(time, Calendar.HOUR_OF_DAY);
         }
 
         @Override
-        public Long getStartTime(Long time) {
+        public Long getStartTime(final Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.MINUTE, 0);
@@ -50,12 +50,12 @@ public enum Period {
     // 1 day
     DAILY(Messages.ctrDaily, HOURLY, Calendar.HOUR_OF_DAY) {
         @Override
-        public Long addPeriod(Long time) {
+        public Long addPeriod(final Long time) {
             return addOnePeriod(time, Calendar.DAY_OF_MONTH);
         }
 
         @Override
-        public Long getStartTime(Long time) {
+        public Long getStartTime(final Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.HOUR_OF_DAY, 0);
@@ -68,12 +68,12 @@ public enum Period {
     // 1 week
     WEEKLY(Messages.ctrWeekly, DAILY, Calendar.DAY_OF_YEAR) {
         @Override
-        public Long addPeriod(Long time) {
+        public Long addPeriod(final Long time) {
             return addOnePeriod(time, Calendar.WEEK_OF_YEAR);
         }
 
         @Override
-        public Long getStartTime(Long time) {
+        public Long getStartTime(final Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.DAY_OF_WEEK, cl.getFirstDayOfWeek());
@@ -88,12 +88,12 @@ public enum Period {
     // 1 month
     MONTHLY(Messages.ctrMonthly, WEEKLY, Calendar.WEEK_OF_YEAR) {
         @Override
-        public Long addPeriod(Long time) {
+        public Long addPeriod(final Long time) {
             return addOnePeriod(time, Calendar.MONTH);
         }
 
         @Override
-        public Long getStartTime(Long time) {
+        public Long getStartTime(final Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             int dayInMonth = cl.get(Calendar.DAY_OF_MONTH);
@@ -108,12 +108,12 @@ public enum Period {
     },
     YEARLY(Messages.ctrYearly, MONTHLY, Calendar.MONTH) {
         @Override
-        public Long addPeriod(Long time) {
+        public Long addPeriod(final Long time) {
             return addOnePeriod(time, Calendar.YEAR);
         }
 
         @Override
-        public Long getStartTime(Long time) {
+        public Long getStartTime(final Long time) {
             GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.MONTH, Calendar.JANUARY);
@@ -129,17 +129,17 @@ public enum Period {
     ALL(Messages.ctrTotal, YEARLY, Calendar.YEAR) {
 
         @Override
-        public Long addPeriod(Long time) {
+        public Long addPeriod(final Long time) {
             return Long.MAX_VALUE;
         }
 
         @Override
-        public Long getStartTime(Long time) {
+        public Long getStartTime(final Long time) {
             return time;
         }
 
         @Override
-        public Long getEndTime(Long time) {
+        public Long getEndTime(final Long time) {
             return time;
         }
 
@@ -163,7 +163,7 @@ public enum Period {
      * @param id String
      * @param underlyingPeriod Period
      */
-    Period(String id, Period underlyingPeriod, int underlyingPeriodCalendarField) {
+    Period(final String id, final Period underlyingPeriod, final int underlyingPeriodCalendarField) {
         this.id = id;
         this.underlyingPeriod = underlyingPeriod;
         this.underlyingPeriodCalendarField = underlyingPeriodCalendarField;
@@ -189,7 +189,7 @@ public enum Period {
      * @param periodId type id
      * @return enum or null
      */
-    public static Period findById(String periodId) {
+    public static Period findById(final String periodId) {
         if (periodId == null) {
             return null;
         }
@@ -221,11 +221,11 @@ public enum Period {
      * @param time - timestamp
      * @return last ms
      */
-    public Long getEndTime(Long time) {
+    public Long getEndTime(final Long time) {
         return addPeriod(getStartTime(time));
     }
 
-    public static Period getHighestPeriod(long minTime, long maxTime) {
+    public static Period getHighestPeriod(final long minTime, final long maxTime) {
         Calendar minDate = Calendar.getInstance();
         minDate.setTimeInMillis(minTime);
 
@@ -260,7 +260,7 @@ public enum Period {
      * @param period - period @see Calendar
      * @return timestamp+ 1 period
      */
-    private static Long addOnePeriod(Long time, int period) {
+    private static Long addOnePeriod(final Long time, final int period) {
         GregorianCalendar cl = new GregorianCalendar();
         cl.setTimeInMillis(time);
         cl.add(period, 1);
@@ -281,19 +281,22 @@ public enum Period {
      * @param endTime
      * @return
      */
-    public static List<String> getAvailablePeriods(long startTime, long endTime) {
-        List<String> periods = new ArrayList<String>();
+    public static List<Period> getAvailablePeriods(final long startTime, final long endTime) {
+        //TODO: LN: 09.08.2012, remove magic numbers
+        //TODO: LN: 09.08.2012, algorithm of detecting available periods is in correct since it depends on numbers (at least in month we can have more or less than 30 days)
+
+        List<Period> periods = new ArrayList<Period>();
         long time = (startTime - endTime) / (1000 * 60);
 
         if ((time = time / 60) >= 0) {
-            periods.add(HOURLY.getId());
+            periods.add(HOURLY);
             if ((time = time / 24) >= 1) {
-                periods.add(DAILY.getId());
+                periods.add(DAILY);
                 if ((time / 7) >= 1) {
-                    periods.add(WEEKLY.getId());
+                    periods.add(WEEKLY);
                 }
                 if ((time = time / 30) >= 1) {
-                    periods.add(MONTHLY.getId());
+                    periods.add(MONTHLY);
                 }
             }
         }

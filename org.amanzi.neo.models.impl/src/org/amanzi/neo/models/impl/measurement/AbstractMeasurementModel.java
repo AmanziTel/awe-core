@@ -385,4 +385,14 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     protected IMeasurementNodeProperties getMeasurementNodeProperties() {
         return measurementNodeProperties;
     }
+
+    @Override
+    public long getMinTimestamp() {
+        return minTimestamp;
+    }
+
+    @Override
+    public long getMaxTimestamp() {
+        return maxTimestamp;
+    }
 }

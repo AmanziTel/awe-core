@@ -46,7 +46,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
 
     private static final EventStatus[] SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
 
-    private final Map<String, D> items = new HashMap<String, D>();
+    private final Map<String, D> itemsMap = new HashMap<String, D>();
 
     private D selectedItem;
 
@@ -86,21 +86,24 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         String itemText = getControl().getText();
 
         if (!StringUtils.isEmpty(itemText)) {
-            selectedItem = items.get(itemText);
+            selectedItem = itemsMap.get(itemText);
         }
 
         return selectedItem;
     }
 
-    public void fillCombo() {
+    protected void fillCombo() {
         getControl().removeAll();
-        items.clear();
+        itemsMap.clear();
 
-        for (D item : getItems()) {
-            String name = getItemName(item);
+        Collection<D> items = getItems();
+        if (items != null) {
+            for (D item : getItems()) {
+                String name = getItemName(item);
 
-            items.put(name, item);
-            getControl().add(name);
+                itemsMap.put(name, item);
+                getControl().add(name);
+            }
         }
 
         updateSelection();
