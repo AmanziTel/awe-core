@@ -33,6 +33,7 @@ public interface IMeasurementModel extends IDatasetModel {
 
     public interface IFileElement extends IDataElement {
 
+        @Override
         String getName();
 
         String getPath();
@@ -48,5 +49,9 @@ public interface IMeasurementModel extends IDatasetModel {
     IDataElement addMeasurement(IDataElement parent, Map<String, Object> properties) throws ModelException;
 
     INodeType getMainMeasurementNodeType();
+
+    long getMinTimestamp();
+
+    long getMaxTimestamp();
 
 }

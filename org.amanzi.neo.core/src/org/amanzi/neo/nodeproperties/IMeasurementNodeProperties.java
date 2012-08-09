@@ -23,8 +23,10 @@ package org.amanzi.neo.nodeproperties;
  */
 public interface IMeasurementNodeProperties extends INodeProperties {
 
-    String getFilePathProperty();
+	String getFilePathProperty();
 
-    String getPrimaryTypeProperty();
+	String getPrimaryTypeProperty();
+
+	String getDriveTypeProperty();
 
 }

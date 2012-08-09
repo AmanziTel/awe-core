@@ -248,7 +248,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         return result;
     }
 
-    private void updateTimestamp(long timestamp) {
+    private void updateTimestamp(final long timestamp) {
         minTimestamp = Math.min(minTimestamp, timestamp);
         maxTimestamp = Math.max(maxTimestamp, timestamp);
     }
@@ -291,6 +291,18 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
         location.setNodeType(MeasurementNodeType.MP);
 
+        try {
+            location.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitudeProperty(), null,
+                    true));
+            location.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
+                    true));
+
+        } catch (ServiceException e) {
+            LOGGER.error("Unable to create a Location Element from node", e);
+
+            return null;
+        }
+
         return location;
     }
 
@@ -314,7 +326,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         return result;
     }
 
-    private IDataElement convertToDataElement(Node node) {
+    private IDataElement convertToDataElement(final Node node) {
         IDataElement element = null;
 
         try {
@@ -341,7 +353,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     }
 
     @Override
-    public void initialize(Node node) throws ModelException {
+    public void initialize(final Node node) throws ModelException {
         try {
             super.initialize(node);
 
@@ -368,5 +380,19 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         } catch (ServiceException e) {
             processException("Exception on finishin up Measurement Model", e);
         }
+    }
+
+    protected IMeasurementNodeProperties getMeasurementNodeProperties() {
+        return measurementNodeProperties;
+    }
+
+    @Override
+    public long getMinTimestamp() {
+        return minTimestamp;
+    }
+
+    @Override
+    public long getMaxTimestamp() {
+        return maxTimestamp;
     }
 }

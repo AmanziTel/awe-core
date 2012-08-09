@@ -16,6 +16,6 @@ if [ "$1" == development ]
 	 else
 		$M2_HOME/bin/mvn clean install -f org.amanzi.awe.libs/pom-libs.xml 
 		$M2_HOME/bin/mvn clean install -f org.neo4j/pom-libs.xml
-		$M2_HOME/bin/mvn clean install -P awe -P release -P jre
+		$M2_HOME/bin/mvn clean install -P awe -P release -P jre -P hudson
 	fi
 fi

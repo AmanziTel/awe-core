@@ -156,7 +156,7 @@ public class DatasetService extends AbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ, MS;
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ, MS, GEOPTIMA;
     }
 
     /**

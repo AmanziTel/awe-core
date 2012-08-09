@@ -146,7 +146,7 @@ public class StatisticsView extends ViewPart {
     private List<String> selection;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         LOGGER.info("Create statistics view");
         createComposites(parent);
         createComponents();
@@ -189,8 +189,13 @@ public class StatisticsView extends ViewPart {
         long start = model.getMinTimestamp();
         long end = model.getMaxTimestamp();
 
-        List<String> periods = Period.getAvailablePeriods(start, end);
-        cPeriod.setItems(periods.toArray(new String[periods.size()]));
+        List<Period> periods = Period.getAvailablePeriods(start, end);
+        List<String> periodNames = new ArrayList<String>();
+        for (Period period : periods) {
+            periodNames.add(period.getId());
+        }
+
+        cPeriod.setItems(periodNames.toArray(new String[periodNames.size()]));
     }
 
     /**
@@ -201,7 +206,7 @@ public class StatisticsView extends ViewPart {
         cDataset.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 setEnabled(true, lTemplate, cTemplate);
                 resetDates(dDateStart, dDateStart, getSelectedModel().getMinTimestamp());
                 resetDates(dDateEnd, dTimeEnd, getSelectedModel().getMaxTimestamp());
@@ -210,72 +215,72 @@ public class StatisticsView extends ViewPart {
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
                 widgetSelected(e);
             }
         });
         cTemplate.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 setEnabled(true, lAggregation, cAggregation);
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
                 widgetSelected(e);
             }
         });
         cAggregation.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 setEnabled(true, lPeriod, cPeriod, lStartTime, dDateStart, dTimeStart, lEndTime, dDateEnd, dTimeEnd);
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
                 widgetDefaultSelected(e);
             }
         });
         cPeriod.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 setEnabled(true, bBuild);
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
                 widgetDefaultSelected(e);
             }
         });
         bResetStart.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 resetDates(dDateStart, dDateStart, getSelectedModel().getMinTimestamp());
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
             }
         });
         bResetEnd.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 resetDates(dDateEnd, dTimeEnd, getSelectedModel().getMaxTimestamp());
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
             }
         });
         bBuild.addMouseListener(new MouseListener() {
 
             @Override
-            public void mouseUp(MouseEvent e) {
+            public void mouseUp(final MouseEvent e) {
                 final String templateName = cTemplate.getText();
                 final IDriveModel model = getSelectedModel();
                 final String property = getAggregation();
@@ -286,17 +291,17 @@ public class StatisticsView extends ViewPart {
             }
 
             @Override
-            public void mouseDown(MouseEvent e) {
+            public void mouseDown(final MouseEvent e) {
             }
 
             @Override
-            public void mouseDoubleClick(MouseEvent e) {
+            public void mouseDoubleClick(final MouseEvent e) {
             }
         });
         tableViewer.getTable().getShell().addListener(TableListenersType.UPDATE_BUTTON, new Listener() {
 
             @Override
-            public void handleEvent(Event event) {
+            public void handleEvent(final Event event) {
                 updateButtons();
             }
         });
@@ -316,7 +321,7 @@ public class StatisticsView extends ViewPart {
         Job job = new Job(status) {
 
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
+            protected IStatus run(final IProgressMonitor monitor) {
 
                 ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -373,7 +378,7 @@ public class StatisticsView extends ViewPart {
                         tableViewer.getTable().addMouseListener(new MouseAdapter() {
 
                             @Override
-                            public void mouseDown(MouseEvent e) {
+                            public void mouseDown(final MouseEvent e) {
                                 Point point = new Point(e.x, e.y);
                                 Table table = (Table)e.widget;
                                 Rectangle firstRowRect = table.getItem(0).getBounds();
@@ -430,7 +435,7 @@ public class StatisticsView extends ViewPart {
             col.addSelectionListener(new SelectionAdapter() {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(final SelectionEvent e) {
                     final TableColumn currentColumn = (TableColumn)e.widget;
                     boolean isAdditionalColumnNecessary = isAdditionalColumnNecessary();
                     if (colNum == (isAdditionalColumnNecessary ? 1 : 0)) {
@@ -454,7 +459,7 @@ public class StatisticsView extends ViewPart {
      * @param colNum column number
      * @param currentColumn selected column
      */
-    private void updateSorting(final Table table, final int colNum, TableColumn currentColumn) {
+    private void updateSorting(final Table table, final int colNum, final TableColumn currentColumn) {
         int sortDirection = table.getSortDirection();
         if (tableViewer.getTable().getSortColumn().equals(currentColumn)) {
             sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
@@ -482,7 +487,7 @@ public class StatisticsView extends ViewPart {
         Job job = new Job("Statistics calculation for model " + model.getName() + " by property " + property + " period "
                 + period.getId() + " and template " + templateName) {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
+            protected IStatus run(final IProgressMonitor monitor) {
                 try {
                     statistics = statisticsManager.processStatistics(templateName, model, property, period, monitor);
                 } catch (StatisticsException e) {
@@ -511,7 +516,7 @@ public class StatisticsView extends ViewPart {
     /**
      * set date time when new dataset selected
      */
-    private void resetDates(DateTime date, DateTime time, Long timestamp) {
+    private void resetDates(final DateTime date, final DateTime time, final Long timestamp) {
         Calendar start = Calendar.getInstance();
         start.setTimeInMillis(timestamp);
         date.setDate(start.get(Calendar.YEAR), start.get(Calendar.MONTH), start.get(Calendar.DATE));
@@ -563,7 +568,7 @@ public class StatisticsView extends ViewPart {
      * @param aggregation
      * @param composites
      */
-    protected void setEnabled(boolean aggregation, Composite... composites) {
+    protected void setEnabled(final boolean aggregation, final Composite... composites) {
         for (Composite composite : composites) {
             for (Control element : composite.getChildren()) {
                 if (element.getClass() == mainComposite.getClass()) {
@@ -581,7 +586,7 @@ public class StatisticsView extends ViewPart {
      * @param aggregation
      * @param composites
      */
-    protected void setEnabled(boolean aggregation, Control... controls) {
+    protected void setEnabled(final boolean aggregation, final Control... controls) {
         for (Control element : controls) {
             element.setEnabled(aggregation);
         }
@@ -615,7 +620,7 @@ public class StatisticsView extends ViewPart {
      * 
      * @param parent
      */
-    private void createComposites(Composite parent) {
+    private void createComposites(final Composite parent) {
         LOGGER.info("init views composite");
         mainComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, false);
@@ -674,12 +679,12 @@ public class StatisticsView extends ViewPart {
     private static class Mutex implements ISchedulingRule {
 
         @Override
-        public boolean contains(ISchedulingRule rule) {
+        public boolean contains(final ISchedulingRule rule) {
             return (rule == this);
         }
 
         @Override
-        public boolean isConflicting(ISchedulingRule rule) {
+        public boolean isConflicting(final ISchedulingRule rule) {
             return (rule == this);
         }
 
@@ -701,7 +706,7 @@ public class StatisticsView extends ViewPart {
      * @param timeField
      * @return
      */
-    private Long getTime(DateTime dateField, DateTime timeField) {
+    private Long getTime(final DateTime dateField, final DateTime timeField) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTimeInMillis(0L);
         calendar.set(dateField.getYear(), dateField.getMonth(), dateField.getDay(), timeField.getHours(), timeField.getMinutes());
@@ -723,7 +728,7 @@ public class StatisticsView extends ViewPart {
     /**
      * create combobox control
      */
-    public Combo createCombobox(Composite layout) {
+    public Combo createCombobox(final Composite layout) {
         return new Combo(layout, SWT.NONE);
     }
 
@@ -734,7 +739,7 @@ public class StatisticsView extends ViewPart {
      * @param name
      * @return
      */
-    public Label createLabel(Composite layout, String name) {
+    public Label createLabel(final Composite layout, final String name) {
         Label label = new Label(layout, SWT.NONE);
         label.setText(name);
         return label;
@@ -743,7 +748,7 @@ public class StatisticsView extends ViewPart {
     /**
      * create combobox control
      */
-    public Button createButton(Composite layout, String name) {
+    public Button createButton(final Composite layout, final String name) {
         Button button = new Button(layout, SWT.NONE);
         button.setText(name);
         return button;
@@ -755,7 +760,7 @@ public class StatisticsView extends ViewPart {
      * @param layout
      * @return
      */
-    public DateTime createDateTime(Composite layout) {
+    public DateTime createDateTime(final Composite layout) {
         return new DateTime(layout, SWT.NONE);
     }
 }

@@ -52,6 +52,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     private static final int EXAMPLE_COLUMN_WIDTH = 300;
     private static final int FORMAT_COLUMN_WIDTH = 200;
     private static final int TEXT_FIELD_WITDH = 300;
+    // TODO: maybe it make sense to create some LayoutManager and move all constants in this class?
     private static final Layout LAYOUT_FOR_ONE_COMPONENTS = new GridLayout(1, false);
     private static final Layout LAYOUT_FOR_TWO_COMPONENTS = new GridLayout(2, false);
     private static final IContentProvider CONTENT_PROVIDER = new DateFormatTableContentProvider();
@@ -69,13 +70,13 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     private String defaultFormat;
 
     @Override
-    public void init(IWorkbench workbench) {
+    public void init(final IWorkbench workbench) {
         formatManager = DateFormatManager.getInstance();
         addedFormats = new ArrayList<String>();
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createContents(final Composite parent) {
         createTable(parent);
         createControls(parent);
         return parent;
@@ -84,7 +85,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     /**
      * @param tableViewerComposite2
      */
-    private void createControls(Composite tableComposite) {
+    private void createControls(final Composite tableComposite) {
         Composite controlsComposite = new Composite(tableComposite, SWT.NONE);
         controlsComposite.setLayout(LAYOUT_FOR_TWO_COMPONENTS);
         GridData data = createGridData();
@@ -102,7 +103,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     /**
      * @param parent
      */
-    private void createTable(Composite parent) {
+    private void createTable(final Composite parent) {
         tableViewerComposite = new Composite(parent, SWT.NONE);
         tableViewerComposite.setLayout(LAYOUT_FOR_ONE_COMPONENTS);
         tableViewerComposite.setLayoutData(createGridData());
@@ -124,7 +125,8 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
      * @param tableViewer2
      * @return
      */
-    private TableViewerColumn createTableColumn(int columnWidth, TableViewer viewer, DateFormatTableLabelProvider provider) {
+    private TableViewerColumn createTableColumn(final int columnWidth, final TableViewer viewer,
+            final DateFormatTableLabelProvider provider) {
         TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.RIGHT);
         TableColumn column = viewerColumn.getColumn();
         column.setText(provider.getColumnName());
@@ -142,7 +144,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public void handleEvent(final Event event) {
         switch (event.type) {
         case SWT.MouseUp:
             String format = inputField.getText();

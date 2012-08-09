@@ -76,7 +76,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws ScriptingException
      * @throws IOException
      */
-    protected void initDefaultScript(Bundle bundle, JRubyRuntimeWrapper runtime) throws ScriptingException, IOException {
+    protected void initDefaultScript(final Bundle bundle, final JRubyRuntimeWrapper runtime) throws ScriptingException, IOException {
         URL workspaceName = bundle.getEntry(RUBY_SCRIPT_FOLDER + PATH_SEPARATOR + COMMON_SCRIPTS_FOLDER);
         if (workspaceName == null) {
             LOGGER.info("nothing to initialize in bundle " + bundle.getSymbolicName());
@@ -91,7 +91,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     }
 
     @Override
-    public void start(BundleContext context) throws ScriptingException {
+    public void start(final BundleContext context) throws ScriptingException {
         try {
             super.start(context);
             manager.initWorkspace();
@@ -108,7 +108,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @param projectName
      * @return project folder not exist, in other case return list of files
      */
-    public List<File> getScriptsForProject(String projectName) {
+    public List<File> getScriptsForProject(final String projectName) {
         File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
                 + AbstractScriptingPlugin.SCRIPTS_FOLDER + File.separator + projectName);
         if (!projectFolder.exists()) {
@@ -124,7 +124,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @param context
      * @throws IOException
      */
-    public void initScriptManager(BundleContext context) throws IOException {
+    public void initScriptManager(final BundleContext context) throws IOException {
         try {
             LOGGER.info("Start scripts processing. for plugin" + context.getBundle().getSymbolicName());
             URL workspaceName = context.getBundle().getEntry(RUBY_SCRIPT_FOLDER);
@@ -175,6 +175,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
+            //TODO: LN: 09.08.2012, why manager.getScriptsFolder if we have this in scriptFolder variable?
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
             initRuntimeWithDefaultScripts();
         } catch (Exception e) {
@@ -254,7 +255,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             }
         }
 
-        public void copySources(URL rubyScriptingFolder) throws IOException {
+        public void copySources(final URL rubyScriptingFolder) throws IOException {
             LOGGER.info("< start copy modules folder to" + scriptsFolder + " >");
             File rubyFolder = new File(rubyScriptingFolder.getPath());
             for (File module : rubyFolder.listFiles()) {
@@ -282,7 +283,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * 
          * @return
          */
-        public Map<String, File> getAllWorkspaceScripts(FileFilter filter) {
+        public Map<String, File> getAllWorkspaceScripts(final FileFilter filter) {
             File projectFolder = new File(WORKSPACE_FOLDER, SCRIPTS_FOLDER);
             File[] modules = projectFolder.listFiles();
             Map<String, File> fileList = new HashMap<String, File>();

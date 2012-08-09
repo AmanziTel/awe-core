@@ -25,21 +25,28 @@ import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
  */
 public class MeasurementNodeProperties implements IMeasurementNodeProperties {
 
-    private static final String FILE_PATH_PROPERTY = "path";
+	private static final String FILE_PATH_PROPERTY = "path";
 
-    private static final String PRIMARY_TYPE_PROPERTY = "primary_type";
+	private static final String PRIMARY_TYPE_PROPERTY = "primary_type";
 
-    /**
-     * @return Returns the filePathProperty.
-     */
-    @Override
-    public String getFilePathProperty() {
-        return FILE_PATH_PROPERTY;
-    }
+	private static final String DRIVE_TYPE_PROEPRTY = "drive_type";
 
-    @Override
-    public String getPrimaryTypeProperty() {
-        return PRIMARY_TYPE_PROPERTY;
-    }
+	/**
+	 * @return Returns the filePathProperty.
+	 */
+	@Override
+	public String getFilePathProperty() {
+		return FILE_PATH_PROPERTY;
+	}
+
+	@Override
+	public String getPrimaryTypeProperty() {
+		return PRIMARY_TYPE_PROPERTY;
+	}
+
+	@Override
+	public String getDriveTypeProperty() {
+		return DRIVE_TYPE_PROEPRTY;
+	}
 
 }

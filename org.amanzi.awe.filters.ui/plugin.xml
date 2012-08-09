@@ -22,20 +22,5 @@
        </handler>
     </extension>
     
-    <extension
-          point="org.eclipse.ui.menus">
-       <menuContribution
-             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-          <toolbar
-                id="org.amanzi.neo.loader.toolbar2">             
-              <command
-                   commandId="org.amanzi.awe.filters.ui"
-                   icon="/icons/16/filter.png"
-                   id="org.amanzi.awe.filters.ui"
-                   tooltip="Filter manager">
-             </command>
-          </toolbar>
-       </menuContribution>
-    </extension>
 
 </plugin>

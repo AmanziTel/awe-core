@@ -27,6 +27,8 @@ public interface IDriveModel extends IMeasurementModel {
 
     public interface IDriveType {
 
+        String getId();
+
     }
 
     IDriveType getDriveType();
