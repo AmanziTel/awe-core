@@ -69,7 +69,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
         return ProviderContextHolder.context;
     }
 
-    private <T extends IModelProvider< ? >> T getModelProvider(final String id) {
+    protected <T extends IModelProvider< ? >> T getModelProvider(final String id) {
         try {
             return getContext().get(id);
         } catch (ContextException e) {

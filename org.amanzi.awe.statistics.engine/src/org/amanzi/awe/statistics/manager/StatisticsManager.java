@@ -21,10 +21,15 @@ import java.util.Map;
 
 import org.amanzi.awe.scripting.JRubyRuntimeWrapper;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
+import org.amanzi.awe.statistics.engine.StatisticsEngine;
+import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.internal.StatisticsPlugin;
+import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -49,6 +54,12 @@ public class StatisticsManager {
     private final IMeasurementModel model;
 
     private Collection<Template> availableTemplates;
+
+    private Template template;
+
+    private Period period;
+
+    private String property;
 
     private StatisticsManager(final IMeasurementModel measurementModel) {
         this.model = measurementModel;
@@ -116,5 +127,21 @@ public class StatisticsManager {
 
         return templateFiles;
 
+    }
+
+    public void setPeriod(Period period) {
+        this.period = period;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    public void setProperty(String property) {
+        this.property = property;
+    }
+
+    public IStatisticsModel build(IProgressMonitor progressMonitor) throws StatisticsEngineException {
+        return StatisticsEngine.getEngine().build(model, template, period, property);
     }
 }

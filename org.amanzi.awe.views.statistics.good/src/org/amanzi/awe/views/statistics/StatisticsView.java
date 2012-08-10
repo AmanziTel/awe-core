@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.statistics;
 
+import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.template.Template;
@@ -28,9 +29,13 @@ import org.amanzi.awe.views.statistics.widget.PeriodComboWidget.IPeriodSelection
 import org.amanzi.awe.views.statistics.widget.TemplateComboWidget;
 import org.amanzi.awe.views.statistics.widget.TemplateComboWidget.ITemplateSelectionListener;
 import org.amanzi.neo.models.drive.IDriveModel;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
@@ -48,7 +53,8 @@ public class StatisticsView extends ViewPart
             IPropertySelectionListener,
             ITemplateSelectionListener,
             IPeriodSelectionListener,
-            ITimePeriodSelectionListener {
+            ITimePeriodSelectionListener,
+            SelectionListener {
 
     /** GridLayout ONE_ROW_GRID_LAYOUT field */
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
@@ -64,6 +70,8 @@ public class StatisticsView extends ViewPart
     private StatisticsManager statisticsManager;
 
     private PeriodWidget timePeriod;
+
+    private Button buildButton;
 
     private boolean isInitialized = false;
 
@@ -98,6 +106,11 @@ public class StatisticsView extends ViewPart
 
         propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent);
         propertyComboWidget.setEnabled(false);
+
+        buildButton = new Button(parent, SWT.NONE);
+        buildButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        buildButton.setText("Build");
+        buildButton.addSelectionListener(this);
     }
 
     private void addPeriodComposite(final Composite parent) {
@@ -153,14 +166,16 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void onTemplateSelected(final Template template) {
-        // TODO Auto-generated method stub
-
+        if (statisticsManager != null) {
+            statisticsManager.setTemplate(template);
+        }
     }
 
     @Override
     public void onPropertySelected(final String property) {
-        // TODO Auto-generated method stub
-
+        if (statisticsManager != null) {
+            statisticsManager.setProperty(property);
+        }
     }
 
     @Override
@@ -183,8 +198,25 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void onPeriodSelected(final Period period) {
-        // TODO Auto-generated method stub
+        if (statisticsManager != null) {
+            statisticsManager.setPeriod(period);
+        }
+    }
 
+    @Override
+    public void widgetSelected(SelectionEvent event) {
+        if (statisticsManager != null) {
+            try {
+                statisticsManager.build(new NullProgressMonitor());
+            } catch (StatisticsEngineException e) {
+
+            }
+        }
+    }
+
+    @Override
+    public void widgetDefaultSelected(SelectionEvent e) {
+        widgetSelected(e);
     }
 
 }
