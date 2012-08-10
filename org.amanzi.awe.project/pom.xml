@@ -7,7 +7,7 @@
 		<version>${awe-core-version}</version>
 	</parent>
 	<groupId>org.amanzi</groupId>
-	<artifactId>org.amanzi.awe.project</artifactId>
+	<artifactId>org.amanzi.awe.projectg</artifactId>
 	<version>${awe-core-version}</version>
 	<packaging>eclipse-repository</packaging>
 
