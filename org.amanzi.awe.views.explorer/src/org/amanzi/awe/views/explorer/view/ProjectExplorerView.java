@@ -10,9 +10,7 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.project.IProjectModel;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -36,19 +34,13 @@ public class ProjectExplorerView extends AbstractTreeView implements MenuListene
     private static final IElementComparer TREE_ITEMS_COMPARATOR = new IElementComparer() {
 
         @Override
-        public int hashCode(final Object element) {
-            return HashCodeBuilder.reflectionHashCode(element, false);
+        public boolean equals(final Object a, final Object b) {
+            return a == null ? b == null : a.equals(b);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public boolean equals(final Object a, final Object b) {
-            if ((a instanceof ITreeItem< ? >) && (b instanceof ITreeItem< ? >)) {
-                ITreeItem<IModel> aM = (ITreeItem<IModel>)a;
-                ITreeItem<IModel> bM = (ITreeItem<IModel>)b;
-                return aM.equals(bM);
-            }
-            return a == null ? b == null : a.equals(b);
+        public int hashCode(Object element) {
+            return element.hashCode();
         }
     };
 
