@@ -85,13 +85,13 @@ public class IconManager {
     /**
      * search image by size and node type
      * 
-     * @param nodeType
+     * @param name
      * @param size
      * @return image or null if not found
      */
-    public Image getImage(String nodeType, IconSize size) {
+    public Image getImage(String name, IconSize size) {
         String directoryPath = getDirectoryPath(ICONS_DIRECTORY, size.getImageSize());
-        return getImage(nodeType, directoryPath, size);
+        return getImage(name, directoryPath, size);
     }
 
     /**

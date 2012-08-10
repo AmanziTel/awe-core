@@ -13,7 +13,8 @@
 
 package org.amanzi.neo.loader.ui.preference.dateformat;
 
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Collection;
+
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -35,13 +36,10 @@ public class DateFormatTableContentProvider implements IStructuredContentProvide
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public Object[] getElements(Object inputElement) {
-        return ArrayUtils.toArray(inputElement);
+        return ((Collection< ? >)inputElement).toArray();
     }
-
 }

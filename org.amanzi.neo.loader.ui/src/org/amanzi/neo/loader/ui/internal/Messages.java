@@ -55,7 +55,7 @@ public class Messages extends NLS {
     public static String dateTypesPreferencePageExampleColumnName;
     public static String dateTypesPreferencePageDateFormatColumnName;
     public static String dateTypesPreferencePageAddButton;
-
+    public static String dateTypesPreferencePageIsDefault;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

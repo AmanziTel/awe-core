@@ -51,7 +51,8 @@ public class DateFormatManager {
         return InstanceHolder.INSTANCE;
     }
 
-    private Map<String, String> formatsMaps = new HashMap<String, String>();
+    private Map<String, String> formatMapping = new HashMap<String, String>();
+    private Map<String, String> reverseFormatMapping = new HashMap<String, String>();
 
     private DateFormatManager() {
         initMapIfNecessary();
@@ -61,17 +62,18 @@ public class DateFormatManager {
      * load all possible
      */
     private void initMapIfNecessary() {
-        if (!formatsMaps.isEmpty()) {
+        if (!formatMapping.isEmpty()) {
             return;
         }
         int size = PREFERENCE_STORE.getInt(FORMATS_SIZE_KEY);
         for (int i = 0; i < size; i++) {
             String key = DATE_KEY_PREFIX + i;
-            formatsMaps.put(key, PREFERENCE_STORE.getString(key));
+            formatMapping.put(key, PREFERENCE_STORE.getString(key));
+            reverseFormatMapping.put(PREFERENCE_STORE.getString(key), key);
         }
         String defaultFormatId = PREFERENCE_STORE.getString(DEFAULT_FORMAT_KEY);
         if (defaultFormatId != null) {
-            defaultFormat = formatsMaps.get(defaultFormatId);
+            defaultFormat = formatMapping.get(defaultFormatId);
         }
 
     }
@@ -82,8 +84,8 @@ public class DateFormatManager {
      * @return
      */
     public Collection<String> getAllDateFormats() {
-        LOGGER.info("Founded : " + formatsMaps.size() + " formats ");
-        return formatsMaps.values();
+        LOGGER.info("Founded : " + formatMapping.size() + " formats ");
+        return formatMapping.values();
     }
 
     /**
@@ -91,12 +93,13 @@ public class DateFormatManager {
      * 
      * @param format
      */
-    public void addNewFormat(String format) {
+    private void addNewFormat(String format) {
         assert !StringUtils.isEmpty(format);
 
-        String key = DATE_KEY_PREFIX + formatsMaps.size();
-        formatsMaps.put(key, format);
-        PREFERENCE_STORE.setValue(FORMATS_SIZE_KEY, formatsMaps.size());
+        String key = DATE_KEY_PREFIX + formatMapping.size();
+        formatMapping.put(key, format);
+        reverseFormatMapping.put(format, key);
+        PREFERENCE_STORE.setValue(FORMATS_SIZE_KEY, formatMapping.size());
         PREFERENCE_STORE.setValue(key, format);
 
         LOGGER.info("Format : " + format + " was successeful saved into preference store with id: " + key);
@@ -137,7 +140,7 @@ public class DateFormatManager {
         assert !StringUtils.isEmpty(date);
 
         Date result = null;
-        for (String value : formatsMaps.values()) {
+        for (String value : formatMapping.values()) {
             try {
                 result = parseString(date, value);
                 break;
@@ -173,8 +176,31 @@ public class DateFormatManager {
     /**
      * @param defaultFormat The defaultFormat to set.
      */
-    public void setDefaultFormat(String defaultFormat) {
+    private void setDefaultFormat(String defaultFormat) {
+        PREFERENCE_STORE.setValue(DEFAULT_FORMAT_KEY, reverseFormatMapping.get(defaultFormat));
         this.defaultFormat = defaultFormat;
     }
 
+    /**
+     * added new formats and set default value
+     * 
+     * @param formats
+     * @param defaultValue
+     */
+    public void addNewFormats(Collection<String> formats, String defaultValue) {
+        if (!StringUtils.isEmpty(defaultValue)) {
+            setDefaultFormat(defaultValue);
+        }
+        if (formats == null) {
+            LOGGER.warn(" new formats list is null ");
+            return;
+        }
+        for (String newFormat : formats) {
+            String existedFormat = reverseFormatMapping.get(newFormat);
+            if (existedFormat != null) {
+                continue;
+            }
+            addNewFormat(newFormat);
+        }
+    }
 }

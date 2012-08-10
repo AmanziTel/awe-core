@@ -26,13 +26,12 @@ import org.amanzi.neo.loader.ui.internal.Messages;
 public enum DateFormatPreferencePageTableColumns {
 
     FORMAT_COLUMN(Messages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(
-            Messages.dateTypesPreferencePageExampleColumnName);
+            Messages.dateTypesPreferencePageExampleColumnName), IS_DEFAULT_COLUMN(Messages.dateTypesPreferencePageIsDefault);
     private String name;
 
     private DateFormatPreferencePageTableColumns(final String name) {
         this.name = name;
     }
-
 
     /**
      * @return Returns the name.
