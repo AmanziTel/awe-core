@@ -29,8 +29,8 @@ import org.apache.log4j.Logger;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -71,6 +71,7 @@ public class StatisticsManager {
 
             for (Template singleTemplate : getAllTemplates()) {
                 if (singleTemplate.canResolve(model)) {
+                    availableTemplates = new ArrayList<Template>();
                     availableTemplates.add(singleTemplate);
                 }
             }

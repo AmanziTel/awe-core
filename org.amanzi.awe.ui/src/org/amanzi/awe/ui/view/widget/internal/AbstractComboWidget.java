@@ -33,12 +33,14 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractComboWidget<D extends Object, L extends IComboSelectionListener> extends AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
+public abstract class AbstractComboWidget<D extends Object, L extends IComboSelectionListener>
+        extends
+            AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
 
     public interface IComboSelectionListener extends AbstractAWEWidget.IAWEWidgetListener {
 
@@ -109,7 +111,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         updateSelection();
     }
 
-    private void updateSelection() {
+    public void updateSelection() {
         String text = null;
 
         if (selectedItem != null) {
@@ -159,6 +161,5 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     }
 
     protected abstract void fireListener(L listener, D selectedItem);
-
 
 }

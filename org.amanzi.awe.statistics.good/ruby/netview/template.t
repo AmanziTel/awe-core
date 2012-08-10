@@ -1,6 +1,6 @@
 load 'netview/geoptima_formulas.rb'
 template 'Geoptima template' do |t|
-  t.metadata :type=>:dataset,:drive_type=>:geoptima
+  t.metadata :type=>:drive,:drive_type=>:geoptima
   t.column 'No. of samples' do |c|
       c.formula='KPI::Geoptima.no_samples'
       c.aggregation=:sum

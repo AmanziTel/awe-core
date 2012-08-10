@@ -35,12 +35,17 @@ import org.eclipse.ui.part.ViewPart;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsView extends ViewPart implements IDriveSelectionListener, IPropertySelectionListener, ITemplateSelectionListener, IPeriodSelectionListener {
+public class StatisticsView extends ViewPart
+        implements
+            IDriveSelectionListener,
+            IPropertySelectionListener,
+            ITemplateSelectionListener,
+            IPeriodSelectionListener {
 
     /** GridLayout ONE_ROW_GRID_LAYOUT field */
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
@@ -69,6 +74,7 @@ public class StatisticsView extends ViewPart implements IDriveSelectionListener,
         addPeriodComposite(mainComposite);
 
         isInitialized = true;
+        driveCombo.updateSelection();
     }
 
     private void addTemplateComposite(final Composite parent) {
@@ -86,6 +92,7 @@ public class StatisticsView extends ViewPart implements IDriveSelectionListener,
         templateCombo.setEnabled(false);
 
         propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent);
+        propertyComboWidget.setEnabled(false);
     }
 
     private void addPeriodComposite(final Composite parent) {
@@ -102,6 +109,7 @@ public class StatisticsView extends ViewPart implements IDriveSelectionListener,
 
     private void addPeriodCompositeContent(final Composite parent) {
         periodCombo = addPeriodComboWidget(parent, this);
+        periodCombo.setEnabled(false);
     }
 
     @Override
@@ -118,7 +126,7 @@ public class StatisticsView extends ViewPart implements IDriveSelectionListener,
 
     }
 
-    //TODO: LN: 09.08.2012, duplicate code
+    // TODO: LN: 09.08.2012, duplicate code
     private TemplateComboWidget addTemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener) {
         TemplateComboWidget result = new TemplateComboWidget(parent, listener, "Template:");
         result.initializeWidget();
@@ -126,7 +134,7 @@ public class StatisticsView extends ViewPart implements IDriveSelectionListener,
         return result;
     }
 
-    //TODO: LN: 09.08.2012, duplicate code
+    // TODO: LN: 09.08.2012, duplicate code
     private PeriodComboWidget addPeriodComboWidget(final Composite parent, final IPeriodSelectionListener listener) {
         PeriodComboWidget result = new PeriodComboWidget(parent, listener, "Period:");
         result.initializeWidget();
@@ -151,9 +159,13 @@ public class StatisticsView extends ViewPart implements IDriveSelectionListener,
         if (isInitialized) {
             statisticsManager = StatisticsManager.getManager(model);
             templateCombo.setStatisticsManager(statisticsManager);
+            templateCombo.setEnabled(true);
 
             propertyComboWidget.setModel(model);
+            propertyComboWidget.setEnabled(true);
+
             periodCombo.setModel(model);
+            periodCombo.setEnabled(true);
         }
     }
 
