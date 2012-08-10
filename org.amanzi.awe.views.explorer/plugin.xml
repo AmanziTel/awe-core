@@ -16,7 +16,7 @@
      <extension
            point="org.eclipse.ui.services">
         <sourceProvider
-              provider="org.amanzi.awe.views.explorer.view.SourceProvider">
+              provider="org.amanzi.awe.views.explorer.providers.SourceProvider">
            <variable
                  name="org.amanzi.awe.views.explorer.view"
                  priorityLevel="workbench">
@@ -34,7 +34,7 @@
                <or>
                   <equals value="true">
                   </equals>
-                               </or>
+               </or>
             </with>
          </activeWhen>
       </handler>

@@ -8,6 +8,7 @@
 package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
+import org.amanzi.awe.views.explorer.providers.SourceProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.project.IProjectModel;
