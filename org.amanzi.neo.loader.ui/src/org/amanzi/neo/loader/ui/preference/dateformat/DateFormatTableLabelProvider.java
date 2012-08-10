@@ -16,10 +16,12 @@ package org.amanzi.neo.loader.ui.preference.dateformat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.neo.loader.ui.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
 import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * TODO Purpose of
@@ -30,8 +32,13 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
  * @since 1.0.0
  */
 public class DateFormatTableLabelProvider extends ColumnLabelProvider {
+  
+    private static final Date SAMPLE_DATE = Calendar.getInstance().getTime();
+    private static final Image CHECKED = IconManager.getInstance().getImage("checked");
+    private static final Image UNCHECKED = IconManager.getInstance().getImage("unchecked");
+
     private DateFormatPreferencePageTableColumns columnType;
-    private static final Date sampleDate = Calendar.getInstance().getTime();
+    private FormatTableViewer viewer;
 
     /**
      * @param integer
@@ -44,7 +51,7 @@ public class DateFormatTableLabelProvider extends ColumnLabelProvider {
     public String getText(Object element) {
         switch (columnType) {
         case EXAMPLE_COLUMN:
-            return DateFormatManager.getInstance().parseDateToString(sampleDate, element.toString());
+            return DateFormatManager.getInstance().parseDateToString(SAMPLE_DATE, element.toString());
         case FORMAT_COLUMN:
             return element.toString();
         default:
@@ -53,7 +60,31 @@ public class DateFormatTableLabelProvider extends ColumnLabelProvider {
         return StringUtils.EMPTY;
     }
 
+    @Override
+    public Image getImage(Object element) {
+        switch (columnType) {
+        case IS_DEFAULT_COLUMN:
+            if (element.equals(viewer.getDefaultFormat())) {
+                return CHECKED;
+            }
+            return UNCHECKED;
+        default:
+            break;
+        }
+        return null;
+
+    }
+
     public String getColumnName() {
         return columnType.getName();
+    }
+
+    /**
+     * initialize label provider
+     * 
+     * @param viewer
+     */
+    protected void initViewer(FormatTableViewer viewer) {
+        this.viewer = viewer;
     }
 }

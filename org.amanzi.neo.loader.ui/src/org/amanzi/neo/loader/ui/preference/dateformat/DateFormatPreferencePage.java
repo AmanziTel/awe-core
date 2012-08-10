@@ -13,17 +13,10 @@
 
 package org.amanzi.neo.loader.ui.preference.dateformat;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
 import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,8 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -49,30 +40,20 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class DateFormatPreferencePage extends PreferencePage implements IWorkbenchPreferencePage, Listener {
 
-    private static final int EXAMPLE_COLUMN_WIDTH = 300;
-    private static final int FORMAT_COLUMN_WIDTH = 200;
     private static final int TEXT_FIELD_WITDH = 300;
     // TODO: maybe it make sense to create some LayoutManager and move all constants in this class?
-    private static final Layout LAYOUT_FOR_ONE_COMPONENTS = new GridLayout(1, false);
     private static final Layout LAYOUT_FOR_TWO_COMPONENTS = new GridLayout(2, false);
-    private static final IContentProvider CONTENT_PROVIDER = new DateFormatTableContentProvider();
-    private static final DateFormatTableLabelProvider EXAMPLE_COLUMN_LABEL_PROVIDER = new DateFormatTableLabelProvider(
-            DateFormatPreferencePageTableColumns.EXAMPLE_COLUMN);
-    private static final DateFormatTableLabelProvider FORMAT_COLUMN_LABEL_PROVIDER = new DateFormatTableLabelProvider(
-            DateFormatPreferencePageTableColumns.FORMAT_COLUMN);
+    private static final Layout LAYOUT_FOR_ONE_COMPONENTS = new GridLayout(1, false);
 
-    private TableViewer tableViewer;
+    private FormatTableViewer tableViewer;
     private Composite tableViewerComposite;
     private Text inputField;
     private Button addButton;
     private DateFormatManager formatManager;
-    private List<String> addedFormats;
-    private String defaultFormat;
 
     @Override
     public void init(final IWorkbench workbench) {
         formatManager = DateFormatManager.getInstance();
-        addedFormats = new ArrayList<String>();
     }
 
     @Override
@@ -91,7 +72,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         GridData data = createGridData();
         data.grabExcessVerticalSpace = false;
         controlsComposite.setLayoutData(data);
-        inputField = new Text(controlsComposite, SWT.NONE);
+        inputField = new Text(controlsComposite, SWT.BORDER);
         data = createGridData();
         data.widthHint = TEXT_FIELD_WITDH;
         inputField.setLayoutData(data);
@@ -107,33 +88,11 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         tableViewerComposite = new Composite(parent, SWT.NONE);
         tableViewerComposite.setLayout(LAYOUT_FOR_ONE_COMPONENTS);
         tableViewerComposite.setLayoutData(createGridData());
+        tableViewer = new FormatTableViewer(tableViewerComposite, SWT.FULL_SELECTION | SWT.BORDER);
+        tableViewer.create();
+        tableViewer.setDefaultFormat(formatManager.getDefaultFormat());
+        tableViewer.setInput(formatManager.getAllDateFormats());
 
-        tableViewer = new TableViewer(tableViewerComposite, SWT.FULL_SELECTION | SWT.BORDER);
-        Table table = tableViewer.getTable();
-        table.setLayoutData(createGridData());
-        createTableColumn(EXAMPLE_COLUMN_WIDTH, tableViewer, EXAMPLE_COLUMN_LABEL_PROVIDER);
-        createTableColumn(FORMAT_COLUMN_WIDTH, tableViewer, FORMAT_COLUMN_LABEL_PROVIDER);
-        table.setHeaderVisible(true);
-        tableViewer.setContentProvider(CONTENT_PROVIDER);
-        tableViewer.add(formatManager.getAllDateFormats().toArray());
-
-    }
-
-    /**
-     * @param columnName
-     * @param columnWidth
-     * @param tableViewer2
-     * @return
-     */
-    private TableViewerColumn createTableColumn(final int columnWidth, final TableViewer viewer,
-            final DateFormatTableLabelProvider provider) {
-        TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.RIGHT);
-        TableColumn column = viewerColumn.getColumn();
-        column.setText(provider.getColumnName());
-        column.setWidth(columnWidth);
-        column.setResizable(true);
-        viewerColumn.setLabelProvider(provider);
-        return viewerColumn;
     }
 
     /**
@@ -149,8 +108,8 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         case SWT.MouseUp:
             String format = inputField.getText();
             if (!StringUtils.isEmpty(format)) {
-                addedFormats.add(format);
                 tableViewer.add(format);
+                tableViewer.refresh();
             }
         }
     }
@@ -158,11 +117,6 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
     @Override
     protected void performApply() {
         super.performApply();
-        for (String newFormat : addedFormats) {
-            formatManager.addNewFormat(newFormat);
-        }
-        if (!StringUtils.isEmpty(defaultFormat)) {
-            formatManager.setDefaultFormat(defaultFormat);
-        }
+        formatManager.addNewFormats(tableViewer.getAddedFormats(), tableViewer.getDefaultFormat());
     }
 }
