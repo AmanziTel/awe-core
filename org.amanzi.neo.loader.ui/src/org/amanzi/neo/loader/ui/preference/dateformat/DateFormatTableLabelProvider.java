@@ -83,7 +83,7 @@ public class DateFormatTableLabelProvider extends ColumnLabelProvider {
      * 
      * @param viewer
      */
-    protected void initWithViewer(FormatTableViewer viewer) {
+    protected void initViewer(FormatTableViewer viewer) {
         this.viewer = viewer;
     }
 }

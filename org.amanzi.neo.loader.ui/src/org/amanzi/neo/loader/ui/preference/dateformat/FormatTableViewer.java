@@ -36,9 +36,6 @@ import org.eclipse.swt.widgets.TableColumn;
  * @since 1.0.0
  */
 public class FormatTableViewer extends TableViewer {
-    private Collection<String> addedFormats;
-    private String defaultFormat;
-
     private static final int EXAMPLE_COLUMN_WIDTH = 300;
     private static final int FORMAT_COLUMN_WIDTH = 200;
     private static final int IS_DEFAULT_TABLE_WIDTH = 60;
@@ -51,6 +48,9 @@ public class FormatTableViewer extends TableViewer {
             DateFormatPreferencePageTableColumns.IS_DEFAULT_COLUMN);
     private static final DateFormatTableLabelProvider FORMAT_COLUMN_LABEL_PROVIDER = new DateFormatTableLabelProvider(
             DateFormatPreferencePageTableColumns.FORMAT_COLUMN);
+
+    private Collection<String> addedFormats;
+    private String defaultFormat;
 
     /**
      * @param parent
@@ -115,7 +115,7 @@ public class FormatTableViewer extends TableViewer {
         column.setText(provider.getColumnName());
         column.setWidth(columnWidth);
         column.setResizable(true);
-        provider.initWithViewer(this);
+        provider.initViewer(this);
         viewerColumn.setLabelProvider(provider);
         return viewerColumn;
     }
