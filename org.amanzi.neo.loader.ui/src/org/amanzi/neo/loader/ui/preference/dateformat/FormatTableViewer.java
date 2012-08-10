@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.TableColumn;
  * @since 1.0.0
  */
 public class FormatTableViewer extends TableViewer {
+    
     private static final int EXAMPLE_COLUMN_WIDTH = 300;
     private static final int FORMAT_COLUMN_WIDTH = 200;
     private static final int IS_DEFAULT_TABLE_WIDTH = 60;

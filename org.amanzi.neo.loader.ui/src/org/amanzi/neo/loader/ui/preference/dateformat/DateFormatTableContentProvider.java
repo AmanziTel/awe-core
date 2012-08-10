@@ -30,7 +30,6 @@ public class DateFormatTableContentProvider implements IStructuredContentProvide
 
     @Override
     public void dispose() {
-        // TODO Auto-generated method stub
 
     }
 

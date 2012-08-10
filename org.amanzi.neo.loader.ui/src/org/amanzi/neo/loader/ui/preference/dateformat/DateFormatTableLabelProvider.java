@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.Image;
  * @since 1.0.0
  */
 public class DateFormatTableLabelProvider extends ColumnLabelProvider {
+  
     private static final Date SAMPLE_DATE = Calendar.getInstance().getTime();
     private static final Image CHECKED = IconManager.getInstance().getImage("checked");
     private static final Image UNCHECKED = IconManager.getInstance().getImage("unchecked");

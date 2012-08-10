@@ -37,12 +37,10 @@ public class DateFormatManager {
 
     private static final Logger LOGGER = Logger.getLogger(DateFormatManager.class);
     private static final IPreferenceStore PREFERENCE_STORE = LoaderUIPlugin.getDefault().getPreferenceStore();
+    private static final String DEFAULT_FORMAT_KEY = "default_format";
     public static final String FORMATS_SIZE_KEY = "date_formats_size";
     public static final String DATE_KEY_PREFIX = "dateFormat_";
-    private static final String DEFAULT_FORMAT_KEY = "default_format";
-
-    private String defaultFormat;
-
+    
     private static class InstanceHolder {
         private static final DateFormatManager INSTANCE = new DateFormatManager();
     }
@@ -51,6 +49,7 @@ public class DateFormatManager {
         return InstanceHolder.INSTANCE;
     }
 
+    private String defaultFormat;
     private Map<String, String> formatMapping = new HashMap<String, String>();
     private Map<String, String> reverseFormatMapping = new HashMap<String, String>();
 
