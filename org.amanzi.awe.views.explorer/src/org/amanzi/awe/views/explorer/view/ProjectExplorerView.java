@@ -13,11 +13,13 @@ import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IElementComparer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.events.MenuEvent;
-import org.eclipse.swt.events.MenuListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.services.ISourceProviderService;
 
 /**
  * project explorer view
@@ -25,12 +27,11 @@ import org.eclipse.swt.widgets.Menu;
  * @author Vladislav_Kondratenko
  * @since 0.3
  */
-public class ProjectExplorerView extends AbstractTreeView implements MenuListener {
+public class ProjectExplorerView extends AbstractTreeView implements ISelectionChangedListener {
     /*
      * ID of this View
      */
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
-    private static final String SHOW_IN_VIEW_ITEM = "Show in View";
     private static final IElementComparer TREE_ITEMS_COMPARATOR = new IElementComparer() {
 
         @Override
@@ -44,13 +45,16 @@ public class ProjectExplorerView extends AbstractTreeView implements MenuListene
         }
     };
 
-    private Menu menu;
+    private SourceProvider commandStateService;
 
     /**
      * The constructor.
      */
     public ProjectExplorerView() {
         this(new ProjectTreeContentProvider());
+        ISourceProviderService sourceProviderService = (ISourceProviderService)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getService(ISourceProviderService.class);
+        commandStateService = (SourceProvider)sourceProviderService.getSourceProvider(SourceProvider.STATE);
     }
 
     protected ProjectExplorerView(ProjectTreeContentProvider projectTreeContentProvider) {
@@ -61,41 +65,19 @@ public class ProjectExplorerView extends AbstractTreeView implements MenuListene
     public void createPartControl(Composite parent) {
         super.createPartControl(parent);
         MenuManager menuManager = new MenuManager();
-        menu = menuManager.createContextMenu(getTreeViewer().getControl());
-        menu.addMenuListener(this);
+        Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
         getTreeViewer().getControl().setMenu(menu);
         getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
+        getTreeViewer().addSelectionChangedListener(this);
         getSite().registerContextMenu(menuManager, getTreeViewer());
-    }
-
-    @Override
-    public void menuHidden(MenuEvent e) {
-
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void menuShown(MenuEvent e) {
+    public void selectionChanged(SelectionChangedEvent event) {
         IStructuredSelection selection = (IStructuredSelection)getTreeViewer().getSelection();
         ITreeItem<IProjectModel> item = (ITreeItem<IProjectModel>)selection.getFirstElement();
-        if (item.getParent().asDataElement().equals(item.getDataElement())) {
-            menu.getItems()[getMenuItemIndexByName(SHOW_IN_VIEW_ITEM)].setEnabled(false);
-        } else {
-            menu.getItems()[getMenuItemIndexByName(SHOW_IN_VIEW_ITEM)].setEnabled(true);
-        }
-
+        commandStateService.setShowInTreeMenuState(item);
     }
 
-    /**
-     * @param showInViewItem
-     * @return
-     */
-    private int getMenuItemIndexByName(String showInViewItem) {
-        for (int i = 0; i < menu.getItemCount(); i++) {
-            if (menu.getItem(i).getText().equalsIgnoreCase(showInViewItem)) {
-                return i;
-            }
-        }
-        return 0;
-    }
 }
