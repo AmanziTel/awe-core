@@ -23,14 +23,14 @@ import org.eclipse.swt.widgets.Control;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetListener> {
 
-    protected interface IAWEWidgetListener {
+    public interface IAWEWidgetListener {
 
     }
 

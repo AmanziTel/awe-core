@@ -19,6 +19,8 @@ import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.awe.ui.view.widget.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widget.PeriodWidget;
+import org.amanzi.awe.ui.view.widget.PeriodWidget.ITimePeriodSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.statistics.widget.PeriodComboWidget;
@@ -45,7 +47,8 @@ public class StatisticsView extends ViewPart
             IDriveSelectionListener,
             IPropertySelectionListener,
             ITemplateSelectionListener,
-            IPeriodSelectionListener {
+            IPeriodSelectionListener,
+            ITimePeriodSelectionListener {
 
     /** GridLayout ONE_ROW_GRID_LAYOUT field */
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
@@ -59,6 +62,8 @@ public class StatisticsView extends ViewPart
     private PeriodComboWidget periodCombo;
 
     private StatisticsManager statisticsManager;
+
+    private PeriodWidget timePeriod;
 
     private boolean isInitialized = false;
 
@@ -110,6 +115,10 @@ public class StatisticsView extends ViewPart
     private void addPeriodCompositeContent(final Composite parent) {
         periodCombo = addPeriodComboWidget(parent, this);
         periodCombo.setEnabled(false);
+
+        timePeriod = AWEWidgetFactory.getFactory().addPeriodWidget(this, "Start time:", "End time", parent);
+        timePeriod.setLayoutData(getCompositeGridData());
+        // timePeriod.setEnabled(false);
     }
 
     @Override
@@ -156,7 +165,7 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void onDriveModelSelected(final IDriveModel model) {
-        if (isInitialized) {
+        if (isInitialized && (model != null)) {
             statisticsManager = StatisticsManager.getManager(model);
             templateCombo.setStatisticsManager(statisticsManager);
             templateCombo.setEnabled(true);
@@ -166,6 +175,9 @@ public class StatisticsView extends ViewPart
 
             periodCombo.setModel(model);
             periodCombo.setEnabled(true);
+
+            timePeriod.setPeriod(model.getMinTimestamp(), model.getMaxTimestamp());
+            timePeriod.setEnabled(true);
         }
     }
 

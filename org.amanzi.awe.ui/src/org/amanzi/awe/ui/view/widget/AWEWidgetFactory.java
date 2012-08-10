@@ -15,18 +15,18 @@ package org.amanzi.awe.ui.view.widget;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widget.PeriodWidget.ITimePeriodSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.widgets.Composite;
 
-
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -49,15 +49,22 @@ public final class AWEWidgetFactory {
         return WizardFactoryHolder.instance;
     }
 
-    public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText, final Composite parent) {
+    public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText,
+            final Composite parent) {
         return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider));
     }
 
-    public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText, final Composite parent) {
+    public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText,
+            final Composite parent) {
         return initializeWidget(new PropertyComboWidget(parent, listener, labelText));
     }
 
-    private <T extends AbstractAWEWidget<?, ?>> T initializeWidget(final T widget) {
+    public PeriodWidget addPeriodWidget(final ITimePeriodSelectionListener listener, String minTimestampLabel,
+            String maxTimestampLabel, Composite parent) {
+        return initializeWidget(new PeriodWidget(parent, listener, minTimestampLabel, maxTimestampLabel));
+    }
+
+    public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {
         widget.initializeWidget();
         return widget;
     }

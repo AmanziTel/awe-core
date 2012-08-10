@@ -24,12 +24,14 @@ import org.eclipse.swt.widgets.Label;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWidgetListener> extends AbstractAWEWidget<Composite, L> {
+public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWidgetListener>
+        extends
+            AbstractAWEWidget<Composite, L> {
 
     private static final GridLayout DEFAULT_LABELED_COMBO_LAYOUT = new GridLayout(2, false);
 
