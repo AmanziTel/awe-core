@@ -14,11 +14,22 @@
 package org.amanzi.awe.statistics.provider.impl;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.model.StatisticsNodeType;
 import org.amanzi.awe.statistics.model.impl.StatisticsModel;
+import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
 import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
+import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
+import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -32,9 +43,27 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
         implements
             IStatisticsModelProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(StatisticsModelProvider.class);
+
+    private final INodeService nodeService;
+
+    private final IGeneralNodeProperties generalNodeProperties;
+
+    private final ITimePeriodNodeProperties timePeriodNodeProperties;
+
+    private final IStatisticsNodeProperties statisticsNodeProperties;
+
+    public StatisticsModelProvider(INodeService nodeService, IGeneralNodeProperties generalNodeProperties,
+            ITimePeriodNodeProperties timePeriodNodeProperties, IStatisticsNodeProperties statisticsNodeProperties) {
+        this.nodeService = nodeService;
+        this.generalNodeProperties = generalNodeProperties;
+        this.timePeriodNodeProperties = timePeriodNodeProperties;
+        this.statisticsNodeProperties = statisticsNodeProperties;
+    }
+
     @Override
     protected StatisticsModel createInstance() {
-        return null;
+        return new StatisticsModel(nodeService, generalNodeProperties, timePeriodNodeProperties, statisticsNodeProperties);
     }
 
     @Override
@@ -44,7 +73,45 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
 
     @Override
     public IStatisticsModel find(IMeasurementModel analyzedModel, String template, String propertyName) throws ModelException {
-        return null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("find", analyzedModel, template, propertyName));
+        }
+
+        // validate arguments
+        if (analyzedModel == null) {
+            throw new ParameterInconsistencyException("parent");
+        }
+
+        if (StringUtils.isEmpty(template)) {
+            throw new ParameterInconsistencyException(statisticsNodeProperties.getTemplateNameProperty(), template);
+        }
+
+        if (StringUtils.isEmpty(propertyName)) {
+            throw new ParameterInconsistencyException(statisticsNodeProperties.getAggregationPropertyNameProperty(), propertyName);
+        }
+
+        AbstractModel model = (AbstractModel)analyzedModel;
+
+        IKey key = new MultiKey(new NodeKey(model.getRootNode()), new NameKey(template));
+
+        StatisticsModel result = getFromCache(key);
+
+        if (result == null) {
+            try {
+                Node statisticsNode = nodeService.getChildByName(model.getRootNode(), template, StatisticsNodeType.STATISTICS);
+                result = initializeFromNode(statisticsNode);
+
+                addToCache(result, key);
+            } catch (ServiceException e) {
+                processException("Exception on searching for a Statistics Model", e);
+            }
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("find"));
+        }
+
+        return result;
     }
 
     @Override

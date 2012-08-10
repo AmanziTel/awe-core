@@ -14,9 +14,11 @@
 package org.amanzi.awe.statistics.model.impl;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.services.INodeService;
 
 /**
@@ -29,12 +31,20 @@ import org.amanzi.neo.services.INodeService;
  */
 public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
+    private final ITimePeriodNodeProperties timePeriodNodeProperties;
+
+    private final IStatisticsNodeProperties statisticsNodeProperties;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
-    public StatisticsModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+    public StatisticsModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties,
+            ITimePeriodNodeProperties timePeriodNodeProperties, IStatisticsNodeProperties statisticsNodeProperties) {
         super(nodeService, generalNodeProperties);
+
+        this.timePeriodNodeProperties = timePeriodNodeProperties;
+        this.statisticsNodeProperties = statisticsNodeProperties;
     }
 
     @Override

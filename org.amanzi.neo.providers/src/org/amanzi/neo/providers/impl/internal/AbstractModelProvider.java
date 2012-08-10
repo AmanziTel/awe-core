@@ -47,6 +47,34 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     }
 
+    protected static class MultiKey implements IKey {
+
+        private final Map<Class< ? extends IKey>, IKey> keyMap = new HashMap<Class< ? extends IKey>, IKey>();
+
+        public MultiKey(IKey... keys) {
+            for (IKey singleKey : keys) {
+                keyMap.put(singleKey.getClass(), singleKey);
+            }
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (o instanceof MultiKey) {
+                MultiKey anotherKey = (MultiKey)o;
+
+                return this.keyMap.equals(anotherKey.keyMap);
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return keyMap.hashCode();
+        }
+
+    }
+
     protected static class NodeKey implements IKey {
 
         private final Node node;
