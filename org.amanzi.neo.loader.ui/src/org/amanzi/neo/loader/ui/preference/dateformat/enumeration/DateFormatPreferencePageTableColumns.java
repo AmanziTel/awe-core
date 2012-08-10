@@ -25,22 +25,12 @@ import org.amanzi.neo.loader.ui.internal.Messages;
  */
 public enum DateFormatPreferencePageTableColumns {
 
-    FORMAT_COLUMN(0, Messages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(1,
+    FORMAT_COLUMN(Messages.dateTypesPreferencePageDateFormatColumnName), EXAMPLE_COLUMN(
             Messages.dateTypesPreferencePageExampleColumnName);
-    //TODO: LN: 09.08.2012, why not use ordinal() ?
-    private int columnIndex;
     private String name;
 
-    private DateFormatPreferencePageTableColumns(final int columnIndex, final String name) {
-        this.columnIndex = columnIndex;
+    private DateFormatPreferencePageTableColumns(final String name) {
         this.name = name;
-    }
-
-    /**
-     * @return Returns the columnIndex.
-     */
-    public int getColumnIndex() {
-        return columnIndex;
     }
 
     /**

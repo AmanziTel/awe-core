@@ -39,6 +39,9 @@ public class DateFormatManager {
     private static final IPreferenceStore PREFERENCE_STORE = LoaderUIPlugin.getDefault().getPreferenceStore();
     public static final String FORMATS_SIZE_KEY = "date_formats_size";
     public static final String DATE_KEY_PREFIX = "dateFormat_";
+    private static final String DEFAULT_FORMAT_KEY = "default_format";
+
+    private String defaultFormat;
 
     private static class InstanceHolder {
         private static final DateFormatManager INSTANCE = new DateFormatManager();
@@ -66,6 +69,11 @@ public class DateFormatManager {
             String key = DATE_KEY_PREFIX + i;
             formatsMaps.put(key, PREFERENCE_STORE.getString(key));
         }
+        String defaultFormatId = PREFERENCE_STORE.getString(DEFAULT_FORMAT_KEY);
+        if (defaultFormatId != null) {
+            defaultFormat = formatsMaps.get(defaultFormatId);
+        }
+
     }
 
     /**
@@ -153,6 +161,20 @@ public class DateFormatManager {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
         return simpleDateFormat.format(date);
+    }
+
+    /**
+     * @return Returns the defaultFormat.
+     */
+    public String getDefaultFormat() {
+        return defaultFormat;
+    }
+
+    /**
+     * @param defaultFormat The defaultFormat to set.
+     */
+    public void setDefaultFormat(String defaultFormat) {
+        this.defaultFormat = defaultFormat;
     }
 
 }
