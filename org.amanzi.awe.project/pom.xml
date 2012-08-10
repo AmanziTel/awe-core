@@ -31,7 +31,7 @@
 									<target>
 										<move verbose="true" todir="${project.build.directory}/products">
 											<mapper type="regexp" from="^(awe-)(.*)$$"
-												to="\${project.parent.version}-${BUILD_NUMBER}-\2" />
+												to="\1-${project.parent.version}.${BUILD_NUMBER}-\2" />
 
 											<fileset dir="${project.build.directory}/products">
 												<include name="*.zip" />
