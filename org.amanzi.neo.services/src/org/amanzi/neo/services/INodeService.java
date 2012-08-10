@@ -22,6 +22,7 @@ import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 
 /**
  * TODO Purpose of
@@ -133,4 +134,5 @@ public interface INodeService extends IService {
 
     void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
 
+    TraversalDescription getChildrenTraversal(final INodeType nodeType, final RelationshipType relationshipType);
 }

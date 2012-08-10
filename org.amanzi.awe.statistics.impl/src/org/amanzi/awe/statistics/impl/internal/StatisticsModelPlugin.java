@@ -8,7 +8,7 @@ public class StatisticsModelPlugin extends AbstractProviderPlugin {
 
     private static final String PLUGIN_ID = "org.amanzi.awe.statistics.impl";
 
-    private static final String STATISTICS_MODEL_PROVIDER_ID = "org.amanzi.awe.statistics.StatisticsModelProvider";
+    private static final String STATISTICS_MODEL_PROVIDER_ID = "org.amanzi.providers.StatisticsModelProvider";
 
     private static StatisticsModelPlugin instance;
 

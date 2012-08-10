@@ -5,7 +5,7 @@
          point="org.amanzi.providers">
       <provider
             class="org.amanzi.awe.statistics.provider.impl.StatisticsModelProvider"
-            id="org.amanzi.awe.statistics.StatisticsModelProvider">
+            id="org.amanzi.providers.StatisticsModelProvider">
          <parameters>
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.generalnodeproperties">
@@ -34,6 +34,21 @@
       <nodetype
             class="org.amanzi.awe.statistics.model.StatisticsNodeType">
       </nodetype>
+   </extension>
+   <extension
+         point="org.amanzi.services">
+      <service
+            class="org.amanzi.awe.statistics.service.impl.StatisticsService"
+            id="org.amanzi.services.StatisticsService">
+         <parameters>
+            <serviceReference
+                  refId="org.amanzi.service.NodeService">
+            </serviceReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.StatisticsNodeProperties">
+            </nodePropertiesReference>
+         </parameters>
+      </service>
    </extension>
 
 </plugin>
