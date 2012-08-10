@@ -218,11 +218,11 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         return result;
     }
 
-    protected void setNodeType(INodeType nodeType) {
-        this.nodeType = nodeType;
-    }
-
     protected RelationshipType getRelationToParent() {
         return NodeServiceRelationshipType.CHILD;
+    }
+
+    public void setRootNode(Node rootNode) {
+        this.rootNode = rootNode;
     }
 }

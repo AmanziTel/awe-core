@@ -142,6 +142,6 @@ public class StatisticsManager {
     }
 
     public IStatisticsModel build(IProgressMonitor progressMonitor) throws StatisticsEngineException {
-        return StatisticsEngine.getEngine().build(model, template, period, property);
+        return StatisticsEngine.getEngine().build(model, template, period, property, progressMonitor);
     }
 }

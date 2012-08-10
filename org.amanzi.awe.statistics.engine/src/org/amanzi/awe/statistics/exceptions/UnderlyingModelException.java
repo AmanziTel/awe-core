@@ -11,9 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.engine;
+package org.amanzi.awe.statistics.exceptions;
 
-import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.neo.models.exceptions.ModelException;
 
 /**

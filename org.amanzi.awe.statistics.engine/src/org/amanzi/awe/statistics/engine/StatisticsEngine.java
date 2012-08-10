@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.engine;
 
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
+import org.amanzi.awe.statistics.exceptions.UnderlyingModelException;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
@@ -22,6 +23,8 @@ import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -56,12 +59,16 @@ public class StatisticsEngine {
         return StatisticsEngineHandler.instance;
     }
 
-    public IStatisticsModel build(IMeasurementModel measurementModel, Template template, Period period, String propertyName)
-            throws StatisticsEngineException {
+    public IStatisticsModel build(IMeasurementModel measurementModel, Template template, Period period, String propertyName,
+            IProgressMonitor monitor) throws StatisticsEngineException {
         LOGGER.info("Started Statistics Calculation for Model <" + measurementModel + "> on property <" + propertyName
                 + "> by template <" + template + "> with period <" + period + ">.");
 
         // TODO: LN: 10.08.2012, check input
+
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
 
         IStatisticsModel result = null;
 
@@ -70,7 +77,7 @@ public class StatisticsEngine {
             if (result == null) {
                 LOGGER.info("Statistics not exists in Database. Calculate new one.");
 
-                result = buildStatistics(measurementModel, template, period, propertyName);
+                result = buildStatistics(measurementModel, template, period, propertyName, monitor);
 
             } else {
                 LOGGER.info("Statistics already exists in Database");
@@ -86,7 +93,20 @@ public class StatisticsEngine {
     }
 
     protected IStatisticsModel buildStatistics(IMeasurementModel measurementModel, Template template, Period period,
-            String propertyName) throws StatisticsEngineException {
+            String propertyName, IProgressMonitor monitor) throws StatisticsEngineException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Building statistics");
+        }
+
+        monitor.beginTask("Build statistics", getTotalWork(measurementModel));
+
+        monitor.done();
+
         return null;
     }
+
+    private int getTotalWork(IMeasurementModel model) {
+        return model.getPropertyStatistics().getCount(model.getMainMeasurementNodeType());
+    }
+
 }
