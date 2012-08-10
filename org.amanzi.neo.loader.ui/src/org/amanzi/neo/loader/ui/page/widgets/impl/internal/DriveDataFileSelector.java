@@ -25,7 +25,6 @@ import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISe
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
