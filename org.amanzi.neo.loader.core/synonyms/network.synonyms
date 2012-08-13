@@ -9,8 +9,8 @@ site.lat@Double! = latitude,((?i)y_wert.*),SIT.*Y,northing,lat.*,Latitude,Lat
 site.lon@Double! = longitude,((?i)x_wert.*),SIT.*X,easting,lon.*,Longitude,Long
 
 sector.name@String! = Sector,SectorName,Cell,BTS_Name,CELL_NAME,GSM Sector ID,CellIdentity,cell name,Cell Name,sector_id,BS_NO
-sector.ci@Integer! = CI,CI_s,CellId,CellIdentity
-sector.lac@Integer! = LAC,LAC_s,La_lacId
+sector.ci@Integer = CI,CI_s,CellId,CellIdentity
+sector.lac@Integer = LAC,LAC_s,La_lacId
 sector.beamwidth@Double = .*beamwidth.*,((?i)beam),hbw
 sector.azimuth@Double = ((?i).*azimuth.*),bearing
 sector.ncc@Integer = ncc
