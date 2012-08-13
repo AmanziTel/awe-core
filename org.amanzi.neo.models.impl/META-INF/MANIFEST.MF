@@ -7,7 +7,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.models;bundle-version="1.0.0",
  org.amanzi.neo.core;bundle-version="1.0.0"
-Export-Package: org.amanzi.neo.models.impl,
+Export-Package: org.amanzi.neo.impl.dto,
+ org.amanzi.neo.models.impl,
  org.amanzi.neo.models.impl.drive,
  org.amanzi.neo.models.impl.internal,
  org.amanzi.neo.models.impl.internal.util,

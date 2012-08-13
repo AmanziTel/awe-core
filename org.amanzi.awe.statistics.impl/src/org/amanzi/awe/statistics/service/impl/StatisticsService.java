@@ -43,7 +43,7 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
     private final IStatisticsNodeProperties statisticsNodeProperties;
 
     public static enum StatisticsRelationshipType implements RelationshipType {
-        STATISTICS;
+        STATISTICS, TIME_DIMENSION, PROPERTY_DIMENSION;
     }
 
     /**

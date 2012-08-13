@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.amanzi.awe.statistics.impl;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin
 Require-Bundle: org.eclipse.core.runtime,
+ org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.models.impl;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
@@ -12,3 +13,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.statistics.impl.internal,
  org.amanzi.awe.statistics.model,
  org.amanzi.awe.statistics.provider
+Eclipse-ExtensibleAPI: true
+Eclipse-RegisterBuddy: org.amanzi.neo.core
+

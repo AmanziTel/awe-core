@@ -44,6 +44,12 @@ public class StatisticsEngine {
 
     private final IStatisticsModelProvider statisticsModelProvider;
 
+    private IStatisticsModel statisticsModel;
+
+    private Period period;
+
+    private Template template;
+
     /**
      * 
      */
@@ -70,14 +76,15 @@ public class StatisticsEngine {
             monitor = new NullProgressMonitor();
         }
 
-        IStatisticsModel result = null;
+        this.template = template;
+        this.period = period;
 
         try {
-            result = statisticsModelProvider.find(measurementModel, template.getTemplateName(), propertyName);
-            if (result == null) {
+            statisticsModel = statisticsModelProvider.find(measurementModel, template.getTemplateName(), propertyName);
+            if (statisticsModel == null) {
                 LOGGER.info("Statistics not exists in Database. Calculate new one.");
 
-                result = buildStatistics(measurementModel, template, period, propertyName, monitor);
+                statisticsModel = buildStatistics(measurementModel, template, period, propertyName, monitor);
 
             } else {
                 LOGGER.info("Statistics already exists in Database");
@@ -89,24 +96,18 @@ public class StatisticsEngine {
 
         LOGGER.info("Finished Statistics Calculation");
 
-        return result;
+        return statisticsModel;
     }
 
     protected IStatisticsModel buildStatistics(IMeasurementModel measurementModel, Template template, Period period,
-            String propertyName, IProgressMonitor monitor) throws StatisticsEngineException {
+            String propertyName, IProgressMonitor monitor) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Building statistics");
         }
 
-        monitor.beginTask("Build statistics", getTotalWork(measurementModel));
-
-        monitor.done();
+        IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getTemplateName(), propertyName);
 
         return null;
-    }
-
-    private int getTotalWork(IMeasurementModel model) {
-        return model.getPropertyStatistics().getCount(model.getMainMeasurementNodeType());
     }
 
 }
