@@ -61,8 +61,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static final String RUBY_SCRIPT_FOLDER = "ruby";
     private static final String COMMON_SCRIPTS_FOLDER = "common";
     private static final String PATH_SEPARATOR = "/";
-    private static final String NEO4J_ENTRY = "neo4j";
-    private static final String NEO4J_RB_PATH = "/lib/neo4j.rb";
     /**
      * wrapper for runtime instance
      */
@@ -175,7 +173,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-            //TODO: LN: 09.08.2012, why manager.getScriptsFolder if we have this in scriptFolder variable?
+            // TODO: LN: 09.08.2012, why manager.getScriptsFolder if we have this in scriptFolder
+            // variable?
             runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getScriptsFolder());
             initRuntimeWithDefaultScripts();
         } catch (Exception e) {
@@ -189,12 +188,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws ScriptingException
      */
     private void initRuntimeWithDefaultScripts() throws ScriptingException {
-
-        URL scripts;
         try {
-            scripts = FileLocator.toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(NEO4J_ENTRY));
-            File file = new File(scripts.getPath() + NEO4J_RB_PATH);
-            runtimeWrapper.executeScript(file);
             initDefaultScript(Platform.getBundle(PLUGIN_ID), runtimeWrapper);
             initDefaultScript(getBundle(), runtimeWrapper);
         } catch (Exception e) {

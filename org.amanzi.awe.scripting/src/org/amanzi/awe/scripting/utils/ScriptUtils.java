@@ -51,7 +51,6 @@ public class ScriptUtils {
      * static fields;
      */
     private static final String JRUBY_BUNDLE_NAME = "org.jruby";
-    private static final String NEO4J_BUNDLE_NAME = "org.neo4j";
     private static final String POSTFIX_JAR = ".jar!/";
     private static final String PREFIX_FILE = "file:";
     private static final String LIB_PATH = "lib/ruby/";
@@ -118,7 +117,6 @@ public class ScriptUtils {
         List<String> loadPath = new ArrayList<String>();
         String neoRubyGemDir = getPluginRoot(AbstractScriptingPlugin.PLUGIN_ID) + "neo4j";
         LOGGER.info("Neo4J scripts folder set to < " + neoRubyGemDir + " >");
-        String neo4j = getPluginRoot(NEO4J_BUNDLE_NAME);
 
         loadPath.add(path);
         loadPath.add(jRubyHome + LIB_PATH + "site_ruby/" + jRubyVersion);
@@ -133,10 +131,6 @@ public class ScriptUtils {
         loadPath.add(neoRubyGemDir + "/lib/jars");
         loadPath.add(neoRubyGemDir + "/examples/imdb");
 
-        loadPath.add(neoRubyGemDir + "/lib");
-        loadPath.add(neoRubyGemDir + "/lib/neo4j");
-        loadPath.add(neo4j);
-        loadPath.add(neo4j + "/lib");
         return loadPath;
     }
 
