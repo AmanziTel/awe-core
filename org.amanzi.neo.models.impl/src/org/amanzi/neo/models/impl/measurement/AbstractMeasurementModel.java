@@ -294,8 +294,8 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         try {
             location.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitudeProperty(), null,
                     true));
-            location.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
-                    true));
+            location.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(),
+                    null, true));
 
         } catch (ServiceException e) {
             LOGGER.error("Unable to create a Location Element from node", e);
@@ -394,5 +394,16 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     @Override
     public long getMaxTimestamp() {
         return maxTimestamp;
+    }
+
+    @Override
+    public Iterable<IDataElement> getElements(long minTimestamp, long maxTimestamp) throws ModelException {
+        Long[] min = new Long[] {minTimestamp};
+        Long[] max = new Long[] {maxTimestamp};
+
+        Iterator<Node> nodeIterator = getIndexModel().getNodes(getMainMeasurementNodeType(), Long.class, min, max,
+                timePeriodNodeProperties.getTimestampProperty());
+
+        return new DataElementIterator(nodeIterator).toIterable();
     }
 }

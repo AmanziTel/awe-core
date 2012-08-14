@@ -19,6 +19,9 @@
             <serviceReference
                   refId="org.amanzi.service.NodeService">
             </serviceReference>
+            <serviceReference
+                  refId="org.amanzi.services.StatisticsService">
+            </serviceReference>
          </parameters>
       </provider>
    </extension>

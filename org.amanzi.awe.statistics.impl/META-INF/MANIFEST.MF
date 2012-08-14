@@ -12,7 +12,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.statistics.impl.internal,
  org.amanzi.awe.statistics.model,
+ org.amanzi.awe.statistics.model.impl.internal,
  org.amanzi.awe.statistics.provider
 Eclipse-ExtensibleAPI: true
-Eclipse-RegisterBuddy: org.amanzi.neo.core
+Eclipse-RegisterBuddy: org.amanzi.neo.core, org.amanzi.neo.providers
 

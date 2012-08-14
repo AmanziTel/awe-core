@@ -54,10 +54,10 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
             INodeType type = null;
 
             try {
-                name = getNodeService().getNodeName(node);
+                name = getNodeService().getNodeProperty(node, getGeneralNodeProperties().getNodeNameProperty(), null, false);
                 type = getNodeService().getNodeType(node);
             } catch (Exception e) {
-                LOGGER.error("can't get required property from node " + node, e);
+                LOGGER.info("can't get required property from node " + node);
                 return null;
             }
 

@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyHash;
 import org.jruby.RubyNumeric;
+import org.jruby.RubyString;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -139,8 +140,10 @@ public class JRubyRuntimeWrapper {
             unwrapped = ((RubyNumeric)object).getDoubleValue();
         } else if (object instanceof RubyHash) {
             unwrapped = convertToHashMap(((RubyHash)object));
-        } else {
+        } else if (object instanceof RubyString) {
             unwrapped = object.asString().getValue();
+        } else {
+            unwrapped = object;
         }
         return unwrapped;
     }

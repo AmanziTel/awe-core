@@ -16,7 +16,7 @@ package org.amanzi.awe.views.statistics;
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.period.Period;
-import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.ui.view.widget.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
@@ -165,7 +165,7 @@ public class StatisticsView extends ViewPart
     }
 
     @Override
-    public void onTemplateSelected(final Template template) {
+    public void onTemplateSelected(final ITemplate template) {
         if (statisticsManager != null) {
             statisticsManager.setTemplate(template);
         }

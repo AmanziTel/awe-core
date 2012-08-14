@@ -1,31 +1,38 @@
 require 'java'
 
 java_import 'org.amanzi.awe.statistics.template.Condition'
-java_import 'org.amanzi.awe.statistics.template.TemplateColumn'
-java_import 'org.amanzi.awe.statistics.template.Template'
-java_import 'org.amanzi.awe.statistics.template.Threshold'
-java_import 'org.amanzi.awe.statistics.headers.impl.PropertyBasedHeader'
+java_import 'org.amanzi.awe.statistics.template.ITemplateColumn'
+java_import 'org.amanzi.awe.statistics.template.ITemplate'
+java_import 'org.amanzi.awe.statistics.template.IThreshold'
+java_import 'org.amanzi.awe.statistics.headers.impl.KPIBasedHeader'
 
-class Thresholds
-  attr_reader :threshold
+class Threshold
+  include IThreshold
+  attr_accessor :threshold
+  attr_accessor :value
+  attr_accessor :condition
   def alert()
     self
   end
 
   def >(value)
-    @threshold=Threshold.new(java.lang.Double.new(value),">")
+    self.value = value
+    condition = ">"
   end
 
   def >=(value)
-    @threshold=Threshold.new(java.lang.Double.new(value),">=")
+    self.value = value
+    condition = ">="
   end
 
   def <(value)
-    @threshold=Threshold.new(java.lang.Double.new(value),"<")
+    self.value = value
+    condition = "<"
   end
 
   def <=(value)
-    @threshold=Threshold.new(java.lang.Double.new(value),"<=")
+    self.value = value
+    condition = "<="
   end
   alias lt :<
   alias le :<=
@@ -34,64 +41,76 @@ class Thresholds
 end
 
 class TemplateColumn
-  attr_accessor :name
-  def initialize(name)
-    self.name=name
-  end
+  include ITemplateColumn
 
-  def property(property)
-    setHeader(PropertyBasedHeader.new(property.to_s,@name))
-    self
+  attr_accessor :name
+  attr_accessor :header
+  attr_accessor :function
+  attr_accessor :threshold
+  attr_accessor :format
+  def initialize(name)
+    @name=name
   end
 
   def formula(formula)
-    setHeader(KpiBasedHeader.new(formula,@name))
+    @header = KPIBasedHeader.new(formula, @name)
     self
   end
 
   def aggregation(aggregation)
-    setFunction(aggregation.to_s)
+    @function = aggregation.to_s
     self
   end
 
-  alias property= property
-  alias formula= formula
-  alias aggregation= aggregation
-
   def thresholds(&block)
-    t=Thresholds.new
+    t = Threshold.new
     t.instance_eval &block if block_given?
-    setThreshold(t.threshold)
+    @threshold = t.threshold
+    self
   end
 
   def format(type,pattern)
     type||=:decimal
-    if type=:decimal
-      setFormat(java.text.DecimalFormat.new(pattern))
-    elsif type=:date
-      setFormat(java.text.SimpleDateFormat.new(pattern))
+    case type
+    when :decimal
+      @format = java.text.DecimalFormat.new(pattern)
+    when :date
+      @format = java.text.SimpleDateFormat.new(pattern)
     end
+    self
   end
 
   def method_missing(method, *args)
     if method.to_s=~/alert_(\w+)/
-      thresholds{alert.send($1,*args)}
+      thresholds{alert.send($1, *args)}
     else
       super.method_missing(method, *args)
     end
   end
+
+  alias formula= formula
+  alias aggregation= aggregation
 end
 
 class Template
+  include ITemplate
+
   attr_accessor :name
+  def initialize(name)
+    self.name = name
+    @columns = []
+    @metadata = {}
+  end
+
   def metadata(hash)
-    setMetadata(java.util.HashMap.new(hash))
+    @metadata = hash
   end
 
   def column(name, &block)
     column=TemplateColumn.new(name)
     column.instance_eval &block if block_given?
-    add(column)
+
+    @columns << column
     column
   end
 
@@ -101,6 +120,20 @@ class Template
 
   def date(date)
     setDate(date)
+  end
+
+  def calculate(element)
+    result = {}
+    for column in @columns
+        header = column.header
+        result[header.name] = eval(header.formula + ' element')
+    end
+    
+    java.util.HashMap.new(result)
+  end
+
+  def canResolve(model)
+    true
   end
 
 end

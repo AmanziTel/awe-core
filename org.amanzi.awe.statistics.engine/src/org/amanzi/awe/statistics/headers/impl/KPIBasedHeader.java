@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.headers.impl.internal;
+package org.amanzi.awe.statistics.headers.impl;
 
-import org.amanzi.awe.statistics.headers.IStatisticsHeader;
+import org.amanzi.awe.statistics.headers.impl.internal.AbstractStatisticsHeader;
 
 /**
  * TODO Purpose of
@@ -23,17 +23,20 @@ import org.amanzi.awe.statistics.headers.IStatisticsHeader;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractStatisticsHeader implements IStatisticsHeader {
+public class KPIBasedHeader extends AbstractStatisticsHeader {
 
-    private final String name;
+    private final String formula;
 
-    protected AbstractStatisticsHeader(final String name) {
-        this.name = name;
+    /**
+     * @param name
+     */
+    public KPIBasedHeader(String formula, String name) {
+        super(name);
+        this.formula = formula;
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public String getFormula() {
+        return formula;
     }
 
 }

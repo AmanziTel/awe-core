@@ -13,14 +13,24 @@
 
 package org.amanzi.awe.statistics.template;
 
+import java.util.Map;
+
+import org.amanzi.neo.models.measurement.IMeasurementModel;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class TemplateColumn {
+public interface ITemplate {
+
+    String getName();
+
+    Map<String, Object> calculate(Map<String, Object> dataElement);
+
+    boolean canResolve(IMeasurementModel model);
 
 }

@@ -13,3 +13,4 @@ Export-Package: org.amanzi.neo.providers,
  org.amanzi.neo.providers.internal
 Eclipse-ExtensibleAPI: true
 Bundle-ClassPath: .
+Eclipse-BuddyPolicy: registered

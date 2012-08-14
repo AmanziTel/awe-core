@@ -70,7 +70,8 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
         super.initialize(node);
 
         try {
-            String driveTypeName = getNodeService().getNodeProperty(node, getMeasurementNodeProperties().getDriveTypeProperty(), StringUtils.EMPTY, false);
+            String driveTypeName = getNodeService().getNodeProperty(node, getMeasurementNodeProperties().getDriveTypeProperty(),
+                    StringUtils.EMPTY, false);
             this.driveType = getDriveType(driveTypeName);
         } catch (ServiceException e) {
             processException("Error on initializing Drive Model", e);
@@ -80,7 +81,8 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
     @Override
     public void finishUp() throws ModelException {
         try {
-            getNodeService().updateProperty(getRootNode(), getMeasurementNodeProperties().getDriveTypeProperty(), driveType.getId());
+            getNodeService()
+                    .updateProperty(getRootNode(), getMeasurementNodeProperties().getDriveTypeProperty(), driveType.getId());
         } catch (ServiceException e) {
             processException("Error on finishing up Drive Model", e);
         }

@@ -78,12 +78,12 @@ public class DataElement implements IDataElement {
     @Override
     public Object get(final String header) {
         if ((node != null) && properties.isEmpty()) {
-            fillProperties();
+            loadProperties();
         }
         return properties.get(header);
     }
 
-    protected void fillProperties() {
+    protected void loadProperties() {
         for (String propertyKey : node.getPropertyKeys()) {
             Object value = node.getProperty(propertyKey);
             properties.put(propertyKey, value);
@@ -133,5 +133,13 @@ public class DataElement implements IDataElement {
             return element.getNode() == null ? 1 : new Long(node.getId()).compareTo(element.getNode().getId());
         }
         return 0;
+    }
+
+    @Override
+    public Map<String, Object> asMap() {
+        if ((node != null) && properties.isEmpty()) {
+            loadProperties();
+        }
+        return properties;
     }
 }

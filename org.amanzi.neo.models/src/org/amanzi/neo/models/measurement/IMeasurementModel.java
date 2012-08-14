@@ -54,4 +54,6 @@ public interface IMeasurementModel extends IDatasetModel {
 
     long getMaxTimestamp();
 
+    Iterable<IDataElement> getElements(long minTimestamp, long maxTimestamp) throws ModelException;
+
 }

@@ -74,8 +74,6 @@ public abstract class AbstractProviderPlugin extends Plugin {
             return getContext().get(id);
         } catch (ContextException e) {
             logError(e);
-
-            PlatformUI.getWorkbench().close();
         }
 
         return null;

@@ -13,15 +13,21 @@
 
 package org.amanzi.awe.statistics.engine;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.exceptions.UnderlyingModelException;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
-import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.template.ITemplate;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -38,35 +44,86 @@ public class StatisticsEngine {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsEngine.class);
 
-    private static class StatisticsEngineHandler {
-        private static volatile StatisticsEngine instance = new StatisticsEngine();
+    @SuppressWarnings("unused")
+    private static class ID {
+
+        private final IMeasurementModel model;
+
+        private final Period period;
+
+        private final ITemplate template;
+
+        private final String propertyName;
+
+        /**
+         * @param model
+         * @param period
+         * @param template
+         * @param propertyName
+         */
+        public ID(IMeasurementModel model, ITemplate template, Period period, String propertyName) {
+            super();
+            this.model = model;
+            this.period = period;
+            this.template = template;
+            this.propertyName = propertyName;
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this, false);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return EqualsBuilder.reflectionEquals(this, obj, false);
+        }
+
     }
+
+    private static Map<ID, StatisticsEngine> engineCache = new HashMap<ID, StatisticsEngine>();
 
     private final IStatisticsModelProvider statisticsModelProvider;
 
-    private IStatisticsModel statisticsModel;
+    private final Period period;
 
-    private Period period;
+    private final ITemplate template;
 
-    private Template template;
+    private final IMeasurementModel measurementModel;
+
+    private final String propertyName;
 
     /**
      * 
      */
-    private StatisticsEngine() {
-        this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider());
+    private StatisticsEngine(IMeasurementModel measurementModel, ITemplate template, Period period, String propertyName) {
+        this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, period, propertyName);
     }
 
-    protected StatisticsEngine(IStatisticsModelProvider statisticsModelProvider) {
+    protected StatisticsEngine(IStatisticsModelProvider statisticsModelProvider, IMeasurementModel measurementModel,
+            ITemplate template, Period period, String propertyName) {
         this.statisticsModelProvider = statisticsModelProvider;
+        this.period = period;
+        this.template = template;
+        this.measurementModel = measurementModel;
+        this.propertyName = propertyName;
     }
 
-    public static synchronized StatisticsEngine getEngine() {
-        return StatisticsEngineHandler.instance;
+    public static synchronized StatisticsEngine getEngine(IMeasurementModel measurementModel, ITemplate template, Period period,
+            String propertyName) {
+        ID id = new ID(measurementModel, template, period, propertyName);
+        StatisticsEngine result = engineCache.get(id);
+
+        if (result == null) {
+            result = new StatisticsEngine(measurementModel, template, period, propertyName);
+
+            engineCache.put(id, result);
+        }
+
+        return result;
     }
 
-    public IStatisticsModel build(IMeasurementModel measurementModel, Template template, Period period, String propertyName,
-            IProgressMonitor monitor) throws StatisticsEngineException {
+    public IStatisticsModel build(IProgressMonitor monitor) throws StatisticsEngineException {
         LOGGER.info("Started Statistics Calculation for Model <" + measurementModel + "> on property <" + propertyName
                 + "> by template <" + template + "> with period <" + period + ">.");
 
@@ -76,15 +133,14 @@ public class StatisticsEngine {
             monitor = new NullProgressMonitor();
         }
 
-        this.template = template;
-        this.period = period;
+        IStatisticsModel statisticsModel = null;
 
         try {
-            statisticsModel = statisticsModelProvider.find(measurementModel, template.getTemplateName(), propertyName);
+            statisticsModel = statisticsModelProvider.find(measurementModel, template.getName(), propertyName);
             if (statisticsModel == null) {
                 LOGGER.info("Statistics not exists in Database. Calculate new one.");
 
-                statisticsModel = buildStatistics(measurementModel, template, period, propertyName, monitor);
+                statisticsModel = buildStatistics(monitor);
 
             } else {
                 LOGGER.info("Statistics already exists in Database");
@@ -99,15 +155,45 @@ public class StatisticsEngine {
         return statisticsModel;
     }
 
-    protected IStatisticsModel buildStatistics(IMeasurementModel measurementModel, Template template, Period period,
-            String propertyName, IProgressMonitor monitor) throws ModelException {
+    protected IStatisticsModel buildStatistics(IProgressMonitor monitor) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Building statistics");
         }
 
-        IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getTemplateName(), propertyName);
+        IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
 
-        return null;
+        calculateStatistics(result, period, monitor);
+
+        return result;
     }
 
+    protected void calculateStatistics(IStatisticsModel statisticsModel, Period period, IProgressMonitor monitor)
+            throws ModelException {
+        Period underlyingPeriod = period.getUnderlyingPeriod();
+
+        if (underlyingPeriod != null) {
+            calculateStatistics(statisticsModel, underlyingPeriod, monitor);
+        } else {
+            long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
+            long nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+
+            do {
+                for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
+                    Map<String, Object> result = template.calculate(dataElement.asMap());
+                    LOGGER.info(result);
+                }
+
+                currentStartTime = nextStartTime;
+                nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+            } while (currentStartTime < nextStartTime);
+        }
+    }
+
+    private long getNextStartDate(Period period, long endDate, long currentStartDate) {
+        long nextStartDate = period.addPeriod(currentStartDate);
+        if (!period.equals(Period.HOURLY) && (nextStartDate > endDate)) {
+            nextStartDate = endDate;
+        }
+        return nextStartDate;
+    }
 }

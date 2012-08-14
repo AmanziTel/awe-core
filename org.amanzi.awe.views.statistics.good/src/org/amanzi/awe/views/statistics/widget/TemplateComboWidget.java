@@ -16,7 +16,7 @@ package org.amanzi.awe.views.statistics.widget;
 import java.util.Collection;
 
 import org.amanzi.awe.statistics.manager.StatisticsManager;
-import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget;
 import org.amanzi.awe.views.statistics.widget.TemplateComboWidget.ITemplateSelectionListener;
 import org.eclipse.swt.widgets.Composite;
@@ -24,16 +24,16 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class TemplateComboWidget extends AbstractComboWidget<Template, ITemplateSelectionListener> {
+public class TemplateComboWidget extends AbstractComboWidget<ITemplate, ITemplateSelectionListener> {
 
     public interface ITemplateSelectionListener extends AbstractComboWidget.IComboSelectionListener {
 
-        void onTemplateSelected(Template template);
+        void onTemplateSelected(ITemplate template);
 
     }
 
@@ -48,7 +48,7 @@ public class TemplateComboWidget extends AbstractComboWidget<Template, ITemplate
     }
 
     @Override
-    protected Collection<Template> getItems() {
+    protected Collection<ITemplate> getItems() {
         if (statisticsManager != null) {
             return statisticsManager.getAvailableTemplates();
         }
@@ -62,14 +62,13 @@ public class TemplateComboWidget extends AbstractComboWidget<Template, ITemplate
     }
 
     @Override
-    protected String getItemName(final Template item) {
-        return item.getTemplateName();
+    protected String getItemName(final ITemplate item) {
+        return item.getName();
     }
 
     @Override
-    protected void fireListener(final ITemplateSelectionListener listener, final Template selectedItem) {
+    protected void fireListener(final ITemplateSelectionListener listener, final ITemplate selectedItem) {
         listener.onTemplateSelected(selectedItem);
     }
-
 
 }

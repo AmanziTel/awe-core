@@ -26,7 +26,7 @@ import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
-import org.amanzi.awe.statistics.template.Template;
+import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,13 +49,13 @@ public class StatisticsManager {
 
     private static JRubyRuntimeWrapper jRubyWrapper;
 
-    private static Collection<Template> allTemplates;
+    private static Collection<ITemplate> allTemplates;
 
     private final IMeasurementModel model;
 
-    private Collection<Template> availableTemplates;
+    private Collection<ITemplate> availableTemplates;
 
-    private Template template;
+    private ITemplate template;
 
     private Period period;
 
@@ -77,12 +77,12 @@ public class StatisticsManager {
         return result;
     }
 
-    public Collection<Template> getAvailableTemplates() {
+    public Collection<ITemplate> getAvailableTemplates() {
         if ((availableTemplates == null) && (model != null)) {
 
-            for (Template singleTemplate : getAllTemplates()) {
+            for (ITemplate singleTemplate : getAllTemplates()) {
                 if (singleTemplate.canResolve(model)) {
-                    availableTemplates = new ArrayList<Template>();
+                    availableTemplates = new ArrayList<ITemplate>();
                     availableTemplates.add(singleTemplate);
                 }
             }
@@ -91,13 +91,13 @@ public class StatisticsManager {
         return availableTemplates;
     }
 
-    private static Collection<Template> getAllTemplates() {
+    private static Collection<ITemplate> getAllTemplates() {
         if (allTemplates == null) {
-            allTemplates = new ArrayList<Template>();
+            allTemplates = new ArrayList<ITemplate>();
 
             for (File file : getTemplateFiles().values()) {
                 try {
-                    Template template = (Template)getJRubyWrapper().executeScript(file);
+                    ITemplate template = (ITemplate)getJRubyWrapper().executeScript(file);
                     allTemplates.add(template);
                 } catch (ScriptingException e) {
                     LOGGER.error("Cannot create a Template from file <" + file.getName() + ">", e);
@@ -133,7 +133,7 @@ public class StatisticsManager {
         this.period = period;
     }
 
-    public void setTemplate(Template template) {
+    public void setTemplate(ITemplate template) {
         this.template = template;
     }
 
@@ -142,6 +142,6 @@ public class StatisticsManager {
     }
 
     public IStatisticsModel build(IProgressMonitor progressMonitor) throws StatisticsEngineException {
-        return StatisticsEngine.getEngine().build(model, template, period, property, progressMonitor);
+        return StatisticsEngine.getEngine(model, template, period, property).build(progressMonitor);
     }
 }

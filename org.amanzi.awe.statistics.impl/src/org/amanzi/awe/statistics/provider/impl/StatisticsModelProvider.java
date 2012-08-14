@@ -105,9 +105,12 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
         if (result == null) {
             try {
                 Node statisticsNode = statisticsService.findStatisticsNode(model.getRootNode(), template, propertyName);
-                result = initializeFromNode(statisticsNode);
 
-                addToCache(result, key);
+                if (statisticsNode != null) {
+                    result = initializeFromNode(statisticsNode);
+
+                    addToCache(result, key);
+                }
             } catch (ServiceException e) {
                 processException("Exception on searching for a Statistics Model", e);
             }

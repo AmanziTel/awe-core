@@ -11,25 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.headers.impl;
-
-import org.amanzi.awe.statistics.headers.impl.internal.AbstractStatisticsHeader;
+package org.amanzi.awe.statistics.template;
 
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class PropertyBasedHeader extends AbstractStatisticsHeader {
-
-    /**
-     * @param name
-     */
-    protected PropertyBasedHeader(final String name) {
-        super(name);
-    }
+public interface ITemplateColumn {
 
 }
