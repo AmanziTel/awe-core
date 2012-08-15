@@ -15,7 +15,10 @@ package org.amanzi.awe.statistics.engine;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.exceptions.UnderlyingModelException;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
@@ -42,6 +45,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  */
 public class StatisticsEngine {
 
+    /** String UNKNOWN_PROPERTY field */
+    private static final String UNKNOWN_VALUE = "unknown";
+
     private static final Logger LOGGER = Logger.getLogger(StatisticsEngine.class);
 
     @SuppressWarnings("unused")
@@ -61,7 +67,7 @@ public class StatisticsEngine {
          * @param template
          * @param propertyName
          */
-        public ID(IMeasurementModel model, ITemplate template, Period period, String propertyName) {
+        public ID(final IMeasurementModel model, final ITemplate template, final Period period, final String propertyName) {
             super();
             this.model = model;
             this.period = period;
@@ -75,7 +81,7 @@ public class StatisticsEngine {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             return EqualsBuilder.reflectionEquals(this, obj, false);
         }
 
@@ -96,12 +102,12 @@ public class StatisticsEngine {
     /**
      * 
      */
-    private StatisticsEngine(IMeasurementModel measurementModel, ITemplate template, Period period, String propertyName) {
+    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period, final String propertyName) {
         this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, period, propertyName);
     }
 
-    protected StatisticsEngine(IStatisticsModelProvider statisticsModelProvider, IMeasurementModel measurementModel,
-            ITemplate template, Period period, String propertyName) {
+    protected StatisticsEngine(final IStatisticsModelProvider statisticsModelProvider, final IMeasurementModel measurementModel,
+            final ITemplate template, final Period period, final String propertyName) {
         this.statisticsModelProvider = statisticsModelProvider;
         this.period = period;
         this.template = template;
@@ -109,8 +115,8 @@ public class StatisticsEngine {
         this.propertyName = propertyName;
     }
 
-    public static synchronized StatisticsEngine getEngine(IMeasurementModel measurementModel, ITemplate template, Period period,
-            String propertyName) {
+    public static synchronized StatisticsEngine getEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period,
+            final String propertyName) {
         ID id = new ID(measurementModel, template, period, propertyName);
         StatisticsEngine result = engineCache.get(id);
 
@@ -155,7 +161,7 @@ public class StatisticsEngine {
         return statisticsModel;
     }
 
-    protected IStatisticsModel buildStatistics(IProgressMonitor monitor) throws ModelException {
+    protected IStatisticsModel buildStatistics(final IProgressMonitor monitor) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Building statistics");
         }
@@ -167,7 +173,7 @@ public class StatisticsEngine {
         return result;
     }
 
-    protected void calculateStatistics(IStatisticsModel statisticsModel, Period period, IProgressMonitor monitor)
+    protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
             throws ModelException {
         Period underlyingPeriod = period.getUnderlyingPeriod();
 
@@ -179,8 +185,15 @@ public class StatisticsEngine {
 
             do {
                 for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
+                    String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString() : UNKNOWN_VALUE;
+
+                    IStatisticsGroup statisticsGroup = statisticsModel.getGroup(period.getId(), propertyValue);
+                    IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime, period.getId());
+
                     Map<String, Object> result = template.calculate(dataElement.asMap());
-                    LOGGER.info(result);
+                    for (Entry<String, Object> statisticsEntry : result.entrySet()) {
+
+                    }
                 }
 
                 currentStartTime = nextStartTime;
@@ -189,7 +202,7 @@ public class StatisticsEngine {
         }
     }
 
-    private long getNextStartDate(Period period, long endDate, long currentStartDate) {
+    private long getNextStartDate(final Period period, final long endDate, final long currentStartDate) {
         long nextStartDate = period.addPeriod(currentStartDate);
         if (!period.equals(Period.HOURLY) && (nextStartDate > endDate)) {
             nextStartDate = endDate;

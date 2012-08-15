@@ -11,31 +11,32 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.model.impl.internal;
+package org.amanzi.awe.statistics.dto.impl;
 
+import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  *
  * </p>
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class Group extends DataElement {
+public class StatisticsGroup extends DataElement implements IStatisticsGroup {
 
     /**
      * 
      */
-    public Group() {
+    public StatisticsGroup() {
     }
 
     /**
      * @param node
      */
-    public Group(Node node) {
+    public StatisticsGroup(final Node node) {
         super(node);
     }
 

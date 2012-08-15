@@ -62,4 +62,6 @@ public interface IDataElement extends Comparable<IDataElement> {
     String getName();
 
     Map<String, Object> asMap();
+
+    boolean contains(String header);
 }

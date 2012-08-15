@@ -114,7 +114,7 @@ public class DataElement implements IDataElement {
         return node == null ? -1 : node.getId();
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -124,7 +124,7 @@ public class DataElement implements IDataElement {
     }
 
     @Override
-    public int compareTo(IDataElement o) {
+    public int compareTo(final IDataElement o) {
         if (name != null) {
             return name.compareTo(o.getName());
         } else if (node != null) {
@@ -141,5 +141,13 @@ public class DataElement implements IDataElement {
             loadProperties();
         }
         return properties;
+    }
+
+    @Override
+    public boolean contains(final String header) {
+        if ((node != null) && properties.isEmpty()) {
+            loadProperties();
+        }
+        return properties.containsKey(header);
     }
 }

@@ -15,6 +15,8 @@ package org.amanzi.awe.statistics.model.impl;
 
 import java.text.MessageFormat;
 
+import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
 import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
@@ -56,8 +58,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
      * @param nodeService
      * @param generalNodeProperties
      */
-    public StatisticsModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties,
-            ITimePeriodNodeProperties timePeriodNodeProperties, IStatisticsNodeProperties statisticsNodeProperties) {
+    public StatisticsModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final ITimePeriodNodeProperties timePeriodNodeProperties, final IStatisticsNodeProperties statisticsNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.timePeriodNodeProperties = timePeriodNodeProperties;
@@ -86,7 +88,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         }
     }
 
-    public void initialize(Node parentNode, String templateName, String propertyName) throws ModelException {
+    public void initialize(final Node parentNode, final String templateName, final String propertyName) throws ModelException {
         assert !StringUtils.isEmpty(templateName);
         assert !StringUtils.isEmpty(propertyName);
 
@@ -124,5 +126,17 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     @Override
     protected RelationshipType getRelationToParent() {
         return StatisticsRelationshipType.STATISTICS;
+    }
+
+    @Override
+    public IStatisticsGroup getGroup(final String period, final String propertyKey) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public IStatisticsRow getStatisticsRow(final IStatisticsGroup group, final long startDate, final long endDate, final String period) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
