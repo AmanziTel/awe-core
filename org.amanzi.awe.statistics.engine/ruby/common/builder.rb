@@ -105,6 +105,10 @@ class Template
   def metadata(hash)
     @metadata = hash
   end
+  
+  def column(name)
+    @columns[name]
+  end
 
   def column(name, &block)
     column=TemplateColumn.new(name)
@@ -133,6 +137,9 @@ class Template
   end
 
   def canResolve(model)
+    @metadata.each do |key, value|
+      return false if !model.instance_eval(key.to_s).id.equals(value)
+    end
     true
   end
 
