@@ -13,6 +13,9 @@
          <loaders
                refId="org.amanzi.loader.GeoptimaLoader">
          </loaders>
+         <loaders
+               refId="org.amanzi.loader.TEMSLoader">
+         </loaders>
       </page>
       <page
             class="org.amanzi.neo.loader.ui.page.impl.network.LoadNetworkPage"

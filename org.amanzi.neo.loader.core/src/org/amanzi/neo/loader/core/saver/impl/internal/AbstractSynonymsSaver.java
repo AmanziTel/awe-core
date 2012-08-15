@@ -14,7 +14,6 @@
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -186,11 +185,14 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
                 if (dateFormat == null) {
                     dateFormat = DateFormatManager.getInstance().autoParseString(value);
                 }
-                return dateFormat.parse(value).getTime();
-            } catch (ParseException e) {
+                if (dateFormat != null) {
+                    return dateFormat.parse(value).getTime();
+                }
+            } catch (Exception e) {
                 return null;
             }
 
+            return null;
         }
 
     }

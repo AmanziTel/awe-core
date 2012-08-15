@@ -18,6 +18,7 @@ import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidator;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -32,21 +33,23 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface ILoader<C extends IConfiguration, D extends IData> {
 
-	void init(C configuration);
+    void init(C configuration);
 
-	void run(IProgressMonitor monitor);
+    void run(IProgressMonitor monitor);
 
-	IValidationResult validate(C configuration);
+    IValidationResult validate(C configuration);
 
-	boolean isAppropriate(C configuration);
+    IValidationResult isAppropriate(C configuration);
 
-	void setValidator(final IValidator<C> validator);
+    void setValidator(final IValidator<C> validator);
 
-	void setParser(final IParser<C, D> parser);
+    void setParser(final IParser<C, D> parser);
 
-	void addSaver(final ISaver<C, D> saver);
+    void addSaver(final ISaver<C, D> saver);
 
-	String getName();
+    String getName();
 
-	void setName(String name);
+    void setName(String name);
+
+    IOFileFilter getFileFilter();
 }

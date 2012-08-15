@@ -46,11 +46,11 @@ public class PropertyVault {
                 }
             }
         },
-        STRING(String.class), DOUBLE(Double.class), LONG(Long.class);
+        STRING(String.class), DOUBLE(Double.class), LONG(Long.class), BOOLEAN(Boolean.class);
 
         private Class< ? > clazz;
 
-        private ClassType(Class< ? > clazz) {
+        private ClassType(final Class< ? > clazz) {
             this.clazz = clazz;
         }
 
@@ -71,7 +71,7 @@ public class PropertyVault {
             return clazz.getName();
         }
 
-        public static ClassType findByClass(Class< ? > clazz) {
+        public static ClassType findByClass(final Class< ? > clazz) {
             for (ClassType singleType : values()) {
                 if (singleType.clazz.equals(clazz)) {
                     return singleType;
@@ -81,7 +81,7 @@ public class PropertyVault {
             return null;
         }
 
-        public static ClassType findByName(String className) {
+        public static ClassType findByName(final String className) {
             for (ClassType singleType : values()) {
                 if (singleType.clazz.getName().equals(className)) {
                     return singleType;
@@ -207,11 +207,11 @@ public class PropertyVault {
         return values;
     }
 
-    public void setClass(String className) {
+    public void setClass(final String className) {
         classType = ClassType.findByName(className);
     }
 
-    public void addValue(Object value, int count) {
+    public void addValue(final Object value, final int count) {
         values.put(value, count);
     }
 }

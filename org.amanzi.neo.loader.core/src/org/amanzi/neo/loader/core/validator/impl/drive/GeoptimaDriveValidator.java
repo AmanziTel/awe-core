@@ -11,36 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.drive;
-
-import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
+package org.amanzi.neo.loader.core.validator.impl.drive;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum DriveType implements IDriveType {
-
-    GEOPTIMA, TEMS;
+public class GeoptimaDriveValidator extends DriveValidator {
 
     @Override
-    public String getId() {
-        return NodeTypeUtils.getTypeId(name());
-    }
-
-    public static DriveType findById(final String name) {
-        for (DriveType value : values()) {
-            if (NodeTypeUtils.getTypeId(value.name()).equals(name)) {
-                return value;
-            }
-        }
-
-        return null;
+    public String[] getSupportedFileExtensions() {
+        return new String[] {"csv"};
     }
 
 }

@@ -11,36 +11,25 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.drive;
+package org.amanzi.neo.loader.core.saver.drive.impl;
 
+import org.amanzi.neo.loader.core.saver.impl.AbstractDriveSaver;
+import org.amanzi.neo.models.drive.DriveType;
 import org.amanzi.neo.models.drive.IDriveModel.IDriveType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum DriveType implements IDriveType {
-
-    GEOPTIMA, TEMS;
+public class TEMSSaver extends AbstractDriveSaver {
 
     @Override
-    public String getId() {
-        return NodeTypeUtils.getTypeId(name());
-    }
-
-    public static DriveType findById(final String name) {
-        for (DriveType value : values()) {
-            if (NodeTypeUtils.getTypeId(value.name()).equals(name)) {
-                return value;
-            }
-        }
-
-        return null;
+    protected IDriveType getDriveType() {
+        return DriveType.TEMS;
     }
 
 }

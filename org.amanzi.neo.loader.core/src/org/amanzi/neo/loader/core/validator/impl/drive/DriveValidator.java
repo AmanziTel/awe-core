@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveValidator extends AbstractHeadersValidator<IMultiFileConfiguration> {
+public abstract class DriveValidator extends AbstractHeadersValidator<IMultiFileConfiguration> {
 
     private static final Logger LOGGER = Logger.getLogger(DriveValidator.class);
 

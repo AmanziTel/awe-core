@@ -82,4 +82,9 @@ public class NetworkValidator extends AbstractHeadersValidator<ISingleFileConfig
         return NetworkSaver.SYNONYMS_TYPE;
     }
 
+    @Override
+    public String[] getSupportedFileExtensions() {
+        return new String[] {"txt", "csv"};
+    }
+
 }

@@ -15,4 +15,6 @@ Require-Bundle: org.amanzi.log4j;bundle-version="1.0.0",
 Eclipse-ExtensibleAPI: true
 Bundle-ClassPath: .
 Eclipse-BuddyPolicy: registered
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.amanzi.neo.core.internal.NeoCorePlugin
 

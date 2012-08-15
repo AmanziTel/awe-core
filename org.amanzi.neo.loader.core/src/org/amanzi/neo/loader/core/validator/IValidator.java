@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.validator;
 
 import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.apache.commons.io.filefilter.IOFileFilter;
 
 /**
  * TODO Purpose of
@@ -28,5 +29,9 @@ public interface IValidator<C extends IConfiguration> {
     IValidationResult appropriate(C configuration);
 
     IValidationResult validate(C configuration);
+
+    IOFileFilter getFileFilter();
+
+    String[] getSupportedFileExtensions();
 
 }

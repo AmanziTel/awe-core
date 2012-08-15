@@ -36,6 +36,10 @@
             class="org.amanzi.neo.loader.core.saver.drive.impl.GeoptimaSaver"
             id="org.amanzi.saver.GeoptimaSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.drive.impl.TEMSSaver"
+            id="org.amanzi.saver.TEMSSaver">
+      </saver>
    </extension>
    <extension
          point="org.amanzi.validators">
@@ -44,8 +48,12 @@
             id="org.amanzi.validator.NetworkCSVValidator">
       </validator>
       <validator
-            class="org.amanzi.neo.loader.core.validator.impl.drive.DriveValidator"
-            id="org.amanzi.validators.DriveValidator">
+            class="org.amanzi.neo.loader.core.validator.impl.drive.GeoptimaDriveValidator"
+            id="org.amanzi.validators.GeoptimaValidator">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.core.validator.impl.drive.TEMSDriveValidator"
+            id="org.amanzi.validators.TEMSValidator">
       </validator>
    </extension>
    <extension
@@ -63,9 +71,18 @@
             id="org.amanzi.loader.GeoptimaLoader"
             name="Geoptima CSV Loader"
             parser="org.amanzi.parser.MultiCSVParser"
-            validator="org.amanzi.validators.DriveValidator">
+            validator="org.amanzi.validators.GeoptimaValidator">
          <savers
                saver="org.amanzi.saver.GeoptimaSaver">
+         </savers>
+      </loader>
+      <loader
+            id="org.amanzi.loader.TEMSLoader"
+            name="TEMS CSV Loader"
+            parser="org.amanzi.parser.MultiCSVParser"
+            validator="org.amanzi.validators.TEMSValidator">
+         <savers
+               saver="org.amanzi.saver.TEMSSaver">
          </savers>
       </loader>
    </extension>

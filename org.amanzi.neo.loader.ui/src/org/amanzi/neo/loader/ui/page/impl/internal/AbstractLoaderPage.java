@@ -39,9 +39,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extends WizardPage
-        implements
-            ILoaderPage<T>,
-            ICRSSelectorListener {
+implements
+ILoaderPage<T>,
+ICRSSelectorListener {
 
     public static final int NUMBER_OF_COLUMNS = 4;
 
@@ -87,11 +87,34 @@ public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extend
     }
 
     protected void autodefineLoader() {
+        ILoader<T, ?> lastUnknown = null;
+        IValidationResult unkonwnResult = null;
+        ILoader<T, ?> definedLoader = null;
         for (ILoader<T, ? > loader : loaders) {
-            if (loader.isAppropriate(getConfiguration())) {
-                setCurrentLoader(loader);
+            IValidationResult result = loader.isAppropriate(getConfiguration());
+            switch (result.getResult()) {
+            default:
+            case FAIL:
+                break;
+            case UNKNOWN:
+                lastUnknown = loader;
+                unkonwnResult = result;
+                break;
+            case SUCCESS:
+                definedLoader = loader;
                 break;
             }
+
+            if (definedLoader != null) {
+                break;
+            }
+        }
+
+        if (definedLoader != null) {
+            setCurrentLoader(definedLoader);
+        } else if (lastUnknown != null) {
+            setCurrentLoader(lastUnknown);
+            showMessage(unkonwnResult);
         }
 
         update();
@@ -99,6 +122,7 @@ public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extend
 
     protected boolean checkPage() {
         setErrorMessage(null);
+        setMessage(null);
 
         if (getCurrentLoader() == null) {
             setErrorMessage(Messages.AbstractLoaderPage_LoaderNotSelectedError);

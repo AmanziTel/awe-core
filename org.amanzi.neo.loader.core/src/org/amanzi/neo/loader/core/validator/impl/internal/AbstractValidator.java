@@ -16,6 +16,8 @@ package org.amanzi.neo.loader.core.validator.impl.internal;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 
 /**
  * TODO Purpose of
@@ -34,12 +36,12 @@ public abstract class AbstractValidator<T extends IConfiguration> implements IVa
     }
 
     @Override
-    public IValidationResult appropriate(T configuration) {
+    public IValidationResult appropriate(final T configuration) {
         return checkFileContents(configuration);
     }
 
     @Override
-    public IValidationResult validate(T configuration) {
+    public IValidationResult validate(final T configuration) {
         IValidationResult result = checkModelExists(configuration);
 
         if (result.getResult() == IValidationResult.Result.SUCCESS) {
@@ -52,5 +54,14 @@ public abstract class AbstractValidator<T extends IConfiguration> implements IVa
     protected abstract IValidationResult checkFileContents(T configuration);
 
     protected abstract IValidationResult checkModelExists(T configuration);
+
+    @Override
+    public IOFileFilter getFileFilter() {
+        IOFileFilter filter = FileFilterUtils.trueFileFilter();
+        for (String extension : getSupportedFileExtensions()) {
+            filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.prefixFileFilter(extension));
+        }
+        return filter;
+    }
 
 }

@@ -44,8 +44,21 @@ import org.eclipse.swt.widgets.List;
  * @since 1.0.0
  */
 public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectDriveResourcesWidget.ISelectDriveResourceListener>
-        implements
-            SelectionListener {
+implements
+SelectionListener {
+
+    private static final IOFileFilter DEFAULT_FILE_FILTER = new IOFileFilter() {
+
+        @Override
+        public boolean accept(final File file, final String fileName) {
+            return file.isFile() && !file.isHidden() && (file.length() > 0);
+        }
+
+        @Override
+        public boolean accept(final File arg0) {
+            return accept(arg0, arg0.getName());
+        }
+    };
 
     protected static final GridLayout FIXED_ONE_ROW_LAYOUT = new GridLayout(1, false);
 
@@ -60,6 +73,8 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     private Button removeAllButton;
 
     private Button removeSelectedButton;
+
+    private IOFileFilter fileFilter = null;
 
     private final Map<String, File> availableFiles = new HashMap<String, File>();
 
@@ -135,21 +150,21 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
         updateLists();
     }
 
+    public void setFileFilter(final IOFileFilter filter) {
+        fileFilter = FileFilterUtils.andFileFilter(DEFAULT_FILE_FILTER, filter);
+
+        updateLists();
+    }
+
     public void setFiles(final File directory) {
         assert directory.isDirectory();
 
-        IOFileFilter csvFilter = FileFilterUtils.suffixFileFilter(".csv");
-        IOFileFilter fmtFilter = FileFilterUtils.suffixFileFilter("*.fmt");
-        FileFilter filter = FileFilterUtils.orFileFilter(csvFilter, fmtFilter);
-
-        File[] files = directory.listFiles(filter);
+        File[] files = directory.listFiles((FileFilter)fileFilter);
 
         Arrays.sort(files);
 
-        for (File file : files) {
-            if (file.isFile()) {
-                availableFiles.put(file.getName(), file);
-            }
+        for (File singleFile : files) {
+            availableFiles.put(singleFile.getName(), singleFile);
         }
 
         updateLists();

@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.internal.Loader;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
+import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.IValidator;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -179,27 +180,27 @@ public class LoaderTest extends AbstractMockitoTest {
     public void testCheckSuccessResultOnIsAppropriate() throws Exception {
         when(validator.appropriate(configuration)).thenReturn(IValidationResult.SUCCESS);
 
-        boolean result = loader.isAppropriate(configuration);
+        IValidationResult result = loader.isAppropriate(configuration);
 
-        assertTrue("validation result should be true", result);
+        assertEquals("validation result should be success", Result.SUCCESS, result.getResult());
     }
 
     @Test
     public void testCheckFailResultOnIsAppropriate() throws Exception {
         when(validator.appropriate(configuration)).thenReturn(IValidationResult.FAIL);
 
-        boolean result = loader.isAppropriate(configuration);
+        IValidationResult result = loader.isAppropriate(configuration);
 
-        assertFalse("validation result should be false", result);
+        assertEquals("validation result should be fail", Result.FAIL, result.getResult());
     }
 
     @Test
     public void testCheckUnkonwnResultOnIsAppropriate() throws Exception {
         when(validator.appropriate(configuration)).thenReturn(IValidationResult.UNKNOWN);
 
-        boolean result = loader.isAppropriate(configuration);
+        IValidationResult result = loader.isAppropriate(configuration);
 
-        assertTrue("validation result should be true", result);
+        assertEquals("validation result should be unknown", Result.UNKNOWN, result.getResult());
     }
 
     @Test
