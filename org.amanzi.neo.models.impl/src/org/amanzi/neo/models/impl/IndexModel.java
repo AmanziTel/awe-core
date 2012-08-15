@@ -100,9 +100,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
     @Override
     public void finishUp() throws ModelException {
-        for (MultiPropertyIndex< ? > index : indexMap.values()) {
-            index.finishUp();
-        }
+        flushIndexes();
     }
 
     @Override
@@ -222,6 +220,13 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         }
 
         return result;
+    }
+
+    @Override
+    public void flushIndexes() throws ModelException {
+        for (MultiPropertyIndex< ? > index : indexMap.values()) {
+            index.finishUp();
+        }
     }
 
 }

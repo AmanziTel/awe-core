@@ -222,7 +222,12 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         return NodeServiceRelationshipType.CHILD;
     }
 
-    public void setRootNode(Node rootNode) {
+    public void setRootNode(final Node rootNode) {
         this.rootNode = rootNode;
+    }
+
+    @Override
+    public void flush() {
+        //do nothing
     }
 }

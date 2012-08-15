@@ -44,108 +44,116 @@ import org.neo4j.graphdb.Transaction;
  */
 public abstract class AbstractSaver<C extends IConfiguration, D extends IData> implements ISaver<C, D> {
 
-	private static final int MAX_TX_COUNT = 2000;
+    private static final int MAX_TX_COUNT = 2000;
 
-	private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
 
-	private C configuration;
+    private C configuration;
 
-	private final List<IModel> processedModels = new ArrayList<IModel>();
+    private final List<IModel> processedModels = new ArrayList<IModel>();
 
-	private final IProjectModelProvider projectModelProvider;
+    private final IProjectModelProvider projectModelProvider;
 
-	private IProjectModel currentProject;
+    private IProjectModel currentProject;
 
-	private Transaction tx;
+    private Transaction tx;
 
-	private int txCount;
+    private int txCount;
 
-	protected AbstractSaver(final IProjectModelProvider projectModelProvider) {
-		this.projectModelProvider = projectModelProvider;
-	}
+    protected AbstractSaver(final IProjectModelProvider projectModelProvider) {
+        this.projectModelProvider = projectModelProvider;
+    }
 
-	@Override
-	//TODO: do not throw Model Exception in Loader
-	public void init(final C configuration) throws ModelException {
-		this.configuration = configuration;
+    @Override
+    //TODO: do not throw Model Exception in Loader
+    public void init(final C configuration) throws ModelException {
+        this.configuration = configuration;
 
-		this.currentProject = projectModelProvider.getActiveProjectModel();
+        this.currentProject = projectModelProvider.getActiveProjectModel();
 
-		DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
-		tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
-	}
+        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
+        tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
+    }
 
-	@Override
-	public void finishUp() {
-		saveTx(true, true);
+    @Override
+    public void finishUp() {
+        saveTx(true, true);
 
-		EventChain eventChain = new EventChain(true);
-		eventChain.addEvent(AWEEventManager.DATA_UPDATED_EVENT);
+        EventChain eventChain = new EventChain(true);
+        eventChain.addEvent(AWEEventManager.DATA_UPDATED_EVENT);
 
-		for (IModel model : processedModels) {
-			try {
-				model.finishUp();
+        for (IModel model : processedModels) {
+            try {
+                model.finishUp();
 
-				if (model.isRenderable()) {
-					for (IGISModel gisModel : ((IRenderableModel)model).getAllGIS()) {
-						eventChain.addEvent(new ShowGISOnMap(gisModel));
-					}
-				}
-			} catch (ModelException e) {
-				LOGGER.error("an exception occured on finishing up a saver", e);
-			}
-		}
-		saveTx(true, false);
+                if (model.isRenderable()) {
+                    for (IGISModel gisModel : ((IRenderableModel)model).getAllGIS()) {
+                        eventChain.addEvent(new ShowGISOnMap(gisModel));
+                    }
+                }
+            } catch (ModelException e) {
+                LOGGER.error("an exception occured on finishing up a saver", e);
+            }
+        }
+        saveTx(true, false);
 
-		AWEEventManager.getManager().fireEventChain(eventChain);
-	}
+        AWEEventManager.getManager().fireEventChain(eventChain);
+    }
 
-	@Override
-	public void save(final D data) {
-		try {
-			saveInModel(data);
-			updateTransaction();
-		} catch (ParameterInconsistencyException e) {
-			LOGGER.error(e.getParameterName());
-		} catch (ModelException e) {
-			saveTx(false, true);
-			throw new UnderlyingModelException(e);
-		}
-	}
+    @Override
+    public void save(final D data) {
+        try {
+            saveInModel(data);
+            updateTransaction();
+        } catch (ParameterInconsistencyException e) {
+            LOGGER.error(e.getParameterName());
+        } catch (ModelException e) {
+            saveTx(false, true);
+            throw new UnderlyingModelException(e);
+        }
+    }
 
-	protected void updateTransaction() {
-		txCount++;
-		if (txCount > MAX_TX_COUNT) {
-			txCount = 0;
-			saveTx(true, true);
-		}
-	}
+    protected void updateTransaction() {
+        txCount++;
+        if (txCount > MAX_TX_COUNT) {
+            flushModels();
 
-	protected void saveTx(final boolean success, final boolean shouldContinue) {
-		if (success) {
-			tx.success();
-		} else {
-			tx.failure();
-		}
+            txCount = 0;
+            saveTx(true, true);
+        }
+    }
 
-		tx.finish();
-		if (shouldContinue) {
-			tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
-		}
-	}
+    protected void flushModels() {
+        for (IModel model : processedModels) {
+            model.flush();
+        }
+    }
 
-	protected abstract void saveInModel(D data) throws ModelException;
+    protected void saveTx(final boolean success, final boolean shouldContinue) {
+        if (success) {
+            tx.success();
+        } else {
+            tx.failure();
+        }
 
-	protected C getConfiguration() {
-		return configuration;
-	}
+        tx.finish();
+        if (shouldContinue) {
+            tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
+        }
+    }
 
-	protected void addProcessedModel(final IModel model) {
-		this.processedModels.add(model);
-	}
+    protected abstract void saveInModel(D data) throws ModelException;
 
-	protected IProjectModel getCurrentProject() {
-		return currentProject;
-	}
+    protected C getConfiguration() {
+        return configuration;
+    }
+
+    protected void addProcessedModel(final IModel model) {
+        this.processedModels.add(model);
+    }
+
+    protected IProjectModel getCurrentProject() {
+        return currentProject;
+    }
 
 }

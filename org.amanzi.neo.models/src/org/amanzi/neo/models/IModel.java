@@ -47,4 +47,6 @@ public interface IModel {
     IDataElement asDataElement();
 
     boolean isRenderable();
+
+    void flush();
 }
