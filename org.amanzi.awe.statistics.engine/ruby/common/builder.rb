@@ -137,10 +137,13 @@ class Template
   end
 
   def canResolve(model)
+    result = true
+    
     @metadata.each do |key, value|
-      return false if !model.instance_eval(key.to_s).id.equals(value)
+      result &&= model.instance_eval(key.to_s).id.eql?(value.to_s)
     end
-    true
+    
+    result
   end
 
 end
