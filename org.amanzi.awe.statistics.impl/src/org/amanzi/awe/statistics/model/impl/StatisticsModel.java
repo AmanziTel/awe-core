@@ -226,7 +226,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
         IStatisticsRow result = statisticsRowCache.get(key);
         if (result == null) {
+            result = getStatisticsRowFromDatabase((StatisticsGroup)group, startDate, endDate);
 
+            statisticsRowCache.put(key, result);
         }
 
         if (LOGGER.isDebugEnabled()) {
