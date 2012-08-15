@@ -188,7 +188,7 @@ public class StatisticsEngine {
                     String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString() : UNKNOWN_VALUE;
 
                     IStatisticsGroup statisticsGroup = statisticsModel.getGroup(period.getId(), propertyValue);
-                    IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime, period.getId());
+                    IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime);
 
                     Map<String, Object> result = template.calculate(dataElement.asMap());
                     for (Entry<String, Object> statisticsEntry : result.entrySet()) {

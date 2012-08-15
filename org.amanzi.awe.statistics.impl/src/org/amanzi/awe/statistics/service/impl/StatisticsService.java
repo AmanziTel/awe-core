@@ -21,6 +21,7 @@ import org.amanzi.awe.statistics.service.IStatisticsService;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
@@ -120,8 +121,8 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
 
         String groupName = MessageFormat.format(GROUP_NAME_PATTERN, periodLevelname, propertyLevelName);
 
-        Node result = nodeService.createNode(periodLevelNode, StatisticsNodeType.GROUP, StatisticsRelationshipType.TIME_DIMENSION, groupName);
-        nodeService.linkNodes(propertyLevelNode, result, StatisticsRelationshipType.PROPERTY_DIMENSION);
+        Node result = nodeService.createNode(periodLevelNode, StatisticsNodeType.GROUP, NodeServiceRelationshipType.CHILD, groupName);
+        nodeService.linkNodes(propertyLevelNode, result, NodeServiceRelationshipType.CHILD);
 
         return result;
     }
