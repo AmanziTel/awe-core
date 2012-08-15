@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.model;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.models.IModel;
@@ -28,7 +29,9 @@ import org.amanzi.neo.models.exceptions.ModelException;
  */
 public interface IStatisticsModel extends IModel {
 
-    IStatisticsGroup getGroup(String period, String propertyKey) throws ModelException;
+    IStatisticsGroup getStatisticsGroup(String period, String propertyKey) throws ModelException;
 
     IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate) throws ModelException;
+
+    IStatisticsCell getStatisticsCell(IStatisticsRow statisticsRow, String name) throws ModelException;
 }

@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.dto.impl.StatisticsGroup;
@@ -147,7 +148,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public IStatisticsGroup getGroup(final String period, final String propertyKey) throws ModelException {
+    public IStatisticsGroup getStatisticsGroup(final String period, final String propertyKey) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getGroup", period, propertyKey));
         }
@@ -329,5 +330,11 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         }
 
         dimensionCache.put(key, value);
+    }
+
+    @Override
+    public IStatisticsCell getStatisticsCell(final IStatisticsRow statisticsRow, final String name) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

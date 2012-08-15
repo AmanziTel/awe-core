@@ -5,6 +5,7 @@ java_import 'org.amanzi.awe.statistics.template.ITemplateColumn'
 java_import 'org.amanzi.awe.statistics.template.ITemplate'
 java_import 'org.amanzi.awe.statistics.template.IThreshold'
 java_import 'org.amanzi.awe.statistics.headers.impl.KPIBasedHeader'
+java_import 'org.amanzi.awe.statistics.template.functions.impl.AggregationFunctions'
 
 class Threshold
   include IThreshold
@@ -45,7 +46,7 @@ class TemplateColumn
 
   attr_accessor :name
   attr_accessor :header
-  attr_accessor :function
+  attr_writer :function
   attr_accessor :threshold
   attr_accessor :format
   def initialize(name)
@@ -87,6 +88,10 @@ class TemplateColumn
       super.method_missing(method, *args)
     end
   end
+  
+  def function
+    AggregationFunctions.getFunctionByName @function
+  end
 
   alias formula= formula
   alias aggregation= aggregation
@@ -98,7 +103,7 @@ class Template
   attr_accessor :name
   def initialize(name)
     self.name = name
-    @columns = []
+    @columns = {}
     @metadata = {}
   end
 
@@ -106,7 +111,7 @@ class Template
     @metadata = hash
   end
   
-  def column(name)
+  def getColumn(name)
     @columns[name]
   end
 
@@ -114,7 +119,7 @@ class Template
     column=TemplateColumn.new(name)
     column.instance_eval &block if block_given?
 
-    @columns << column
+    @columns[column.name] = column
     column
   end
 
@@ -128,7 +133,7 @@ class Template
 
   def calculate(element)
     result = {}
-    for column in @columns
+    @columns.each_value do |column|
         header = column.header
         result[header.name] = eval(header.formula + ' element')
     end

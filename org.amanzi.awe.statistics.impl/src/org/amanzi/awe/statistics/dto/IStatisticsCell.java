@@ -11,28 +11,18 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.template;
+package org.amanzi.awe.statistics.dto;
 
-import java.util.Map;
-
-import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.dto.IDataElement;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ITemplate {
-
-    String getName();
-
-    Map<String, Object> calculate(Map<String, Object> dataElement);
-
-    boolean canResolve(IMeasurementModel model);
-
-    ITemplateColumn getColumn(String name);
+public interface IStatisticsCell extends IDataElement {
 
 }

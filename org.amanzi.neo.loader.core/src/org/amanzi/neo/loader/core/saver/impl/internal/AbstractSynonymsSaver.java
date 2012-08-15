@@ -48,8 +48,14 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         private final String propertyName;
 
         public Property(final String propertyName, final String headerName) {
-            this.propertyName = propertyName;
+            this.propertyName = cleanPropertyName(propertyName);
             this.headerName = headerName;
+        }
+
+        private String cleanPropertyName(final String header) {
+            //TODO: refactor this
+            return header == null ? header : header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
+                    .replaceAll("\\_$", "").toLowerCase();
         }
 
         protected String getValue(final IMappedStringData data) {
@@ -60,6 +66,10 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
         public String getPropertyName() {
             return propertyName;
+        }
+
+        public String getHeaderName() {
+            return headerName;
         }
 
     }
@@ -98,7 +108,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             if (StringUtils.isEmpty(value)) {
                 return null;
             }
-            return Double.parseDouble(getValue(data));
+            return Double.parseDouble(value);
         }
 
     }
@@ -115,7 +125,13 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
         @Override
         protected String parse(final IMappedStringData data) {
-            return getValue(data);
+            String value = getValue(data);
+
+            if (StringUtils.isEmpty(value)) {
+                return null;
+            }
+
+            return value;
         }
 
     }
@@ -137,7 +153,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             if (StringUtils.isEmpty(value)) {
                 return null;
             }
-            return BooleanUtils.toBooleanObject(getValue(data));
+            return BooleanUtils.toBooleanObject(value);
         }
 
     }
@@ -159,7 +175,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             if (StringUtils.isEmpty(value)) {
                 return null;
             }
-            return Long.parseLong(getValue(data));
+            return Long.parseLong(value);
         }
 
     }
@@ -214,7 +230,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             if (StringUtils.isEmpty(value)) {
                 return null;
             }
-            return Integer.parseInt(getValue(data));
+            return Integer.parseInt(value);
         }
 
     }
@@ -254,32 +270,44 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             Object result = null;
 
             // try double
-            currentProperty = new IntegerProperty(getPropertyName(), getPropertyName());
+            currentProperty = new IntegerProperty(getPropertyName(), getHeaderName());
             try {
                 result = currentProperty.parse(data);
+
+                if (result == null) {
+                    throw new NumberFormatException();
+                }
             } catch (NumberFormatException e1) {
                 // try long
-                currentProperty = new LongProperty(getPropertyName(), getPropertyName());
+                currentProperty = new LongProperty(getPropertyName(), getHeaderName());
                 try {
                     result = currentProperty.parse(data);
+
+                    if (result == null) {
+                        throw new NumberFormatException();
+                    }
                 } catch (NumberFormatException e2) {
                     // try integer
-                    currentProperty = new DoubleProperty(getPropertyName(), getPropertyName());
+                    currentProperty = new DoubleProperty(getPropertyName(), getHeaderName());
                     try {
                         result = currentProperty.parse(data);
+
+                        if (result == null) {
+                            throw new NumberFormatException();
+                        }
                     } catch (NumberFormatException e3) {
                         //try timestamp
-                        currentProperty = new TimestampProperty(getPropertyName(), getPropertyName());
+                        currentProperty = new TimestampProperty(getPropertyName(), getHeaderName());
                         result = currentProperty.parse(data);
 
                         if (result == null) {
                             //try boolean
-                            currentProperty = new BooleanProperty(getPropertyName(), getPropertyName());
+                            currentProperty = new BooleanProperty(getPropertyName(), getHeaderName());
 
                             result = currentProperty.parse(data);
                             if (result == null) {
                                 //to string
-                                currentProperty = new StringProperty(getPropertyName(), getPropertyName());
+                                currentProperty = new StringProperty(getPropertyName(), getHeaderName());
                                 result = currentProperty.parse(data);
                             }
                         }

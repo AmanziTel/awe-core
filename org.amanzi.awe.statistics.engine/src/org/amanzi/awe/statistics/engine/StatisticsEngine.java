@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
@@ -26,6 +27,8 @@ import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
 import org.amanzi.awe.statistics.template.ITemplate;
+import org.amanzi.awe.statistics.template.ITemplateColumn;
+import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
@@ -152,7 +155,7 @@ public class StatisticsEngine {
                 LOGGER.info("Statistics already exists in Database");
             }
         } catch (ModelException e) {
-            LOGGER.error("An error occured on Statistics Calculation");
+            LOGGER.error("An error occured on Statistics Calculation", e);
             throw new UnderlyingModelException(e);
         }
 
@@ -168,7 +171,13 @@ public class StatisticsEngine {
 
         IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
 
-        calculateStatistics(result, period, monitor);
+        try {
+            calculateStatistics(result, period, monitor);
+        } catch (Exception e) {
+            LOGGER.error("Error on calculating statistics", e);
+        } finally {
+            result.finishUp();
+        }
 
         return result;
     }
@@ -187,12 +196,20 @@ public class StatisticsEngine {
                 for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
                     String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString() : UNKNOWN_VALUE;
 
-                    IStatisticsGroup statisticsGroup = statisticsModel.getGroup(period.getId(), propertyValue);
+                    IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
                     IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime);
 
                     Map<String, Object> result = template.calculate(dataElement.asMap());
                     for (Entry<String, Object> statisticsEntry : result.entrySet()) {
+                        ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
 
+                        IStatisticsCell cell = statisticsModel.getStatisticsCell(statisticsRow, column.getName());
+
+                        Object statisticsValue = statisticsEntry.getValue();
+                        Number value = null;
+                        if (statisticsValue instanceof Number) {
+                            value = calculateValue(column.getFunction(), (Number)statisticsValue);
+                        }
                     }
                 }
 
@@ -200,6 +217,10 @@ public class StatisticsEngine {
                 nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
             } while (currentStartTime < measurementModel.getMaxTimestamp());
         }
+    }
+
+    private Number calculateValue(final IAggregationFunction function, final Number value) {
+        return function.update(value).getResult();
     }
 
     private long getNextStartDate(final Period period, final long endDate, final long currentStartDate) {

@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.template;
 
+import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
+
 /**
  * TODO Purpose of
  * <p>
@@ -22,5 +24,9 @@ package org.amanzi.awe.statistics.template;
  * @since 1.0.0
  */
 public interface ITemplateColumn {
+
+    String getName();
+
+    IAggregationFunction getFunction();
 
 }
