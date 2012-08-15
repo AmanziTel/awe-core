@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.preference.dateformat.enumeration;
+package org.amanzi.neo.loader.ui.preference.dateformat;
 
 import org.amanzi.neo.loader.ui.internal.Messages;
 

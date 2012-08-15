@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,283 +52,286 @@ import org.junit.Test;
  */
 public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
 
-	private static final String SYNONYMS_TYPE = "synonyms_type";
+    private static final String SYNONYMS_TYPE = "synonyms_type";
 
-	private static final String HEADER_NAME = "header";
+    private static final String HEADER_NAME = "header";
 
-	private static final String PROPERTY_NAME = "property";
+    private static final String PROPERTY_NAME = "property";
 
-	private long currentTimestamp;
+    private static final DateFormat DATE_TIME_PATTERN = DateFormat.getDateInstance(DateFormat.FULL);
 
-	private enum TestNodeType implements INodeType {
-		TEST_TYPE_FOR_SAVER;
+    private long currentTimestamp;
 
-		@Override
-		public String getId() {
-			return NodeTypeUtils.getTypeId(this);
-		}
-	}
+    private enum TestNodeType implements INodeType {
+        TEST_TYPE_FOR_SAVER;
 
-	public class TestAbstractSynonymsSaver extends AbstractSynonymsSaver<IConfiguration> {
+        @Override
+        public String getId() {
+            return NodeTypeUtils.getTypeId(this);
+        }
+    }
 
-		/**
-		 * @param projectModelProvider
-		 * @param synonymsManager
-		 */
-		protected TestAbstractSynonymsSaver(final IProjectModelProvider projectModelProvider, final SynonymsManager synonymsManager) {
-			super(projectModelProvider, synonymsManager);
-		}
+    public class TestAbstractSynonymsSaver extends AbstractSynonymsSaver<IConfiguration> {
 
-		@Override
-		public void save(final IMappedStringData dataElement) {
-		}
+        /**
+         * @param projectModelProvider
+         * @param synonymsManager
+         */
+        protected TestAbstractSynonymsSaver(final IProjectModelProvider projectModelProvider, final SynonymsManager synonymsManager) {
+            super(projectModelProvider, synonymsManager);
+        }
 
-		@Override
-		protected String getSynonymsType() {
-			return SYNONYMS_TYPE;
-		}
+        @Override
+        public void save(final IMappedStringData dataElement) {
+        }
 
-		@Override
-		protected void saveInModel(final IMappedStringData data) throws ModelException {
-		}
+        @Override
+        protected String getSynonymsType() {
+            return SYNONYMS_TYPE;
+        }
 
-		@Override
-		public void onFileParsingStarted(final File file) {
-			// TODO Auto-generated method stub
+        @Override
+        protected void saveInModel(final IMappedStringData data) throws ModelException {
 
-		}
+        }
 
-	}
+        @Override
+        public void onFileParsingStarted(final File file) {
+            // TODO Auto-generated method stub
 
-	private SynonymsManager synonymsManager;
+        }
 
-	private AbstractSynonymsSaver<IConfiguration> saver;
+    }
 
-	private IProjectModelProvider projectModelProvider;
+    private SynonymsManager synonymsManager;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		synonymsManager = mock(SynonymsManager.class);
+    private AbstractSynonymsSaver<IConfiguration> saver;
 
-		projectModelProvider = mock(IProjectModelProvider.class);
+    private IProjectModelProvider projectModelProvider;
 
-		saver = spy(new TestAbstractSynonymsSaver(projectModelProvider, synonymsManager));
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        synonymsManager = mock(SynonymsManager.class);
 
-		currentTimestamp = System.currentTimeMillis();
-	}
+        projectModelProvider = mock(IProjectModelProvider.class);
 
-	@Test
-	public void testCheckActivityOnGetElement() {
-		doReturn(AbstractSynonymsSaver.SKIPPED_PROPERTY).when(saver).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER),
-				any(String.class), eq(false));
+        saver = spy(new TestAbstractSynonymsSaver(projectModelProvider, synonymsManager));
 
-		saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, getData(5), false);
+        currentTimestamp = System.currentTimeMillis();
+    }
 
-		verify(saver, times(5)).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER), any(String.class), eq(false));
-	}
+    @Test
+    public void testCheckActivityOnGetElement() {
+        doReturn(AbstractSynonymsSaver.SKIPPED_PROPERTY).when(saver).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER),
+                any(String.class), eq(false));
 
-	@Test
-	public void testCheckPropertyCachingOnGetElement() {
-		doReturn(AbstractSynonymsSaver.SKIPPED_PROPERTY).when(saver).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER),
-				any(String.class), eq(false));
+        saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, getData(5), false);
 
-		saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, getData(5), false);
-		saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, getData(5), false);
+        verify(saver, times(5)).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER), any(String.class), eq(false));
+    }
 
-		verify(saver, times(5)).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER), any(String.class), eq(false));
-	}
+    @Test
+    public void testCheckPropertyCachingOnGetElement() {
+        doReturn(AbstractSynonymsSaver.SKIPPED_PROPERTY).when(saver).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER),
+                any(String.class), eq(false));
 
-	@Test
-	public void testCheckCachingOnCreateProperty() {
-		when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(new ArrayList<Synonyms>());
+        saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, getData(5), false);
+        saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, getData(5), false);
 
-		saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, false);
-		saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, false);
+        verify(saver, times(5)).createProperty(eq(TestNodeType.TEST_TYPE_FOR_SAVER), any(String.class), eq(false));
+    }
 
-		verify(synonymsManager, times(1)).getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER);
-	}
+    @Test
+    public void testCheckCachingOnCreateProperty() {
+        when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(new ArrayList<Synonyms>());
 
-	@Test
-	public void testCheckSkippedProperty() {
-		when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(new ArrayList<Synonyms>());
-
-		Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, false);
-
-		assertEquals("unexpected property", AbstractSynonymsSaver.SKIPPED_PROPERTY, result);
-	}
-
-	@Test
-	public void testCheckUndefinedProperty() {
-		when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(new ArrayList<Synonyms>());
-
-		Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, true);
-
-		assertEquals("unexpected property", UndefinedProperty.class, result.getClass());
-		assertEquals("unexpected property name", HEADER_NAME, result.getPropertyName());
-	}
-
-	@Test
-	public void testCheckClassDefinedProperty() {
-		List<Synonyms> synonymsList = createSynonyms(true);
-		when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(synonymsList);
-
-		for (SynonymType type : SynonymType.values()) {
-			String header = type.getSynonymClass() == null ? type.toString() : type.getSynonymClass().getSimpleName();
-
-			Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, header, false);
-
-			assertEquals("unexpected property", getPropertyClass(type), result.getClass());
-			assertEquals("unexpected property name", type == SynonymType.UNKOWN ? header : PROPERTY_NAME, result.getPropertyName());
-		}
-	}
-
-	@Test
-	public void testCheckFullParsing() {
-		List<Synonyms> synonymsList = createSynonyms(false);
-		when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(synonymsList);
-
-		IMappedStringData data = getData();
-
-		Map<String, Object> result = saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, data, false);
-
-		assertEquals("unexpected size of result", data.size(), result.size());
-
-		for (Synonyms synonym : synonymsList) {
-			if (synonym.getSynonymType() != SynonymType.UNKOWN) {
-				assertTrue("property should exists", result.containsKey(synonym.getPropertyName()));
-
-				Object actualValue = result.get(synonym.getPropertyName());
-
-				Object value = getValueForType(synonym.getSynonymType());
-
-				assertEquals("unexpected value", value, actualValue);
-			}
-		}
-	}
-
-	@Test
-	public void testCheckAutoparsing() {
-		IMappedStringData data = getData();
-
-		for (SynonymType type : SynonymType.values()) {
-			if (type != SynonymType.UNKOWN) {
-				Property< ? > undefinedProperty = new UndefinedProperty(type.getSynonymClass().getSimpleName());
-
-				Object value = getValueForType(type);
-
-				assertEquals("unexpected parsed value", value, undefinedProperty.parse(data));
-			}
-		}
-	}
-
-	private Object getValueForType(final SynonymType type) {
-		Object value = null;
-		switch (type) {
-		case BOOLEAN:
-			value = Boolean.FALSE;
-			break;
-		case DOUBLE:
-			value = Double.MIN_VALUE;
-			break;
-		case INTEGER:
-			value = Integer.MAX_VALUE;
-			break;
-		case LONG:
-			value = Long.MAX_VALUE;
-			break;
-		case STRING:
-			value = String.class.getSimpleName();
-			break;
-		case TIMESTAMP:
-			value = currentTimestamp;
-			break;
-		default:
-			value = null;
-			break;
-		}
-
-		return value;
-	}
-
-	private IMappedStringData getData() {
-		IMappedStringData result = new MappedStringData();
-
-		for (SynonymType type : SynonymType.values()) {
-			String value = null;
-			switch (type) {
-			case BOOLEAN:
-				value = Boolean.FALSE.toString();
-				break;
-			case DOUBLE:
-				value = Double.toString(Double.MIN_VALUE);
-				break;
-			case INTEGER:
-				value = Integer.toString(Integer.MAX_VALUE);
-				break;
-			case LONG:
-				value = Long.toString(Long.MAX_VALUE);
-				break;
-			case STRING:
-				value = String.class.getSimpleName();
-				break;
-			case TIMESTAMP:
-				value = TimestampProperty.DATE_TIME_PATTERN.format(new Date(currentTimestamp));
-				break;
-			default:
-				value = null;
-				break;
-			}
-
-			if (value != null) {
-				result.put(type.getSynonymClass().getSimpleName(), value);
-			}
-		}
-
-		return result;
-	}
-
-	private Class< ? extends Property< ? >> getPropertyClass(final SynonymType type) {
-		switch (type) {
-		case BOOLEAN:
-			return BooleanProperty.class;
-		case DOUBLE:
-			return DoubleProperty.class;
-		case INTEGER:
-			return IntegerProperty.class;
-		case LONG:
-			return LongProperty.class;
-		case STRING:
-			return StringProperty.class;
-		case TIMESTAMP:
-			return TimestampProperty.class;
-		default:
-			return UndefinedProperty.class;
-		}
-	}
-
-	private List<Synonyms> createSynonyms(final boolean useDefault) {
-		List<Synonyms> result = new ArrayList<Synonyms>();
-		for (SynonymType type : SynonymType.values()) {
-			result.add(new Synonyms(useDefault ? PROPERTY_NAME : type.toString(), type, Boolean.FALSE, getPossibleHeaders(type)));
-		}
-
-		return result;
-	}
-
-	private String[] getPossibleHeaders(final SynonymType type) {
-		return new String[] {type.getSynonymClass() == null ? type.toString() : type.getSynonymClass().getSimpleName()};
-	}
-
-	private IMappedStringData getData(final int count) {
-		MappedStringData result = new MappedStringData();
-
-		for (int i = 0; i < count; i++) {
-			result.put("property" + i, "value" + i);
-		}
-
-		return result;
-	}
+        saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, false);
+        saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, false);
+
+        verify(synonymsManager, times(1)).getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER);
+    }
+
+    @Test
+    public void testCheckSkippedProperty() {
+        when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(new ArrayList<Synonyms>());
+
+        Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, false);
+
+        assertEquals("unexpected property", AbstractSynonymsSaver.SKIPPED_PROPERTY, result);
+    }
+
+    @Test
+    public void testCheckUndefinedProperty() {
+        when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(new ArrayList<Synonyms>());
+
+        Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, HEADER_NAME, true);
+
+        assertEquals("unexpected property", UndefinedProperty.class, result.getClass());
+        assertEquals("unexpected property name", HEADER_NAME, result.getPropertyName());
+    }
+
+    @Test
+    public void testCheckClassDefinedProperty() {
+        List<Synonyms> synonymsList = createSynonyms(true);
+        when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(synonymsList);
+
+        for (SynonymType type : SynonymType.values()) {
+            String header = type.getSynonymClass() == null ? type.toString() : type.getSynonymClass().getSimpleName();
+
+            Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, header, false);
+
+            assertEquals("unexpected property", getPropertyClass(type), result.getClass());
+            assertEquals("unexpected property name", type == SynonymType.UNKOWN ? header : PROPERTY_NAME, result.getPropertyName());
+        }
+    }
+
+    @Test
+    public void testCheckFullParsing() {
+        List<Synonyms> synonymsList = createSynonyms(false);
+        when(synonymsManager.getSynonyms(SYNONYMS_TYPE, TestNodeType.TEST_TYPE_FOR_SAVER)).thenReturn(synonymsList);
+
+        IMappedStringData data = getData();
+
+        Map<String, Object> result = saver.getElementProperties(TestNodeType.TEST_TYPE_FOR_SAVER, data, false);
+
+        assertEquals("unexpected size of result", data.size(), result.size());
+
+        for (Synonyms synonym : synonymsList) {
+            if (synonym.getSynonymType() != SynonymType.UNKOWN) {
+                assertTrue("property should exists", result.containsKey(synonym.getPropertyName()));
+
+                Object actualValue = result.get(synonym.getPropertyName());
+
+                Object value = getValueForType(synonym.getSynonymType());
+
+                assertEquals("unexpected value", value, actualValue);
+            }
+        }
+    }
+
+    @Test
+    public void testCheckAutoparsing() {
+        IMappedStringData data = getData();
+
+        for (SynonymType type : SynonymType.values()) {
+            if (type != SynonymType.UNKOWN) {
+                Property< ? > undefinedProperty = new UndefinedProperty(type.getSynonymClass().getSimpleName());
+
+                Object value = getValueForType(type);
+
+                assertEquals("unexpected parsed value", value, undefinedProperty.parse(data));
+            }
+        }
+    }
+
+    private Object getValueForType(final SynonymType type) {
+        Object value = null;
+        switch (type) {
+        case BOOLEAN:
+            value = Boolean.FALSE;
+            break;
+        case DOUBLE:
+            value = Double.MIN_VALUE;
+            break;
+        case INTEGER:
+            value = Integer.MAX_VALUE;
+            break;
+        case LONG:
+            value = Long.MAX_VALUE;
+            break;
+        case STRING:
+            value = String.class.getSimpleName();
+            break;
+        case TIMESTAMP:
+            value = currentTimestamp;
+            break;
+        default:
+            value = null;
+            break;
+        }
+
+        return value;
+    }
+
+    private IMappedStringData getData() {
+        IMappedStringData result = new MappedStringData();
+
+        for (SynonymType type : SynonymType.values()) {
+            String value = null;
+            switch (type) {
+            case BOOLEAN:
+                value = Boolean.FALSE.toString();
+                break;
+            case DOUBLE:
+                value = Double.toString(Double.MIN_VALUE);
+                break;
+            case INTEGER:
+                value = Integer.toString(Integer.MAX_VALUE);
+                break;
+            case LONG:
+                value = Long.toString(Long.MAX_VALUE);
+                break;
+            case STRING:
+                value = String.class.getSimpleName();
+                break;
+            case TIMESTAMP:
+                value = DATE_TIME_PATTERN.format(new Date(currentTimestamp));
+                break;
+            default:
+                value = null;
+                break;
+            }
+
+            if (value != null) {
+                result.put(type.getSynonymClass().getSimpleName(), value);
+            }
+        }
+
+        return result;
+    }
+
+    private Class< ? extends Property< ? >> getPropertyClass(final SynonymType type) {
+        switch (type) {
+        case BOOLEAN:
+            return BooleanProperty.class;
+        case DOUBLE:
+            return DoubleProperty.class;
+        case INTEGER:
+            return IntegerProperty.class;
+        case LONG:
+            return LongProperty.class;
+        case STRING:
+            return StringProperty.class;
+        case TIMESTAMP:
+            return TimestampProperty.class;
+        default:
+            return UndefinedProperty.class;
+        }
+    }
+
+    private List<Synonyms> createSynonyms(final boolean useDefault) {
+        List<Synonyms> result = new ArrayList<Synonyms>();
+        for (SynonymType type : SynonymType.values()) {
+            result.add(new Synonyms(useDefault ? PROPERTY_NAME : type.toString(), type, Boolean.FALSE, getPossibleHeaders(type)));
+        }
+
+        return result;
+    }
+
+    private String[] getPossibleHeaders(final SynonymType type) {
+        return new String[] {type.getSynonymClass() == null ? type.toString() : type.getSynonymClass().getSimpleName()};
+    }
+
+    private IMappedStringData getData(final int count) {
+        MappedStringData result = new MappedStringData();
+
+        for (int i = 0; i < count; i++) {
+            result.put("property" + i, "value" + i);
+        }
+
+        return result;
+    }
 }

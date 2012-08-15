@@ -11,8 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.preference.dateformat.manager;
+package org.amanzi.neo.dateformat;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -20,7 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.loader.ui.internal.LoaderUIPlugin;
+import org.amanzi.neo.core.internal.NeoCorePlugin;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -36,11 +37,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 public class DateFormatManager {
 
     private static final Logger LOGGER = Logger.getLogger(DateFormatManager.class);
-    private static final IPreferenceStore PREFERENCE_STORE = LoaderUIPlugin.getDefault().getPreferenceStore();
+    private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
     private static final String DEFAULT_FORMAT_KEY = "default_format";
     public static final String FORMATS_SIZE_KEY = "date_formats_size";
     public static final String DATE_KEY_PREFIX = "dateFormat_";
-    
+
     private static class InstanceHolder {
         private static final DateFormatManager INSTANCE = new DateFormatManager();
     }
@@ -50,8 +51,8 @@ public class DateFormatManager {
     }
 
     private String defaultFormat;
-    private Map<String, String> formatMapping = new HashMap<String, String>();
-    private Map<String, String> reverseFormatMapping = new HashMap<String, String>();
+    private final Map<String, String> formatMapping = new HashMap<String, String>();
+    private final Map<String, String> reverseFormatMapping = new HashMap<String, String>();
 
     private DateFormatManager() {
         initMapIfNecessary();
@@ -92,7 +93,7 @@ public class DateFormatManager {
      * 
      * @param format
      */
-    private void addNewFormat(String format) {
+    private void addNewFormat(final String format) {
         assert !StringUtils.isEmpty(format);
 
         String key = DATE_KEY_PREFIX + formatMapping.size();
@@ -112,7 +113,7 @@ public class DateFormatManager {
      * @return
      * @throws ParseException
      */
-    public Date parseStringToFormat(String date, String format) throws ParseException {
+    public Date parseStringToFormat(final String date, final String format) throws ParseException {
         try {
             return parseString(date, format);
         } catch (ParseException e) {
@@ -121,7 +122,7 @@ public class DateFormatManager {
         }
     }
 
-    private Date parseString(String date, String format) throws ParseException {
+    private Date parseString(final String date, final String format) throws ParseException {
         assert !StringUtils.isEmpty(format);
         assert !StringUtils.isEmpty(date);
 
@@ -135,19 +136,18 @@ public class DateFormatManager {
      * @param date
      * @return
      */
-    public Date autoParseString(String date) {
+    public DateFormat autoParseString(final String date) {
         assert !StringUtils.isEmpty(date);
 
-        Date result = null;
         for (String value : formatMapping.values()) {
             try {
-                result = parseString(date, value);
-                break;
+                parseString(date, value);
+                return new SimpleDateFormat(value);
             } catch (ParseException e) {
-                result = null;
+                //do nothing
             }
         }
-        return result;
+        return null;
     }
 
     /**
@@ -157,7 +157,7 @@ public class DateFormatManager {
      * @param format
      * @return
      */
-    public String parseDateToString(Date date, String format) {
+    public String parseDateToString(final Date date, final String format) {
         assert !StringUtils.isEmpty(format);
         assert date != null;
 
@@ -175,7 +175,7 @@ public class DateFormatManager {
     /**
      * @param defaultFormat The defaultFormat to set.
      */
-    private void setDefaultFormat(String defaultFormat) {
+    private void setDefaultFormat(final String defaultFormat) {
         PREFERENCE_STORE.setValue(DEFAULT_FORMAT_KEY, reverseFormatMapping.get(defaultFormat));
         this.defaultFormat = defaultFormat;
     }
@@ -186,7 +186,7 @@ public class DateFormatManager {
      * @param formats
      * @param defaultValue
      */
-    public void addNewFormats(Collection<String> formats, String defaultValue) {
+    public void addNewFormats(final Collection<String> formats, final String defaultValue) {
         if (!StringUtils.isEmpty(defaultValue)) {
             setDefaultFormat(defaultValue);
         }

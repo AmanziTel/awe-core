@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.internal;
+package org.amanzi.neo.core.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
+import org.amanzi.neo.dateformat.DateFormatManager;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -34,8 +34,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 public class PreferenceStoreInitialiser extends AbstractPreferenceInitializer {
     private static final Logger LOGGER = Logger.getLogger(PreferenceStoreInitialiser.class);
 
-    private static final IPreferenceStore PREFERENCE_STORE = LoaderUIPlugin.getDefault().getPreferenceStore();
-    private static final String PROPERTIES_FILE_NAME = "datesformat";
+    private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
+    private static final String PROPERTIES_FILE_NAME = "dates_format.txt";
 
     @Override
     public void initializeDefaultPreferences() {

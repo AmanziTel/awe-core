@@ -88,12 +88,6 @@
       </handler>
    </extension>
    <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.amanzi.neo.loader.ui.internal.PreferenceStoreInitialiser">
-      </initializer>
-   </extension>
-   <extension
          point="org.eclipse.ui.preferencePages">
           <page
             class="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"

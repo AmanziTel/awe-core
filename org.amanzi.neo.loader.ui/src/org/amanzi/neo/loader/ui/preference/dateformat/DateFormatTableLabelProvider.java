@@ -17,8 +17,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.amanzi.awe.ui.icons.IconManager;
-import org.amanzi.neo.loader.ui.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
-import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
+import org.amanzi.neo.dateformat.DateFormatManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;

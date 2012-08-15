@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.preference.dateformat;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.amanzi.neo.loader.ui.preference.dateformat.enumeration.DateFormatPreferencePageTableColumns;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -36,7 +35,7 @@ import org.eclipse.swt.widgets.TableColumn;
  * @since 1.0.0
  */
 public class FormatTableViewer extends TableViewer {
-    
+
     private static final int EXAMPLE_COLUMN_WIDTH = 300;
     private static final int FORMAT_COLUMN_WIDTH = 200;
     private static final int IS_DEFAULT_TABLE_WIDTH = 60;
@@ -50,14 +49,14 @@ public class FormatTableViewer extends TableViewer {
     private static final DateFormatTableLabelProvider FORMAT_COLUMN_LABEL_PROVIDER = new DateFormatTableLabelProvider(
             DateFormatPreferencePageTableColumns.FORMAT_COLUMN);
 
-    private Collection<String> addedFormats;
+    private final Collection<String> addedFormats;
     private String defaultFormat;
 
     /**
      * @param parent
      * @param style
      */
-    public FormatTableViewer(Composite parent, int style) {
+    public FormatTableViewer(final Composite parent, final int style) {
         super(parent, style);
         addedFormats = new ArrayList<String>();
     }
@@ -65,14 +64,14 @@ public class FormatTableViewer extends TableViewer {
     /**
      *
      */
-    protected void setInput(Collection<String> input) {
+    protected void setInput(final Collection<String> input) {
         addedFormats.addAll(input);
         super.setInput(addedFormats);
 
     }
 
     @Override
-    public void add(Object element) {
+    public void add(final Object element) {
         assert !StringUtils.isEmpty((String)element);
         addedFormats.add((String)element);
         super.add(element);
@@ -126,7 +125,7 @@ public class FormatTableViewer extends TableViewer {
      * 
      * @param value
      */
-    protected void setDefaultFormat(String value) {
+    protected void setDefaultFormat(final String value) {
         defaultFormat = value;
     }
 

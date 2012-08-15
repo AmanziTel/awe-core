@@ -13,8 +13,8 @@
 
 package org.amanzi.neo.loader.ui.preference.dateformat;
 
+import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.preference.dateformat.manager.DateFormatManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
