@@ -13,10 +13,12 @@
 
 package org.amanzi.awe.statistics.service.impl;
 
+import java.text.MessageFormat;
 import java.util.Iterator;
 
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
 import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
+import org.amanzi.awe.statistics.service.DimensionType;
 import org.amanzi.awe.statistics.service.IStatisticsService;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -24,8 +26,10 @@ import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -37,6 +41,8 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public class StatisticsService extends AbstractService implements IStatisticsService {
+
+    private static final String GROUP_NAME_PATTERN = "{0} - {1}";
 
     private final INodeService nodeService;
 
@@ -50,15 +56,15 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
      * @param graphDb
      * @param generalNodeProperties
      */
-    public StatisticsService(GraphDatabaseService graphDb, INodeService nodeService,
-            IStatisticsNodeProperties statisticsNodeProperties) {
+    public StatisticsService(final GraphDatabaseService graphDb, final INodeService nodeService,
+            final IStatisticsNodeProperties statisticsNodeProperties) {
         super(graphDb, null);
         this.nodeService = nodeService;
         this.statisticsNodeProperties = statisticsNodeProperties;
     }
 
     @Override
-    public Node findStatisticsNode(Node parentNode, String templateName, String aggregationPropertyName) throws ServiceException {
+    public Node findStatisticsNode(final Node parentNode, final String templateName, final String aggregationPropertyName) throws ServiceException {
         assert parentNode != null;
         assert !StringUtils.isEmpty(templateName);
         assert !StringUtils.isEmpty(aggregationPropertyName);
@@ -89,6 +95,62 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         if (throwDuplicatedException) {
             throw new DuplicatedNodeException(statisticsNodeProperties.getTemplateNameProperty(), templateName);
         }
+
+        return result;
+    }
+
+    @Override
+    public Node getStatisticsLevel(final Node parentNode, final DimensionType dimensionType, final String propertyName) throws ServiceException {
+        assert parentNode != null;
+        assert dimensionType != null;
+        assert !StringUtils.isEmpty(propertyName);
+
+        Node result = nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType());
+        if (result == null) {
+            result = nodeService.createNode(parentNode, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType(), propertyName);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Node getGroup(final Node propertyLevelNode, final Node periodLevelNode) throws ServiceException {
+        assert propertyLevelNode != null;
+        assert periodLevelNode != null;
+
+        Node result = findGroup(propertyLevelNode, periodLevelNode);
+        if (result == null) {
+            result = createGroup(propertyLevelNode, periodLevelNode);
+        }
+
+        return result;
+    }
+
+    protected Node findGroup(final Node propertyLevelNode, final Node periodLevelNode) throws ServiceException {
+        Node result = null;
+
+        try {
+            for (Relationship relationship : propertyLevelNode.getRelationships(StatisticsRelationshipType.TIME_DIMENSION, Direction.INCOMING)) {
+                if (relationship.getStartNode().equals(periodLevelNode)) {
+                    result = relationship.getStartNode();
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        return result;
+    }
+
+    protected Node createGroup(final Node propertyLevelNode, final Node periodLevelNode) throws ServiceException {
+        String propertyLevelName = nodeService.getNodeName(propertyLevelNode);
+        String periodLevelname = nodeService.getNodeName(periodLevelNode);
+
+        String groupName = MessageFormat.format(GROUP_NAME_PATTERN, periodLevelname, propertyLevelName);
+
+        Node result = nodeService.createNode(periodLevelNode, StatisticsNodeType.GROUP, StatisticsRelationshipType.TIME_DIMENSION, groupName);
+        nodeService.linkNodes(propertyLevelNode, result, StatisticsRelationshipType.PROPERTY_DIMENSION);
 
         return result;
     }

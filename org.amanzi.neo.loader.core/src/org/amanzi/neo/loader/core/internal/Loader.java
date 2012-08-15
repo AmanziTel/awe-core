@@ -77,7 +77,7 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Error on Loading data", e);
+            LOGGER.error("Error on Loading data. Error occured in file <" + parser.getLastParsedFile().getName() + "> on line number " + parser.getLastParsedLineNumber() + ".", e);
         } finally {
             finishUp();
         }

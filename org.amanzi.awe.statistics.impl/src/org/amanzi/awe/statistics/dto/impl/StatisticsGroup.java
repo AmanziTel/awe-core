@@ -28,12 +28,6 @@ import org.neo4j.graphdb.Node;
 public class StatisticsGroup extends DataElement implements IStatisticsGroup {
 
     /**
-     * 
-     */
-    public StatisticsGroup() {
-    }
-
-    /**
      * @param node
      */
     public StatisticsGroup(final Node node) {

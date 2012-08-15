@@ -30,16 +30,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface IParser<C extends IConfiguration, D extends IData> extends Iterator<D> {
 
-	interface IFileParsingStartedListener {
-		void onFileParsingStarted(File file);
-	}
+    interface IFileParsingStartedListener {
+        void onFileParsingStarted(File file);
+    }
 
-	void init(C configuration);
+    void init(C configuration);
 
-	void setProgressMonitor(String monitorName, IProgressMonitor monitor);
+    void setProgressMonitor(String monitorName, IProgressMonitor monitor);
 
-	void finishUp();
+    void finishUp();
 
-	void addFileParsingListener(IFileParsingStartedListener listener);
+    void addFileParsingListener(IFileParsingStartedListener listener);
+
+    File getLastParsedFile();
+
+    int getLastParsedLineNumber();
 
 }

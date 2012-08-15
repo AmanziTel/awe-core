@@ -33,17 +33,27 @@ public class MultiCSVParser
 extends
 MultiStreamParser<ISingleFileConfiguration, CSVParser, IMultiFileConfiguration, IMappedStringData> {
 
-	@Override
-	protected CSVParser createParserInstance() {
-		return new CSVParser();
-	}
+    @Override
+    protected CSVParser createParserInstance() {
+        return new CSVParser();
+    }
 
-	@Override
-	protected ISingleFileConfiguration createSingleFileConfiguration(final File file, final IMultiFileConfiguration configuration) {
-		SingleFileConfiguration singleFileConfiguration = new SingleFileConfiguration();
-		singleFileConfiguration.setDatasetName(configuration.getDatasetName());
-		singleFileConfiguration.setFile(file);
-		return singleFileConfiguration;
-	}
+    @Override
+    protected ISingleFileConfiguration createSingleFileConfiguration(final File file, final IMultiFileConfiguration configuration) {
+        SingleFileConfiguration singleFileConfiguration = new SingleFileConfiguration();
+        singleFileConfiguration.setDatasetName(configuration.getDatasetName());
+        singleFileConfiguration.setFile(file);
+        return singleFileConfiguration;
+    }
+
+    @Override
+    public File getLastParsedFile() {
+        return getCurrentParser().getLastParsedFile();
+    }
+
+    @Override
+    public int getLastParsedLineNumber() {
+        return getCurrentParser().getLastParsedLineNumber();
+    }
 
 }

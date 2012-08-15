@@ -34,56 +34,69 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IMappedStringData> {
 
-	private CSVReader csvReader;
+    private CSVReader csvReader;
 
-	private boolean headersParsed;
+    private boolean headersParsed;
 
-	private String[] headers;
+    private String[] headers;
 
-	@Override
-	protected IMappedStringData parseNextElement() throws IOException {
-		if (!headersParsed) {
-			headers = getCSVReader().readNext();
-			headersParsed = true;
-		}
+    private int lineNumber = 0;
 
-		return convertToMappedData(headers, getCSVReader().readNext());
-	}
+    @Override
+    protected IMappedStringData parseNextElement() throws IOException {
+        if (!headersParsed) {
+            headers = getCSVReader().readNext();
+            headersParsed = true;
+            lineNumber++;
+        }
 
-	@Override
-	public void init(final ISingleFileConfiguration configuration) {
-		super.init(configuration);
-		csvReader = initializeCSVReader(getReader(), configuration.getFile());
+        return convertToMappedData(headers, getCSVReader().readNext());
+    }
 
-		headersParsed = false;
-	}
+    @Override
+    public void init(final ISingleFileConfiguration configuration) {
+        super.init(configuration);
+        csvReader = initializeCSVReader(getReader(), configuration.getFile());
 
-	protected CSVReader initializeCSVReader(final InputStreamReader reader, final File file) {
-		return new CSVReader(reader, CSVUtils.getSeparator(file));
-	}
+        headersParsed = false;
+    }
 
-	protected CSVReader getCSVReader() {
-		return csvReader;
-	}
+    protected CSVReader initializeCSVReader(final InputStreamReader reader, final File file) {
+        return new CSVReader(reader, CSVUtils.getSeparator(file));
+    }
 
-	protected IMappedStringData convertToMappedData(final String[] headers, final String[] values) {
-		MappedStringData result = null;
+    protected CSVReader getCSVReader() {
+        return csvReader;
+    }
 
-		if (values != null) {
-			result = new MappedStringData();
+    protected IMappedStringData convertToMappedData(final String[] headers, final String[] values) {
+        MappedStringData result = null;
 
-			for (int i = 0; i < headers.length; i++) {
-				String value = null;
+        if (values != null) {
+            result = new MappedStringData();
 
-				if (i < values.length) {
-					value = values[i];
-				}
+            for (int i = 0; i < headers.length; i++) {
+                String value = null;
 
-				result.put(headers[i], value);
-			}
-		}
+                if (i < values.length) {
+                    value = values[i];
+                }
 
-		return result;
-	}
+                result.put(headers[i], value);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public File getLastParsedFile() {
+        return getConfiguration().getFile();
+    }
+
+    @Override
+    public int getLastParsedLineNumber() {
+        return lineNumber;
+    }
 
 }

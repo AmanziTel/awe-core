@@ -42,6 +42,18 @@ public class AbstractStreamParserTest extends AbstractMockitoTest {
             return null;
         }
 
+        @Override
+        public File getLastParsedFile() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public int getLastParsedLineNumber() {
+            // TODO Auto-generated method stub
+            return 0;
+        }
+
     }
 
     private static final String TEST_FILE = System.getProperty("user.home") + File.separator + "test";

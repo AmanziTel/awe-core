@@ -34,8 +34,8 @@ import org.eclipse.core.runtime.SubProgressMonitor;
  * @since 1.0.0
  */
 public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P extends IParser<S, D>, C extends IMultiFileConfiguration, D extends IData>
-        extends
-            AbstractParser<C, D> implements IFileParsingStartedListener {
+extends
+AbstractParser<C, D> implements IFileParsingStartedListener {
 
     private final class ParserIterator implements Iterator<P> {
 
@@ -119,6 +119,10 @@ public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P ex
     @Override
     protected File getFileFromConfiguration(final IMultiFileConfiguration configuration) {
         return null;
+    }
+
+    protected P getCurrentParser() {
+        return currentParser;
     }
 
 }

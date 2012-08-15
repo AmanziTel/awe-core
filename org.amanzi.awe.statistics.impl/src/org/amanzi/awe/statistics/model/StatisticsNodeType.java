@@ -25,7 +25,7 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @since 1.0.0
  */
 public enum StatisticsNodeType implements INodeType {
-    STATISTICS;
+    STATISTICS, GROUP, LEVEL;
 
     @Override
     public String getId() {

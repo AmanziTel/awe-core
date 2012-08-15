@@ -13,24 +13,29 @@
 
 package org.amanzi.awe.statistics.service;
 
-import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.internal.IService;
-import org.neo4j.graphdb.Node;
+import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelationshipType;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsService extends IService {
+public enum DimensionType {
+    PROPERTY(StatisticsRelationshipType.PROPERTY_DIMENSION),
+    TIME(StatisticsRelationshipType.TIME_DIMENSION);
+    ;
 
-    Node findStatisticsNode(Node parentNode, String templateName, String aggregationPropertyName) throws ServiceException;
+    private RelationshipType relationshipType;
 
-    Node getStatisticsLevel(Node parentNode, DimensionType dimensionType, String propertyName) throws ServiceException;
+    private DimensionType(final RelationshipType relationshipType) {
+        this.relationshipType = relationshipType;
+    }
 
-    Node getGroup(Node propertyLevelNode, Node periodLevelNode) throws ServiceException;
-
+    public RelationshipType getRelationshipType() {
+        return relationshipType;
+    }
 }

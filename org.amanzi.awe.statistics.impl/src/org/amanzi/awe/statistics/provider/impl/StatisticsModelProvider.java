@@ -42,8 +42,8 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsModelProvider extends AbstractModelProvider<StatisticsModel, IStatisticsModel>
-        implements
-            IStatisticsModelProvider {
+implements
+IStatisticsModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsModelProvider.class);
 
@@ -57,9 +57,9 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
 
     private final IStatisticsService statisticsService;
 
-    public StatisticsModelProvider(INodeService nodeService, IGeneralNodeProperties generalNodeProperties,
-            ITimePeriodNodeProperties timePeriodNodeProperties, IStatisticsNodeProperties statisticsNodeProperties,
-            IStatisticsService statisticsService) {
+    public StatisticsModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final ITimePeriodNodeProperties timePeriodNodeProperties, final IStatisticsNodeProperties statisticsNodeProperties,
+            final IStatisticsService statisticsService) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
         this.timePeriodNodeProperties = timePeriodNodeProperties;
@@ -69,7 +69,7 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
 
     @Override
     protected StatisticsModel createInstance() {
-        return new StatisticsModel(nodeService, generalNodeProperties, timePeriodNodeProperties, statisticsNodeProperties);
+        return new StatisticsModel(statisticsService, nodeService, generalNodeProperties, timePeriodNodeProperties, statisticsNodeProperties);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
     }
 
     @Override
-    public IStatisticsModel find(IMeasurementModel analyzedModel, String template, String propertyName) throws ModelException {
+    public IStatisticsModel find(final IMeasurementModel analyzedModel, final String template, final String propertyName) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("find", analyzedModel, template, propertyName));
         }
@@ -124,7 +124,7 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
     }
 
     @Override
-    public IStatisticsModel create(IMeasurementModel analyzedModel, String template, String propertyName) throws ModelException {
+    public IStatisticsModel create(final IMeasurementModel analyzedModel, final String template, final String propertyName) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("create", analyzedModel, template, propertyName));
         }
