@@ -62,7 +62,7 @@ public abstract class DriveValidator extends AbstractHeadersValidator<IMultiFile
         try {
             IProjectModel currentProject = projectModelProvider.getActiveProjectModel();
             if (driveModelProvider.findByName(currentProject, configuration.getDatasetName()) != null) {
-                return new ValidationResult(Result.UNKNOWN, Messages.format(Messages.NetworkValidator_DuplicatedNetworkName,
+                return new ValidationResult(Result.UNKNOWN, Messages.format(Messages.DriveValidator_DuplicatedDriveName,
                         configuration.getDatasetName()));
             }
         } catch (ModelException e) {
