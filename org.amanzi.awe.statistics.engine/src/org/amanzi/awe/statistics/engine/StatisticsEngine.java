@@ -198,7 +198,7 @@ public class StatisticsEngine {
 
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
-            } while (currentStartTime < nextStartTime);
+            } while (currentStartTime < measurementModel.getMaxTimestamp());
         }
     }
 

@@ -129,19 +129,19 @@ public class StatisticsManager {
 
     }
 
-    public void setPeriod(Period period) {
+    public void setPeriod(final Period period) {
         this.period = period;
     }
 
-    public void setTemplate(ITemplate template) {
+    public void setTemplate(final ITemplate template) {
         this.template = template;
     }
 
-    public void setProperty(String property) {
+    public void setProperty(final String property) {
         this.property = property;
     }
 
-    public IStatisticsModel build(IProgressMonitor progressMonitor) throws StatisticsEngineException {
+    public IStatisticsModel build(final IProgressMonitor progressMonitor) throws StatisticsEngineException {
         return StatisticsEngine.getEngine(model, template, period, property).build(progressMonitor);
     }
 }

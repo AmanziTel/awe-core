@@ -25,6 +25,7 @@ import org.amanzi.awe.statistics.model.StatisticsNodeType;
 import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
 import org.amanzi.awe.statistics.service.DimensionType;
 import org.amanzi.awe.statistics.service.IStatisticsService;
+import org.amanzi.awe.statistics.service.impl.StatisticsService;
 import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelationshipType;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
@@ -50,8 +51,6 @@ import org.neo4j.graphdb.RelationshipType;
 public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsModel.class);
-
-    private static final String STATISTICS_NAME_PATTERN = "{0} - {1}";
 
     private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
@@ -111,7 +110,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         }
 
         try {
-            String statisticsName = MessageFormat.format(STATISTICS_NAME_PATTERN, templateName, propertyName);
+            String statisticsName = MessageFormat.format(StatisticsService.STATISTICS_NAME_PATTERN, templateName, propertyName);
 
             super.initialize(parentNode, statisticsName, StatisticsNodeType.STATISTICS);
 
@@ -206,7 +205,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             processException("Error on converting node to StatisticsGroup", e);
         }
 
-        return null;
+        return result;
     }
 
     @Override
@@ -220,7 +219,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getStartLogStatement("getStatisticsLevelNode", dimensionType, key));
         }
 
-        Node result = getStatisticsLevelNode(dimensionType, key);
+        Node result = getStatisticsLevelNodeFromCache(dimensionType, key);
         if (result == null) {
             try {
                 result = statisticsService.getStatisticsLevel(getRootNode(), dimensionType, key);

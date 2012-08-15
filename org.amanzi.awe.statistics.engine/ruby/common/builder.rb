@@ -145,6 +145,10 @@ class Template
     
     result
   end
+  
+  def to_s
+    @name
+  end
 
 end
 

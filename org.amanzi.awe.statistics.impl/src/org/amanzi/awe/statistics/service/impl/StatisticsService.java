@@ -14,15 +14,12 @@
 package org.amanzi.awe.statistics.service.impl;
 
 import java.text.MessageFormat;
-import java.util.Iterator;
 
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
-import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
 import org.amanzi.awe.statistics.service.DimensionType;
 import org.amanzi.awe.statistics.service.IStatisticsService;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.apache.commons.lang3.StringUtils;
@@ -42,11 +39,11 @@ import org.neo4j.graphdb.RelationshipType;
  */
 public class StatisticsService extends AbstractService implements IStatisticsService {
 
+    public static final String STATISTICS_NAME_PATTERN = "{0} - {1}";
+
     private static final String GROUP_NAME_PATTERN = "{0} - {1}";
 
     private final INodeService nodeService;
-
-    private final IStatisticsNodeProperties statisticsNodeProperties;
 
     public static enum StatisticsRelationshipType implements RelationshipType {
         STATISTICS, TIME_DIMENSION, PROPERTY_DIMENSION;
@@ -56,11 +53,9 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
      * @param graphDb
      * @param generalNodeProperties
      */
-    public StatisticsService(final GraphDatabaseService graphDb, final INodeService nodeService,
-            final IStatisticsNodeProperties statisticsNodeProperties) {
+    public StatisticsService(final GraphDatabaseService graphDb, final INodeService nodeService) {
         super(graphDb, null);
         this.nodeService = nodeService;
-        this.statisticsNodeProperties = statisticsNodeProperties;
     }
 
     @Override
@@ -69,34 +64,10 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         assert !StringUtils.isEmpty(templateName);
         assert !StringUtils.isEmpty(aggregationPropertyName);
 
-        Node result = null;
 
-        boolean throwDuplicatedException = false;
+        String statisticsName = MessageFormat.format(STATISTICS_NAME_PATTERN, templateName, aggregationPropertyName);
 
-        try {
-            Iterator<Node> nodes = nodeService
-                    .getChildrenTraversal(StatisticsNodeType.STATISTICS, StatisticsRelationshipType.STATISTICS)
-                    .evaluator(new PropertyEvaluator(statisticsNodeProperties.getTemplateNameProperty(), templateName))
-                    .evaluator(
-                            new PropertyEvaluator(statisticsNodeProperties.getAggregationPropertyNameProperty(),
-                                    aggregationPropertyName)).traverse(parentNode).nodes().iterator();
-
-            if (nodes.hasNext()) {
-                result = nodes.next();
-
-                if (nodes.hasNext()) {
-                    throwDuplicatedException = true;
-                }
-            }
-        } catch (Exception e) {
-            throw new DatabaseException(e);
-        }
-
-        if (throwDuplicatedException) {
-            throw new DuplicatedNodeException(statisticsNodeProperties.getTemplateNameProperty(), templateName);
-        }
-
-        return result;
+        return nodeService.getChildByName(parentNode, statisticsName, StatisticsNodeType.STATISTICS, StatisticsRelationshipType.STATISTICS);
     }
 
     @Override
