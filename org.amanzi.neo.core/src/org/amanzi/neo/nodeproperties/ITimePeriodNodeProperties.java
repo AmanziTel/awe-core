@@ -29,4 +29,12 @@ public interface ITimePeriodNodeProperties extends INodeProperties {
 
     String getMaxTimestampProperty();
 
+    String getStartDateProperty();
+
+    String getEndDateProperty();
+
+    String getStartDateTimestampProperty();
+
+    String getEndDateTimestampProperty();
+
 }

@@ -31,6 +31,14 @@ public class TimePeriodNodeProperties implements ITimePeriodNodeProperties {
 
     private static final String MAX_TIMESTAMP_PROPERTY = "max_timestamp";
 
+    private static final String START_DATE_PROPERTY = "start_date";
+
+    private static final String END_DATE_PROPERTY = "end_date";
+
+    private static final String START_DATE_TIMESTAMP_PROPERTY = "start_date_timestamp";
+
+    private static final String END_DATE_TIMESTAMP_PROPERTY = "end_date_timestamp";
+
     @Override
     public String getTimestampProperty() {
         return TIMESTAMP_PROPERTY;
@@ -44,6 +52,26 @@ public class TimePeriodNodeProperties implements ITimePeriodNodeProperties {
     @Override
     public String getMaxTimestampProperty() {
         return MAX_TIMESTAMP_PROPERTY;
+    }
+
+    @Override
+    public String getStartDateProperty() {
+        return START_DATE_PROPERTY;
+    }
+
+    @Override
+    public String getEndDateProperty() {
+        return END_DATE_PROPERTY;
+    }
+
+    @Override
+    public String getStartDateTimestampProperty() {
+        return START_DATE_TIMESTAMP_PROPERTY;
+    }
+
+    @Override
+    public String getEndDateTimestampProperty() {
+        return END_DATE_TIMESTAMP_PROPERTY;
     }
 
 }

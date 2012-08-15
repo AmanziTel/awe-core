@@ -90,7 +90,7 @@ public class DateFormatPreferencePage extends PreferencePage implements IWorkben
         tableViewerComposite.setLayoutData(createGridData());
         tableViewer = new FormatTableViewer(tableViewerComposite, SWT.FULL_SELECTION | SWT.BORDER);
         tableViewer.create();
-        tableViewer.setDefaultFormat(formatManager.getDefaultFormat());
+        tableViewer.setDefaultFormat(formatManager.getDefaultFormatPattern());
         tableViewer.setInput(formatManager.getAllDateFormats());
 
     }

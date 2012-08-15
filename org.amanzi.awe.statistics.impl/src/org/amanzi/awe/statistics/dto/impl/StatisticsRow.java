@@ -13,14 +13,57 @@
 
 package org.amanzi.awe.statistics.dto.impl;
 
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.neo.impl.dto.DataElement;
+import org.neo4j.graphdb.Node;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  *
  * </p>
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsRow {
+public class StatisticsRow extends DataElement implements IStatisticsRow {
+
+    private long startDate;
+
+    private long endDate;
+
+    public StatisticsRow(final Node node) {
+        super(node);
+    }
+
+    /**
+     * @return Returns the startDate.
+     */
+    @Override
+    public long getStartDate() {
+        return startDate;
+    }
+
+    /**
+     * @param startDate The startDate to set.
+     */
+    public void setStartDate(final long startDate) {
+        this.startDate = startDate;
+    }
+
+    /**
+     * @return Returns the endDate.
+     */
+    @Override
+    public long getEndDate() {
+        return endDate;
+    }
+
+    /**
+     * @param endDate The endDate to set.
+     */
+    public void setEndDate(final long endDate) {
+        this.endDate = endDate;
+    }
+
 
 }

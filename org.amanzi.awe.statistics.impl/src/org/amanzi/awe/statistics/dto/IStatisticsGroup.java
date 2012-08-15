@@ -25,4 +25,8 @@ import org.amanzi.neo.dto.IDataElement;
  */
 public interface IStatisticsGroup extends IDataElement {
 
+    public String getPeriod();
+
+    public String getPropertyValue();
+
 }

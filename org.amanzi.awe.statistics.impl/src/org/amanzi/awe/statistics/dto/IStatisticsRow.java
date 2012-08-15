@@ -16,7 +16,7 @@ package org.amanzi.awe.statistics.dto;
 import org.amanzi.neo.dto.IDataElement;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  *
  * </p>
@@ -24,5 +24,9 @@ import org.amanzi.neo.dto.IDataElement;
  * @since 1.0.0
  */
 public interface IStatisticsRow extends IDataElement {
+
+    long getStartDate();
+
+    long getEndDate();
 
 }

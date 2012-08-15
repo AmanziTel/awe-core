@@ -27,11 +27,45 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsGroup extends DataElement implements IStatisticsGroup {
 
+    private String period;
+
+    private String propertyValue;
+
     /**
      * @param node
      */
     public StatisticsGroup(final Node node) {
         super(node);
+    }
+
+    /**
+     * @return Returns the period.
+     */
+    @Override
+    public String getPeriod() {
+        return period;
+    }
+
+    /**
+     * @param period The period to set.
+     */
+    public void setPeriod(final String period) {
+        this.period = period;
+    }
+
+    /**
+     * @return Returns the propertyValue.
+     */
+    @Override
+    public String getPropertyValue() {
+        return propertyValue;
+    }
+
+    /**
+     * @param propertyValue The propertyValue to set.
+     */
+    public void setPropertyValue(final String propertyValue) {
+        this.propertyValue = propertyValue;
     }
 
 }

@@ -38,7 +38,7 @@ public class DateFormatManager {
 
     private static final Logger LOGGER = Logger.getLogger(DateFormatManager.class);
     private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
-    private static final String DEFAULT_FORMAT_KEY = "default_format";
+    public static final String DEFAULT_FORMAT_KEY = "default_format";
     public static final String FORMATS_SIZE_KEY = "date_formats_size";
     public static final String DATE_KEY_PREFIX = "dateFormat_";
 
@@ -50,9 +50,11 @@ public class DateFormatManager {
         return InstanceHolder.INSTANCE;
     }
 
-    private String defaultFormat;
+    private DateFormat defaultFormat;
     private final Map<String, String> formatMapping = new HashMap<String, String>();
     private final Map<String, String> reverseFormatMapping = new HashMap<String, String>();
+
+    private String defaultFormatId;
 
     private DateFormatManager() {
         initMapIfNecessary();
@@ -71,9 +73,9 @@ public class DateFormatManager {
             formatMapping.put(key, PREFERENCE_STORE.getString(key));
             reverseFormatMapping.put(PREFERENCE_STORE.getString(key), key);
         }
-        String defaultFormatId = PREFERENCE_STORE.getString(DEFAULT_FORMAT_KEY);
+        defaultFormatId = PREFERENCE_STORE.getString(DEFAULT_FORMAT_KEY);
         if (defaultFormatId != null) {
-            defaultFormat = formatMapping.get(defaultFormatId);
+            setDefaultFormat(formatMapping.get(defaultFormatId));
         }
 
     }
@@ -168,7 +170,14 @@ public class DateFormatManager {
     /**
      * @return Returns the defaultFormat.
      */
-    public String getDefaultFormat() {
+    public String getDefaultFormatPattern() {
+        return formatMapping.get(defaultFormatId);
+    }
+
+    /**
+     * @return Returns the defaultFormat.
+     */
+    public DateFormat getDefaultFormat() {
         return defaultFormat;
     }
 
@@ -177,7 +186,7 @@ public class DateFormatManager {
      */
     private void setDefaultFormat(final String defaultFormat) {
         PREFERENCE_STORE.setValue(DEFAULT_FORMAT_KEY, reverseFormatMapping.get(defaultFormat));
-        this.defaultFormat = defaultFormat;
+        this.defaultFormat = new SimpleDateFormat(defaultFormat);
     }
 
     /**

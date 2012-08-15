@@ -30,5 +30,5 @@ public interface IStatisticsModel extends IModel {
 
     IStatisticsGroup getGroup(String period, String propertyKey) throws ModelException;
 
-    IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate, String period) throws ModelException;
+    IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate) throws ModelException;
 }

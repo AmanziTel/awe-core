@@ -43,6 +43,10 @@ public class PreferenceStoreInitialiser extends AbstractPreferenceInitializer {
         PREFERENCE_STORE.setDefault(DateFormatManager.FORMATS_SIZE_KEY, formatList.size());
         for (int i = 0; i < formatList.size(); i++) {
             PREFERENCE_STORE.setDefault(DateFormatManager.DATE_KEY_PREFIX + i, formatList.get(i));
+
+            if (i == 0) {
+                PREFERENCE_STORE.setDefault(DateFormatManager.DEFAULT_FORMAT_KEY, DateFormatManager.DATE_KEY_PREFIX + i);
+            }
         }
     }
 
