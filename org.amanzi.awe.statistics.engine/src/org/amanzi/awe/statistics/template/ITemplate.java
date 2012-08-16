@@ -16,6 +16,7 @@ package org.amanzi.awe.statistics.template;
 import java.util.Map;
 
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  * TODO Purpose of
@@ -29,7 +30,7 @@ public interface ITemplate {
 
     String getName();
 
-    Map<String, Object> calculate(Map<String, Object> dataElement);
+    Map<String, Object> calculate(IRubyObject dataElement);
 
     boolean canResolve(IMeasurementModel model);
 

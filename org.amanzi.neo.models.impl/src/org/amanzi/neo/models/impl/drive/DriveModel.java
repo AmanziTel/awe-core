@@ -26,6 +26,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -37,6 +38,8 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class DriveModel extends AbstractMeasurementModel implements IDriveModel {
+
+    private static final Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     private IDriveType driveType;
 
@@ -80,6 +83,7 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
 
     @Override
     public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
         try {
             getNodeService()
                     .updateProperty(getRootNode(), getMeasurementNodeProperties().getDriveTypeProperty(), driveType.getId());

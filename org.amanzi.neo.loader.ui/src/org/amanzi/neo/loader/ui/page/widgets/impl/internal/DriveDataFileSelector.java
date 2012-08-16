@@ -15,9 +15,9 @@ package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget;
@@ -44,8 +44,21 @@ import org.eclipse.swt.widgets.List;
  * @since 1.0.0
  */
 public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectDriveResourcesWidget.ISelectDriveResourceListener>
-implements
-SelectionListener {
+        implements
+            SelectionListener {
+
+    private static final Comparator<String> DEFAULT_FILE_COMPARATOR = new Comparator<String>() {
+
+        @Override
+        public int compare(String o1, String o2) {
+            Integer fileName1Length = o1.length();
+            Integer fileName2Length = o2.length();
+
+            int result = fileName1Length.compareTo(fileName2Length);
+            return result == 0 ? o1.compareTo(o2) : result;
+        }
+
+    };
 
     private static final IOFileFilter DEFAULT_FILE_FILTER = new IOFileFilter() {
 
@@ -76,9 +89,9 @@ SelectionListener {
 
     private IOFileFilter fileFilter = null;
 
-    private final Map<String, File> availableFiles = new HashMap<String, File>();
+    private final Map<String, File> availableFiles = new TreeMap<String, File>(DEFAULT_FILE_COMPARATOR);
 
-    private final Map<String, File> selectedFiles = new HashMap<String, File>();
+    private final Map<String, File> selectedFiles = new TreeMap<String, File>(DEFAULT_FILE_COMPARATOR);
 
     /**
      * @param isEnabled
@@ -159,11 +172,7 @@ SelectionListener {
     public void setFiles(final File directory) {
         assert directory.isDirectory();
 
-        File[] files = directory.listFiles((FileFilter)fileFilter);
-
-        Arrays.sort(files);
-
-        for (File singleFile : files) {
+        for (File singleFile : directory.listFiles((FileFilter)fileFilter)) {
             availableFiles.put(singleFile.getName(), singleFile);
         }
 
@@ -178,9 +187,13 @@ SelectionListener {
     private void updateList(final List list, final Map<String, File> values) {
         list.removeAll();
 
+        String[] items = new String[values.size()];
+        int i = 0;
         for (String fileName : values.keySet()) {
-            list.add(fileName);
+            items[i++] = fileName;
         }
+
+        list.setItems(items);
     }
 
     @Override

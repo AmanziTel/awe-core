@@ -40,6 +40,4 @@ public interface IIndexModel extends IModel {
 
     <T extends Object> Iterator<Node> getNodes(final INodeType nodeType, final Class<T> clazz, final T[] min, final T[] max,
             final String... properties) throws ModelException;
-
-    void flushIndexes() throws ModelException;
 }

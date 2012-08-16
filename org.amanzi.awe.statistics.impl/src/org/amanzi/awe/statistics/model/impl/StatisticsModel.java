@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.dto.impl.StatisticsGroup;
@@ -66,18 +65,19 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private final IStatisticsService statisticsService;
 
-    private final Map<Pair<String, String>, IStatisticsGroup> statisticsGroupCache = new HashMap<Pair<String,String>, IStatisticsGroup>();
+    private final Map<Pair<String, String>, IStatisticsGroup> statisticsGroupCache = new HashMap<Pair<String, String>, IStatisticsGroup>();
 
-    private final Map<DimensionType, Map<String, Node>> statisticsLevelCache = new HashMap<DimensionType, Map<String,Node>>();
+    private final Map<DimensionType, Map<String, Node>> statisticsLevelCache = new HashMap<DimensionType, Map<String, Node>>();
 
-    private final Map<Pair<String, Long>, IStatisticsRow> statisticsRowCache = new HashMap<Pair<String,Long>, IStatisticsRow>();
+    private final Map<Pair<String, Long>, IStatisticsRow> statisticsRowCache = new HashMap<Pair<String, Long>, IStatisticsRow>();
 
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
-    public StatisticsModel(final IStatisticsService statisticsService, final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-            final ITimePeriodNodeProperties timePeriodNodeProperties, final IStatisticsNodeProperties statisticsNodeProperties) {
+    public StatisticsModel(final IStatisticsService statisticsService, final INodeService nodeService,
+            final IGeneralNodeProperties generalNodeProperties, final ITimePeriodNodeProperties timePeriodNodeProperties,
+            final IStatisticsNodeProperties statisticsNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.statisticsService = statisticsService;
@@ -153,7 +153,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getStartLogStatement("getGroup", period, propertyKey));
         }
 
-        //TODO: LN: 15.08.2012, validate input
+        // TODO: LN: 15.08.2012, validate input
 
         Pair<String, String> groupKey = new ImmutablePair<String, String>(period, propertyKey);
 
@@ -190,7 +190,6 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             processException("Error on getting StatisticsGroup from Database", e);
         }
 
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getGroupFromDatabase"));
         }
@@ -198,7 +197,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected IStatisticsGroup createStatisticsGroup(final Node node, final String period, final String propertyKey) throws ModelException {
+    protected IStatisticsGroup createStatisticsGroup(final Node node, final String period, final String propertyKey)
+            throws ModelException {
         StatisticsGroup result = null;
 
         try {
@@ -217,12 +217,13 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public IStatisticsRow getStatisticsRow(final IStatisticsGroup group, final long startDate, final long endDate) throws ModelException {
+    public IStatisticsRow getStatisticsRow(final IStatisticsGroup group, final long startDate, final long endDate)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRow", group, startDate, endDate));
         }
 
-        //TODO: LN: 15.08.2012, validate input
+        // TODO: LN: 15.08.2012, validate input
         Pair<String, Long> key = new ImmutablePair<String, Long>(group.getPeriod(), startDate);
 
         IStatisticsRow result = statisticsRowCache.get(key);
@@ -239,7 +240,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected IStatisticsRow getStatisticsRowFromDatabase(final StatisticsGroup statisticsGroup, final long startDate, final long endDate) throws ModelException {
+    protected IStatisticsRow getStatisticsRowFromDatabase(final StatisticsGroup statisticsGroup, final long startDate,
+            final long endDate) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRowFromDatabase", statisticsGroup, startDate, endDate));
         }
@@ -253,10 +255,13 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             if (sRowNode == null) {
                 Map<String, Object> properties = new HashMap<String, Object>();
 
-                addTimeProperty(properties, timePeriodNodeProperties.getStartDateProperty(), timePeriodNodeProperties.getStartDateTimestampProperty(), startDate);
-                addTimeProperty(properties, timePeriodNodeProperties.getEndDateProperty(), timePeriodNodeProperties.getEndDateTimestampProperty(), endDate);
+                addTimeProperty(properties, timePeriodNodeProperties.getStartDateProperty(),
+                        timePeriodNodeProperties.getStartDateTimestampProperty(), startDate);
+                addTimeProperty(properties, timePeriodNodeProperties.getEndDateProperty(),
+                        timePeriodNodeProperties.getEndDateTimestampProperty(), endDate);
 
-                sRowNode = getNodeService().createNodeInChain(statisticsGroup.getNode(), StatisticsNodeType.S_ROW, name, properties);
+                sRowNode = getNodeService()
+                        .createNodeInChain(statisticsGroup.getNode(), StatisticsNodeType.S_ROW, name, properties);
             }
 
             result = createStatisticsRow(sRowNode, startDate, endDate);
@@ -281,7 +286,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return row;
     }
 
-    private void addTimeProperty(final Map<String, Object> properties, final String timeProperty, final String timestampProperty, final long time) {
+    private void addTimeProperty(final Map<String, Object> properties, final String timeProperty, final String timestampProperty,
+            final long time) {
         Date date = new Date(time);
         String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
 
@@ -333,8 +339,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public IStatisticsCell getStatisticsCell(final IStatisticsRow statisticsRow, final String name) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+    public void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value) throws ModelException {
+
     }
 }

@@ -48,5 +48,5 @@ public interface IModel {
 
     boolean isRenderable();
 
-    void flush();
+    void flush() throws ModelException;
 }

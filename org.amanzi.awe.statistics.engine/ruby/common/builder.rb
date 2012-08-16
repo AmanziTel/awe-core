@@ -6,6 +6,7 @@ java_import 'org.amanzi.awe.statistics.template.ITemplate'
 java_import 'org.amanzi.awe.statistics.template.IThreshold'
 java_import 'org.amanzi.awe.statistics.headers.impl.KPIBasedHeader'
 java_import 'org.amanzi.awe.statistics.template.functions.impl.AggregationFunctions'
+java_import 'org.amanzi.awe.statistics.template.functions.IAggregationFunction'
 
 class Threshold
   include IThreshold
@@ -90,7 +91,7 @@ class TemplateColumn
   end
   
   def function
-    AggregationFunctions.getFunctionByName @function
+    AggregationFunctions.getFunctionByName(@function).newFunction
   end
 
   alias formula= formula
@@ -133,6 +134,8 @@ class Template
 
   def calculate(element)
     result = {}
+    
+    element = element.to_hash
     @columns.each_value do |column|
         header = column.header
         result[header.name] = eval(header.formula + ' element')

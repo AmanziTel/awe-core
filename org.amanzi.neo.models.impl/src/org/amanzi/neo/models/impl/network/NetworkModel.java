@@ -349,4 +349,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public int getRenderableElementCount() {
         return getPropertyStatistics().getCount(NetworkElementType.SITE);
     }
+
+    @Override
+    public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
+        super.finishUp();
+    }
 }

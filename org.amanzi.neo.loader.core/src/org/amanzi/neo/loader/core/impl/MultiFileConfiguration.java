@@ -15,8 +15,8 @@ package org.amanzi.neo.loader.core.impl;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.IMultiFileConfiguration;
@@ -32,7 +32,7 @@ import org.amanzi.neo.loader.core.impl.internal.AbstractConfiguration;
  */
 public class MultiFileConfiguration extends AbstractConfiguration implements IMultiFileConfiguration {
 
-    private final Set<File> files = new HashSet<File>();
+    private final Set<File> files = new LinkedHashSet<File>();
 
     public void addFile(final File file) {
         files.add(file);

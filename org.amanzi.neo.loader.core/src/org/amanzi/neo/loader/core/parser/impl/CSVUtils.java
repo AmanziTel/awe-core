@@ -36,7 +36,7 @@ public final class CSVUtils {
 
     private static final Logger LOGGER = Logger.getLogger(CSVUtils.class);
 
-    private static final char[] POSSIBLE_SEPARATORS = new char[] {'\t', ',', ';', ' ', '\n'};
+    private static final char[] POSSIBLE_SEPARATORS = new char[] {'\t', ',', ';', '\n'};
 
     private static final int MINIMAL_HEADERS_SIZE = 2;
 

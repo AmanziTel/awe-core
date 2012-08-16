@@ -17,12 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.amanzi.awe.statistics.dto.IStatisticsCell;
+import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.exceptions.UnderlyingModelException;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
+import org.amanzi.awe.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
@@ -37,6 +38,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jruby.RubySymbol;
+import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  * TODO Purpose of
@@ -105,7 +108,8 @@ public class StatisticsEngine {
     /**
      * 
      */
-    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period, final String propertyName) {
+    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period,
+            final String propertyName) {
         this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, period, propertyName);
     }
 
@@ -118,8 +122,8 @@ public class StatisticsEngine {
         this.propertyName = propertyName;
     }
 
-    public static synchronized StatisticsEngine getEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period,
-            final String propertyName) {
+    public static synchronized StatisticsEngine getEngine(final IMeasurementModel measurementModel, final ITemplate template,
+            final Period period, final String propertyName) {
         ID id = new ID(measurementModel, template, period, propertyName);
         StatisticsEngine result = engineCache.get(id);
 
@@ -183,7 +187,7 @@ public class StatisticsEngine {
     }
 
     protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
-            throws ModelException {
+            throws ModelException, ScriptingException {
         Period underlyingPeriod = period.getUnderlyingPeriod();
 
         if (underlyingPeriod != null) {
@@ -194,21 +198,24 @@ public class StatisticsEngine {
 
             do {
                 for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
-                    String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString() : UNKNOWN_VALUE;
+                    String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
+                            : UNKNOWN_VALUE;
 
                     IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
-                    IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime);
+                    IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
+                            nextStartTime);
 
-                    Map<String, Object> result = template.calculate(dataElement.asMap());
+                    Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
+                            .toSymbolMap(dataElement.asMap());
+                    IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
+                    Map<String, Object> result = template.calculate(rubyDataElement);
                     for (Entry<String, Object> statisticsEntry : result.entrySet()) {
                         ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
-
-                        IStatisticsCell cell = statisticsModel.getStatisticsCell(statisticsRow, column.getName());
 
                         Object statisticsValue = statisticsEntry.getValue();
                         Number value = null;
                         if (statisticsValue instanceof Number) {
-                            value = calculateValue(column.getFunction(), (Number)statisticsValue);
+                            calculateValue(column.getFunction(), value);
                         }
                     }
                 }

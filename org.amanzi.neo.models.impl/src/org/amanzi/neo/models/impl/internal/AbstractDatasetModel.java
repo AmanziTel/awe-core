@@ -151,7 +151,7 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
     protected abstract ILocationElement getLocationElement(Node node);
 
     @Override
-    public void flush() {
+    public void flush() throws ModelException {
         getIndexModel().flush();
     }
 

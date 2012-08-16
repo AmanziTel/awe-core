@@ -1,3 +1,3 @@
-m.lat@Double! = ((?i)lat.*), .*latitude.*
-m.lon@Double! = ((?i)lon.*), .*longitude.*
+m.lat@Double! = ((?i)lat.*), .*(?i)latitude
+m.lon@Double! = ((?i)lon.*), .*(?i)longitude
 m.timestamp@Timestamp! = ((?i)time)

@@ -65,7 +65,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
     }
 
     @Override
-    //TODO: do not throw Model Exception in Loader
+    // TODO: do not throw Model Exception in Loader
     public void init(final C configuration) throws ModelException {
         this.configuration = configuration;
 
@@ -125,7 +125,11 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
 
     protected void flushModels() {
         for (IModel model : processedModels) {
-            model.flush();
+            try {
+                model.flush();
+            } catch (ModelException e) {
+                throw new UnderlyingModelException(e);
+            }
         }
     }
 

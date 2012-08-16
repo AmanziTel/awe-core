@@ -227,7 +227,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     }
 
     @Override
-    public void flush() {
-        //do nothing
+    public void flush() throws ModelException {
+        // do nothing
     }
 }

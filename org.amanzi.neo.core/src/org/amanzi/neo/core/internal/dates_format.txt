@@ -1,1 +1,2 @@
 yyyy-MM-dd HH:mm:ss.SSS
+HH:mm:ss.SS

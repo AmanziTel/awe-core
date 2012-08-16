@@ -100,7 +100,8 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
     @Override
     public void finishUp() throws ModelException {
-        flushIndexes();
+        LOGGER.info("Finishing up model <" + getName() + ">");
+        flush();
     }
 
     @Override
@@ -223,10 +224,12 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     }
 
     @Override
-    public void flushIndexes() throws ModelException {
+    public void flush() throws ModelException {
+        LOGGER.info("Flushing indexes");
         for (MultiPropertyIndex< ? > index : indexMap.values()) {
             index.finishUp();
         }
+        super.flush();
     }
 
 }

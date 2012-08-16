@@ -80,6 +80,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     @Override
     public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
         assert statisticsVault != null;
 
         try {

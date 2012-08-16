@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.scripting.utils.ScriptUtils;
@@ -27,7 +28,9 @@ import org.jruby.Ruby;
 import org.jruby.RubyHash;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.java.proxies.JavaProxy;
+import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -158,5 +161,21 @@ public class JRubyRuntimeWrapper {
             map.put(key, rubyMap.get(key));
         }
         return map;
+    }
+
+    public IRubyObject wrap(Object javaObject) {
+        return JavaEmbedUtils.javaToRuby(runtime, javaObject);
+    }
+
+    public <K extends Object, V extends Object> Map<RubySymbol, V> toSymbolMap(Map<K, V> originalMap) {
+        HashMap<RubySymbol, V> result = new HashMap<RubySymbol, V>();
+
+        for (Entry<K, V> entry : originalMap.entrySet()) {
+            RubySymbol symbol = RubySymbol.newSymbol(runtime, entry.getKey().toString());
+
+            result.put(symbol, entry.getValue());
+        }
+
+        return result;
     }
 }

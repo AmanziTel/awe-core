@@ -80,9 +80,9 @@ public class StatisticsManager {
     public Collection<ITemplate> getAvailableTemplates() {
         if ((availableTemplates == null) && (model != null)) {
 
+            availableTemplates = new ArrayList<ITemplate>();
             for (ITemplate singleTemplate : getAllTemplates()) {
                 if (singleTemplate.canResolve(model)) {
-                    availableTemplates = new ArrayList<ITemplate>();
                     availableTemplates.add(singleTemplate);
                 }
             }

@@ -97,6 +97,7 @@ public class ProjectModel extends AbstractNamedModel implements IProjectModel {
 
     @Override
     public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
     }
 
     @Override

@@ -96,6 +96,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
         try {
             getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
             getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);

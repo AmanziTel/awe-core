@@ -48,13 +48,13 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 public class StatisticsView extends ViewPart
-implements
-IDriveSelectionListener,
-IPropertySelectionListener,
-ITemplateSelectionListener,
-IPeriodSelectionListener,
-ITimePeriodSelectionListener,
-SelectionListener {
+        implements
+            IDriveSelectionListener,
+            IPropertySelectionListener,
+            ITemplateSelectionListener,
+            IPeriodSelectionListener,
+            ITimePeriodSelectionListener,
+            SelectionListener {
 
     /** GridLayout ONE_ROW_GRID_LAYOUT field */
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
@@ -91,7 +91,7 @@ SelectionListener {
     }
 
     private void addTemplateComposite(final Composite parent) {
-        Composite composite = new Composite(parent, SWT.BORDER);
+        Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(getCompositeGridData());
         composite.setLayout(new GridLayout(4, false));
 
