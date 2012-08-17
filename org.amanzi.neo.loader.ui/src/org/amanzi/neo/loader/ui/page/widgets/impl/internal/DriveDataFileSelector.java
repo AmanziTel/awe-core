@@ -15,7 +15,6 @@ package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,6 +22,7 @@ import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
+import org.apache.commons.io.comparator.NameFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.swt.SWT;
@@ -46,19 +46,6 @@ import org.eclipse.swt.widgets.List;
 public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectDriveResourcesWidget.ISelectDriveResourceListener>
         implements
             SelectionListener {
-
-    private static final Comparator<String> DEFAULT_FILE_COMPARATOR = new Comparator<String>() {
-
-        @Override
-        public int compare(String o1, String o2) {
-            Integer fileName1Length = o1.length();
-            Integer fileName2Length = o2.length();
-
-            int result = fileName1Length.compareTo(fileName2Length);
-            return result == 0 ? o1.compareTo(o2) : result;
-        }
-
-    };
 
     private static final IOFileFilter DEFAULT_FILE_FILTER = new IOFileFilter() {
 
@@ -89,9 +76,11 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
 
     private IOFileFilter fileFilter = null;
 
-    private final Map<String, File> availableFiles = new TreeMap<String, File>(DEFAULT_FILE_COMPARATOR);
+    @SuppressWarnings("unchecked")
+    private final Map<String, File> availableFiles = new TreeMap<String, File>(NameFileComparator.NAME_SYSTEM_COMPARATOR);
 
-    private final Map<String, File> selectedFiles = new TreeMap<String, File>(DEFAULT_FILE_COMPARATOR);
+    @SuppressWarnings("unchecked")
+    private final Map<String, File> selectedFiles = new TreeMap<String, File>(NameFileComparator.NAME_SYSTEM_COMPARATOR);
 
     /**
      * @param isEnabled
