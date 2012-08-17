@@ -15,6 +15,7 @@ package org.amanzi.awe.statistics.model;
 
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 
@@ -32,5 +33,6 @@ public interface IStatisticsModel extends IModel {
 
     IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate) throws ModelException;
 
-    void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value) throws ModelException;
+    void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElements)
+            throws ModelException;
 }

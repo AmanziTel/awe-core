@@ -240,7 +240,7 @@ public class StatisticsEngine extends AbstractTransactional {
                         if (statisticsValue instanceof Number) {
                             Number statisticsResult = calculateValue(column.getFunction(), value);
 
-                            statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult);
+                            statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
 
                             updateTransaction();
                         }

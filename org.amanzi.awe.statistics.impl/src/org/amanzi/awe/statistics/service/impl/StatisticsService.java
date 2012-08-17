@@ -47,7 +47,7 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
     private final INodeService nodeService;
 
     public static enum StatisticsRelationshipType implements RelationshipType {
-        STATISTICS, TIME_DIMENSION, PROPERTY_DIMENSION;
+        STATISTICS, TIME_DIMENSION, PROPERTY_DIMENSION, SOURCE;
     }
 
     /**
@@ -60,26 +60,30 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
     }
 
     @Override
-    public Node findStatisticsNode(final Node parentNode, final String templateName, final String aggregationPropertyName) throws ServiceException {
+    public Node findStatisticsNode(final Node parentNode, final String templateName, final String aggregationPropertyName)
+            throws ServiceException {
         assert parentNode != null;
         assert !StringUtils.isEmpty(templateName);
         assert !StringUtils.isEmpty(aggregationPropertyName);
 
-
         String statisticsName = MessageFormat.format(STATISTICS_NAME_PATTERN, templateName, aggregationPropertyName);
 
-        return nodeService.getChildByName(parentNode, statisticsName, StatisticsNodeType.STATISTICS, StatisticsRelationshipType.STATISTICS);
+        return nodeService.getChildByName(parentNode, statisticsName, StatisticsNodeType.STATISTICS,
+                StatisticsRelationshipType.STATISTICS);
     }
 
     @Override
-    public Node getStatisticsLevel(final Node parentNode, final DimensionType dimensionType, final String propertyName) throws ServiceException {
+    public Node getStatisticsLevel(final Node parentNode, final DimensionType dimensionType, final String propertyName)
+            throws ServiceException {
         assert parentNode != null;
         assert dimensionType != null;
         assert !StringUtils.isEmpty(propertyName);
 
-        Node result = nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType());
+        Node result = nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL,
+                dimensionType.getRelationshipType());
         if (result == null) {
-            result = nodeService.createNode(parentNode, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType(), propertyName);
+            result = nodeService
+                    .createNode(parentNode, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType(), propertyName);
         }
 
         return result;
@@ -102,7 +106,8 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         Node result = null;
 
         try {
-            for (Relationship relationship : propertyLevelNode.getRelationships(StatisticsRelationshipType.TIME_DIMENSION, Direction.INCOMING)) {
+            for (Relationship relationship : propertyLevelNode.getRelationships(StatisticsRelationshipType.TIME_DIMENSION,
+                    Direction.INCOMING)) {
                 if (relationship.getStartNode().equals(periodLevelNode)) {
                     result = relationship.getStartNode();
                     break;
@@ -121,10 +126,19 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
 
         String groupName = MessageFormat.format(GROUP_NAME_PATTERN, periodLevelname, propertyLevelName);
 
-        Node result = nodeService.createNode(periodLevelNode, StatisticsNodeType.GROUP, NodeServiceRelationshipType.CHILD, groupName);
+        Node result = nodeService.createNode(periodLevelNode, StatisticsNodeType.GROUP, NodeServiceRelationshipType.CHILD,
+                groupName);
         nodeService.linkNodes(propertyLevelNode, result, NodeServiceRelationshipType.CHILD);
 
         return result;
+    }
+
+    @Override
+    public void addSourceNode(Node node, Node sourceNode) throws ServiceException {
+        assert node != null;
+        assert sourceNode != null;
+
+        nodeService.linkNodes(node, sourceNode, StatisticsRelationshipType.SOURCE);
     }
 
 }

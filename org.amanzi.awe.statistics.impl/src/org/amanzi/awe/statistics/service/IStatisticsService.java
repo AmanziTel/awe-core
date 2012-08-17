@@ -33,4 +33,5 @@ public interface IStatisticsService extends IService {
 
     Node getGroup(Node propertyLevelNode, Node periodLevelNode) throws ServiceException;
 
+    void addSourceNode(Node node, Node sourceNode) throws ServiceException;
 }

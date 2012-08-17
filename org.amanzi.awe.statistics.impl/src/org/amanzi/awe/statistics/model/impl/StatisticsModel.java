@@ -30,6 +30,8 @@ import org.amanzi.awe.statistics.service.IStatisticsService;
 import org.amanzi.awe.statistics.service.impl.StatisticsService;
 import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelationshipType;
 import org.amanzi.neo.dateformat.DateFormatManager;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -341,7 +343,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value) throws ModelException {
+    public void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElement)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("updateStatisticsCell", statisticsRow, name, value));
         }
@@ -352,6 +355,11 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
         try {
             getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
+
+            for (IDataElement singleElement : sourceElement) {
+                DataElement source = (DataElement)singleElement;
+                statisticsService.addSourceNode(statisticsCellNode, source.getNode());
+            }
         } catch (ServiceException e) {
             processException("Error on updating value of Statistics Cell <" + name + "> in Row <" + statisticsRow + ">", e);
         }
