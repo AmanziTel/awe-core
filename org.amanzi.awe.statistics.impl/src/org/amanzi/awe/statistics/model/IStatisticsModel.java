@@ -35,4 +35,6 @@ public interface IStatisticsModel extends IModel {
 
     void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElements)
             throws ModelException;
+
+    Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
 }

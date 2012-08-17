@@ -132,7 +132,9 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
                 fileNode = getNodeService().createNodeInChain(parentNode, MeasurementNodeType.FILE, properties);
 
-                LOGGER.info("Created new File Node by name <" + name + "> in Model <" + getName() + ">");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Created new File Node by name <" + name + "> in Model <" + getName() + ">");
+                }
             }
 
             result = getFileElement(fileNode, name, path);

@@ -434,4 +434,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
         return result;
     }
+
+    @Override
+    public Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException {
+        return null;
+    }
 }

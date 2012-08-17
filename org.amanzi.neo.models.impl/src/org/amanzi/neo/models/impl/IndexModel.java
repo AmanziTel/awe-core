@@ -234,4 +234,9 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         super.flush();
     }
 
+    @Override
+    public String getName() {
+        return "IndexModel <" + getParentNode() + ">";
+    }
+
 }

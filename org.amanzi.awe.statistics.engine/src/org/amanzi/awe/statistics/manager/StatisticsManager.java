@@ -25,6 +25,7 @@ import org.amanzi.awe.statistics.engine.StatisticsEngine;
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.log4j.Logger;
@@ -57,6 +58,8 @@ public class StatisticsManager {
     private ITemplate template;
 
     private String property;
+
+    private Period period;
 
     private StatisticsManager(final IMeasurementModel measurementModel) {
         this.model = measurementModel;
@@ -134,7 +137,11 @@ public class StatisticsManager {
         this.property = property;
     }
 
+    public void setPeriod(final Period period) {
+        this.period = period;
+    }
+
     public IStatisticsModel build(final IProgressMonitor progressMonitor) throws StatisticsEngineException {
-        return StatisticsEngine.getEngine(model, template, property).build(progressMonitor);
+        return StatisticsEngine.getEngine(model, template, period, property).build(progressMonitor);
     }
 }

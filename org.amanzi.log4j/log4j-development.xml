@@ -11,16 +11,6 @@
       <param name="LevelMin" value="ALL"/>
     </filter>
   </appender>
-  
-  <appender name="LOG-FILE-APPENDER" class="org.apache.log4j.FileAppender">
-    <param name="file" value="app.log"/>
-    <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{ISO8601} [%5p] %m %n"/>
-    </layout>
-    <filter class="org.apache.log4j.varia.LevelRangeFilter">
-      <param name="LevelMin" value="INFO"/>
-    </filter>
-  </appender>
  
   <root>
     <priority value="INFO"/>

@@ -67,17 +67,20 @@ public class StatisticsEngine extends AbstractTransactional {
 
         private final String propertyName;
 
+        private final Period period;
+
         /**
          * @param model
          * @param period
          * @param template
          * @param propertyName
          */
-        public ID(final IMeasurementModel model, final ITemplate template, final String propertyName) {
+        public ID(final IMeasurementModel model, final ITemplate template, final Period period, final String propertyName) {
             super();
             this.model = model;
             this.template = template;
             this.propertyName = propertyName;
+            this.period = period;
         }
 
         @Override
@@ -102,29 +105,33 @@ public class StatisticsEngine extends AbstractTransactional {
 
     private final String propertyName;
 
+    private final Period period;
+
     /**
      * 
      */
-    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final String propertyName) {
-        this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, propertyName);
+    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period,
+            final String propertyName) {
+        this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, period, propertyName);
     }
 
     protected StatisticsEngine(final IStatisticsModelProvider statisticsModelProvider, final IMeasurementModel measurementModel,
-            final ITemplate template, final String propertyName) {
+            final ITemplate template, final Period period, final String propertyName) {
         super();
         this.statisticsModelProvider = statisticsModelProvider;
         this.template = template;
         this.measurementModel = measurementModel;
         this.propertyName = propertyName;
+        this.period = period;
     }
 
     public static synchronized StatisticsEngine getEngine(final IMeasurementModel measurementModel, final ITemplate template,
-            final String propertyName) {
-        ID id = new ID(measurementModel, template, propertyName);
+            final Period period, final String propertyName) {
+        ID id = new ID(measurementModel, template, period, propertyName);
         StatisticsEngine result = engineCache.get(id);
 
         if (result == null) {
-            result = new StatisticsEngine(measurementModel, template, propertyName);
+            result = new StatisticsEngine(measurementModel, template, period, propertyName);
 
             engineCache.put(id, result);
         }
@@ -183,8 +190,6 @@ public class StatisticsEngine extends AbstractTransactional {
         }
 
         IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
-
-        Period period = Period.getHighestPeriod(measurementModel.getMinTimestamp(), measurementModel.getMaxTimestamp());
 
         monitor.beginTask("Calculating statistics", period.ordinal() + 1);
 
