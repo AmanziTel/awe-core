@@ -225,7 +225,9 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
     @Override
     public void flush() throws ModelException {
-        LOGGER.info("Flushing indexes");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info("Flushing indexes");
+        }
         for (MultiPropertyIndex< ? > index : indexMap.values()) {
             index.finishUp();
         }
