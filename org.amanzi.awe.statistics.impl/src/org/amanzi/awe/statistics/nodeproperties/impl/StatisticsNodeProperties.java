@@ -29,6 +29,8 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
 
     private static final String TEMPLATE_NAME = "template";
 
+    private static final String VALUE_PROEPRTY = "value";
+
     @Override
     public String getTemplateNameProperty() {
         return TEMPLATE_NAME;
@@ -37,6 +39,11 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
     @Override
     public String getAggregationPropertyNameProperty() {
         return AGGREGATION_PROPERTY_NAME;
+    }
+
+    @Override
+    public String getValueProperty() {
+        return VALUE_PROEPRTY;
     }
 
 }

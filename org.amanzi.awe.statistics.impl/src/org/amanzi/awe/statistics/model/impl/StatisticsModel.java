@@ -71,6 +71,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private final Map<Pair<String, Long>, IStatisticsRow> statisticsRowCache = new HashMap<Pair<String, Long>, IStatisticsRow>();
 
+    private final Map<Pair<StatisticsRow, String>, Node> statisticsCellNodeCache = new HashMap<Pair<StatisticsRow, String>, Node>();
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -340,6 +342,88 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     @Override
     public void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("updateStatisticsCell", statisticsRow, name, value));
+        }
 
+        // TODO: LN: 17.08.2012, validate input
+
+        Node statisticsCellNode = getStatisticsCellNode((StatisticsRow)statisticsRow, name);
+
+        try {
+            getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
+        } catch (ServiceException e) {
+            processException("Error on updating value of Statistics Cell <" + name + "> in Row <" + statisticsRow + ">", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("updateStatisticsCell"));
+        }
+    }
+
+    protected Node getStatisticsCellNode(StatisticsRow statisticsRow, String name) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getStatisticsCellNode", statisticsRow, name));
+        }
+
+        Pair<StatisticsRow, String> key = new ImmutablePair<StatisticsRow, String>(statisticsRow, name);
+
+        Node result = statisticsCellNodeCache.get(key);
+
+        if (result == null) {
+            result = getStatisticsCellNode(statisticsRow, name);
+
+            if (result == null) {
+                LOGGER.info("No Statistics Cell was found by name <" + name + "> in Row <" + statisticsRow + ">. Create new one.");
+
+                result = createStatisticsCellNode(statisticsRow, name);
+            }
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getStatisticsCellNode"));
+        }
+
+        return result;
+    }
+
+    protected Node createStatisticsCellNode(StatisticsRow statisticsRow, String name) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createStatisticsCellNode", statisticsRow, name));
+        }
+
+        Node result = null;
+
+        try {
+            result = getNodeService().createNodeInChain(statisticsRow.getNode(), StatisticsNodeType.S_CELL, name);
+        } catch (ServiceException e) {
+            processException("Error on creating Statistics Cell Node by name <" + name + "> in Row <" + statisticsRow + ">.", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createStatisticsCellNode"));
+        }
+
+        return result;
+    }
+
+    protected Node getStatisticsCellNodeFromDatabase(StatisticsRow statisticsRow, String name) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getStatisticsCellNodeFromDatabase", statisticsRow, name));
+        }
+
+        Node result = null;
+
+        try {
+            result = getNodeService().getChildInChainByName(statisticsRow.getNode(), name, StatisticsNodeType.S_CELL);
+        } catch (ServiceException e) {
+            processException("Error on searching Statistics Cell Node by name <" + name + "> in Row <" + statisticsRow + ">.", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getStatisticsCellNodeFromDatabase"));
+        }
+
+        return result;
     }
 }

@@ -215,7 +215,9 @@ public class StatisticsEngine {
                         Object statisticsValue = statisticsEntry.getValue();
                         Number value = null;
                         if (statisticsValue instanceof Number) {
-                            calculateValue(column.getFunction(), value);
+                            Number statisticsResult = calculateValue(column.getFunction(), value);
+
+                            statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult);
                         }
                     }
                 }

@@ -29,4 +29,6 @@ public interface IStatisticsNodeProperties extends INodeProperties {
 
     String getAggregationPropertyNameProperty();
 
+    String getValueProperty();
+
 }
