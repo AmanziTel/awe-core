@@ -66,7 +66,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         if (transactionMap.get() != null) {
             LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> already exists");
         } else {
-            LOGGER.info("Creating Transaction for Thread <" + Thread.currentThread() + ">");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Creating Transaction for Thread <" + Thread.currentThread() + ">");
+            }
             transactionMap.set(getDatabaseService().beginTx());
         }
         transactionStack.set(++stack);
@@ -74,7 +76,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
     @Override
     public void commitThreadTransaction() {
-        LOGGER.info("Commiting Transaction for Thread <" + Thread.currentThread() + ">");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Commiting Transaction for Thread <" + Thread.currentThread() + ">");
+        }
 
         // commiting current transaction
         Transaction tx = transactionMap.get();
@@ -88,7 +92,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
     @Override
     public void rollbackThreadTransaction() {
-        LOGGER.info("Rolling back Transaction for Thread <" + Thread.currentThread() + ">");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Rolling back Transaction for Thread <" + Thread.currentThread() + ">");
+        }
 
         // commiting current transaction
         Transaction tx = transactionMap.get();
@@ -102,7 +108,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
     @Override
     public void finishThreadTransaction() {
-        LOGGER.info("Finishing Transaction for Thread <" + Thread.currentThread() + ">");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finishing Transaction for Thread <" + Thread.currentThread() + ">");
+        }
 
         Integer stack = transactionStack.get();
 
@@ -163,6 +171,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     /**
      * @return Returns the isAlreadyUsed.
      */
+    @Override
     public boolean isAlreadyUsed() {
         try {
             getDatabaseService();
