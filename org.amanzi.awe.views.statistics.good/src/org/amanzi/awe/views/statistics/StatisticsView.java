@@ -33,9 +33,7 @@ import org.amanzi.neo.models.drive.IDriveModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -227,21 +225,15 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void onPeriodSelected(final Period period) {
-
+        if (statisticsManager != null) {
+            statisticsManager.setPeriod(period);
+        }
     }
 
     @Override
     public void widgetSelected(final SelectionEvent event) {
         if (statisticsManager != null) {
             StatisticsJob job = new StatisticsJob(statisticsManager);
-
-            Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
-
-                @Override
-                public void done(IJobChangeEvent event) {
-                    System.out.println(Thread.currentThread());
-                }
-            });
 
             job.schedule();
         }

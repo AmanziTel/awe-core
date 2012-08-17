@@ -15,8 +15,9 @@ package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget;
@@ -76,11 +77,9 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
 
     private IOFileFilter fileFilter = null;
 
-    @SuppressWarnings("unchecked")
-    private final Map<String, File> availableFiles = new TreeMap<String, File>(NameFileComparator.NAME_SYSTEM_COMPARATOR);
+    private final Map<String, File> availableFiles = new LinkedHashMap<String, File>();
 
-    @SuppressWarnings("unchecked")
-    private final Map<String, File> selectedFiles = new TreeMap<String, File>(NameFileComparator.NAME_SYSTEM_COMPARATOR);
+    private final Map<String, File> selectedFiles = new LinkedHashMap<String, File>();
 
     /**
      * @param isEnabled
@@ -158,10 +157,13 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
         updateLists();
     }
 
+    @SuppressWarnings("unchecked")
     public void setFiles(final File directory) {
         assert directory.isDirectory();
 
-        for (File singleFile : directory.listFiles((FileFilter)fileFilter)) {
+        File[] files = directory.listFiles((FileFilter)fileFilter);
+        Arrays.sort(files, NameFileComparator.NAME_SYSTEM_COMPARATOR);
+        for (File singleFile : files) {
             availableFiles.put(singleFile.getName(), singleFile);
         }
 
