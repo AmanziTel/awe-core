@@ -236,6 +236,12 @@ public class StatisticsEngine extends AbstractTransactional {
                         ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
 
                         Object statisticsValue = statisticsEntry.getValue();
+
+                        if (LOGGER.isTraceEnabled()) {
+                            LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
+                                    + statisticsRow + ">: <" + statisticsValue + ">.");
+                        }
+
                         Number value = null;
                         if (statisticsValue instanceof Number) {
                             Number statisticsResult = calculateValue(column.getFunction(), value);

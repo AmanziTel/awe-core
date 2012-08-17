@@ -15,13 +15,14 @@ package org.amanzi.awe.statistics.dto.impl;
 
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -65,5 +66,15 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
         this.endDate = endDate;
     }
 
+    @Override
+    public String toString() {
+        String startDateString = DateFormatUtils.ISO_DATETIME_FORMAT.format(startDate);
+        String endDateString = DateFormatUtils.ISO_DATETIME_FORMAT.format(endDate);
+
+        StringBuilder builder = new StringBuilder("StatisticsRow from <").append(startDateString).append("> to <")
+                .append(endDateString).append(">.");
+
+        return builder.toString();
+    }
 
 }
