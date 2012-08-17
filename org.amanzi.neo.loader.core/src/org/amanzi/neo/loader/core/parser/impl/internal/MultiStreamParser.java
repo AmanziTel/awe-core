@@ -94,8 +94,7 @@ public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P ex
 
         SubProgressMonitor monitor = new SubProgressMonitor(getProgressMonitor(), 1);
         currentParser.setProgressMonitor(file.getName(), monitor);
-
-        work(1);
+        getProgressMonitor().subTask(file.getName());
 
         return currentParser;
     }

@@ -225,9 +225,7 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void onPeriodSelected(final Period period) {
-        if (statisticsManager != null) {
-            statisticsManager.setPeriod(period);
-        }
+
     }
 
     @Override

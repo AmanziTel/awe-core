@@ -63,8 +63,6 @@ public class StatisticsEngine extends AbstractTransactional {
 
         private final IMeasurementModel model;
 
-        private final Period period;
-
         private final ITemplate template;
 
         private final String propertyName;
@@ -75,10 +73,9 @@ public class StatisticsEngine extends AbstractTransactional {
          * @param template
          * @param propertyName
          */
-        public ID(final IMeasurementModel model, final ITemplate template, final Period period, final String propertyName) {
+        public ID(final IMeasurementModel model, final ITemplate template, final String propertyName) {
             super();
             this.model = model;
-            this.period = period;
             this.template = template;
             this.propertyName = propertyName;
         }
@@ -99,8 +96,6 @@ public class StatisticsEngine extends AbstractTransactional {
 
     private final IStatisticsModelProvider statisticsModelProvider;
 
-    private final Period period;
-
     private final ITemplate template;
 
     private final IMeasurementModel measurementModel;
@@ -110,28 +105,26 @@ public class StatisticsEngine extends AbstractTransactional {
     /**
      * 
      */
-    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final Period period,
-            final String propertyName) {
-        this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, period, propertyName);
+    private StatisticsEngine(final IMeasurementModel measurementModel, final ITemplate template, final String propertyName) {
+        this(StatisticsModelPlugin.getDefault().getStatisticsModelProvider(), measurementModel, template, propertyName);
     }
 
     protected StatisticsEngine(final IStatisticsModelProvider statisticsModelProvider, final IMeasurementModel measurementModel,
-            final ITemplate template, final Period period, final String propertyName) {
+            final ITemplate template, final String propertyName) {
         super();
         this.statisticsModelProvider = statisticsModelProvider;
-        this.period = period;
         this.template = template;
         this.measurementModel = measurementModel;
         this.propertyName = propertyName;
     }
 
     public static synchronized StatisticsEngine getEngine(final IMeasurementModel measurementModel, final ITemplate template,
-            final Period period, final String propertyName) {
-        ID id = new ID(measurementModel, template, period, propertyName);
+            final String propertyName) {
+        ID id = new ID(measurementModel, template, propertyName);
         StatisticsEngine result = engineCache.get(id);
 
         if (result == null) {
-            result = new StatisticsEngine(measurementModel, template, period, propertyName);
+            result = new StatisticsEngine(measurementModel, template, propertyName);
 
             engineCache.put(id, result);
         }
@@ -141,7 +134,7 @@ public class StatisticsEngine extends AbstractTransactional {
 
     public IStatisticsModel build(IProgressMonitor monitor) throws StatisticsEngineException {
         LOGGER.info("Started Statistics Calculation for Model <" + measurementModel + "> on property <" + propertyName
-                + "> by template <" + template + "> with period <" + period + ">.");
+                + "> by template <" + template + ">.");
 
         // TODO: LN: 10.08.2012, check input
 
@@ -191,6 +184,8 @@ public class StatisticsEngine extends AbstractTransactional {
 
         IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
 
+        Period period = Period.getHighestPeriod(measurementModel.getMinTimestamp(), measurementModel.getMaxTimestamp());
+
         monitor.beginTask("Calculating statistics", period.ordinal() + 1);
 
         try {
@@ -208,16 +203,18 @@ public class StatisticsEngine extends AbstractTransactional {
             throws ModelException, ScriptingException {
         Period underlyingPeriod = period.getUnderlyingPeriod();
 
-        monitor.worked(1);
-
         if (underlyingPeriod != null) {
             calculateStatistics(statisticsModel, underlyingPeriod, monitor);
+            monitor.worked(1);
         } else {
             long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
             long nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
 
-            IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, measurementModel.getPropertyStatistics()
-                    .getCount(measurementModel.getMainMeasurementNodeType()));
+            String subTaskName = "Period <" + period + ">";
+            IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+            monitor.subTask(subTaskName);
+            subProgressMonitor.beginTask(subTaskName,
+                    measurementModel.getPropertyStatistics().getCount(measurementModel.getMainMeasurementNodeType()));
 
             do {
                 for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
@@ -243,7 +240,8 @@ public class StatisticsEngine extends AbstractTransactional {
                         }
 
                         Number value = null;
-                        if (statisticsValue instanceof Number) {
+                        if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
+                            value = (Number)statisticsValue;
                             Number statisticsResult = calculateValue(column.getFunction(), value);
 
                             statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);

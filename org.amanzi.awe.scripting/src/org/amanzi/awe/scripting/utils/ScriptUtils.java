@@ -115,8 +115,6 @@ public class ScriptUtils {
         }
 
         List<String> loadPath = new ArrayList<String>();
-        String neoRubyGemDir = getPluginRoot(AbstractScriptingPlugin.PLUGIN_ID) + "neo4j";
-        LOGGER.info("Neo4J scripts folder set to < " + neoRubyGemDir + " >");
 
         loadPath.add(path);
         loadPath.add(jRubyHome + LIB_PATH + "site_ruby/" + jRubyVersion);
@@ -124,12 +122,6 @@ public class ScriptUtils {
         loadPath.add(jRubyHome + LIB_PATH + jRubyVersion);
         loadPath.add(jRubyHome + LIB_PATH + jRubyVersion + "/java");
         loadPath.add(jRubyHome + "lib");
-
-        loadPath.add(neoRubyGemDir + "/lib");
-        loadPath.add(neoRubyGemDir + "/lib/relations");
-        loadPath.add(neoRubyGemDir + "/lib/mixins");
-        loadPath.add(neoRubyGemDir + "/lib/jars");
-        loadPath.add(neoRubyGemDir + "/examples/imdb");
 
         return loadPath;
     }
