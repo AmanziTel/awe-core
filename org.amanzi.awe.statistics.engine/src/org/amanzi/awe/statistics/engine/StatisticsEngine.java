@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.statistics.exceptions.FatalStatisticsException;
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.exceptions.UnderlyingModelException;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
@@ -30,6 +31,7 @@ import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
 import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.statistics.template.ITemplateColumn;
 import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
+import org.amanzi.neo.core.transactional.AbstractTransactional;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
@@ -40,7 +42,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jruby.RubySymbol;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -50,7 +51,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsEngine {
+public class StatisticsEngine extends AbstractTransactional {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsEngine.class);
 
@@ -105,10 +106,6 @@ public class StatisticsEngine {
 
     private final String propertyName;
 
-    private Transaction tx;
-
-    private int txCount;
-
     /**
      * 
      */
@@ -119,6 +116,7 @@ public class StatisticsEngine {
 
     protected StatisticsEngine(final IStatisticsModelProvider statisticsModelProvider, final IMeasurementModel measurementModel,
             final ITemplate template, final Period period, final String propertyName) {
+        super();
         this.statisticsModelProvider = statisticsModelProvider;
         this.period = period;
         this.template = template;
@@ -150,7 +148,11 @@ public class StatisticsEngine {
             monitor = new NullProgressMonitor();
         }
 
+        startTransaction();
+
         IStatisticsModel statisticsModel = null;
+
+        boolean isSuccess = false;
 
         try {
             statisticsModel = statisticsModelProvider.find(measurementModel, template.getName(), propertyName);
@@ -162,10 +164,17 @@ public class StatisticsEngine {
             } else {
                 LOGGER.info("Statistics already exists in Database");
             }
+
+            isSuccess = true;
         } catch (ModelException e) {
             LOGGER.error("An error occured on Statistics Calculation", e);
             throw new UnderlyingModelException(e);
+        } catch (Exception e) {
+            LOGGER.error("An error occured on Statistics Calculation", e);
+            throw new FatalStatisticsException(e);
         }
+
+        saveTx(isSuccess, false);
 
         LOGGER.info("Finished Statistics Calculation");
 
@@ -222,6 +231,8 @@ public class StatisticsEngine {
                             Number statisticsResult = calculateValue(column.getFunction(), value);
 
                             statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult);
+
+                            updateTransaction();
                         }
                     }
                 }

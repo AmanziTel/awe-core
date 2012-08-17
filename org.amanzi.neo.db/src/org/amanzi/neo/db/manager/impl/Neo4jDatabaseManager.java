@@ -225,22 +225,4 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
         dbService = null;
     }
 
-    @Override
-    public void startThreadTransaction() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void commitThreadTransaction() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void rollbackThreadTransaction() {
-        // TODO Auto-generated method stub
-
-    }
-
 }

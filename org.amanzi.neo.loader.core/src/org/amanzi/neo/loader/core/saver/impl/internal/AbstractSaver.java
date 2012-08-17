@@ -19,7 +19,7 @@ import java.util.List;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.core.transactional.AbstractTransactional;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.impl.UnderlyingModelException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
@@ -32,7 +32,6 @@ import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -42,9 +41,9 @@ import org.neo4j.graphdb.Transaction;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractSaver<C extends IConfiguration, D extends IData> implements ISaver<C, D> {
-
-    private static final int MAX_TX_COUNT = 2000;
+public abstract class AbstractSaver<C extends IConfiguration, D extends IData> extends AbstractTransactional
+        implements
+            ISaver<C, D> {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
 
@@ -55,10 +54,6 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
     private final IProjectModelProvider projectModelProvider;
 
     private IProjectModel currentProject;
-
-    private Transaction tx;
-
-    private int txCount;
 
     protected AbstractSaver(final IProjectModelProvider projectModelProvider) {
         this.projectModelProvider = projectModelProvider;
@@ -71,8 +66,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
 
         this.currentProject = projectModelProvider.getActiveProjectModel();
 
-        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
-        tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
+        startTransaction();
     }
 
     @Override
@@ -113,16 +107,6 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         }
     }
 
-    protected void updateTransaction() {
-        txCount++;
-        if (txCount > MAX_TX_COUNT) {
-            flushModels();
-
-            txCount = 0;
-            saveTx(true, true);
-        }
-    }
-
     protected void flushModels() {
         for (IModel model : processedModels) {
             try {
@@ -133,17 +117,12 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> i
         }
     }
 
+    @Override
     protected void saveTx(final boolean success, final boolean shouldContinue) {
         if (success) {
-            tx.success();
-        } else {
-            tx.failure();
+            flushModels();
         }
-
-        tx.finish();
-        if (shouldContinue) {
-            tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
-        }
+        super.saveTx(success, shouldContinue);
     }
 
     protected abstract void saveInModel(D data) throws ModelException;
