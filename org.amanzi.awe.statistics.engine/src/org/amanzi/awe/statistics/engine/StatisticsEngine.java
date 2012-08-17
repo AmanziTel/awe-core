@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jruby.RubySymbol;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -51,10 +52,9 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public class StatisticsEngine {
 
-    /** String UNKNOWN_PROPERTY field */
-    private static final String UNKNOWN_VALUE = "unknown";
-
     private static final Logger LOGGER = Logger.getLogger(StatisticsEngine.class);
+
+    private static final String UNKNOWN_VALUE = "unknown";
 
     @SuppressWarnings("unused")
     private static class ID {
@@ -104,6 +104,10 @@ public class StatisticsEngine {
     private final IMeasurementModel measurementModel;
 
     private final String propertyName;
+
+    private Transaction tx;
+
+    private int txCount;
 
     /**
      * 
