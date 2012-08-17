@@ -56,6 +56,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> e
     private IProjectModel currentProject;
 
     protected AbstractSaver(final IProjectModelProvider projectModelProvider) {
+        super();
         this.projectModelProvider = projectModelProvider;
     }
 
