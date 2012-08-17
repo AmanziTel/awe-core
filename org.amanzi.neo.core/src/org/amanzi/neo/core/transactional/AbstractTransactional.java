@@ -32,7 +32,7 @@ public abstract class AbstractTransactional {
 
     private final int maxTxCount;
 
-    private IDatabaseManager dbManager;
+    private final IDatabaseManager dbManager;
 
     /**
      * 
@@ -43,6 +43,7 @@ public abstract class AbstractTransactional {
 
     protected AbstractTransactional(IDatabaseManager manager, int maxTxCount) {
         this.maxTxCount = maxTxCount;
+        this.dbManager = manager;
     }
 
     protected void startTransaction() {
