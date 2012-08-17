@@ -24,12 +24,16 @@ import org.amanzi.awe.ui.view.widget.PeriodWidget;
 import org.amanzi.awe.ui.view.widget.PeriodWidget.ITimePeriodSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
+import org.amanzi.awe.views.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.views.statistics.widget.PeriodComboWidget;
 import org.amanzi.awe.views.statistics.widget.PeriodComboWidget.IPeriodSelectionListener;
 import org.amanzi.awe.views.statistics.widget.TemplateComboWidget;
 import org.amanzi.awe.views.statistics.widget.TemplateComboWidget.ITemplateSelectionListener;
 import org.amanzi.neo.models.drive.IDriveModel;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -56,7 +60,30 @@ public class StatisticsView extends ViewPart
             ITimePeriodSelectionListener,
             SelectionListener {
 
-    /** GridLayout ONE_ROW_GRID_LAYOUT field */
+    private static class StatisticsJob extends Job {
+
+        private final StatisticsManager statisticsManager;
+
+        /**
+         * @param name
+         */
+        public StatisticsJob(StatisticsManager statisticsManager) {
+            super("Calculate statistics");
+
+            this.statisticsManager = statisticsManager;
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            try {
+                statisticsManager.build(monitor);
+            } catch (StatisticsEngineException e) {
+                return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
+            }
+            return Status.OK_STATUS;
+        }
+    }
+
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
 
     private DriveComboWidget driveCombo;
@@ -206,11 +233,7 @@ public class StatisticsView extends ViewPart
     @Override
     public void widgetSelected(final SelectionEvent event) {
         if (statisticsManager != null) {
-            try {
-                statisticsManager.build(new NullProgressMonitor());
-            } catch (StatisticsEngineException e) {
-
-            }
+            new StatisticsJob(statisticsManager).schedule();
         }
     }
 

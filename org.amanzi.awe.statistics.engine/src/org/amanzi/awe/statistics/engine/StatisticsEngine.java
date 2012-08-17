@@ -40,6 +40,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.jruby.RubySymbol;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -176,6 +177,8 @@ public class StatisticsEngine extends AbstractTransactional {
 
         saveTx(isSuccess, false);
 
+        monitor.done();
+
         LOGGER.info("Finished Statistics Calculation");
 
         return statisticsModel;
@@ -187,6 +190,8 @@ public class StatisticsEngine extends AbstractTransactional {
         }
 
         IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
+
+        monitor.beginTask("Calculating statistics", period.ordinal() + 1);
 
         try {
             calculateStatistics(result, period, monitor);
@@ -203,11 +208,16 @@ public class StatisticsEngine extends AbstractTransactional {
             throws ModelException, ScriptingException {
         Period underlyingPeriod = period.getUnderlyingPeriod();
 
+        monitor.worked(1);
+
         if (underlyingPeriod != null) {
             calculateStatistics(statisticsModel, underlyingPeriod, monitor);
         } else {
             long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
             long nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+
+            IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, measurementModel.getPropertyStatistics()
+                    .getCount(measurementModel.getMainMeasurementNodeType()));
 
             do {
                 for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
@@ -235,11 +245,22 @@ public class StatisticsEngine extends AbstractTransactional {
                             updateTransaction();
                         }
                     }
+
+                    subProgressMonitor.worked(1);
+                    if (subProgressMonitor.isCanceled()) {
+                        break;
+                    }
                 }
 
                 currentStartTime = nextStartTime;
                 nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+
+                if (monitor.isCanceled()) {
+                    break;
+                }
             } while (currentStartTime < measurementModel.getMaxTimestamp());
+
+            subProgressMonitor.done();
         }
     }
 
