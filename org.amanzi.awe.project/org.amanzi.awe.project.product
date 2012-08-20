@@ -54,7 +54,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <feature id="org.eclipse.rcp"/>
       <feature id="net.refractions.udig-feature"/>
       <feature id="org.amanzi.awe.scripting.feature"/>
-      <feature id="org.amanzi.awe.statistics.feature" version="1.1.0.qualifier"/>
+      <feature id="org.amanzi.awe.statistics.feature"/>
    </features>
 
    <configurations>
