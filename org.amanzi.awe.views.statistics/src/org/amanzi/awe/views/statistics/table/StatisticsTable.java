@@ -88,6 +88,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     public void setPeriod(final Period period) {
         contentProvider.setPeriod(period);
+        labelProvider.setPeriod(period);
     }
 
     private void initializeTable(final Table table) {
@@ -105,8 +106,6 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     private void updateTable(final Table table) {
         clearTable(table);
-
-        labelProvider.updateStatisticsModel(model);
 
         updateColumns(table);
 

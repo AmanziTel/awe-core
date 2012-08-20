@@ -13,13 +13,18 @@
 
 package org.amanzi.awe.views.statistics.table;
 
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.period.Period;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
@@ -36,11 +41,21 @@ import com.google.common.collect.Iterables;
  */
 public class StatisticsLabelProvider implements ITableLabelProvider {
 
-    private IStatisticsModel statisticsModel;
+    private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("HH:mm");
+
+    private static final DateFormat DAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    private static final DateFormat YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+    private static final String SINGLE_PERIOD_PATTERN = "{0} - {1}";
+
+    private static final String MULTI_PERIOD_PATTERN = "{0} to {1}";
 
     private IStatisticsRow previousRow = null;
 
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
+
+    private Period period;
 
     @Override
     public void addListener(final ILabelProviderListener listener) {
@@ -82,9 +97,9 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
             switch (columnIndex) {
             case 0:
-                return statisticsModel.getAggregatedProperty();
-            case 1:
                 return statisticsRow.getStatisticsGroup().getPropertyValue();
+            case 1:
+                return getStatisticsRowName(statisticsRow);
             default:
                 Number value = cellList.get(columnIndex - 2).getValue();
 
@@ -99,8 +114,28 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
         Iterables.addAll(cellList, statisticsRow.getStatisticsCells());
     }
 
-    public void updateStatisticsModel(final IStatisticsModel model) {
-        this.statisticsModel = model;
+    private String getStatisticsRowName(final IStatisticsRow row) {
+        Date startDate = new Date(row.getStartDate());
+        Date endDate = new Date(row.getEndDate());
+
+        if (period != null) {
+            switch (period) {
+            case HOURLY:
+                boolean isSameDay = DateUtils.isSameDay(startDate, endDate);
+                String pattern = isSameDay ? SINGLE_PERIOD_PATTERN : MULTI_PERIOD_PATTERN;
+                DateFormat dateFormat = isSameDay ? HOUR_DATE_FORMAT : YEAR_DATE_FORMAT;
+
+                return MessageFormat.format(pattern, dateFormat.format(startDate), dateFormat.format(endDate));
+            case DAILY:
+                return DAY_DATE_FORMAT.format(startDate);
+            }
+        }
+
+        return StringUtils.EMPTY;
+    }
+
+    public void setPeriod(final Period period) {
+        this.period = period;
     }
 
 }
