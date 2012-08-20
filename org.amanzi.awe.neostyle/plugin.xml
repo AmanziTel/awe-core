@@ -20,14 +20,14 @@
             class="org.amanzi.awe.neostyle.NetworkNeoStyleConfigurator"
             id="org.amanzi.awe.neostyle.NetworkNeoStyleConfigurator"
             label="NetworkStyle"
-            requires="org.amanzi.neo.services.model.INetworkModel"
+            requires="org.amanzi.neo.models.network.INetworkModel"
             styleId="org.amanzi.awe.neostyle.style.network">
       </styleConfigurator>
       <styleConfigurator
             class="org.amanzi.awe.neostyle.drive.DriveStyleConfigurator"
             id="org.amanzi.awe.neostyle.drive.DriveStyleConfigurator"
             label="DriveStyle"
-            requires="org.amanzi.neo.services.model.IMeasurementModel"
+            requires="org.amanzi.neo.models.drive.IDriveModel"
             styleId="org.amanzi.awe.neostyle.style.drive">
       </styleConfigurator>
    </extension>

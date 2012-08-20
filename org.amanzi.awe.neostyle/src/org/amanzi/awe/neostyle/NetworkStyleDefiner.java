@@ -18,9 +18,8 @@ import java.util.List;
 
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.model.IRenderableModel;
+import org.amanzi.neo.models.network.NetworkElementType;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -108,7 +107,7 @@ public class NetworkStyleDefiner extends ViewPart {
     private NetworkNeoStyle curStyle;
     private IRenderableModel resource;
 
-    public NetworkStyleDefiner(NetworkNeoStyle curStyle) {
+    public NetworkStyleDefiner(final NetworkNeoStyle curStyle) {
         this.curStyle = curStyle;
 
     }
@@ -120,7 +119,7 @@ public class NetworkStyleDefiner extends ViewPart {
         return curStyle;
     }
 
-    public void setCurStyle(NetworkNeoStyle curStyle) {
+    public void setCurStyle(final NetworkNeoStyle curStyle) {
         this.curStyle = curStyle;
     }
 
@@ -179,7 +178,7 @@ public class NetworkStyleDefiner extends ViewPart {
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
 
         Composite pMain = parent;// new Composite(parent, SWT.FILL);
         FormLayout layout = new FormLayout();
@@ -453,25 +452,25 @@ public class NetworkStyleDefiner extends ViewPart {
         rButton1.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 lMaxSymSize.setVisible(rButton1.getSelection());
                 sMaxSymSize.setVisible(rButton1.getSelection());
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
                 widgetSelected(e);
             }
         });
         cSectorLabelTypeId.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 setSectorLabelProperty(cSectorLabelTypeId.getText());
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(final SelectionEvent e) {
                 widgetSelected(e);
             }
         });
@@ -481,7 +480,7 @@ public class NetworkStyleDefiner extends ViewPart {
     /**
      *
      */
-    public void setSectorLabelProperty(String typeId) {
+    public void setSectorLabelProperty(final String typeId) {
         cSecondaryProperty.setItems(getSecondaryPropertyChoices(typeId));
     }
 
@@ -489,9 +488,9 @@ public class NetworkStyleDefiner extends ViewPart {
      * @return
      */
     private String[] getDefaultSectorType() {
-        String[] result = new String[] {NetworkElementNodeType.SECTOR.getId(), 
-        								NetworkElementNodeType.TRX.getId(), 
-        								NetworkElementNodeType.FREQUENCY_PLAN.getId()};
+        String[] result = new String[] {NetworkElementType.SECTOR.getId(),
+                NetworkElementType.TRX.getId(),
+                NetworkElementType.FREQUENCY_PLAN.getId()};
         return result;
     }
 
@@ -501,23 +500,24 @@ public class NetworkStyleDefiner extends ViewPart {
      * @param typeId
      * @return array
      */
-    private String[] getSecondaryPropertyChoices(String typeId) {
+    private String[] getSecondaryPropertyChoices(final String typeId) {
         List<String> result = new ArrayList<String>();
         result.add(NetworkNeoStyleContent.DEF_NONE);
-        if (NetworkElementNodeType.SECTOR.getId().equals(typeId)) {
-            result.add(INeoConstants.PROPERTY_NAME_NAME);
-            result.add(INeoConstants.PROPERTY_SECTOR_CI);
-            result.add(INeoConstants.PROPERTY_SECTOR_LAC);
-            result.add("vendor");
-        } else if (NetworkElementNodeType.TRX.getId().equals(typeId)) {
-            result.add("band");
-            result.add(INeoConstants.PROPERTY_BCCH_NAME);
-            result.add("hopping_type");
-        } else {
-            result.add(INeoConstants.PROPERTY_SECTOR_ARFCN);
-            result.add("hsn");
-            result.add(INeoConstants.PROPERTY_MAIO);
-        }
+        //TODO: LN: 20.08.2012, refactor
+        //        if (NetworkElementType.SECTOR.getId().equals(typeId)) {
+        //            result.add(INeoConstants.PROPERTY_NAME_NAME);
+        //            result.add(INeoConstants.PROPERTY_SECTOR_CI);
+        //            result.add(INeoConstants.PROPERTY_SECTOR_LAC);
+        //            result.add("vendor");
+        //        } else if (NetworkElementNodeType.TRX.getId().equals(typeId)) {
+        //            result.add("band");
+        //            result.add(INeoConstants.PROPERTY_BCCH_NAME);
+        //            result.add("hopping_type");
+        //        } else {
+        //            result.add(INeoConstants.PROPERTY_SECTOR_ARFCN);
+        //            result.add("hsn");
+        //            result.add(INeoConstants.PROPERTY_MAIO);
+        //        }
         return result.toArray(new String[0]);
     }
 
@@ -613,7 +613,7 @@ public class NetworkStyleDefiner extends ViewPart {
      * @param colorValue - RGB value
      * @return
      */
-    private java.awt.Color colorFromRGB(RGB colorValue) {
+    private java.awt.Color colorFromRGB(final RGB colorValue) {
         return new java.awt.Color(colorValue.red, colorValue.green, colorValue.blue);
     }
 
@@ -623,14 +623,14 @@ public class NetworkStyleDefiner extends ViewPart {
      * @param color color value
      * @return
      */
-    private RGB rgbFromColor(java.awt.Color color) {
+    private RGB rgbFromColor(final java.awt.Color color) {
         return new RGB(color.getRed(), color.getGreen(), color.getBlue());
     }
 
     /**
      * @param resource
      */
-    public void setRenderableResource(IRenderableModel resource) {
+    public void setRenderableResource(final IRenderableModel resource) {
         this.resource = resource;
 
     }

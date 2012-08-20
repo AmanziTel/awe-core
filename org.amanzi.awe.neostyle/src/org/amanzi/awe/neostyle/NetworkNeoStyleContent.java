@@ -21,8 +21,8 @@ import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.StyleContent;
 
 import org.amanzi.awe.models.catalog.neo.GeoResource;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IMemento;
 
@@ -55,7 +55,7 @@ public class NetworkNeoStyleContent extends StyleContent {
     public static final Color DEF_COLOR_FILL = new Color(255, 255, 128);
     public static final String DEF_NONE = "";
     public static final String DEF_SECONDARY_PROPERTY = DEF_NONE;
-    public static final String DEF_SECTOR_LABEL_TYPE_ID = NetworkElementNodeType.SECTOR.getId();
+    public static final String DEF_SECTOR_LABEL_TYPE_ID = NetworkElementType.SECTOR.getId();
     public static final String DEF_MAIN_PROPERTY = "name";
     /** Network site font size */
     public static final Integer DEF_FONT_SIZE = 10;
@@ -89,7 +89,7 @@ public class NetworkNeoStyleContent extends StyleContent {
     }
 
     @Override
-    public Object createDefaultStyle(IGeoResource resource, Color colour, IProgressMonitor monitor) throws IOException {
+    public Object createDefaultStyle(final IGeoResource resource, final Color colour, final IProgressMonitor monitor) throws IOException {
         if (resource.canResolve(GeoResource.class)) {
             GeoResource res = resource.resolve(GeoResource.class, monitor);
             if (res.canResolve(INetworkModel.class)) {
@@ -129,7 +129,7 @@ public class NetworkNeoStyleContent extends StyleContent {
     }
 
     @Override
-    public Object load(IMemento memento) {
+    public Object load(final IMemento memento) {
         Color line = loadColor(memento, LINE_PRFX, Color.BLACK);
         Color fill = loadColor(memento, FILL_PRFX, Color.BLACK);
         Color label = loadColor(memento, LABEL_PRFX, Color.BLACK);
@@ -153,19 +153,19 @@ public class NetworkNeoStyleContent extends StyleContent {
         return result;
     }
 
-    private Color loadColor(IMemento memento, String prfx, Color defColor) {
+    private Color loadColor(final IMemento memento, final String prfx, final Color defColor) {
         Integer rgb = memento.getInteger(prfx + COLOR_RGB);
         return rgb == null ? defColor : new Color(rgb);
     }
 
     @Override
-    public Object load(URL url, IProgressMonitor monitor) throws IOException {
+    public Object load(final URL url, final IProgressMonitor monitor) throws IOException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void save(IMemento memento, Object value) {
+    public void save(final IMemento memento, final Object value) {
         NetworkNeoStyle style = (NetworkNeoStyle)value;
         saveColor(memento, LINE_PRFX, style.getLine());
         saveColor(memento, FILL_PRFX, style.getFill());
@@ -193,7 +193,7 @@ public class NetworkNeoStyleContent extends StyleContent {
      * @param prfx value prefix
      * @param colorTosave color to save
      */
-    private void saveColor(IMemento memento, String prfx, Color colorTosave) {
+    private void saveColor(final IMemento memento, final String prfx, final Color colorTosave) {
         memento.putInteger(prfx + COLOR_RGB, colorTosave.getRGB());
     }
 

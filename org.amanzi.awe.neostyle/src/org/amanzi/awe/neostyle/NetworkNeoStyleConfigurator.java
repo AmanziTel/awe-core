@@ -18,7 +18,7 @@ import java.io.IOException;
 import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.style.IStyleConfigurator;
 
-import org.amanzi.neo.services.model.IRenderableModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -56,12 +56,12 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     }
 
     @Override
-    public boolean canStyle(Layer aLayer) {
+    public boolean canStyle(final Layer aLayer) {
         return aLayer.getStyleBlackboard().get(ID) != null;
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(final Composite parent) {
         parent.setLayout(new GridLayout(1, false));
         CTabFolder tabFolder = new CTabFolder(parent, SWT.TOP);
         tabFolder.setBorderVisible(true);
@@ -93,7 +93,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         scroll.setContent(filterMain);
     }
 
-    private void createFilterPage(Composite filterMain) {
+    private void createFilterPage(final Composite filterMain) {
         filterMain.setLayout(new GridLayout(2, true));
         Label lb = new Label(filterMain, SWT.LEFT);
         lb.setText("Applyed filters:");
@@ -105,14 +105,14 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         viewer.getTable().addControlListener(new ControlListener() {
 
             @Override
-            public void controlResized(ControlEvent e) {
+            public void controlResized(final ControlEvent e) {
                 Table table = (Table)e.widget;
                 int width = table.getClientArea().width;
                 table.getColumn(0).setWidth(width - 2);
             }
 
             @Override
-            public void controlMoved(ControlEvent e) {
+            public void controlMoved(final ControlEvent e) {
             }
         });
     }
