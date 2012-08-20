@@ -244,15 +244,14 @@ public class StatisticsEngine extends AbstractTransactional {
                                         + statisticsRow + ">: <" + statisticsValue + ">.");
                             }
 
-                            Number value = null;
+                            Number statisticsResult = null;
                             if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                                value = (Number)statisticsValue;
-                                Number statisticsResult = calculateValue(column.getFunction(), value);
-
-                                statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
-
-                                updateTransaction();
+                                statisticsResult = calculateValue(column.getFunction(), (Number)statisticsValue);
                             }
+
+                            statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
+
+                            updateTransaction();
                         }
                     } catch (Exception e) {
                         LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");

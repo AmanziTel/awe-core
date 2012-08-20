@@ -17,12 +17,15 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.statistics.dto.impl.StatisticsCell;
 import org.amanzi.awe.statistics.dto.impl.StatisticsGroup;
 import org.amanzi.awe.statistics.dto.impl.StatisticsRow;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
@@ -35,12 +38,15 @@ import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelati
 import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -60,6 +66,38 @@ import org.neo4j.graphdb.RelationshipType;
 public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private final static Logger LOGGER = Logger.getLogger(StatisticsModel.class);
+
+    private class StatisticsRowIterator extends AbstractDataElementIterator<IStatisticsRow> {
+
+        /**
+         * @param nodeIterator
+         */
+        protected StatisticsRowIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IStatisticsRow createDataElement(final Node node) {
+            return createStatisticsRow(node);
+        }
+
+    }
+
+    private class StatisticsCellIterator extends AbstractDataElementIterator<IStatisticsCell> {
+
+        /**
+         * @param nodeIterator
+         */
+        protected StatisticsCellIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IStatisticsCell createDataElement(final Node node) {
+            return createStatisticsCell(node);
+        }
+
+    }
 
     private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
@@ -213,6 +251,34 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
+    protected IStatisticsGroup createStatisticsGroupFromNode(final Node node) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createStatisticsGroup", node));
+        }
+
+        IStatisticsGroup group = null;
+
+        try {
+            Node propertyLevel = getNodeService().getParent(node, DimensionType.PROPERTY.getRelationshipType());
+            Node periodLevel = getNodeService().getParent(node, DimensionType.TIME.getRelationshipType());
+
+            String period = getNodeService().getNodeName(periodLevel);
+            String propertyKey = getNodeService().getNodeName(propertyLevel);
+
+            group = createStatisticsGroup(node, period, propertyKey);
+        } catch (Exception e) {
+            LOGGER.error("Error on getting StatisticsGroup instance from Node", e);
+            return null;
+        }
+
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createStatisticsGroup"));
+        }
+
+        return group;
+    }
+
     protected IStatisticsGroup createStatisticsGroup(final Node node, final String period, final String propertyKey)
             throws ModelException {
         StatisticsGroup result = null;
@@ -292,7 +358,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected IStatisticsRow createStatisticsRow(final Node node, final long startDate, final long endDate) {
+    protected StatisticsRow createStatisticsRow(final Node node, final long startDate, final long endDate) {
         StatisticsRow row = new StatisticsRow(node);
 
         row.setNodeType(StatisticsNodeType.S_ROW);
@@ -300,6 +366,40 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         row.setEndDate(endDate);
 
         return row;
+    }
+
+    protected IStatisticsRow createStatisticsRow(final Node node) {
+        StatisticsRow row = null;
+        try {
+            long startDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getStartDateTimestampProperty(), null, true);
+            long endDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getEndDateTimestampProperty(), null, true);
+
+            row = createStatisticsRow(node, startDate, endDate);
+
+            Node groupNode = getNodeService().getChainParent(node);
+            IStatisticsGroup group = createStatisticsGroupFromNode(groupNode);
+
+            row.setStatisticsGroup(group);
+            row.setStatisticsCells(getStatisticsCells(node));
+        } catch (Exception e) {
+            LOGGER.error("Error on getting StatisticsRow Node from Database", e);
+            return null;
+        }
+
+        return row;
+    }
+
+    protected IStatisticsCell createStatisticsCell(final Node node) {
+        StatisticsCell cell = null;
+        //        try {
+        //
+        //
+        //        } catch (ServiceException e) {
+        //            LOGGER.error("Error on getting StatisticsRow Node from Database", e);
+        //            return null;
+        //        }
+
+        return cell;
     }
 
     private void addTimeProperty(final Map<String, Object> properties, final String timeProperty, final String timestampProperty,
@@ -355,17 +455,21 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElement)
+    public void updateStatisticsCell(final IStatisticsRow statisticsRow, final String name, Object value, final IDataElement... sourceElement)
             throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("updateStatisticsCell", statisticsRow, name, value));
         }
 
         // TODO: LN: 17.08.2012, validate input
+        //TODO: LN: 20.08.2012, value can be null
 
         Node statisticsCellNode = getStatisticsCellNode((StatisticsRow)statisticsRow, name);
 
         try {
+            if (value == null) {
+                value = "N/A";
+            }
             getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
 
             for (IDataElement singleElement : sourceElement) {
@@ -381,7 +485,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         }
     }
 
-    protected Node getStatisticsCellNode(StatisticsRow statisticsRow, String name) throws ModelException {
+    protected Node getStatisticsCellNode(final StatisticsRow statisticsRow, final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsCellNode", statisticsRow, name));
         }
@@ -407,7 +511,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected Node createStatisticsCellNode(StatisticsRow statisticsRow, String name) throws ModelException {
+    protected Node createStatisticsCellNode(final StatisticsRow statisticsRow, final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("createStatisticsCellNode", statisticsRow, name));
         }
@@ -429,7 +533,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected Node getStatisticsCellNodeFromDatabase(StatisticsRow statisticsRow, String name) throws ModelException {
+    protected Node getStatisticsCellNodeFromDatabase(final StatisticsRow statisticsRow, final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsCellNodeFromDatabase", statisticsRow, name));
         }
@@ -449,9 +553,63 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
+    protected Iterable<IStatisticsCell> getStatisticsCells(final Node statisticsRowNode) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getStatisticsCells", statisticsRowNode));
+        }
+
+        //TODO: LN: 20.08.2012, validate input
+
+        Iterable<IStatisticsCell> statisticsCells = null;
+
+        try {
+            Iterator<Node> nodeIterator = getNodeService().getChildrenChain(statisticsRowNode);
+
+            statisticsCells = new StatisticsCellIterator(nodeIterator).toIterable();
+        } catch (ServiceException e) {
+            processException("Error on getting chain of Statistics Cells", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getStatisticsCells"));
+        }
+
+        return statisticsCells;
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException {
-        return null;
+    public Iterable<IStatisticsRow> getStatisticsRows(final String period) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getStatisticsRows", period));
+        }
+
+        //TODO: LN: 20.08.2012, validate input
+
+        Iterable<IStatisticsRow> statisticsRows = null;
+
+        Node periodNode = getStatisticsLevelNode(DimensionType.TIME, period);
+        try {
+            Iterator<Node> groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
+
+            Iterator<Node> allRowsIterator = null;
+
+            while (groupNodeIterator.hasNext()) {
+                Iterator<Node> rowsIterator = getNodeService().getChildrenChain(groupNodeIterator.next());
+
+                allRowsIterator = allRowsIterator == null ? rowsIterator : IteratorUtils.chainedIterator(allRowsIterator, rowsIterator);
+
+                statisticsRows = new StatisticsRowIterator(allRowsIterator).toIterable();
+            }
+        } catch (ServiceException e) {
+            processException("Error on getting chain of Statistics Rows", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getStatisticsRows"));
+        }
+
+        return statisticsRows;
     }
 
     @Override

@@ -252,6 +252,7 @@ IStatisticsTableListener {
     public void onPeriodSelected(final Period period) {
         if (statisticsManager != null) {
             statisticsManager.setPeriod(period);
+            statisticsTable.setPeriod(period);
         }
     }
 

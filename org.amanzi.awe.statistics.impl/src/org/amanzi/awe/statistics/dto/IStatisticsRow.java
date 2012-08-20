@@ -29,4 +29,8 @@ public interface IStatisticsRow extends IDataElement {
 
     long getEndDate();
 
+    Iterable<IStatisticsCell> getStatisticsCells();
+
+    IStatisticsGroup getStatisticsGroup();
+
 }

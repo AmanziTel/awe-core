@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.dto.impl;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
+import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -31,6 +33,10 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
     private long startDate;
 
     private long endDate;
+
+    private Iterable<IStatisticsCell> statisticsCells;
+
+    private IStatisticsGroup statisticsGroup;
 
     public StatisticsRow(final Node node) {
         super(node);
@@ -75,6 +81,35 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
                 .append(endDateString).append(">.");
 
         return builder.toString();
+    }
+
+    /**
+     * @return Returns the statisticsCells.
+     */
+    @Override
+    public Iterable<IStatisticsCell> getStatisticsCells() {
+        return statisticsCells;
+    }
+
+    /**
+     * @param statisticsCells The statisticsCells to set.
+     */
+    public void setStatisticsCells(final Iterable<IStatisticsCell> statisticsCells) {
+        this.statisticsCells = statisticsCells;
+    }
+
+    /**
+     * @return Returns the statisticsGroup.
+     */
+    public IStatisticsGroup getStatisticsGroup() {
+        return statisticsGroup;
+    }
+
+    /**
+     * @param statisticsGroup The statisticsGroup to set.
+     */
+    public void setStatisticsGroup(final IStatisticsGroup statisticsGroup) {
+        this.statisticsGroup = statisticsGroup;
     }
 
 }

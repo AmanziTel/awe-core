@@ -25,4 +25,6 @@ import org.amanzi.neo.dto.IDataElement;
  */
 public interface IStatisticsCell extends IDataElement {
 
+    Object getValue();
+
 }
