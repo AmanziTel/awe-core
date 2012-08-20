@@ -43,4 +43,6 @@ public interface IStatisticsModel extends IModel {
     Set<String> getColumns();
 
     String getAggregatedProperty();
+
+    boolean containsLevel(DimensionType dimension, String levelName) throws ModelException;
 }

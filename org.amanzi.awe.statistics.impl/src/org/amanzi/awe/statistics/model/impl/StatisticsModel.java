@@ -28,10 +28,10 @@ import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.dto.impl.StatisticsCell;
 import org.amanzi.awe.statistics.dto.impl.StatisticsGroup;
 import org.amanzi.awe.statistics.dto.impl.StatisticsRow;
+import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
 import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
-import org.amanzi.awe.statistics.service.DimensionType;
 import org.amanzi.awe.statistics.service.IStatisticsService;
 import org.amanzi.awe.statistics.service.impl.StatisticsService;
 import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelationshipType;
@@ -617,5 +617,23 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     @Override
     public String getAggregatedProperty() {
         return aggregatedProperty;
+    }
+
+    @Override
+    public boolean containsLevel(final DimensionType dimension, final String levelName) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("containsLevel", dimension, levelName));
+        }
+
+        try {
+            return statisticsService.findStatisticsLevel(getRootNode(), dimension, levelName) != null;
+        } catch (ServiceException e) {
+            processException("Error on checking Statistics Level", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("containsLevel"));
+        }
+        return false;
     }
 }

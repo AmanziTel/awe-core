@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.service;
 
+import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
@@ -30,6 +31,8 @@ public interface IStatisticsService extends IService {
     Node findStatisticsNode(Node parentNode, String templateName, String aggregationPropertyName) throws ServiceException;
 
     Node getStatisticsLevel(Node parentNode, DimensionType dimensionType, String propertyName) throws ServiceException;
+
+    Node findStatisticsLevel(Node parentNode, DimensionType dimensionType, String propertyName) throws ServiceException;
 
     Node getGroup(Node propertyLevelNode, Node periodLevelNode) throws ServiceException;
 

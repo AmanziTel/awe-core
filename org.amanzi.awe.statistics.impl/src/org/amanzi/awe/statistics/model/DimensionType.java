@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.service;
+package org.amanzi.awe.statistics.model;
 
 import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelationshipType;
 import org.neo4j.graphdb.RelationshipType;

@@ -15,8 +15,8 @@ package org.amanzi.awe.statistics.service.impl;
 
 import java.text.MessageFormat;
 
+import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
-import org.amanzi.awe.statistics.service.DimensionType;
 import org.amanzi.awe.statistics.service.IStatisticsService;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -79,14 +79,24 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         assert dimensionType != null;
         assert !StringUtils.isEmpty(propertyName);
 
-        Node result = nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL,
-                dimensionType.getRelationshipType());
+        Node result = findStatisticsLevel(parentNode, dimensionType, propertyName);
         if (result == null) {
             result = nodeService
                     .createNode(parentNode, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType(), propertyName);
         }
 
         return result;
+    }
+
+    @Override
+    public Node findStatisticsLevel(final Node parentNode, final DimensionType dimensionType, final String propertyName)
+            throws ServiceException {
+        assert parentNode != null;
+        assert dimensionType != null;
+        assert !StringUtils.isEmpty(propertyName);
+
+        return nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL,
+                dimensionType.getRelationshipType());
     }
 
     @Override

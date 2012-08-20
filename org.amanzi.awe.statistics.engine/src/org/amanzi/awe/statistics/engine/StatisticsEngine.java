@@ -24,6 +24,7 @@ import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.exceptions.UnderlyingModelException;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
 import org.amanzi.awe.statistics.internal.StatisticsPlugin;
+import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
@@ -157,13 +158,11 @@ public class StatisticsEngine extends AbstractTransactional {
         try {
             statisticsModel = statisticsModelProvider.find(measurementModel, template.getName(), propertyName);
             if (statisticsModel == null) {
-                LOGGER.info("Statistics not exists in Database. Calculate new one.");
-
-                statisticsModel = buildStatistics(monitor);
-
-            } else {
-                LOGGER.info("Statistics already exists in Database");
+                LOGGER.info("Statistics not exists in Database. Create new one.");
+                statisticsModel = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
             }
+
+            buildStatistics(statisticsModel, monitor);
 
             isSuccess = true;
         } catch (ModelException e) {
@@ -183,96 +182,95 @@ public class StatisticsEngine extends AbstractTransactional {
         return statisticsModel;
     }
 
-    protected IStatisticsModel buildStatistics(final IProgressMonitor monitor) throws ModelException {
+    protected void buildStatistics(final IStatisticsModel statisticsModel, final IProgressMonitor monitor) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Building statistics");
         }
 
-        IStatisticsModel result = statisticsModelProvider.create(measurementModel, template.getName(), propertyName);
-
-        monitor.beginTask("Calculating statistics", period.ordinal() + 1);
-
         try {
-            calculateStatistics(result, period, monitor);
+            calculateStatistics(statisticsModel, period, monitor);
         } catch (Exception e) {
             LOGGER.error("Error on calculating statistics", e);
         } finally {
-            result.finishUp();
+            statisticsModel.finishUp();
         }
-
-        return result;
     }
 
     protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
             throws ModelException, StatisticsEngineException {
-        Period underlyingPeriod = period.getUnderlyingPeriod();
-
-        if (underlyingPeriod != null) {
-            calculateStatistics(statisticsModel, underlyingPeriod, monitor);
-            monitor.worked(1);
+        if (statisticsModel.containsLevel(DimensionType.TIME, period.getId())) {
+            LOGGER.info("Statistics Model already contain Period <" + period + ">.");
         } else {
-            long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
-            long nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+            LOGGER.info("Statistics Model didn't contain Period <" + period + ">. Calculate new one");
+            Period underlyingPeriod = period.getUnderlyingPeriod();
 
-            String subTaskName = "Period <" + period + ">";
-            IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
-            monitor.subTask(subTaskName);
-            subProgressMonitor.beginTask(subTaskName,
-                    measurementModel.getPropertyStatistics().getCount(measurementModel.getMainMeasurementNodeType()));
+            if (underlyingPeriod != null) {
+                calculateStatistics(statisticsModel, underlyingPeriod, monitor);
+                monitor.worked(1);
+            } else {
+                long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
+                long nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
 
-            do {
-                for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
-                    String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
-                            : UNKNOWN_VALUE;
+                String subTaskName = "Period <" + period + ">";
+                IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+                monitor.subTask(subTaskName);
+                subProgressMonitor.beginTask(subTaskName,
+                        measurementModel.getPropertyStatistics().getCount(measurementModel.getMainMeasurementNodeType()));
 
-                    IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
-                    IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
-                            nextStartTime);
+                do {
+                    for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
+                        String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
+                                : UNKNOWN_VALUE;
 
-                    try {
-                        Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
-                                .toSymbolMap(dataElement.asMap());
-                        IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
-                        Map<String, Object> result = template.calculate(rubyDataElement);
-                        for (Entry<String, Object> statisticsEntry : result.entrySet()) {
-                            ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
+                        IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
+                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
+                                nextStartTime);
 
-                            Object statisticsValue = statisticsEntry.getValue();
+                        try {
+                            Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
+                                    .toSymbolMap(dataElement.asMap());
+                            IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
+                            Map<String, Object> result = template.calculate(rubyDataElement);
+                            for (Entry<String, Object> statisticsEntry : result.entrySet()) {
+                                ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
 
-                            if (LOGGER.isTraceEnabled()) {
-                                LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
-                                        + statisticsRow + ">: <" + statisticsValue + ">.");
+                                Object statisticsValue = statisticsEntry.getValue();
+
+                                if (LOGGER.isTraceEnabled()) {
+                                    LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
+                                            + statisticsRow + ">: <" + statisticsValue + ">.");
+                                }
+
+                                Number statisticsResult = null;
+                                if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
+                                    statisticsResult = calculateValue(column.getFunction(), (Number)statisticsValue);
+                                }
+
+                                statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
+
+                                updateTransaction();
                             }
-
-                            Number statisticsResult = null;
-                            if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                                statisticsResult = calculateValue(column.getFunction(), (Number)statisticsValue);
-                            }
-
-                            statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
-
-                            updateTransaction();
+                        } catch (Exception e) {
+                            LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
+                            throw new FatalStatisticsException(e);
                         }
-                    } catch (Exception e) {
-                        LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
-                        throw new FatalStatisticsException(e);
+
+                        subProgressMonitor.worked(1);
+                        if (subProgressMonitor.isCanceled()) {
+                            break;
+                        }
                     }
 
-                    subProgressMonitor.worked(1);
-                    if (subProgressMonitor.isCanceled()) {
+                    currentStartTime = nextStartTime;
+                    nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+
+                    if (monitor.isCanceled()) {
                         break;
                     }
-                }
+                } while (currentStartTime < measurementModel.getMaxTimestamp());
 
-                currentStartTime = nextStartTime;
-                nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
-
-                if (monitor.isCanceled()) {
-                    break;
-                }
-            } while (currentStartTime < measurementModel.getMaxTimestamp());
-
-            subProgressMonitor.done();
+                subProgressMonitor.done();
+            }
         }
     }
 
