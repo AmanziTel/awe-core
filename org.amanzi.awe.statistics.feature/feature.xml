@@ -22,7 +22,14 @@
    </requires>
 
    <plugin
-         id="org.amanzi.awe.statistics"
+         id="org.amanzi.awe.statistics.engine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.statistics.impl"
          download-size="0"
          install-size="0"
          version="0.0.0"
