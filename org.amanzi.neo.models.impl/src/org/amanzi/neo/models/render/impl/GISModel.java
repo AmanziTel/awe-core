@@ -61,6 +61,8 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     private String crsCode;
 
+    private boolean updateCoordinates;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -89,6 +91,8 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
             String crsCodeValue = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCRSProperty(), StringUtils.EMPTY,
                     false);
             setCRS(crsCodeValue);
+
+            updateCoordinates = false;
         } catch (ServiceException e) {
             processException("Cannot get GIS-related properties from Node", e);
         }
@@ -98,11 +102,13 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
         try {
-            getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
-            getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);
-            getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLatitudeProperty(), minLatitude);
-            getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
-            getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
+            if (updateCoordinates) {
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLatitudeProperty(), minLatitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
+            }
         } catch (ServiceException e) {
             processException("Error on updating GIS Model", e);
         }
@@ -119,6 +125,8 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
             CRSWrapper wrapper = CRSWrapper.fromLocation(latitude, longitude, getName());
             setCRS(wrapper.getEpsg());
         }
+
+        updateCoordinates = true;
     }
 
     @Override
