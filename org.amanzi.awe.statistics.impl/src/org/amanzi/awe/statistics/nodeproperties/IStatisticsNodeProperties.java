@@ -31,4 +31,6 @@ public interface IStatisticsNodeProperties extends INodeProperties {
 
     String getValueProperty();
 
+    String getColumnNamesProperty();
+
 }

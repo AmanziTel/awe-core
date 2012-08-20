@@ -31,6 +31,8 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
 
     private static final String VALUE_PROEPRTY = "value";
 
+    private static final String COLUMN_NAMES_PROPERTY = "column_names";
+
     @Override
     public String getTemplateNameProperty() {
         return TEMPLATE_NAME;
@@ -44,6 +46,11 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
     @Override
     public String getValueProperty() {
         return VALUE_PROEPRTY;
+    }
+
+    @Override
+    public String getColumnNamesProperty() {
+        return null;
     }
 
 }

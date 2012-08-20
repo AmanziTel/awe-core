@@ -15,8 +15,10 @@ package org.amanzi.awe.views.statistics;
 
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
+import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.template.ITemplate;
+import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widget.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
@@ -25,6 +27,8 @@ import org.amanzi.awe.ui.view.widget.PeriodWidget.ITimePeriodSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.statistics.internal.StatisticsPlugin;
+import org.amanzi.awe.views.statistics.table.StatisticsTable;
+import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.widget.PeriodComboWidget;
 import org.amanzi.awe.views.statistics.widget.PeriodComboWidget.IPeriodSelectionListener;
 import org.amanzi.awe.views.statistics.widget.TemplateComboWidget;
@@ -58,9 +62,10 @@ public class StatisticsView extends ViewPart
             ITemplateSelectionListener,
             IPeriodSelectionListener,
             ITimePeriodSelectionListener,
-            SelectionListener {
+            SelectionListener,
+            IStatisticsTableListener {
 
-    private static class StatisticsJob extends Job {
+    private class StatisticsJob extends Job {
 
         private final StatisticsManager statisticsManager;
 
@@ -76,7 +81,15 @@ public class StatisticsView extends ViewPart
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             try {
-                statisticsManager.build(monitor);
+                final IStatisticsModel model = statisticsManager.build(monitor);
+
+                ActionUtil.getInstance().runTask(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        updateTable(model);
+                    }
+                }, true);
             } catch (StatisticsEngineException e) {
                 return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
             }
@@ -100,6 +113,8 @@ public class StatisticsView extends ViewPart
 
     private Button buildButton;
 
+    private StatisticsTable statisticsTable;
+
     private boolean isInitialized = false;
 
     public StatisticsView() {
@@ -112,6 +127,9 @@ public class StatisticsView extends ViewPart
 
         addTemplateComposite(mainComposite);
         addPeriodComposite(mainComposite);
+
+        statisticsTable = addStatisticsTableWidget(parent, this);
+        statisticsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         isInitialized = true;
         driveCombo.updateSelection();
@@ -191,6 +209,13 @@ public class StatisticsView extends ViewPart
         return result;
     }
 
+    private StatisticsTable addStatisticsTableWidget(final Composite parent, final IStatisticsTableListener listener) {
+        StatisticsTable result = new StatisticsTable(parent, listener);
+        result.initializeWidget();
+
+        return result;
+    }
+
     @Override
     public void onTemplateSelected(final ITemplate template) {
         if (statisticsManager != null) {
@@ -242,6 +267,10 @@ public class StatisticsView extends ViewPart
     @Override
     public void widgetDefaultSelected(final SelectionEvent e) {
         widgetSelected(e);
+    }
+
+    private void updateTable(IStatisticsModel statisticsModel) {
+
     }
 
 }

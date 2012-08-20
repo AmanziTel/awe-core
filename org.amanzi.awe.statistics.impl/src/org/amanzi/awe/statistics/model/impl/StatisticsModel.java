@@ -14,9 +14,12 @@
 package org.amanzi.awe.statistics.model.impl;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
@@ -38,6 +41,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -75,6 +79,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private final Map<Pair<StatisticsRow, String>, Node> statisticsCellNodeCache = new HashMap<Pair<StatisticsRow, String>, Node>();
 
+    private Set<String> columnNames = new LinkedHashSet<String>();
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -102,6 +108,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
                     true);
             aggregatedProperty = getNodeService().getNodeProperty(rootNode,
                     statisticsNodeProperties.getAggregationPropertyNameProperty(), null, true);
+
+            columnNames = new LinkedHashSet<String>(Arrays.asList(getNodeService().getNodeProperty(rootNode,
+                    statisticsNodeProperties.getColumnNamesProperty(), ArrayUtils.EMPTY_STRING_ARRAY, false)));
         } catch (Exception e) {
             processException("An error occured on Statistics Model Initialization", e);
         }
@@ -141,6 +150,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             getNodeService().updateProperty(getRootNode(), statisticsNodeProperties.getTemplateNameProperty(), templateName);
             getNodeService().updateProperty(getRootNode(), statisticsNodeProperties.getAggregationPropertyNameProperty(),
                     aggregatedProperty);
+
+            getNodeService().updateProperty(getRootNode(), statisticsNodeProperties.getColumnNamesProperty(),
+                    columnNames.toArray(new String[columnNames.size()]));
         } catch (ServiceException e) {
             processException("Exception on finishin up Statistics Model", e);
         }
@@ -408,6 +420,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             processException("Error on creating Statistics Cell Node by name <" + name + "> in Row <" + statisticsRow + ">.", e);
         }
 
+        columnNames.add(name);
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("createStatisticsCellNode"));
         }
@@ -438,5 +452,10 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     @Override
     public Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException {
         return null;
+    }
+
+    @Override
+    public Set<String> getColumns() {
+        return columnNames;
     }
 }

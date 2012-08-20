@@ -17,6 +17,7 @@ import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.collections.IteratorUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -29,6 +30,8 @@ import org.eclipse.jface.viewers.Viewer;
  * @since 1.0.0
  */
 public class StatisticsTableProvider implements IStructuredContentProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(StatisticsTableProvider.class);
 
     private Period period;
 
@@ -55,7 +58,7 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
             try {
                 return IteratorUtils.toArray(statisticsModel.getStatisticsRows(period.getId()).iterator());
             } catch (ModelException e) {
-
+                LOGGER.error("Error on getting Statistics Table content", e);
             }
         }
         return null;

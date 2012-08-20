@@ -13,13 +13,15 @@
 
 package org.amanzi.awe.views.statistics.table;
 
+import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
-import org.amanzi.awe.views.statistics.table.StatisticsTable.StatisticsTableListener;
+import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
 
 /**
  * TODO Purpose of
@@ -29,9 +31,9 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsTable extends AbstractAWEWidget<Composite, StatisticsTableListener> {
+public class StatisticsTable extends AbstractAWEWidget<Composite, IStatisticsTableListener> {
 
-    public interface StatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
+    public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
 
     }
 
@@ -39,12 +41,14 @@ public class StatisticsTable extends AbstractAWEWidget<Composite, StatisticsTabl
 
     private final StatisticsTableProvider contentProvider = new StatisticsTableProvider();
 
+    private IStatisticsModel model;
+
     /**
      * @param parent
      * @param style
      * @param listener
      */
-    protected StatisticsTable(Composite parent, StatisticsTableListener listener) {
+    public StatisticsTable(Composite parent, IStatisticsTableListener listener) {
         super(parent, SWT.NONE, listener);
     }
 
@@ -56,10 +60,35 @@ public class StatisticsTable extends AbstractAWEWidget<Composite, StatisticsTabl
         tableViewer = new TableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         tableViewer.setContentProvider(contentProvider);
 
+        initializeTable(tableViewer.getTable());
+
         return composite;
     }
 
     public void setPeriod(Period period) {
         contentProvider.setPeriod(period);
+    }
+
+    private void initializeTable(Table table) {
+        table.setLinesVisible(true);
+        table.setHeaderVisible(true);
+    }
+
+    public void updateStatistics(IStatisticsModel model) {
+        tableViewer.setInput(model);
+        if ((model != null) && !model.equals(this.model)) {
+            updateTable(tableViewer.getTable());
+        }
+    }
+
+    private void updateTable(Table table) {
+        clearTable(table);
+
+    }
+
+    private void clearTable(Table table) {
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumn(i).dispose();
+        }
     }
 }

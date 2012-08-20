@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.model;
 
+import java.util.Set;
+
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.dto.IDataElement;
@@ -37,4 +39,6 @@ public interface IStatisticsModel extends IModel {
             throws ModelException;
 
     Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
+
+    Set<String> getColumns();
 }
