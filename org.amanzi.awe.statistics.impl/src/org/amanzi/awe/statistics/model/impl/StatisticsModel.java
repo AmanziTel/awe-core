@@ -387,14 +387,14 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     protected IStatisticsCell createStatisticsCell(final Node node) {
-        StatisticsCell cell = null;
-        //        try {
-        //
-        //
-        //        } catch (ServiceException e) {
-        //            LOGGER.error("Error on getting StatisticsRow Node from Database", e);
-        //            return null;
-        //        }
+        StatisticsCell cell = new StatisticsCell(node);
+        try {
+            cell.setName(getNodeService().getNodeName(node));
+            cell.setValue(getNodeService().getNodeProperty(node, statisticsNodeProperties.getValueProperty(), null, true));
+        } catch (ServiceException e) {
+            LOGGER.error("Error on getting StatisticsRow Node from Database", e);
+            return null;
+        }
 
         return cell;
     }
@@ -612,5 +612,10 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     @Override
     public Set<String> getColumns() {
         return columnNames;
+    }
+
+    @Override
+    public String getAggregatedProperty() {
+        return aggregatedProperty;
     }
 }

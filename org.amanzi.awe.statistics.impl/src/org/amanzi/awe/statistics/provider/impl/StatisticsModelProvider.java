@@ -98,7 +98,7 @@ IStatisticsModelProvider {
 
         AbstractModel model = (AbstractModel)analyzedModel;
 
-        IKey key = new MultiKey(new NodeKey(model.getRootNode()), new NameKey(template));
+        IKey key = new MultiKey(new NodeKey(model.getRootNode()), new NameKey(template), new NameKey(propertyName));
 
         StatisticsModel result = getFromCache(key);
 
