@@ -52,19 +52,6 @@ public interface INodeService extends IService {
      */
     INodeType getNodeType(Node node) throws ServiceException, NodeTypeNotExistsException;
 
-    /**
-     * Returns a Paret of Node Parent is a Node that stand on higher hierarchy level for provided
-     * node Searching for a Parent based on 'parent' property of a Child Node containing ID of
-     * Parent Node
-     * 
-     * @param child
-     * @return
-     * @throws ServiceException in case 'parent' property node found
-     * @deprecated
-     */
-    @Deprecated
-    Node getParent(Node child) throws ServiceException;
-
     Node getParent(Node child, RelationshipType relationshipType) throws ServiceException;
 
     Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException;
@@ -135,4 +122,6 @@ public interface INodeService extends IService {
     void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
 
     TraversalDescription getChildrenTraversal(final INodeType nodeType, final RelationshipType relationshipType);
+
+    Node getChainParent(Node node) throws ServiceException;
 }

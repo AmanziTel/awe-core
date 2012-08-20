@@ -67,12 +67,12 @@ public class NodeService extends AbstractService implements INodeService {
         /**
          * @param node
          */
-        private ChainEvaluator(Node node) {
+        private ChainEvaluator(final Node node) {
             this.node = node;
         }
 
         @Override
-        public Evaluation evaluate(Path path) {
+        public Evaluation evaluate(final Path path) {
             boolean toContinue = true;
             boolean include = true;
             if (path.lastRelationship() != null) {
@@ -123,11 +123,6 @@ public class NodeService extends AbstractService implements INodeService {
         String nodeType = (String)getNodeProperty(node, getGeneralNodeProperties().getNodeTypeProperty(), null, true);
 
         return NodeTypeManager.getInstance().getType(nodeType);
-    }
-
-    @Override
-    public Node getParent(final Node child) throws ServiceException {
-        return getParent(child, NodeServiceRelationshipType.CHILD);
     }
 
     @Override
@@ -631,5 +626,14 @@ public class NodeService extends AbstractService implements INodeService {
         } finally {
             tx.finish();
         }
+    }
+
+    @Override
+    public Node getChainParent(final Node node) throws ServiceException {
+        assert node != null;
+
+        long parentId = getNodeProperty(node, getGeneralNodeProperties().getParentIDProperty(), null, true);
+
+        return getGraphDb().getNodeById(parentId);
     }
 }
