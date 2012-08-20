@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.exceptions.FatalStatisticsException;
@@ -205,7 +204,7 @@ public class StatisticsEngine extends AbstractTransactional {
     }
 
     protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
-            throws ModelException, ScriptingException {
+            throws ModelException, StatisticsEngineException {
         Period underlyingPeriod = period.getUnderlyingPeriod();
 
         if (underlyingPeriod != null) {
@@ -230,29 +229,34 @@ public class StatisticsEngine extends AbstractTransactional {
                     IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
                             nextStartTime);
 
-                    Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
-                            .toSymbolMap(dataElement.asMap());
-                    IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
-                    Map<String, Object> result = template.calculate(rubyDataElement);
-                    for (Entry<String, Object> statisticsEntry : result.entrySet()) {
-                        ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
+                    try {
+                        Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
+                                .toSymbolMap(dataElement.asMap());
+                        IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
+                        Map<String, Object> result = template.calculate(rubyDataElement);
+                        for (Entry<String, Object> statisticsEntry : result.entrySet()) {
+                            ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
 
-                        Object statisticsValue = statisticsEntry.getValue();
+                            Object statisticsValue = statisticsEntry.getValue();
 
-                        if (LOGGER.isTraceEnabled()) {
-                            LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
-                                    + statisticsRow + ">: <" + statisticsValue + ">.");
+                            if (LOGGER.isTraceEnabled()) {
+                                LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
+                                        + statisticsRow + ">: <" + statisticsValue + ">.");
+                            }
+
+                            Number value = null;
+                            if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
+                                value = (Number)statisticsValue;
+                                Number statisticsResult = calculateValue(column.getFunction(), value);
+
+                                statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
+
+                                updateTransaction();
+                            }
                         }
-
-                        Number value = null;
-                        if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                            value = (Number)statisticsValue;
-                            Number statisticsResult = calculateValue(column.getFunction(), value);
-
-                            statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
-
-                            updateTransaction();
-                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
+                        throw new FatalStatisticsException(e);
                     }
 
                     subProgressMonitor.worked(1);

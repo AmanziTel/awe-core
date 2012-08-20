@@ -26,7 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * @since 1.0.0
  */
 public enum NetworkElementType implements INetworkElementType {
-    NETWORK, CITY, MSC, BSC, SITE, SECTOR;
+    NETWORK, CITY, MSC, BSC, SITE, SECTOR, TRX, FREQUENCY_PLAN;
 
     private static NetworkElementType[] GENERAL_NETWORK_ELEMENT = ArrayUtils.subarray(values(), NETWORK.ordinal() + 1,
             values().length);

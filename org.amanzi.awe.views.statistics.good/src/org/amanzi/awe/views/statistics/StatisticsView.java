@@ -56,14 +56,14 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 public class StatisticsView extends ViewPart
-        implements
-            IDriveSelectionListener,
-            IPropertySelectionListener,
-            ITemplateSelectionListener,
-            IPeriodSelectionListener,
-            ITimePeriodSelectionListener,
-            SelectionListener,
-            IStatisticsTableListener {
+implements
+IDriveSelectionListener,
+IPropertySelectionListener,
+ITemplateSelectionListener,
+IPeriodSelectionListener,
+ITimePeriodSelectionListener,
+SelectionListener,
+IStatisticsTableListener {
 
     private class StatisticsJob extends Job {
 
@@ -72,14 +72,14 @@ public class StatisticsView extends ViewPart
         /**
          * @param name
          */
-        public StatisticsJob(StatisticsManager statisticsManager) {
+        public StatisticsJob(final StatisticsManager statisticsManager) {
             super("Calculate statistics");
 
             this.statisticsManager = statisticsManager;
         }
 
         @Override
-        protected IStatus run(IProgressMonitor monitor) {
+        protected IStatus run(final IProgressMonitor monitor) {
             try {
                 final IStatisticsModel model = statisticsManager.build(monitor);
 
@@ -128,7 +128,7 @@ public class StatisticsView extends ViewPart
         addTemplateComposite(mainComposite);
         addPeriodComposite(mainComposite);
 
-        statisticsTable = addStatisticsTableWidget(parent, this);
+        statisticsTable = addStatisticsTableWidget(mainComposite, this);
         statisticsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         isInitialized = true;
@@ -269,8 +269,8 @@ public class StatisticsView extends ViewPart
         widgetSelected(e);
     }
 
-    private void updateTable(IStatisticsModel statisticsModel) {
-
+    private void updateTable(final IStatisticsModel statisticsModel) {
+        statisticsTable.updateStatistics(statisticsModel);
     }
 
 }

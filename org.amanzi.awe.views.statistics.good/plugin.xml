@@ -5,10 +5,25 @@
          point="org.eclipse.ui.views">
       <view
             class="org.amanzi.awe.views.statistics.StatisticsView"
+            icon="icons/statistics_view.png"
             id="org.amanzi.awe.StatisticsView"
             name="Statistics View"
             restorable="true">
       </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="*">
+         <view
+               id="org.amanzi.awe.StatisticsView"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               showTitle="true"
+               visible="true">
+         </view>
+      </perspectiveExtension>
    </extension>
 
 </plugin>

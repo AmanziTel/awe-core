@@ -9,4 +9,3 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
 Bundle-ClassPath: .
-Import-Package: org.amanzi.neo.services.model.impl

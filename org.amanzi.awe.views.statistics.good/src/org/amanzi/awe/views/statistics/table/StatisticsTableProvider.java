@@ -17,6 +17,7 @@ import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -46,12 +47,12 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
     }
 
     @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
 
     }
 
     @Override
-    public Object[] getElements(Object inputElement) {
+    public Object[] getElements(final Object inputElement) {
         if ((period != null) && (inputElement instanceof IStatisticsModel)) {
             IStatisticsModel statisticsModel = (IStatisticsModel)inputElement;
 
@@ -61,10 +62,10 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
                 LOGGER.error("Error on getting Statistics Table content", e);
             }
         }
-        return null;
+        return ArrayUtils.EMPTY_OBJECT_ARRAY;
     }
 
-    public void setPeriod(Period period) {
+    public void setPeriod(final Period period) {
         this.period = period;
     }
 }

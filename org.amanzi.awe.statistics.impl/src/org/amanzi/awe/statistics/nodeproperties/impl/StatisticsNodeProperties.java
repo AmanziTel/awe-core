@@ -50,7 +50,7 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
 
     @Override
     public String getColumnNamesProperty() {
-        return null;
+        return COLUMN_NAMES_PROPERTY;
     }
 
 }

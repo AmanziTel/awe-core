@@ -53,7 +53,7 @@ public class DataElement implements IDataElement {
 
     @Override
     public String toString() {
-        return node == null ? properties.toString() : node.toString();
+        return properties.toString();
     }
 
     @Override
