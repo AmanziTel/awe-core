@@ -259,11 +259,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         IStatisticsGroup group = null;
 
         try {
-            Node propertyLevel = getNodeService().getParent(node, DimensionType.PROPERTY.getRelationshipType());
-            Node periodLevel = getNodeService().getParent(node, DimensionType.TIME.getRelationshipType());
-
-            String period = getNodeService().getNodeName(periodLevel);
-            String propertyKey = getNodeService().getNodeName(propertyLevel);
+            String period = statisticsService.getStatisticsLevelName(node, DimensionType.TIME);
+            String propertyKey = statisticsService.getStatisticsLevelName(node, DimensionType.PROPERTY);
 
             group = createStatisticsGroup(node, period, propertyKey);
         } catch (Exception e) {

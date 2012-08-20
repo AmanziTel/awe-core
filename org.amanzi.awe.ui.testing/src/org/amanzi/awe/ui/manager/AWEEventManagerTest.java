@@ -24,6 +24,7 @@ import java.util.Set;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.listener.IAWEEventListenter.Priority;
 import org.amanzi.awe.ui.manager.internal.Listener1;
 import org.amanzi.awe.ui.manager.internal.Listener2;
 import org.amanzi.awe.ui.manager.internal.Listener3;
@@ -52,13 +53,13 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
         super.setUp();
 
         eventManager = AWEEventManager.getManager();
-        eventManager.getListeners().clear();
+        eventManager.getListeners(Priority.NORMAL).clear();
     }
 
     @Override
     @After
     public void tearDown() {
-        eventManager.getListeners().clear();
+        eventManager.getListeners(Priority.NORMAL).clear();
         super.tearDown();
     }
 
@@ -68,7 +69,7 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.addListener(listener, EventStatus.AWE_STARTED);
 
-        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners(Priority.NORMAL);
         assertEquals("Unexpected size of listened events", 1, listenersMap.size());
 
         Set<IAWEEventListenter> listenerList = listenersMap.get(EventStatus.AWE_STARTED);
@@ -84,7 +85,7 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.addListener(listener, EventStatus.values());
 
-        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners(Priority.NORMAL);
         assertEquals("Unexpected size of listened events", EventStatus.values().length, listenersMap.size());
 
         for (EventStatus singleStatus : EventStatus.values()) {
@@ -106,7 +107,7 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
         eventManager.addListener(listener2, EventStatus.PROJECT_CHANGED);
         eventManager.addListener(listener3, EventStatus.AWE_STARTED, EventStatus.PROJECT_CHANGED);
 
-        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners();
+        Map<EventStatus, Set<IAWEEventListenter>> listenersMap = eventManager.getListeners(Priority.NORMAL);
         assertEquals("Unexpected size of listened events", 2, listenersMap.size());
 
         // check awe started
@@ -149,11 +150,11 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.addListener(listener, EventStatus.AWE_STARTED);
 
-        Set<IAWEEventListenter> listeners = eventManager.getListeners().get(EventStatus.AWE_STARTED);
+        Set<IAWEEventListenter> listeners = eventManager.getListeners(Priority.NORMAL).get(EventStatus.AWE_STARTED);
 
         eventManager.addListener(listener, EventStatus.AWE_STARTED);
 
         assertEquals("size should not increase since listener is duplicated", listeners.size(),
-                eventManager.getListeners().get(EventStatus.AWE_STARTED).size());
+                eventManager.getListeners(Priority.NORMAL).get(EventStatus.AWE_STARTED).size());
     }
 }

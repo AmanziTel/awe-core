@@ -14,10 +14,10 @@
 package org.amanzi.awe.ui.manager;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
@@ -29,6 +29,7 @@ import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.listener.IAWEEventListenter.Priority;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IGISModel;
@@ -70,7 +71,7 @@ public final class AWEEventManager {
 
     private static final IEvent INITIALISE_EVENT = new InitialiseEvent();
 
-    private final Map<EventStatus, Set<IAWEEventListenter>> listeners = new HashMap<EventStatus, Set<IAWEEventListenter>>();
+    private final Map<Priority, Map<EventStatus, Set<IAWEEventListenter>>> listeners = new HashMap<Priority, Map<EventStatus, Set<IAWEEventListenter>>>();
 
     private final IExtensionRegistry registry;
 
@@ -91,35 +92,49 @@ public final class AWEEventManager {
         assert listener != null;
         assert statuses != null;
 
+        Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(listener.getPriority());
+        if (prioritizedListeners == null) {
+            prioritizedListeners = new HashMap<EventStatus, Set<IAWEEventListenter>>();
+            listeners.put(listener.getPriority(), prioritizedListeners);
+        }
+
         for (EventStatus eventStatus : statuses) {
-            Set<IAWEEventListenter> eventListeners = listeners.get(eventStatus);
+            Set<IAWEEventListenter> eventListeners = prioritizedListeners.get(eventStatus);
 
             if (eventListeners == null) {
-                eventListeners = new TreeSet<IAWEEventListenter>();
-                listeners.put(eventStatus, eventListeners);
+                eventListeners = new HashSet<IAWEEventListenter>();
+                prioritizedListeners.put(eventStatus, eventListeners);
             }
 
-            if (!eventListeners.contains(listener)) {
-                eventListeners.add(listener);
-            }
+            eventListeners.add(listener);
         }
     }
 
     public synchronized void removeListener(final IAWEEventListenter listener) {
-        for (Entry<EventStatus, Set<IAWEEventListenter>> listenerEntry : listeners.entrySet()) {
-            listenerEntry.getValue().remove(listener);
+        Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(listener.getPriority());
+
+        if (prioritizedListeners != null) {
+            for (Entry<EventStatus, Set<IAWEEventListenter>> listenerEntry : prioritizedListeners.entrySet()) {
+                listenerEntry.getValue().remove(listener);
+            }
         }
     }
 
     private void fireEvent(final IEvent event, final boolean inDisplay) {
-        Set<IAWEEventListenter> eventListeners = listeners.get(event.getStatus());
+        for (Priority priority : Priority.getSortedPriorities()) {
+            Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(priority);
 
-        if (eventListeners != null) {
-            for (IAWEEventListenter singleListener : eventListeners) {
-                if (inDisplay) {
-                    runEventListener(event, singleListener);
-                } else {
-                    singleListener.onEvent(event);
+            if (prioritizedListeners != null) {
+                Set<IAWEEventListenter> eventListeners = prioritizedListeners.get(event.getStatus());
+
+                if (eventListeners != null) {
+                    for (IAWEEventListenter singleListener : eventListeners) {
+                        if (inDisplay) {
+                            runEventListener(event, singleListener);
+                        } else {
+                            singleListener.onEvent(event);
+                        }
+                    }
                 }
             }
         }
@@ -207,8 +222,8 @@ public final class AWEEventManager {
         return EventStatus.valueOf(statusName);
     }
 
-    protected Map<EventStatus, Set<IAWEEventListenter>> getListeners() {
-        return listeners;
+    protected Map<EventStatus, Set<IAWEEventListenter>> getListeners(final Priority priority) {
+        return listeners.get(priority);
     }
 
 }

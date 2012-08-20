@@ -134,11 +134,31 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
     }
 
     @Override
-    public void addSourceNode(Node node, Node sourceNode) throws ServiceException {
+    public void addSourceNode(final Node node, final Node sourceNode) throws ServiceException {
         assert node != null;
         assert sourceNode != null;
 
         nodeService.linkNodes(node, sourceNode, StatisticsRelationshipType.SOURCE);
+    }
+
+    @Override
+    public String getStatisticsLevelName(final Node groupNode, final DimensionType dimensionType) throws ServiceException {
+        assert groupNode != null;
+        assert dimensionType != null;
+
+        try {
+            Iterable<Relationship> relationships = groupNode.getRelationships(Direction.INCOMING, NodeServiceRelationshipType.CHILD);
+
+            for (Relationship singleRelationship : relationships) {
+                if (singleRelationship.getStartNode().hasRelationship(Direction.INCOMING, dimensionType.getRelationshipType())) {
+                    return nodeService.getNodeName(singleRelationship.getStartNode());
+                }
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        return null;
     }
 
 }
