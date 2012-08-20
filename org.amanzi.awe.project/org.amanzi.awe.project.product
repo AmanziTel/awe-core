@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Amanzi Wireless Explorer" uid="awe" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" version="0.13.4" useFeatures="true" includeLaunchers="true">
+<product name="Amanzi Wireless Explorer" uid="awe" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" version="0.14.0" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.amanzi.awe/nl/en/about.gif"/>
@@ -24,7 +24,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Xmx800M -XX:MaxPermSize=128m -Dosgi.parentClassloader=ext</vmArgs>
+      <vmArgs>-Xmx1024M -XX:MaxPermSize=256m -Dosgi.parentClassloader=ext</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true</vmArgsMac>
    </launcherArgs>
 
