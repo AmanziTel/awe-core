@@ -94,7 +94,7 @@
         <module>org.amanzi.awe.startup.splash</module>
 	<module>org.amanzi.awe.statistics.engine</module>
         <module>org.amanzi.awe.statistics.feature</module>
-	<modlue>org.amanzi.awe.statistics.impl</module>
+	<module>org.amanzi.awe.statistics.impl</module>
         <module>org.amanzi.awe.treeview</module>
         <module>org.amanzi.awe.ui.db</module>
         <module>org.amanzi.awe.ui.udig</module>
