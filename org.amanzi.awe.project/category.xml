@@ -6,7 +6,7 @@
    <feature url="features/org.amanzi.awe.scripting.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.scripting.feature" version="1.0.0.qualifier">
       <category name="org.amanzi.awe.scripting"/>
    </feature>
-   <feature url="features/org.amanzi.awe.statistics.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.statistics.feature" version="1.0.0.qualifier">
+   <feature url="features/org.amanzi.awe.statistics.feature_1.1.0.qualifier.jar" id="org.amanzi.awe.statistics.feature" version="1.1.0.qualifier">
       <category name="org.amanzi.awe.statistics"/>
    </feature>
    <category-def name="org.amanzi.awe.category" label="General AWE Feature"/>
