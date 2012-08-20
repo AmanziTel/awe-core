@@ -33,9 +33,11 @@ public interface IStatisticsModel extends IModel {
 
     IStatisticsGroup getStatisticsGroup(String period, String propertyKey) throws ModelException;
 
+    IStatisticsRow getStatisticsRow(IStatisticsGroup group, IStatisticsRow sourceRow, long startDate, long endDate) throws ModelException;
+
     IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate) throws ModelException;
 
-    void updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElements)
+    boolean updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElements)
             throws ModelException;
 
     Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
@@ -45,4 +47,8 @@ public interface IStatisticsModel extends IModel {
     String getAggregatedProperty();
 
     boolean containsLevel(DimensionType dimension, String levelName) throws ModelException;
+
+    void setLevelCount(DimensionType dimension, String levelName, int count) throws ModelException;
+
+    int getLevelCount(DimensionType dimension, String levelName) throws ModelException;
 }

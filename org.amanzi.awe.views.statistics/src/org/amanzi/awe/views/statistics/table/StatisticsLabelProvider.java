@@ -86,7 +86,9 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
             case 1:
                 return statisticsRow.getStatisticsGroup().getPropertyValue();
             default:
-                return cellList.get(columnIndex - 2).getValue().toString();
+                Number value = cellList.get(columnIndex - 2).getValue();
+
+                return value == null ? "N/A" : value.toString();
             }
         }
 

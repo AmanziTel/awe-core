@@ -27,18 +27,18 @@ import org.neo4j.graphdb.Node;
  */
 public class StatisticsCell extends DataElement implements IStatisticsCell {
 
-    private Object value;
+    private Number value;
 
     public StatisticsCell(final Node node) {
         super(node);
     }
 
     @Override
-    public Object getValue() {
+    public Number getValue() {
         return value;
     }
 
-    public void setValue(final Object value) {
+    public void setValue(final Number value) {
         this.value = value;
     }
 

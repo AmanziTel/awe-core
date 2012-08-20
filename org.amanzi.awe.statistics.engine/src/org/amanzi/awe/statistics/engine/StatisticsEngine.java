@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.exceptions.FatalStatisticsException;
@@ -107,6 +108,8 @@ public class StatisticsEngine extends AbstractTransactional {
 
     private final Period period;
 
+    private final Map<ITemplateColumn, IAggregationFunction> functionCache = new HashMap<ITemplateColumn, IAggregationFunction>();
+
     /**
      * 
      */
@@ -155,6 +158,8 @@ public class StatisticsEngine extends AbstractTransactional {
 
         boolean isSuccess = false;
 
+        monitor.beginTask("Statistics calculation", period.ordinal() + 1);
+
         try {
             statisticsModel = statisticsModelProvider.find(measurementModel, template.getName(), propertyName);
             if (statisticsModel == null) {
@@ -196,16 +201,59 @@ public class StatisticsEngine extends AbstractTransactional {
         }
     }
 
+    protected void calculateHighLevelStatistics(final IStatisticsModel statisticsModel, final Period currentPeriod, final Period previousPeriod, final IProgressMonitor monitor) throws ModelException {
+        String subTaskName = "Period <" + period + ">";
+        IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+        monitor.subTask(subTaskName);
+        subProgressMonitor.beginTask(subTaskName, statisticsModel.getLevelCount(DimensionType.TIME, previousPeriod.getId()));
+
+        int periodCount = 0;
+        for (IStatisticsRow previousStatisticsRow : statisticsModel.getStatisticsRows(previousPeriod.getId())) {
+            IStatisticsGroup previousStatisticsGroup = previousStatisticsRow.getStatisticsGroup();
+
+            IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(), previousStatisticsGroup.getPropertyValue());
+
+            long startTime = period.getStartTime(previousStatisticsRow.getStartDate());
+            long endTime = period.getEndTime(startTime);
+
+            IStatisticsRow currentStatisticsRow = statisticsModel.getStatisticsRow(currentStatisticsGroup, previousStatisticsRow, startTime, endTime);
+
+            for (IStatisticsCell previousStatisticsCell : previousStatisticsRow.getStatisticsCells()) {
+                String columnName = previousStatisticsCell.getName();
+                ITemplateColumn column = template.getColumn(previousStatisticsCell.getName());
+
+                Number statisticsValue = previousStatisticsCell.getValue();
+                Number statisticsResult = null;
+                if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
+                    statisticsResult = calculateValue(column, statisticsValue);
+                }
+
+                if (statisticsModel.updateStatisticsCell(currentStatisticsRow, columnName, statisticsResult, previousStatisticsCell)) {
+                    periodCount++;
+                }
+            }
+        }
+
+        statisticsModel.setLevelCount(DimensionType.TIME, currentPeriod.getId(), periodCount);
+        statisticsModel.flush();
+        subProgressMonitor.done();
+    }
+
     protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
             throws ModelException, StatisticsEngineException {
         if (statisticsModel.containsLevel(DimensionType.TIME, period.getId())) {
             LOGGER.info("Statistics Model already contain Period <" + period + ">.");
+
+            monitor.worked(1);
         } else {
             LOGGER.info("Statistics Model didn't contain Period <" + period + ">. Calculate new one");
             Period underlyingPeriod = period.getUnderlyingPeriod();
 
             if (underlyingPeriod != null) {
                 calculateStatistics(statisticsModel, underlyingPeriod, monitor);
+
+                calculateHighLevelStatistics(statisticsModel, period, underlyingPeriod, monitor);
+
                 monitor.worked(1);
             } else {
                 long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
@@ -217,14 +265,15 @@ public class StatisticsEngine extends AbstractTransactional {
                 subProgressMonitor.beginTask(subTaskName,
                         measurementModel.getPropertyStatistics().getCount(measurementModel.getMainMeasurementNodeType()));
 
+                int periodCount = 0;
+
                 do {
                     for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
                         String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
                                 : UNKNOWN_VALUE;
 
                         IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
-                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
-                                nextStartTime);
+                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime);
 
                         try {
                             Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
@@ -243,10 +292,12 @@ public class StatisticsEngine extends AbstractTransactional {
 
                                 Number statisticsResult = null;
                                 if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                                    statisticsResult = calculateValue(column.getFunction(), (Number)statisticsValue);
+                                    statisticsResult = calculateValue(column, (Number)statisticsValue);
                                 }
 
-                                statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement);
+                                if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement)) {
+                                    periodCount++;
+                                }
 
                                 updateTransaction();
                             }
@@ -269,12 +320,22 @@ public class StatisticsEngine extends AbstractTransactional {
                     }
                 } while (currentStartTime < measurementModel.getMaxTimestamp());
 
+                statisticsModel.setLevelCount(DimensionType.TIME, period.getId(), periodCount);
+                statisticsModel.flush();
+
                 subProgressMonitor.done();
             }
         }
     }
 
-    private Number calculateValue(final IAggregationFunction function, final Number value) {
+    private Number calculateValue(final ITemplateColumn templateColumn, final Number value) {
+        IAggregationFunction function = functionCache.get(templateColumn);
+        if (function == null) {
+            function = templateColumn.getFunction();
+
+            functionCache.put(templateColumn, function);
+        }
+
         return function.update(value).getResult();
     }
 

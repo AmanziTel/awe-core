@@ -302,12 +302,28 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getStartLogStatement("getStatisticsRow", group, startDate, endDate));
         }
 
+        IStatisticsRow result = getStatisticsRow(group, null, startDate, endDate);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getStatisticsRow"));
+        }
+
+        return result;
+    }
+
+    @Override
+    public IStatisticsRow getStatisticsRow(final IStatisticsGroup group, final IStatisticsRow sourceRow, final long startDate, final long endDate)
+            throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getStatisticsRow", group, sourceRow, startDate, endDate));
+        }
+
         // TODO: LN: 15.08.2012, validate input
         Pair<String, Long> key = new ImmutablePair<String, Long>(group.getPeriod(), startDate);
 
         IStatisticsRow result = statisticsRowCache.get(key);
         if (result == null) {
-            result = getStatisticsRowFromDatabase((StatisticsGroup)group, startDate, endDate);
+            result = getStatisticsRowFromDatabase((StatisticsGroup)group, sourceRow, startDate, endDate);
 
             statisticsRowCache.put(key, result);
         }
@@ -319,10 +335,10 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected IStatisticsRow getStatisticsRowFromDatabase(final StatisticsGroup statisticsGroup, final long startDate,
+    protected IStatisticsRow getStatisticsRowFromDatabase(final StatisticsGroup statisticsGroup, final IStatisticsRow sourceRow, final long startDate,
             final long endDate) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("getStatisticsRowFromDatabase", statisticsGroup, startDate, endDate));
+            LOGGER.debug(getStartLogStatement("getStatisticsRowFromDatabase", statisticsGroup, sourceRow, startDate, endDate));
         }
 
         String name = Long.toString(startDate);
@@ -341,6 +357,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
                 sRowNode = getNodeService()
                         .createNodeInChain(statisticsGroup.getNode(), StatisticsNodeType.S_ROW, name, properties);
+                if (sourceRow != null) {
+                    statisticsService.addSourceNode(sRowNode, ((DataElement)sourceRow).getNode());
+                }
             }
 
             result = createStatisticsRow(sRowNode, startDate, endDate);
@@ -390,7 +409,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         StatisticsCell cell = new StatisticsCell(node);
         try {
             cell.setName(getNodeService().getNodeName(node));
-            cell.setValue(getNodeService().getNodeProperty(node, statisticsNodeProperties.getValueProperty(), null, true));
+            cell.setValue((Number)getNodeService().getNodeProperty(node, statisticsNodeProperties.getValueProperty(), null, false));
         } catch (ServiceException e) {
             LOGGER.error("Error on getting StatisticsRow Node from Database", e);
             return null;
@@ -452,7 +471,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public void updateStatisticsCell(final IStatisticsRow statisticsRow, final String name, Object value, final IDataElement... sourceElement)
+    public boolean updateStatisticsCell(final IStatisticsRow statisticsRow, final String name, final Object value, final IDataElement... sourceElement)
             throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("updateStatisticsCell", statisticsRow, name, value));
@@ -461,13 +480,22 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         // TODO: LN: 17.08.2012, validate input
         //TODO: LN: 20.08.2012, value can be null
 
-        Node statisticsCellNode = getStatisticsCellNode((StatisticsRow)statisticsRow, name);
+        boolean isCreated = false;;
+
+        Node statisticsCellNode = findStatisticsCellNode((StatisticsRow)statisticsRow, name);
+
+        if (statisticsCellNode == null) {
+            LOGGER.info("No Statistics Cell was found by name <" + name + "> in Row <" + statisticsRow + ">. Create new one.");
+
+            statisticsCellNode = createStatisticsCellNode((StatisticsRow)statisticsRow, name);
+
+            isCreated = true;
+        }
 
         try {
-            if (value == null) {
-                value = "N/A";
+            if (value != null) {
+                getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
             }
-            getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
 
             for (IDataElement singleElement : sourceElement) {
                 DataElement source = (DataElement)singleElement;
@@ -480,9 +508,11 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("updateStatisticsCell"));
         }
+
+        return isCreated;
     }
 
-    protected Node getStatisticsCellNode(final StatisticsRow statisticsRow, final String name) throws ModelException {
+    protected Node findStatisticsCellNode(final StatisticsRow statisticsRow, final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsCellNode", statisticsRow, name));
         }
@@ -493,12 +523,6 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
         if (result == null) {
             result = getStatisticsCellNodeFromDatabase(statisticsRow, name);
-
-            if (result == null) {
-                LOGGER.info("No Statistics Cell was found by name <" + name + "> in Row <" + statisticsRow + ">. Create new one.");
-
-                result = createStatisticsCellNode(statisticsRow, name);
-            }
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -635,5 +659,53 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getFinishLogStatement("containsLevel"));
         }
         return false;
+    }
+
+    @Override
+    public void flush() throws ModelException {
+        statisticsCellNodeCache.clear();
+        statisticsRowCache.clear();
+
+        super.flush();
+    }
+
+    @Override
+    public void setLevelCount(final DimensionType dimension, final String levelName, final int count) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("setLevelCount", dimension, levelName, count));
+        }
+
+        Node levelNode = getStatisticsLevelNode(dimension, levelName);
+        try {
+            getNodeService().updateProperty(levelNode, getGeneralNodeProperties().getSizeProperty(), count);
+        } catch (ServiceException e) {
+            processException("Error on updating count for level <" + dimension + ":" + levelName + ">.", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("setLevelCount"));
+        }
+    }
+
+    @Override
+    public int getLevelCount(final DimensionType dimension, final String levelName) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getLevelCount", dimension, levelName));
+        }
+
+        int result = 0;
+
+        Node levelNode = getStatisticsLevelNode(dimension, levelName);
+        try {
+            result = getNodeService().getNodeProperty(levelNode, getGeneralNodeProperties().getSizeProperty(), 0, false);
+        } catch (ServiceException e) {
+            processException("Error on getting count for level <" + dimension + ":" + levelName + ">.", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getLevelCount"));
+        }
+
+        return result;
     }
 }
