@@ -33,12 +33,12 @@ public abstract class AbstractShowViewListener implements IAWEEventListenter {
     private final String REQUIRED_VIEW;
     private IViewPart view;
 
-    protected AbstractShowViewListener(String requiredView) {
+    protected AbstractShowViewListener(final String requiredView) {
         this.REQUIRED_VIEW = requiredView;
     }
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
         try {
             switch (event.getStatus()) {
             case SHOW_IN_VIEW:
@@ -55,6 +55,11 @@ public abstract class AbstractShowViewListener implements IAWEEventListenter {
         } catch (PartInitException e) {
             LOGGER.error("Error when try to oppen view ", e);
         }
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
     }
 
     /**

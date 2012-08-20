@@ -28,9 +28,13 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractDataElementIterator<T extends IDataElement> implements Iterator<T> {
 
-    private final Iterator<Node> nodeIterator;
+    private Iterator<Node> nodeIterator;
 
     protected AbstractDataElementIterator(final Iterator<Node> nodeIterator) {
+        this.nodeIterator = nodeIterator;
+    }
+
+    protected void updateIterator(final Iterator<Node> nodeIterator) {
         this.nodeIterator = nodeIterator;
     }
 

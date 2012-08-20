@@ -33,53 +33,58 @@ import org.apache.log4j.Logger;
  */
 public class ProjectChangedListener implements IAWEEventListenter {
 
-	private static final Logger LOGGER = Logger.getLogger(ProjectChangedListener.class);
+    private static final Logger LOGGER = Logger.getLogger(ProjectChangedListener.class);
 
-	private IProjectModelProvider projectModelProvider;
+    private IProjectModelProvider projectModelProvider;
 
-	public ProjectChangedListener() {
+    public ProjectChangedListener() {
 
-	}
+    }
 
-	protected ProjectChangedListener(final IProjectModelProvider projectModelProvider) {
-		this.projectModelProvider = projectModelProvider;
-	}
+    protected ProjectChangedListener(final IProjectModelProvider projectModelProvider) {
+        this.projectModelProvider = projectModelProvider;
+    }
 
-	protected IProjectModelProvider getProjectModelProvider() {
-		if (projectModelProvider == null) {
-			projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
-		}
-		return projectModelProvider;
-	}
+    protected IProjectModelProvider getProjectModelProvider() {
+        if (projectModelProvider == null) {
+            projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
+        }
+        return projectModelProvider;
+    }
 
-	@Override
-	public void onEvent(final IEvent event) {
-		switch (event.getStatus()) {
-		case PROJECT_CHANGED:
-			if (event instanceof ProjectNameChangedEvent) {
-				onProjectChangedEvent((ProjectNameChangedEvent)event);
-			}
-			break;
-		default:
-			// do nothing
-			break;
-		}
-	}
+    @Override
+    public void onEvent(final IEvent event) {
+        switch (event.getStatus()) {
+        case PROJECT_CHANGED:
+            if (event instanceof ProjectNameChangedEvent) {
+                onProjectChangedEvent((ProjectNameChangedEvent)event);
+            }
+            break;
+        default:
+            // do nothing
+            break;
+        }
+    }
 
-	private void onProjectChangedEvent(final ProjectNameChangedEvent event) {
-		String name = event.getNewProjectName();
+    private void onProjectChangedEvent(final ProjectNameChangedEvent event) {
+        String name = event.getNewProjectName();
 
-		try {
-			IProjectModel projectModel = getProjectModelProvider().findProjectByName(name);
-			if (projectModel == null) {
-				projectModel = getProjectModelProvider().createProjectModel(name);
-				AWEEventManager.getManager().fireDataUpdatedEvent();
-			}
+        try {
+            IProjectModel projectModel = getProjectModelProvider().findProjectByName(name);
+            if (projectModel == null) {
+                projectModel = getProjectModelProvider().createProjectModel(name);
+                AWEEventManager.getManager().fireDataUpdatedEvent();
+            }
 
-			getProjectModelProvider().setActiveProjectModel(projectModel);
-		} catch (ModelException e) {
-			LOGGER.error("Error on switching active UDIG Proejct", e);
-		}
-	}
+            getProjectModelProvider().setActiveProjectModel(projectModel);
+        } catch (ModelException e) {
+            LOGGER.error("Error on switching active UDIG Proejct", e);
+        }
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.HIGH;
+    }
 
 }

@@ -14,10 +14,10 @@
 package org.amanzi.awe.ui.manager;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
@@ -95,7 +95,7 @@ public final class AWEEventManager {
             Set<IAWEEventListenter> eventListeners = listeners.get(eventStatus);
 
             if (eventListeners == null) {
-                eventListeners = new HashSet<IAWEEventListenter>();
+                eventListeners = new TreeSet<IAWEEventListenter>();
                 listeners.put(eventStatus, eventListeners);
             }
 
@@ -155,7 +155,7 @@ public final class AWEEventManager {
         fireEvent(new ShowGISOnMap(model), true);
     }
 
-    public synchronized void fireShowInViewEvent(String viewName, IDataElement element) {
+    public synchronized void fireShowInViewEvent(final String viewName, final IDataElement element) {
         fireEvent(new ShowInViewEvent(viewName, element), true);
     }
 

@@ -33,11 +33,16 @@ public final class NoConstructorListener implements IAWEEventListenter {
     }
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
     }
 
     public static String convertToString() {
         return new NoConstructorListener().toString();
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
     }
 
 }

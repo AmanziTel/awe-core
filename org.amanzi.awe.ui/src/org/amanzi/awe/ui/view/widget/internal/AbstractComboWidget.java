@@ -39,8 +39,8 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public abstract class AbstractComboWidget<D extends Object, L extends IComboSelectionListener>
-        extends
-            AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
+extends
+AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
 
     public interface IComboSelectionListener extends AbstractAWEWidget.IAWEWidgetListener {
 
@@ -67,6 +67,11 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         if (ArrayUtils.contains(SUPPORTED_EVENTS, event.getStatus())) {
             fillCombo();
         }
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
     }
 
     @Override

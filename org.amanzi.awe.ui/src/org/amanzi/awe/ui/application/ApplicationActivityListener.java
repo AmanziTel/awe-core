@@ -34,7 +34,7 @@ public class ApplicationActivityListener implements IAWEEventListenter {
     }
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
         case AWE_STOPPED:
             stopDatabase();
@@ -46,6 +46,11 @@ public class ApplicationActivityListener implements IAWEEventListenter {
 
     private synchronized void stopDatabase() {
         DatabaseManagerFactory.getDatabaseManager().shutdown();
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.HIGH;
     }
 
 }

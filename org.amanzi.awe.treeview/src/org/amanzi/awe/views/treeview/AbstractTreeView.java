@@ -55,7 +55,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     private TreeViewer treeViewer;
     private Text tSearch;
 
-    protected AbstractTreeView(IContentProvider provider) {
+    protected AbstractTreeView(final IContentProvider provider) {
         super();
         this.contentProvider = provider;
         this.eventManager = AWEEventManager.getManager();
@@ -63,7 +63,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     @Override
-    public void modifyText(ModifyEvent e) {
+    public void modifyText(final ModifyEvent e) {
         String searchText = tSearch.getText();
         searchInTreeView(searchText);
     }
@@ -82,7 +82,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * 
      * @param dataElement
      */
-    public void selectDataElement(IDataElement dataElement) {
+    public void selectDataElement(final IDataElement dataElement) {
         this.treeViewer.reveal(dataElement);
         this.treeViewer.setSelection(new StructuredSelection(dataElement));
     }
@@ -96,7 +96,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         LOGGER.info("start create controls");
         treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         setProviders();
@@ -117,7 +117,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      * 
      * @param parent
      */
-    protected void setLayout(Composite parent) {
+    protected void setLayout(final Composite parent) {
         LOGGER.info("start layout components");
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
@@ -145,7 +145,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
         case PROJECT_CHANGED:
         case DATA_UPDATED:
@@ -170,7 +170,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     /**
      * @param tSearch The tSearch to set.
      */
-    protected void setSearchField(Text tSearch) {
+    protected void setSearchField(final Text tSearch) {
         this.tSearch = tSearch;
     }
 
@@ -193,5 +193,10 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     public void dispose() {
         AWEEventManager.getManager().removeListener(this);
         super.dispose();
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
     }
 }

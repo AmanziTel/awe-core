@@ -193,4 +193,9 @@ public class NeoCatalogListener implements IAWEEventListenter {
         }
 
     }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.LOW;
+    }
 }

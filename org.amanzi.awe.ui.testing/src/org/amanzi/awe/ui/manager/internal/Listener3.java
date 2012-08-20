@@ -27,7 +27,12 @@ import org.amanzi.awe.ui.listener.IAWEEventListenter;
 public class Listener3 implements IAWEEventListenter {
 
     @Override
-    public void onEvent(IEvent event) {
+    public void onEvent(final IEvent event) {
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
     }
 
 }

@@ -17,6 +17,12 @@ import org.amanzi.awe.ui.events.IEvent;
 
 public interface IAWEEventListenter {
 
+    public enum Priority {
+        HIGH, NORMAL, LOW;
+    }
+
     void onEvent(IEvent event);
+
+    Priority getPriority();
 
 }

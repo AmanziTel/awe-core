@@ -66,4 +66,9 @@ public class Neo4jLocationInitializer implements IAWEEventListenter {
 
         }
     }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
+    }
 }
