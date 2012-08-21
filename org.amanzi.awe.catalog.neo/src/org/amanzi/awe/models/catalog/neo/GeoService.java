@@ -42,7 +42,7 @@ public class GeoService extends IService {
     private final URL url;
     private final Map<String, Serializable> params;
 
-    GeoService(Map<String, Serializable> params) {
+    GeoService(final Map<String, Serializable> params) {
         this.params = params;
         url = (URL)params.get(GeoServiceExtension.URL_KEY);
     }
@@ -70,7 +70,7 @@ public class GeoService extends IService {
         return url;
     }
 
-    private void addAllGIS(IRenderableModel model, List<IGeoResource> resourcesList) {
+    private void addAllGIS(final IRenderableModel model, final List<IGeoResource> resourcesList) {
         for (IGISModel gisModel : model.getAllGIS()) {
             if (checkForExistCoordinateElement(gisModel)) {
                 resourcesList.add(new GeoResource(this, gisModel));
@@ -79,7 +79,7 @@ public class GeoService extends IService {
     }
 
     @Override
-    public List< ? extends IGeoResource> resources(IProgressMonitor monitor) throws IOException {
+    public List< ? extends IGeoResource> resources(final IProgressMonitor monitor) throws IOException {
         if (members == null) {
             synchronized (this) {
                 List<IGeoResource> result = new ArrayList<IGeoResource>();
@@ -113,16 +113,16 @@ public class GeoService extends IService {
      * @param gis
      * @return
      */
-    private boolean checkForExistCoordinateElement(IGISModel gis) {
+    private boolean checkForExistCoordinateElement(final IGISModel gis) {
         if ((gis.getMaxLongitude() != 0d) && (gis.getMinLongitude() != 0d) && (gis.getMaxLatitude() != 0d)
                 && (gis.getMinLatitude() != 0d)) {
-            return true;
+            return gis.canRender();
         }
         return false;
     }
 
     @Override
-    public IServiceInfo createInfo(IProgressMonitor monitor) throws IOException {
+    public IServiceInfo createInfo(final IProgressMonitor monitor) throws IOException {
         return new GeoServiceInfo(this);
     }
 

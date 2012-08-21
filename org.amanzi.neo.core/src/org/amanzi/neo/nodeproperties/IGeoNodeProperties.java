@@ -37,4 +37,6 @@ public interface IGeoNodeProperties extends INodeProperties {
 
     String getCRSProperty();
 
+    String getCanRenderProperty();
+
 }

@@ -133,6 +133,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
         Iterables.addAll(cellList, statisticsRow.getStatisticsCells());
     }
 
+    //TODO: LN: 21.08.2012, move this to some utils class
     private String getStatisticsRowName(final IStatisticsRow row) {
         Date startDate = new Date(row.getStartDate());
         Date endDate = new Date(row.getEndDate());

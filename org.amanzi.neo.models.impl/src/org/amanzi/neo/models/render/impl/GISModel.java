@@ -61,7 +61,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     private String crsCode;
 
-    private boolean updateCoordinates;
+    private boolean haveCoordinates = false;
 
     /**
      * @param nodeService
@@ -92,7 +92,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
                     false);
             setCRS(crsCodeValue);
 
-            updateCoordinates = false;
+            haveCoordinates = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCanRenderProperty(), Boolean.FALSE, false);
         } catch (ServiceException e) {
             processException("Cannot get GIS-related properties from Node", e);
         }
@@ -102,12 +102,13 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
         try {
-            if (updateCoordinates) {
+            if (haveCoordinates) {
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLatitudeProperty(), minLatitude);
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCanRenderProperty(), haveCoordinates);
             }
         } catch (ServiceException e) {
             processException("Error on updating GIS Model", e);
@@ -126,7 +127,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
             setCRS(wrapper.getEpsg());
         }
 
-        updateCoordinates = true;
+        haveCoordinates = true;
     }
 
     @Override
@@ -229,5 +230,10 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     @Override
     public int getCount() {
         return sourceModel.getRenderableElementCount();
+    }
+
+    @Override
+    public boolean canRender() {
+        return haveCoordinates;
     }
 }

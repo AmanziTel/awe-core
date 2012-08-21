@@ -39,6 +39,8 @@ public class GeoNodeProperties implements IGeoNodeProperties {
 
     private static final String CRS = "crs";
 
+    private static final String CAN_RENDER_PROPERTY = "can_render";
+
     @Override
     public String getLatitudeProperty() {
         return LATITUDE_PROPERTY;
@@ -72,6 +74,11 @@ public class GeoNodeProperties implements IGeoNodeProperties {
     @Override
     public String getCRSProperty() {
         return CRS;
+    }
+
+    @Override
+    public String getCanRenderProperty() {
+        return CAN_RENDER_PROPERTY;
     }
 
 }

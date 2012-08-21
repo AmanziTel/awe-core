@@ -63,4 +63,6 @@ public interface IGISModel extends IModel {
     int getCount();
 
     INodeType getSourceType();
+
+    boolean canRender();
 }
