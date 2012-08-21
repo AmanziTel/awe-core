@@ -67,7 +67,7 @@ public class ActionUtil {
      * @param async is this task must be ran asyncrhonically
      */
 
-    public void runTask(Runnable task, boolean async) {
+    public void runTask(final Runnable task, final boolean async) {
         if (display != null) {
             if (async) {
                 display.asyncExec(task);

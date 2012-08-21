@@ -27,6 +27,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -63,7 +64,11 @@ public final class Loader<C extends IConfiguration, D extends IData> implements 
     }
 
     @Override
-    public void run(final IProgressMonitor monitor) {
+    public void run(IProgressMonitor monitor) {
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
+
         long timeBefore = System.currentTimeMillis();
 
         parser.setProgressMonitor(getName(), monitor);

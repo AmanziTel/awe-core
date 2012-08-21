@@ -15,8 +15,9 @@ package org.amanzi.awe.ui.manager;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.Set;
@@ -130,8 +131,11 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
     @Test
     public void testCheckEventFiring() {
         IAWEEventListenter listener1 = mock(IAWEEventListenter.class);
+        when(listener1.getPriority()).thenReturn(Priority.NORMAL);
         IAWEEventListenter listener2 = mock(IAWEEventListenter.class);
+        when(listener2.getPriority()).thenReturn(Priority.NORMAL);
         IAWEEventListenter listener3 = mock(IAWEEventListenter.class);
+        when(listener3.getPriority()).thenReturn(Priority.NORMAL);
 
         eventManager.addListener(listener1, EventStatus.AWE_STARTED);
         eventManager.addListener(listener2, EventStatus.PROJECT_CHANGED);
@@ -140,8 +144,8 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
         eventManager.fireAWEStartedEvent();
 
         verify(listener1).onEvent(eq(new AWEStartedEvent()));
+        verify(listener2, never()).onEvent(eq(new AWEStartedEvent()));
         verify(listener3).onEvent(eq(new AWEStartedEvent()));
-        verifyNoMoreInteractions(listener1, listener2, listener3);
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * TODO Purpose of
@@ -52,7 +53,9 @@ public class UDIGProjectListener implements IAWEEventListenter, Adapter {
             ProjectRegistryImpl.getProjectRegistry().eAdapters().add(this);
 
             // initialize active project in uDIG
-            ApplicationGIS.getActiveProject();
+            if (PlatformUI.isWorkbenchRunning()) {
+                ApplicationGIS.getActiveProject();
+            }
             break;
         default:
             break;

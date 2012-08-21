@@ -215,9 +215,13 @@ public class LoaderTest extends AbstractMockitoTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckFinishUpWhenException() throws Exception {
         when(parser.next()).thenThrow(new IllegalArgumentException());
+        doNothing().when(parser).finishUp();
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            doNothing().when(saver).finishUp();
+        }
 
         loader.run(null);
 

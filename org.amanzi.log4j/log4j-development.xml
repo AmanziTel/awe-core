@@ -16,10 +16,5 @@
     <priority value="INFO"/>
     <appender-ref ref="CONSOLE-DEBUG"/>
   </root>
-  
-  <logger name="org.amanzi.awe.statistics">
-    <priority value="TRACE"/>
-    <appender-ref ref="CONSOLE-DEBUG"/>
-  </logger>
 
 </log4j:configuration>
