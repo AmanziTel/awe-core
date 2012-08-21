@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -202,8 +203,15 @@ public class SynonymsManager {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Synonyms> getSynonyms(final String synonymsType, final INodeType nodeType) {
-        return getSynonyms(synonymsType).get(nodeType);
+        List<Synonyms> result = getSynonyms(synonymsType).get(nodeType);
+
+        if (result == null) {
+            result = ListUtils.EMPTY_LIST;
+        }
+
+        return result;
     }
 
     public Map<INodeType, List<Synonyms>> getSynonyms(final String synonymsType) {
