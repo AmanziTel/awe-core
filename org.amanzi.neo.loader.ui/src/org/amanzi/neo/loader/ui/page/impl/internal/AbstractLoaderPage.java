@@ -39,9 +39,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extends WizardPage
-implements
-ILoaderPage<T>,
-ICRSSelectorListener {
+        implements
+            ILoaderPage<T>,
+            ICRSSelectorListener {
 
     public static final int NUMBER_OF_COLUMNS = 4;
 
@@ -87,9 +87,9 @@ ICRSSelectorListener {
     }
 
     protected void autodefineLoader() {
-        ILoader<T, ?> lastUnknown = null;
+        ILoader<T, ? > lastUnknown = null;
         IValidationResult unkonwnResult = null;
-        ILoader<T, ?> definedLoader = null;
+        ILoader<T, ? > definedLoader = null;
         for (ILoader<T, ? > loader : loaders) {
             IValidationResult result = loader.isAppropriate(getConfiguration());
             switch (result.getResult()) {
@@ -172,5 +172,15 @@ ICRSSelectorListener {
         T configuration = getConfiguration();
 
         configuration.setCRS(crs);
+    }
+
+    protected ILoader<T, ? > getLoader(String loaderName) {
+        for (ILoader<T, ? > loader : loaders) {
+            if (loader.getName().equals(loaderName)) {
+                return loader;
+            }
+        }
+
+        return null;
     }
 }

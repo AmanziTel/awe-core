@@ -5,7 +5,7 @@
   <appender name="LOG-FILE-APPENDER" class="org.apache.log4j.FileAppender">
     <param name="file" value="app.log"/>
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{ISO8601} [%5p] %c{1} %m at %n"/>
+      <param name="ConversionPattern" value="%d{ISO8601} [%5p] %c{1} %m%n"/>
     </layout>
   </appender>
  

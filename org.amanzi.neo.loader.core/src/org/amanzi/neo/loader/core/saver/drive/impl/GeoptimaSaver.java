@@ -63,7 +63,7 @@ public class GeoptimaSaver extends AbstractDriveSaver {
 
     private final IMeasurementNodeProperties measurementNodeProperties;
 
-    private final Map<String, Map<String, Object>> signalCache = new HashMap<String, Map<String,Object>>();
+    private final Map<String, Map<String, Object>> signalCache = new HashMap<String, Map<String, Object>>();
 
     public GeoptimaSaver() {
         this(LoaderCorePlugin.getInstance().getTimePeriodNodeProperties(), LoaderCorePlugin.getInstance().getGeoNodeProperties(),
@@ -75,9 +75,9 @@ public class GeoptimaSaver extends AbstractDriveSaver {
      * @param projectModelProvider
      * @param synonymsManager
      */
-    protected GeoptimaSaver(final ITimePeriodNodeProperties timePeriodNodeProperties,
-            final IGeoNodeProperties geoNodeProperties, final IDriveModelProvider driveModelProvider,
-            final IProjectModelProvider projectModelProvider, final IMeasurementNodeProperties measurementNodeProperties, final SynonymsManager synonymsManager) {
+    protected GeoptimaSaver(final ITimePeriodNodeProperties timePeriodNodeProperties, final IGeoNodeProperties geoNodeProperties,
+            final IDriveModelProvider driveModelProvider, final IProjectModelProvider projectModelProvider,
+            final IMeasurementNodeProperties measurementNodeProperties, final SynonymsManager synonymsManager) {
         super(timePeriodNodeProperties, geoNodeProperties, driveModelProvider, projectModelProvider, synonymsManager);
         this.measurementNodeProperties = measurementNodeProperties;
     }
@@ -103,10 +103,10 @@ public class GeoptimaSaver extends AbstractDriveSaver {
                     updateProperties(result, imei);
                 }
             } else {
-                LOGGER.warn("No IMEI was found in line");
+                LOGGER.warn("No IMEI was found in line <" + data + ">");
             }
         } else {
-            LOGGER.warn("No event was found in line");
+            LOGGER.warn("No event was found in line <" + data + ">");
         }
 
         return result;
@@ -115,7 +115,8 @@ public class GeoptimaSaver extends AbstractDriveSaver {
     private void updateSignalCache(final Map<String, Object> data, final String imei) {
         Map<String, Object> cacheData = new HashMap<String, Object>();
 
-        cacheData.put(getTimePeriodNodeProperties().getTimestampProperty(), data.get(getTimePeriodNodeProperties().getTimestampProperty()));
+        cacheData.put(getTimePeriodNodeProperties().getTimestampProperty(),
+                data.get(getTimePeriodNodeProperties().getTimestampProperty()));
         cacheData.put(SIGNAL_STRENGTH, data.get(SIGNAL_STRENGTH));
 
         signalCache.put(imei, cacheData);

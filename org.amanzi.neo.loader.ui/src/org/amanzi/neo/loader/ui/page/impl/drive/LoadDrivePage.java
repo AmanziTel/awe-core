@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.loader.ui.page.impl.drive;
 
-
 import java.io.File;
 import java.util.Collection;
 
@@ -42,10 +41,10 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
-implements
-ISelectLoaderListener,
-ISelectDriveListener,
-ISelectDriveResourceListener {
+        implements
+            ISelectLoaderListener,
+            ISelectDriveListener,
+            ISelectDriveResourceListener {
 
     private SelectDriveNameWidget driveNameCombo;
 
@@ -77,7 +76,7 @@ ISelectDriveResourceListener {
     private IOFileFilter getFileFilter() {
         if (getCurrentLoader() == null) {
             IOFileFilter filter = FileFilterUtils.trueFileFilter();
-            for (ILoader<?, ?> loader : getLoaders()) {
+            for (ILoader< ? , ? > loader : getLoaders()) {
                 filter = FileFilterUtils.orFileFilter(filter, loader.getFileFilter());
             }
             return filter;
@@ -99,6 +98,8 @@ ISelectDriveResourceListener {
 
     @Override
     public void onLoaderChanged() {
+        setCurrentLoader(getLoader(loaderCombo.getText()));
+
         update();
     }
 
