@@ -141,7 +141,7 @@ class Template
         result[header.name] = eval(header.formula + ' element')
     end
     
-    java.util.HashMap.new(result)
+    java.util.LinkedHashMap.new(result)
   end
 
   def canResolve(model)

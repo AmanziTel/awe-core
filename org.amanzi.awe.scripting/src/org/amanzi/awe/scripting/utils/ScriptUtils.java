@@ -54,7 +54,7 @@ public class ScriptUtils {
     private static final String POSTFIX_JAR = ".jar!/";
     private static final String PREFIX_FILE = "file:";
     private static final String LIB_PATH = "lib/ruby/";
-    private static final String[] JRUBY_VERSIONS = new String[] {"1.8", "1.9", "2.0", "2.1"};
+    private static final String[] JRUBY_VERSIONS = new String[] {"1.9", "2.0", "2.1"};
 
     private String jRubyHome;
     private String jRubyVersion;
@@ -105,7 +105,7 @@ public class ScriptUtils {
      * @return
      * @throws Exception
      */
-    public List<String> makeLoadPath(String path) throws ScriptingException {
+    public List<String> makeLoadPath(final String path) throws ScriptingException {
         try {
             getJRubyHome();
             getJrubyVersion();
@@ -131,7 +131,7 @@ public class ScriptUtils {
      * 
      * @throws IOException
      */
-    private String findJRubyVersion(String jRubyHome) throws ScriptingException, IOException {
+    private String findJRubyVersion(final String jRubyHome) throws ScriptingException, IOException {
         String result = null;
         JarFile jarFile = null;
         if (jRubyHome.startsWith(PREFIX_FILE) && jRubyHome.endsWith(POSTFIX_JAR)) {
@@ -156,7 +156,7 @@ public class ScriptUtils {
      * @param version
      * @param version2
      */
-    private boolean checkFileExisting(JarFile jarFile, String folderPath, String versionFolder) {
+    private boolean checkFileExisting(final JarFile jarFile, final String folderPath, final String versionFolder) {
         if (jarFile == null) {
             if ((new File(folderPath + versionFolder)).isDirectory()) {
                 return true;
@@ -185,7 +185,7 @@ public class ScriptUtils {
      * @throws IOException throws Exception if path cannot be resolved
      * @author Kondratenko_Vladislav
      */
-    public String getPluginRoot(String pluginName) throws ScriptingException {
+    public String getPluginRoot(final String pluginName) throws ScriptingException {
         try {
             URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
             LOGGER.info("Plugin URL < " + rubyLocationURL + " >");
@@ -212,7 +212,7 @@ public class ScriptUtils {
      * @throws ScriptingException
      * @throws FileNotFoundException
      */
-    public String getScript(String scriptName, File destination) throws FileNotFoundException, ScriptingException {
+    public String getScript(final String scriptName, final File destination) throws FileNotFoundException, ScriptingException {
         LOGGER.info("< Start searching script" + scriptName + " in destination  " + destination.getAbsolutePath() + " children "
                 + destination.list() + " >");
         File requiredFile = null;
@@ -237,7 +237,7 @@ public class ScriptUtils {
      * @return
      * @throws ScriptingException
      */
-    public String getScript(File scriptFile) throws ScriptingException {
+    public String getScript(final File scriptFile) throws ScriptingException {
         String result = StringUtils.EMPTY;
         if (scriptFile == null) {
             return result;
@@ -257,7 +257,7 @@ public class ScriptUtils {
      * @return
      * @throws IOException
      */
-    private String inputStreamToString(InputStream stream) throws ScriptingException {
+    private String inputStreamToString(final InputStream stream) throws ScriptingException {
         try {
             String result = IOUtils.toString(new InputStreamReader(stream));
             stream.close();
