@@ -111,6 +111,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
     }
 
     private void initializeCellList(final IStatisticsRow statisticsRow) {
+        cellList.clear();
         Iterables.addAll(cellList, statisticsRow.getStatisticsCells());
     }
 
