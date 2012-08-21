@@ -14,10 +14,10 @@
 package org.amanzi.neo.services.impl.statistics.internal;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -38,7 +38,7 @@ public class NodeTypeVault {
 
     private boolean isChanged;
 
-    private final Map<String, PropertyVault> propertyVaults = new HashMap<String, PropertyVault>();
+    private final Map<String, PropertyVault> propertyVaults = new TreeMap<String, PropertyVault>();
 
     public NodeTypeVault(final INodeType nodeType) {
         this.nodeType = nodeType;

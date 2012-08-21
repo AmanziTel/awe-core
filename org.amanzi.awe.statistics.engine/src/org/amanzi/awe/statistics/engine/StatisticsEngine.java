@@ -38,6 +38,8 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -108,7 +110,7 @@ public class StatisticsEngine extends AbstractTransactional {
 
     private final Period period;
 
-    private final Map<ITemplateColumn, IAggregationFunction> functionCache = new HashMap<ITemplateColumn, IAggregationFunction>();
+    private final Map<Pair<IStatisticsRow, ITemplateColumn>, IAggregationFunction> functionCache = new HashMap<Pair<IStatisticsRow, ITemplateColumn>, IAggregationFunction>();
 
     /**
      * 
@@ -225,7 +227,7 @@ public class StatisticsEngine extends AbstractTransactional {
                 Number statisticsValue = previousStatisticsCell.getValue();
                 Number statisticsResult = null;
                 if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                    statisticsResult = calculateValue(column, statisticsValue);
+                    statisticsResult = calculateValue(currentStatisticsRow, column, statisticsValue);
                 }
 
                 if (statisticsModel.updateStatisticsCell(currentStatisticsRow, columnName, statisticsResult, previousStatisticsCell)) {
@@ -237,6 +239,8 @@ public class StatisticsEngine extends AbstractTransactional {
         statisticsModel.setLevelCount(DimensionType.TIME, currentPeriod.getId(), periodCount);
         statisticsModel.flush();
         subProgressMonitor.done();
+
+        flush();
     }
 
     protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
@@ -292,7 +296,7 @@ public class StatisticsEngine extends AbstractTransactional {
 
                                 Number statisticsResult = null;
                                 if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                                    statisticsResult = calculateValue(column, (Number)statisticsValue);
+                                    statisticsResult = calculateValue(statisticsRow, column, (Number)statisticsValue);
                                 }
 
                                 if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement)) {
@@ -324,16 +328,21 @@ public class StatisticsEngine extends AbstractTransactional {
                 statisticsModel.flush();
 
                 subProgressMonitor.done();
+
+                flush();
             }
         }
     }
 
-    private Number calculateValue(final ITemplateColumn templateColumn, final Number value) {
-        IAggregationFunction function = functionCache.get(templateColumn);
+    private Number calculateValue(final IStatisticsRow statisticsRow, final ITemplateColumn templateColumn, final Number value) {
+        Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(statisticsRow, templateColumn);
+
+        IAggregationFunction function = functionCache.get(key);
+
         if (function == null) {
             function = templateColumn.getFunction();
 
-            functionCache.put(templateColumn, function);
+            functionCache.put(key, function);
         }
 
         return function.update(value).getResult();
@@ -345,5 +354,9 @@ public class StatisticsEngine extends AbstractTransactional {
             nextStartDate = endDate;
         }
         return nextStartDate;
+    }
+
+    protected void flush() {
+        functionCache.clear();
     }
 }
