@@ -58,11 +58,16 @@ public abstract class AbstractHeadersValidator<T extends IConfiguration> extends
         while (fileIterator.hasNext()) {
             File singleFile = fileIterator.next();
             try {
-                List<String> errors = checkFile(singleFile);
+                if (getFileFilter().accept(singleFile)) {
 
-                if (!errors.isEmpty()) {
-                    return new ValidationResult(Result.FAIL, Messages.format(Messages.AbstractHeadersValidator_SynonymsFailed,
-                            singleFile.getName(), errors.toString()));
+                    List<String> errors = checkFile(singleFile);
+
+                    if (!errors.isEmpty()) {
+                        return new ValidationResult(Result.FAIL, Messages.format(Messages.AbstractHeadersValidator_SynonymsFailed,
+                                singleFile.getName(), errors.toString()));
+                    }
+                } else {
+                    return new ValidationResult(Result.FAIL, "Unexpected extension for file <" + singleFile.getName() + ">");
                 }
             } catch (IOException e) {
                 return new ValidationResult(Result.FAIL, Messages.format(Messages.AbstractHeadersValidator_IOError,
