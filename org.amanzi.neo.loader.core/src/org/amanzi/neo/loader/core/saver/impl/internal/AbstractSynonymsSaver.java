@@ -343,18 +343,20 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         }
 
         for (Entry<String, String> dataEntry : data.entrySet()) {
-            String headerName = dataEntry.getKey();
+            if (!StringUtils.isEmpty(dataEntry.getValue())) {
+                String headerName = dataEntry.getKey();
 
-            Property< ? > property = properties.get(headerName);
-            if (property == null) {
-                property = createProperty(nodeType, headerName, addNonMappedHeaders);
+                Property< ? > property = properties.get(headerName);
+                if (property == null) {
+                    property = createProperty(nodeType, headerName, addNonMappedHeaders);
 
-                properties.put(headerName, property);
-            }
+                    properties.put(headerName, property);
+                }
 
-            Object value = property.parse(data);
-            if (value != null) {
-                result.put(property.getPropertyName(), value);
+                Object value = property.parse(data);
+                if (value != null) {
+                    result.put(property.getPropertyName(), value);
+                }
             }
         }
 
