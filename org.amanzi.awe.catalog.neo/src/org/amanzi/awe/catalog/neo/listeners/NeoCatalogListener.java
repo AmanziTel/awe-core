@@ -23,7 +23,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.command.CompositeCommand;
 import net.refractions.udig.project.internal.command.navigation.AbstractNavCommand;
-import net.refractions.udig.project.internal.command.navigation.ZoomCommand;
+import net.refractions.udig.project.internal.command.navigation.SetViewportBBoxCommand;
 import net.refractions.udig.project.internal.command.navigation.ZoomExtentCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
@@ -172,7 +172,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
         List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 
         commands.add(new ZoomExtentCommand());
-        commands.add(new ZoomCommand(zoom));
+        commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
 
         sendCommandsToLayer(layerList, commands);
     }
