@@ -5,7 +5,7 @@
 
   <properties>
     <tycho-version>0.15.0</tycho-version>
-    <awe-core-version>0.14.0</awe-core-version>
+    <awe-core-version>0.14.1</awe-core-version>
     <awe-scripting-version>1.0.0.qualifier</awe-scripting-version>
     <awe-statistics-version>1.1.1.qualifier</awe-statistics-version>
   </properties>
