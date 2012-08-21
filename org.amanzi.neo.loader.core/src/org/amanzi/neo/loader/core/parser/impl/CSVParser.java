@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.impl.MappedStringData;
 import org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParser;
+import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -34,13 +35,16 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IMappedStringData> {
 
+    private static final Logger LOGGER = Logger.getLogger(CSVParser.class);
+
     private CSVReader csvReader;
 
     private boolean headersParsed;
 
     private String[] headers;
 
-    private int lineNumber = 0;
+    //LN: 21.08.2012, line number started with 1 since first row (0) is Headers
+    private int lineNumber = 1;
 
     @Override
     protected IMappedStringData parseNextElement() throws IOException {
@@ -48,6 +52,10 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
             headers = getCSVReader().readNext();
             headersParsed = true;
             lineNumber++;
+
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Line number <" + lineNumber + "> was read.");
+            }
         }
 
         return convertToMappedData(headers, getCSVReader().readNext());

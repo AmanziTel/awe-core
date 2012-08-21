@@ -20,7 +20,6 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.exception.impl.UnderlyingModelException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
-import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
 import org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaver;
 import org.amanzi.neo.loader.core.synonyms.SynonymsManager;
 import org.amanzi.neo.models.drive.IDriveModel;
@@ -64,12 +63,6 @@ public abstract class AbstractDriveSaver extends AbstractSynonymsSaver<IConfigur
     private double previousLat;
 
     private double previousLon;
-
-    public AbstractDriveSaver() {
-        this(LoaderCorePlugin.getInstance().getTimePeriodNodeProperties(), LoaderCorePlugin.getInstance().getGeoNodeProperties(),
-                LoaderCorePlugin.getInstance().getDriveModelProvider(), LoaderCorePlugin.getInstance().getProjectModelProvider(),
-                SynonymsManager.getInstance());
-    }
 
     /**
      * @param projectModelProvider
@@ -145,5 +138,9 @@ public abstract class AbstractDriveSaver extends AbstractSynonymsSaver<IConfigur
     }
 
     protected abstract IDriveType getDriveType();
+
+    protected ITimePeriodNodeProperties getTimePeriodNodeProperties() {
+        return timePeriodNodeProperties;
+    }
 
 }
