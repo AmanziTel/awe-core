@@ -13,9 +13,8 @@
 
 package org.amanzi.awe.statistics.template;
 
-import java.util.Map;
-
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -30,7 +29,7 @@ public interface ITemplate {
 
     String getName();
 
-    Map<String, Object> calculate(IRubyObject dataElement);
+    RubyHash calculate(IRubyObject dataElement);
 
     boolean canResolve(IMeasurementModel model);
 

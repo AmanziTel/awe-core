@@ -203,7 +203,8 @@ public class StatisticsEngine extends AbstractTransactional {
         }
     }
 
-    protected void calculateHighLevelStatistics(final IStatisticsModel statisticsModel, final Period currentPeriod, final Period previousPeriod, final IProgressMonitor monitor) throws ModelException {
+    protected void calculateHighLevelStatistics(final IStatisticsModel statisticsModel, final Period currentPeriod,
+            final Period previousPeriod, final IProgressMonitor monitor) throws ModelException {
         String subTaskName = "Period <" + period + ">";
         IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
         monitor.subTask(subTaskName);
@@ -213,12 +214,14 @@ public class StatisticsEngine extends AbstractTransactional {
         for (IStatisticsRow previousStatisticsRow : statisticsModel.getStatisticsRows(previousPeriod.getId())) {
             IStatisticsGroup previousStatisticsGroup = previousStatisticsRow.getStatisticsGroup();
 
-            IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(), previousStatisticsGroup.getPropertyValue());
+            IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(),
+                    previousStatisticsGroup.getPropertyValue());
 
             long startTime = period.getStartTime(previousStatisticsRow.getStartDate());
             long endTime = period.getEndTime(startTime);
 
-            IStatisticsRow currentStatisticsRow = statisticsModel.getStatisticsRow(currentStatisticsGroup, previousStatisticsRow, startTime, endTime);
+            IStatisticsRow currentStatisticsRow = statisticsModel.getStatisticsRow(currentStatisticsGroup, previousStatisticsRow,
+                    startTime, endTime);
 
             for (IStatisticsCell previousStatisticsCell : previousStatisticsRow.getStatisticsCells()) {
                 String columnName = previousStatisticsCell.getName();
@@ -230,7 +233,8 @@ public class StatisticsEngine extends AbstractTransactional {
                     statisticsResult = calculateValue(currentStatisticsRow, column, statisticsValue);
                 }
 
-                if (statisticsModel.updateStatisticsCell(currentStatisticsRow, columnName, statisticsResult, previousStatisticsCell)) {
+                if (statisticsModel
+                        .updateStatisticsCell(currentStatisticsRow, columnName, statisticsResult, previousStatisticsCell)) {
                     periodCount++;
                 }
             }
@@ -243,6 +247,7 @@ public class StatisticsEngine extends AbstractTransactional {
         flush();
     }
 
+    @SuppressWarnings("unchecked")
     protected void calculateStatistics(final IStatisticsModel statisticsModel, final Period period, final IProgressMonitor monitor)
             throws ModelException, StatisticsEngineException {
         if (statisticsModel.containsLevel(DimensionType.TIME, period.getId())) {
@@ -277,7 +282,8 @@ public class StatisticsEngine extends AbstractTransactional {
                                 : UNKNOWN_VALUE;
 
                         IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
-                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime, nextStartTime);
+                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
+                                nextStartTime);
 
                         try {
                             Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
@@ -299,7 +305,8 @@ public class StatisticsEngine extends AbstractTransactional {
                                     statisticsResult = calculateValue(statisticsRow, column, (Number)statisticsValue);
                                 }
 
-                                if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult, dataElement)) {
+                                if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult,
+                                        dataElement)) {
                                     periodCount++;
                                 }
 
@@ -335,7 +342,8 @@ public class StatisticsEngine extends AbstractTransactional {
     }
 
     private Number calculateValue(final IStatisticsRow statisticsRow, final ITemplateColumn templateColumn, final Number value) {
-        Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(statisticsRow, templateColumn);
+        Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(statisticsRow,
+                templateColumn);
 
         IAggregationFunction function = functionCache.get(key);
 
