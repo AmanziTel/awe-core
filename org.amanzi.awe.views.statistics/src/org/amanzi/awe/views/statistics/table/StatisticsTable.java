@@ -97,7 +97,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     public void updateStatistics(final IStatisticsModel model) {
-        if ((model != null) && !model.equals(this.model)) {
+        if (model != null) {
             this.model = model;
 
             updateTable(tableViewer.getTable());
@@ -141,8 +141,9 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     private void clearTable(final Table table) {
-        for (int i = 0; i < table.getColumnCount(); i++) {
-            table.getColumn(i).dispose();
+        for (TableColumn column : table.getColumns()) {
+            column.dispose();
         }
+        tableViewer.setInput(null);
     }
 }

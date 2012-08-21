@@ -253,11 +253,19 @@ IStatisticsTableListener {
         if (statisticsManager != null) {
             statisticsManager.setPeriod(period);
             statisticsTable.setPeriod(period);
+
+            if (statisticsManager.isBuilt()) {
+                updateStatistics();
+            }
         }
     }
 
     @Override
     public void widgetSelected(final SelectionEvent event) {
+        updateStatistics();
+    }
+
+    private void updateStatistics() {
         if (statisticsManager != null) {
             StatisticsJob job = new StatisticsJob(statisticsManager);
 

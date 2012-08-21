@@ -337,7 +337,9 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             INodeType type = getNodeService().getNodeType(node);
 
             if (type.equals(getMainMeasurementNodeType())) {
-                element = getDataElement(node, type, null);
+                String name = getNodeService().getNodeProperty(node, measurementNodeProperties.getEventProperty(), null, false);
+
+                element = getDataElement(node, type, name);
             } else if (type.equals(MeasurementNodeType.FILE)) {
                 String name = getNodeService().getNodeName(node);
                 String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePathProperty(), null, false);
@@ -401,7 +403,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     }
 
     @Override
-    public Iterable<IDataElement> getElements(long minTimestamp, long maxTimestamp) throws ModelException {
+    public Iterable<IDataElement> getElements(final long minTimestamp, final long maxTimestamp) throws ModelException {
         Long[] min = new Long[] {minTimestamp};
         Long[] max = new Long[] {maxTimestamp};
 

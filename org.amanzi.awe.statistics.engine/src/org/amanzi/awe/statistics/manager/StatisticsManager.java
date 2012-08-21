@@ -61,6 +61,8 @@ public class StatisticsManager {
 
     private Period period;
 
+    private boolean isBuilt;
+
     private StatisticsManager(final IMeasurementModel measurementModel) {
         this.model = measurementModel;
     }
@@ -142,6 +144,14 @@ public class StatisticsManager {
     }
 
     public IStatisticsModel build(final IProgressMonitor progressMonitor) throws StatisticsEngineException {
-        return StatisticsEngine.getEngine(model, template, period, property).build(progressMonitor);
+        try {
+            return StatisticsEngine.getEngine(model, template, period, property).build(progressMonitor);
+        } finally {
+            isBuilt = true;
+        }
+    }
+
+    public boolean isBuilt() {
+        return isBuilt;
     }
 }
