@@ -180,6 +180,8 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             updateLocation(latitude, longitude);
 
             location = getLocationElement(locationNode);
+
+            locationCount++;
         } catch (ServiceException e) {
             processException("Exception on creating Location", e);
         }
@@ -370,6 +372,8 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             String primaryTypeName = getNodeService().getNodeProperty(node, measurementNodeProperties.getPrimaryTypeProperty(),
                     DEFAULT_PRIMARY_TYPE.getId(), false);
             primaryType = NodeTypeManager.getInstance().getType(primaryTypeName);
+
+            locationCount = getNodeService().getNodeProperty(node, getGeoNodeProperties().getLocationCountProperty(), 0, false);
         } catch (Exception e) {
             processException("Error on initialization of Measurement Model", e);
         }
@@ -381,6 +385,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getMinTimestampProperty(), minTimestamp);
             getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getMaxTimestampProperty(), maxTimestamp);
             getNodeService().updateProperty(getRootNode(), measurementNodeProperties.getPrimaryTypeProperty(), primaryType.getId());
+            getNodeService().updateProperty(getRootNode(), getGeoNodeProperties().getLocationCountProperty(), locationCount);
 
             super.finishUp();
         } catch (ServiceException e) {

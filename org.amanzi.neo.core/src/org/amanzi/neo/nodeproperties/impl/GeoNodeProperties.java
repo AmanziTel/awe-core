@@ -39,7 +39,7 @@ public class GeoNodeProperties implements IGeoNodeProperties {
 
     private static final String CRS = "crs";
 
-    private static final String CAN_RENDER_PROPERTY = "can_render";
+    private static final String LOCATION_COUNT = "location_count";
 
     @Override
     public String getLatitudeProperty() {
@@ -77,8 +77,8 @@ public class GeoNodeProperties implements IGeoNodeProperties {
     }
 
     @Override
-    public String getCanRenderProperty() {
-        return CAN_RENDER_PROPERTY;
+    public String getLocationCountProperty() {
+        return LOCATION_COUNT;
     }
 
 }
