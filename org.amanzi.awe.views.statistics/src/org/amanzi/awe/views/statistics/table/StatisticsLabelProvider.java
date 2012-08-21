@@ -17,6 +17,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -41,15 +42,32 @@ import com.google.common.collect.Iterables;
  */
 public class StatisticsLabelProvider implements ITableLabelProvider {
 
+    //TODO: LN: 21.08.2012, move message patterns to message bundle
     private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
     private static final DateFormat DAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-    private static final DateFormat YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final DateFormat DAY_YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+    private static final DateFormat WEEK_DATE_FORMAT = new SimpleDateFormat("w");
+
+    private static final DateFormat WEEK_YEAR_DATE_FORMAT = new SimpleDateFormat("w, yyyy");
 
     private static final String SINGLE_PERIOD_PATTERN = "{0} - {1}";
 
     private static final String MULTI_PERIOD_PATTERN = "{0} to {1}";
+
+    private static final String WEEK_PERIOD_PATTERN = "Week {0}";
+
+    private static final String MONTH_PERIOD_PATTERN = "Month {0}";
+
+    private static final DateFormat MONTH_DATE_FORMAT = new SimpleDateFormat("MMM");
+
+    private static final DateFormat MONTH_YEAR_DATE_FORMAT = new SimpleDateFormat("MMM yyyy");
+
+    private static final String YEAR_PERIOD_PATTERN = "Year {0}";
+
+    private static final DateFormat YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy");
 
     private IStatisticsRow previousRow = null;
 
@@ -124,19 +142,42 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
             case HOURLY:
                 boolean isSameDay = DateUtils.isSameDay(startDate, endDate);
                 String pattern = isSameDay ? SINGLE_PERIOD_PATTERN : MULTI_PERIOD_PATTERN;
-                DateFormat dateFormat = isSameDay ? HOUR_DATE_FORMAT : YEAR_DATE_FORMAT;
+                DateFormat dayDateFormat = isSameDay ? HOUR_DATE_FORMAT : DAY_YEAR_DATE_FORMAT;
 
-                return MessageFormat.format(pattern, dateFormat.format(startDate), dateFormat.format(endDate));
+                return MessageFormat.format(pattern, dayDateFormat.format(startDate), dayDateFormat.format(endDate));
             case DAILY:
                 return DAY_DATE_FORMAT.format(startDate);
+            case WEEKLY:
+                DateFormat weekDateFormat = isNeedYear(startDate, endDate) ? WEEK_DATE_FORMAT : WEEK_YEAR_DATE_FORMAT;
+
+                return MessageFormat.format(WEEK_PERIOD_PATTERN, weekDateFormat.format(startDate));
+            case MONTHLY:
+                DateFormat monthDateFormat = isNeedYear(startDate, endDate)? MONTH_DATE_FORMAT : MONTH_YEAR_DATE_FORMAT;
+
+                return MessageFormat.format(MONTH_PERIOD_PATTERN, monthDateFormat.format(startDate));
+            case YEARLY:
+                return MessageFormat.format(YEAR_PERIOD_PATTERN, YEAR_DATE_FORMAT.format(startDate));
+            default:
+                break;
             }
         }
 
         return StringUtils.EMPTY;
     }
 
+    private boolean isNeedYear(final Date startDate, final Date endDate) {
+        Calendar startDateCalendar = DateUtils.toCalendar(startDate);
+        Calendar endDateCalendar = DateUtils.toCalendar(endDate);
+        Calendar currentDateCalendar = Calendar.getInstance();
+
+        int startYear = startDateCalendar.get(Calendar.YEAR);
+        int endYear = endDateCalendar.get(Calendar.YEAR);
+        int currentYear = currentDateCalendar.get(Calendar.YEAR);
+
+        return !((startYear == currentYear) || (startYear == endYear));
+    }
+
     public void setPeriod(final Period period) {
         this.period = period;
     }
-
 }
