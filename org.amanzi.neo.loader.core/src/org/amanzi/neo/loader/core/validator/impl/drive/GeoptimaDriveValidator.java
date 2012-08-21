@@ -25,7 +25,7 @@ public class GeoptimaDriveValidator extends DriveValidator {
 
     @Override
     public String[] getSupportedFileExtensions() {
-        return new String[] {"csv"};
+        return new String[] {"csv", "geoptima"};
     }
 
 }
