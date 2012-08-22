@@ -14,8 +14,8 @@
 package org.amanzi.awe.ui.view.widget;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.view.widget.DateTimeWidget.ITimeChangedListener;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
-import org.amanzi.awe.ui.view.widget.PeriodWidget.ITimePeriodSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
@@ -50,18 +50,17 @@ public final class AWEWidgetFactory {
     }
 
     public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText,
-            final Composite parent) {
-        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider));
+            final Composite parent, final int minimalLabelWidth) {
+        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider, minimalLabelWidth));
     }
 
     public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText,
-            final Composite parent) {
-        return initializeWidget(new PropertyComboWidget(parent, listener, labelText));
+            final Composite parent, final int minimalLabelWidth) {
+        return initializeWidget(new PropertyComboWidget(parent, listener, labelText, minimalLabelWidth));
     }
 
-    public PeriodWidget addPeriodWidget(final ITimePeriodSelectionListener listener, String minTimestampLabel,
-            String maxTimestampLabel, Composite parent) {
-        return initializeWidget(new PeriodWidget(parent, listener, minTimestampLabel, maxTimestampLabel));
+    public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent, final int minimalLabelWidth) {
+        return initializeWidget(new DateTimeWidget(parent, listener, label, minimalLabelWidth));
     }
 
     public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {

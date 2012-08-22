@@ -43,8 +43,8 @@ public class TemplateComboWidget extends AbstractComboWidget<ITemplate, ITemplat
      * @param parent
      * @param label
      */
-    public TemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener, final String label) {
-        super(parent, listener, label);
+    public TemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener, final String label, final int minimalLabelWidth) {
+        super(parent, listener, label, minimalLabelWidth);
     }
 
     @Override

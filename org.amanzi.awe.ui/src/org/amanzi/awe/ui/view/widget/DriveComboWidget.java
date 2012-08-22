@@ -51,8 +51,8 @@ public class DriveComboWidget extends AbstractDatasetComboWidget<IDriveModel, ID
      * @param label
      * @param projectModelProvider
      */
-    protected DriveComboWidget(final Composite parent, final IDriveSelectionListener listener, final String label, final IProjectModelProvider projectModelProvider, final IDriveModelProvider driveModelProvider) {
-        super(parent, listener, label, projectModelProvider);
+    protected DriveComboWidget(final Composite parent, final IDriveSelectionListener listener, final String label, final IProjectModelProvider projectModelProvider, final IDriveModelProvider driveModelProvider, final int minimalLabelWidth) {
+        super(parent, listener, label, projectModelProvider, minimalLabelWidth);
         this.driveModelProvider = driveModelProvider;
     }
 

@@ -56,8 +56,8 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
      * @param parent
      * @param label
      */
-    protected AbstractComboWidget(final Composite parent, final L listener, final String label) {
-        super(parent, listener, label);
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth) {
+        super(parent, listener, label, minimalLabelWidth);
 
         AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
     }

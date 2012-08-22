@@ -30,8 +30,10 @@ import org.eclipse.swt.widgets.Label;
  * @since 1.0.0
  */
 public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWidgetListener>
-        extends
-            AbstractAWEWidget<Composite, L> {
+extends
+AbstractAWEWidget<Composite, L> {
+
+    private static final int NO_MINIMAL_LABEL_WIDTH = -1;
 
     private static final GridLayout DEFAULT_LABELED_COMBO_LAYOUT = new GridLayout(2, false);
 
@@ -39,19 +41,27 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
 
     private C control;
 
+    private int minialLabelWidth;
+
     /**
      * @param parent
      * @param style
      */
     protected AbstractLabeledWidget(final Composite parent, final L listener, final String label) {
+        this(parent, listener, label, NO_MINIMAL_LABEL_WIDTH);
+    }
+
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth) {
         super(parent, SWT.NONE, listener);
         this.label = label;
+        this.minialLabelWidth = minimalLabelWidth;
     }
 
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
         Composite composite = new Composite(parent, style);
         composite.setLayout(DEFAULT_LABELED_COMBO_LAYOUT);
+        composite.setLayoutData(getControlLayoutData());
 
         Label comboLabel = new Label(composite, SWT.NONE);
         comboLabel.setText(label);
@@ -63,6 +73,11 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
         return composite;
     }
 
+    private GridData getControlLayoutData() {
+        return new GridData(SWT.FILL, SWT.CENTER, false, false);
+    }
+
+
     protected abstract C createControl(Composite parent);
 
     private GridData getElementLayoutData() {
@@ -70,7 +85,13 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
     }
 
     private GridData getLabelLayoutData() {
-        return new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        GridData gridData = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+
+        if (minialLabelWidth > 0) {
+            gridData.widthHint = minialLabelWidth;
+        }
+
+        return gridData;
     }
 
     protected C getControl() {

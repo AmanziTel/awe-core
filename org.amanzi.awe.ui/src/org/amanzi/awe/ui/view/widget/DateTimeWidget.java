@@ -59,12 +59,12 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
      * @param listener
      * @param label
      */
-    protected DateTimeWidget(Composite parent, ITimeChangedListener listener, String label) {
-        super(parent, listener, label);
+    public DateTimeWidget(final Composite parent, final ITimeChangedListener listener, final String label, final int minimalLabelWidth) {
+        super(parent, listener, label, minimalLabelWidth);
     }
 
     @Override
-    protected Composite createControl(Composite parent) {
+    protected Composite createControl(final Composite parent) {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(3, false));
 
@@ -79,8 +79,8 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         return composite;
     }
 
-    private DateTime addDateTime(Composite parent) {
-        DateTime result = new DateTime(parent, SWT.NONE);
+    private DateTime addDateTime(final Composite parent) {
+        DateTime result = new DateTime(parent, SWT.BORDER);
 
         result.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
         result.setVisible(true);
@@ -88,26 +88,26 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         return result;
     }
 
-    private void updateDate(Date newDate) {
+    private void updateDate(final Date newDate) {
         CALENDAR.setTime(newDate);
 
         date.setDate(CALENDAR.get(Calendar.YEAR), CALENDAR.get(Calendar.MONTH), CALENDAR.get(Calendar.DAY_OF_MONTH));
         time.setHours(CALENDAR.get(Calendar.HOUR_OF_DAY));
     }
 
-    public void setDate(Date newDate) {
+    public void setDate(final Date newDate) {
         this.originalDate = newDate;
 
         updateDate(newDate);
     }
 
     @Override
-    public void widgetSelected(SelectionEvent e) {
+    public void widgetSelected(final SelectionEvent e) {
         updateDate(originalDate);
     }
 
     @Override
-    public void widgetDefaultSelected(SelectionEvent e) {
+    public void widgetDefaultSelected(final SelectionEvent e) {
         widgetSelected(e);
     }
 

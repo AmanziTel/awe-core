@@ -72,7 +72,7 @@ public class GeoService extends IService {
 
     private void addAllGIS(final IRenderableModel model, final List<IGeoResource> resourcesList) {
         for (IGISModel gisModel : model.getAllGIS()) {
-            if (checkForExistCoordinateElement(gisModel)) {
+            if (gisModel.canRender()) {
                 resourcesList.add(new GeoResource(this, gisModel));
             }
         }
@@ -105,20 +105,6 @@ public class GeoService extends IService {
             }
         }
         return members;
-    }
-
-    /**
-     * just check for location contain
-     * 
-     * @param gis
-     * @return
-     */
-    private boolean checkForExistCoordinateElement(final IGISModel gis) {
-        if ((gis.getMaxLongitude() != 0d) && (gis.getMinLongitude() != 0d) && (gis.getMaxLatitude() != 0d)
-                && (gis.getMinLatitude() != 0d)) {
-            return gis.canRender();
-        }
-        return false;
     }
 
     @Override

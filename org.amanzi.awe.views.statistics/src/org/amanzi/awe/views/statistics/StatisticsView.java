@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.statistics;
 
+import java.util.Date;
+
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
@@ -20,10 +22,10 @@ import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widget.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widget.DateTimeWidget;
+import org.amanzi.awe.ui.view.widget.DateTimeWidget.ITimeChangedListener;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
-import org.amanzi.awe.ui.view.widget.PeriodWidget;
-import org.amanzi.awe.ui.view.widget.PeriodWidget.ITimePeriodSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.statistics.internal.StatisticsPlugin;
@@ -61,7 +63,7 @@ IDriveSelectionListener,
 IPropertySelectionListener,
 ITemplateSelectionListener,
 IPeriodSelectionListener,
-ITimePeriodSelectionListener,
+ITimeChangedListener,
 SelectionListener,
 IStatisticsTableListener {
 
@@ -99,6 +101,14 @@ IStatisticsTableListener {
 
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
 
+    private static final int FIRST_ROW_LABEL_WIDTH = 65;
+
+    private static final int SECOND_ROW_LABEL_WIDTH = 75;
+
+    private static final int THIRD_ROW_LABEL_WIDTH = 85;
+
+    //TODO: LN: 21.08.2012, refactor: move all Layouts and LayoutData's to constants or some Factory
+
     private DriveComboWidget driveCombo;
 
     private TemplateComboWidget templateCombo;
@@ -109,11 +119,13 @@ IStatisticsTableListener {
 
     private StatisticsManager statisticsManager;
 
-    private PeriodWidget timePeriod;
-
     private Button buildButton;
 
     private StatisticsTable statisticsTable;
+
+    private DateTimeWidget startTime;
+
+    private DateTimeWidget endTime;
 
     private boolean isInitialized = false;
 
@@ -122,11 +134,15 @@ IStatisticsTableListener {
 
     @Override
     public void createPartControl(final Composite parent) {
-        Composite mainComposite = new Composite(parent, SWT.BORDER);
+        Composite mainComposite = new Composite(parent, SWT.NONE);
         mainComposite.setLayout(ONE_ROW_GRID_LAYOUT);
 
-        addTemplateComposite(mainComposite);
-        addPeriodComposite(mainComposite);
+        Composite controlsComposite = new Composite(mainComposite, SWT.NONE);
+        controlsComposite.setLayout(new GridLayout(4, false));
+        controlsComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+        addTemplateCompositeContent(controlsComposite);
+        addPeriodCompositeContent(controlsComposite);
 
         statisticsTable = addStatisticsTableWidget(mainComposite, this);
         statisticsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -135,21 +151,13 @@ IStatisticsTableListener {
         driveCombo.updateSelection();
     }
 
-    private void addTemplateComposite(final Composite parent) {
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(getCompositeGridData());
-        composite.setLayout(new GridLayout(4, false));
-
-        addTemplateCompositeContent(composite);
-    }
-
     private void addTemplateCompositeContent(final Composite parent) {
-        driveCombo = AWEWidgetFactory.getFactory().addDriveComboWidget(this, "Dataset:", parent);
+        driveCombo = AWEWidgetFactory.getFactory().addDriveComboWidget(this, "Dataset:", parent, FIRST_ROW_LABEL_WIDTH);
 
         templateCombo = addTemplateComboWidget(parent, this);
         templateCombo.setEnabled(false);
 
-        propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent);
+        propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent, THIRD_ROW_LABEL_WIDTH);
         propertyComboWidget.setEnabled(false);
 
         buildButton = new Button(parent, SWT.NONE);
@@ -158,25 +166,12 @@ IStatisticsTableListener {
         buildButton.addSelectionListener(this);
     }
 
-    private void addPeriodComposite(final Composite parent) {
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(getCompositeGridData());
-        composite.setLayout(new GridLayout(2, false));
-
-        addPeriodCompositeContent(composite);
-    }
-
-    private GridData getCompositeGridData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, false);
-    }
-
     private void addPeriodCompositeContent(final Composite parent) {
         periodCombo = addPeriodComboWidget(parent, this);
         periodCombo.setEnabled(false);
 
-        timePeriod = AWEWidgetFactory.getFactory().addPeriodWidget(this, "Start time:", "End time", parent);
-        timePeriod.setLayoutData(getCompositeGridData());
-        // timePeriod.setEnabled(false);
+        startTime = AWEWidgetFactory.getFactory().addPeriodWidget(this, "Start time:", parent, SECOND_ROW_LABEL_WIDTH);
+        endTime = AWEWidgetFactory.getFactory().addPeriodWidget(this, "End time:", parent, THIRD_ROW_LABEL_WIDTH);
     }
 
     @Override
@@ -195,7 +190,7 @@ IStatisticsTableListener {
 
     // TODO: LN: 09.08.2012, duplicate code
     private TemplateComboWidget addTemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener) {
-        TemplateComboWidget result = new TemplateComboWidget(parent, listener, "Template:");
+        TemplateComboWidget result = new TemplateComboWidget(parent, listener, "Template:", SECOND_ROW_LABEL_WIDTH);
         result.initializeWidget();
 
         return result;
@@ -203,7 +198,7 @@ IStatisticsTableListener {
 
     // TODO: LN: 09.08.2012, duplicate code
     private PeriodComboWidget addPeriodComboWidget(final Composite parent, final IPeriodSelectionListener listener) {
-        PeriodComboWidget result = new PeriodComboWidget(parent, listener, "Period:");
+        PeriodComboWidget result = new PeriodComboWidget(parent, listener, "Period:", FIRST_ROW_LABEL_WIDTH);
         result.initializeWidget();
 
         return result;
@@ -243,8 +238,8 @@ IStatisticsTableListener {
             periodCombo.setModel(model);
             periodCombo.setEnabled(true);
 
-            timePeriod.setPeriod(model.getMinTimestamp(), model.getMaxTimestamp());
-            timePeriod.setEnabled(true);
+            startTime.setDate(new Date(model.getMinTimestamp()));
+            endTime.setDate(new Date(model.getMaxTimestamp()));
         }
     }
 
@@ -280,6 +275,11 @@ IStatisticsTableListener {
 
     private void updateTable(final IStatisticsModel statisticsModel) {
         statisticsTable.updateStatistics(statisticsModel);
+    }
+
+    @Override
+    public void onTimeChanged(final Date newTime, final DateTimeWidget source) {
+
     }
 
 }
