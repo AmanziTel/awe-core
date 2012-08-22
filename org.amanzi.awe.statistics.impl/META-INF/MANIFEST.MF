@@ -4,8 +4,7 @@ Bundle-Name: Impl
 Bundle-SymbolicName: org.amanzi.awe.statistics.impl;singleton:=true
 Bundle-Version: 1.1.1.qualifier
 Bundle-Activator: org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin
-Require-Bundle: org.eclipse.core.runtime,
- org.amanzi.neo.core;bundle-version="1.0.0",
+Require-Bundle: org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.models.impl;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy

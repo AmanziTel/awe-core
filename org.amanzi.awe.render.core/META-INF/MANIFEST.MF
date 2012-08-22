@@ -6,7 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: net.refractions.udig.project,
  org.amanzi.awe.catalog.neo;visibility:=reexport,
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
- org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport
+ org.amanzi.awe.libs;bundle-version="1.0.0";visibility:=reexport,
+ org.amanzi.neo.models;bundle-version="1.0.0";visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.render.core

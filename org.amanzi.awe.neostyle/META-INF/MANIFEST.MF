@@ -6,7 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.neostyle.NeoStylePlugin
 Require-Bundle: net.refractions.udig.project.ui,
  net.refractions.udig.style,
- org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
+ org.amanzi.neo.models;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true
 Export-Package: org.amanzi.awe.neostyle,

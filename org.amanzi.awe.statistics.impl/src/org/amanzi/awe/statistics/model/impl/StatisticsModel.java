@@ -485,7 +485,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         Node statisticsCellNode = findStatisticsCellNode((StatisticsRow)statisticsRow, name);
 
         if (statisticsCellNode == null) {
-            LOGGER.info("No Statistics Cell was found by name <" + name + "> in Row <" + statisticsRow + ">. Create new one.");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("No Statistics Cell was found by name <" + name + "> in Row <" + statisticsRow + ">. Create new one.");
+            }
 
             statisticsCellNode = createStatisticsCellNode((StatisticsRow)statisticsRow, name);
 
