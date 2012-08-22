@@ -121,7 +121,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
             default:
                 Number value = cellList.get(columnIndex - 2).getValue();
 
-                return value == null ? "N/A" : value.toString();
+                return value == null ? StringUtils.EMPTY : value.toString();
             }
         }
 
