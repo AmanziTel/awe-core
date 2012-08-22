@@ -147,7 +147,7 @@
               <ws>gtk</ws>
               <arch>x86</arch>
             </environment>
-            <environment>
+<!--            <environment>
               <os>macosx</os>
               <ws>carbon</ws>
               <arch>x86</arch>
@@ -161,7 +161,7 @@
               <os>macosx</os>
               <ws>cocoa</ws>
               <arch>x86_64</arch>
-            </environment>
+            </environment> -->
             <environment>
               <os>win32</os>
               <ws>win32</ws>
