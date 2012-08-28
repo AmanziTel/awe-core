@@ -108,11 +108,12 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
     public FilteringDialog(TableViewer tableViewer, TableColumn column, Set<String> groups) {
         Table table = tableViewer.getTable();
         shell = new Shell(table.getShell(), SWT.SHELL_TRIM);
+        shell.setText("Aggregation filters setting");
         // locate dialog
         Point location = table.getDisplay().getCursorLocation();
         Rectangle clientArea = table.getDisplay().getClientArea();
         int shellWidth = Math.min(300, clientArea.width - location.x);
-        int shellHeight = Math.min(500, clientArea.height - location.y);
+        int shellHeight = 400;
         shell.setSize(shellWidth, shellHeight);
         shell.setLocation(location);
         shell.setLayout(ONE_COLUMN_LAYOUT);
@@ -219,7 +220,7 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
     }
 
     /**
-     *
+     * set filter to tree viewer
      */
     private void setFilter() {
         String filterText = textField.getText();

@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -38,7 +37,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class KpiComboViewerWidget extends AbstractAWEWidget<ScrolledComposite, IKpiTreeListener> implements ICheckStateListener {
+public class KpiComboViewerWidget extends AbstractAWEWidget<Composite, IKpiTreeListener> implements ICheckStateListener {
 
     public interface IKpiTreeListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
@@ -71,26 +70,20 @@ public class KpiComboViewerWidget extends AbstractAWEWidget<ScrolledComposite, I
     }
 
     @Override
-    protected ScrolledComposite createWidget(Composite parent, int style) {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, style);
-        scrolledComposite.setLayout(ONE_COLUM_LAYOUT);
-        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+    protected Composite createWidget(Composite parent, int style) {
 
-        Composite composite = new Composite(scrolledComposite, SWT.FILL);
+        Composite composite = new Composite(parent, SWT.FILL);
         composite.setLayout(ONE_COLUM_LAYOUT);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         treeViewer = new CheckboxTreeViewer(composite, SWT.FILL | SWT.BORDER);
         treeViewer.setContentProvider(contentProvider);
-        treeViewer.getControl().setLayoutData((new GridData(SWT.FILL, SWT.FILL, true, false)));
+        treeViewer.getControl().setLayoutData((new GridData(SWT.FILL, SWT.FILL, true, true)));
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.getTree().setVisible(true);
         treeViewer.addCheckStateListener(this);
 
-        scrolledComposite.setContent(composite);
-        scrolledComposite.setExpandHorizontal(true);
-        scrolledComposite.setExpandVertical(true);
-        return scrolledComposite;
+        return composite;
     }
 
     protected void setItems(Iterable<String> items, List<String> selected) {
@@ -161,10 +154,20 @@ public class KpiComboViewerWidget extends AbstractAWEWidget<ScrolledComposite, I
         treeViewer.setChecked(SELECT_ALL_ITEM, true);
     }
 
+    /**
+     * get all selected items;
+     * 
+     * @return
+     */
     protected List<String> getSelected() {
         return this.selection;
     }
 
+    /**
+     * set filters for tree view
+     * 
+     * @param filters
+     */
     protected void setFilters(ViewerFilter... filters) {
         treeViewer.setFilters(filters);
         treeViewer.refresh();
@@ -175,7 +178,7 @@ public class KpiComboViewerWidget extends AbstractAWEWidget<ScrolledComposite, I
     }
 
     /**
-     *
+     * reset tree viewer.
      */
     protected void reset() {
         treeViewer.setFilters(EMPTY_FILTERS_LIST);

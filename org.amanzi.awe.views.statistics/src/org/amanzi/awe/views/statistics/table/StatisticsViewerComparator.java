@@ -72,8 +72,7 @@ public class StatisticsViewerComparator extends ViewerComparator {
     private int comparePeriods(int result, IStatisticsRow row1, IStatisticsRow row2) {
         Long period1 = row1.getStartDate();
         Long period2 = row2.getStartDate();
-        result = period1 == period2 ? 0 : period1 < period2 ? -1 : 1;
-        return result;
+        return period1.compareTo(period2);
     }
 
     /**

@@ -30,8 +30,11 @@ import org.eclipse.swt.widgets.TableColumn;
  * @since 1.0.0
  */
 public class FilterDialogEvent extends Event {
+
     private List<ViewerFilter> filters = new ArrayList<ViewerFilter>();
+
     private int direction = SWT.UP;
+
     private TableColumn column;
 
     /**
