@@ -58,14 +58,14 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 public class StatisticsView extends ViewPart
-implements
-IDriveSelectionListener,
-IPropertySelectionListener,
-ITemplateSelectionListener,
-IPeriodSelectionListener,
-ITimeChangedListener,
-SelectionListener,
-IStatisticsTableListener {
+        implements
+            IDriveSelectionListener,
+            IPropertySelectionListener,
+            ITemplateSelectionListener,
+            IPeriodSelectionListener,
+            ITimeChangedListener,
+            SelectionListener,
+            IStatisticsTableListener {
 
     private class StatisticsJob extends Job {
 
@@ -107,7 +107,8 @@ IStatisticsTableListener {
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
 
-    //TODO: LN: 21.08.2012, refactor: move all Layouts and LayoutData's to constants or some Factory
+    // TODO: LN: 21.08.2012, refactor: move all Layouts and LayoutData's to constants or some
+    // Factory
 
     private DriveComboWidget driveCombo;
 
@@ -157,7 +158,8 @@ IStatisticsTableListener {
         templateCombo = addTemplateComboWidget(parent, this);
         templateCombo.setEnabled(false);
 
-        propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent, THIRD_ROW_LABEL_WIDTH);
+        propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent,
+                THIRD_ROW_LABEL_WIDTH);
         propertyComboWidget.setEnabled(false);
 
         buildButton = new Button(parent, SWT.NONE);
@@ -180,6 +182,7 @@ IStatisticsTableListener {
         templateCombo.dispose();
         propertyComboWidget.dispose();
         periodCombo.dispose();
+        statisticsTable.dispose();
     }
 
     @Override

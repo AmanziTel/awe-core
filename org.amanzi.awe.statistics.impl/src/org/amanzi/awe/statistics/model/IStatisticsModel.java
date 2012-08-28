@@ -33,7 +33,8 @@ public interface IStatisticsModel extends IModel {
 
     IStatisticsGroup getStatisticsGroup(String period, String propertyKey) throws ModelException;
 
-    IStatisticsRow getStatisticsRow(IStatisticsGroup group, IStatisticsRow sourceRow, long startDate, long endDate) throws ModelException;
+    IStatisticsRow getStatisticsRow(IStatisticsGroup group, IStatisticsRow sourceRow, long startDate, long endDate)
+            throws ModelException;
 
     IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate) throws ModelException;
 
@@ -51,4 +52,5 @@ public interface IStatisticsModel extends IModel {
     void setLevelCount(DimensionType dimension, String levelName, int count) throws ModelException;
 
     int getLevelCount(DimensionType dimension, String levelName) throws ModelException;
+
 }

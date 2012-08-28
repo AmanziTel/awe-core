@@ -55,7 +55,6 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
     public Object[] getElements(final Object inputElement) {
         if ((period != null) && (inputElement instanceof IStatisticsModel)) {
             IStatisticsModel statisticsModel = (IStatisticsModel)inputElement;
-
             try {
                 return IteratorUtils.toArray(statisticsModel.getStatisticsRows(period.getId()).iterator());
             } catch (ModelException e) {

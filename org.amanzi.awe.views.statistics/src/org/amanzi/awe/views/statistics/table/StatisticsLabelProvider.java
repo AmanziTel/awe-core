@@ -35,14 +35,14 @@ import com.google.common.collect.Iterables;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public class StatisticsLabelProvider implements ITableLabelProvider {
 
-    //TODO: LN: 21.08.2012, move message patterns to message bundle
+    // TODO: LN: 21.08.2012, move message patterns to message bundle
     private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
     private static final DateFormat DAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -133,7 +133,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
         Iterables.addAll(cellList, statisticsRow.getStatisticsCells());
     }
 
-    //TODO: LN: 21.08.2012, move this to some utils class
+    // TODO: LN: 21.08.2012, move this to some utils class
     private String getStatisticsRowName(final IStatisticsRow row) {
         Date startDate = new Date(row.getStartDate());
         Date endDate = new Date(row.getEndDate());
@@ -153,7 +153,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
                 return MessageFormat.format(WEEK_PERIOD_PATTERN, weekDateFormat.format(startDate));
             case MONTHLY:
-                DateFormat monthDateFormat = isNeedYear(startDate, endDate)? MONTH_DATE_FORMAT : MONTH_YEAR_DATE_FORMAT;
+                DateFormat monthDateFormat = isNeedYear(startDate, endDate) ? MONTH_DATE_FORMAT : MONTH_YEAR_DATE_FORMAT;
 
                 return MessageFormat.format(MONTH_PERIOD_PATTERN, monthDateFormat.format(startDate));
             case YEARLY:

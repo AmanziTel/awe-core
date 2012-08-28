@@ -268,7 +268,6 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             return null;
         }
 
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("createStatisticsGroup"));
         }
@@ -312,8 +311,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public IStatisticsRow getStatisticsRow(final IStatisticsGroup group, final IStatisticsRow sourceRow, final long startDate, final long endDate)
-            throws ModelException {
+    public IStatisticsRow getStatisticsRow(final IStatisticsGroup group, final IStatisticsRow sourceRow, final long startDate,
+            final long endDate) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRow", group, sourceRow, startDate, endDate));
         }
@@ -335,8 +334,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    protected IStatisticsRow getStatisticsRowFromDatabase(final StatisticsGroup statisticsGroup, final IStatisticsRow sourceRow, final long startDate,
-            final long endDate) throws ModelException {
+    protected IStatisticsRow getStatisticsRowFromDatabase(final StatisticsGroup statisticsGroup, final IStatisticsRow sourceRow,
+            final long startDate, final long endDate) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRowFromDatabase", statisticsGroup, sourceRow, startDate, endDate));
         }
@@ -387,8 +386,10 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     protected IStatisticsRow createStatisticsRow(final Node node) {
         StatisticsRow row = null;
         try {
-            long startDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getStartDateTimestampProperty(), null, true);
-            long endDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getEndDateTimestampProperty(), null, true);
+            long startDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getStartDateTimestampProperty(), null,
+                    true);
+            long endDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getEndDateTimestampProperty(), null,
+                    true);
 
             row = createStatisticsRow(node, startDate, endDate);
 
@@ -471,14 +472,14 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public boolean updateStatisticsCell(final IStatisticsRow statisticsRow, final String name, final Object value, final IDataElement... sourceElement)
-            throws ModelException {
+    public boolean updateStatisticsCell(final IStatisticsRow statisticsRow, final String name, final Object value,
+            final IDataElement... sourceElement) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("updateStatisticsCell", statisticsRow, name, value));
         }
 
         // TODO: LN: 17.08.2012, validate input
-        //TODO: LN: 20.08.2012, value can be null
+        // TODO: LN: 20.08.2012, value can be null
 
         boolean isCreated = false;;
 
@@ -581,7 +582,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getStartLogStatement("getStatisticsCells", statisticsRowNode));
         }
 
-        //TODO: LN: 20.08.2012, validate input
+        // TODO: LN: 20.08.2012, validate input
 
         Iterable<IStatisticsCell> statisticsCells = null;
 
@@ -607,7 +608,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getStartLogStatement("getStatisticsRows", period));
         }
 
-        //TODO: LN: 20.08.2012, validate input
+        // TODO: LN: 20.08.2012, validate input
 
         Iterable<IStatisticsRow> statisticsRows = null;
 
@@ -620,7 +621,8 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             while (groupNodeIterator.hasNext()) {
                 Iterator<Node> rowsIterator = getNodeService().getChildrenChain(groupNodeIterator.next());
 
-                allRowsIterator = allRowsIterator == null ? rowsIterator : IteratorUtils.chainedIterator(allRowsIterator, rowsIterator);
+                allRowsIterator = allRowsIterator == null ? rowsIterator : IteratorUtils.chainedIterator(allRowsIterator,
+                        rowsIterator);
 
                 statisticsRows = new StatisticsRowIterator(allRowsIterator).toIterable();
             }

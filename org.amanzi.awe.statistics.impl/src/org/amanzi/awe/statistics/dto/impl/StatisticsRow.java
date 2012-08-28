@@ -13,12 +13,17 @@
 
 package org.amanzi.awe.statistics.dto.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.neo4j.graphdb.Node;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -34,7 +39,7 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
 
     private long endDate;
 
-    private Iterable<IStatisticsCell> statisticsCells;
+    private List<IStatisticsCell> statisticsCells = new ArrayList<IStatisticsCell>();
 
     private IStatisticsGroup statisticsGroup;
 
@@ -95,7 +100,9 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
      * @param statisticsCells The statisticsCells to set.
      */
     public void setStatisticsCells(final Iterable<IStatisticsCell> statisticsCells) {
-        this.statisticsCells = statisticsCells;
+        // TODO KV: make sure about this way solution
+        this.statisticsCells.clear();
+        Iterables.addAll(this.statisticsCells, statisticsCells);
     }
 
     /**
