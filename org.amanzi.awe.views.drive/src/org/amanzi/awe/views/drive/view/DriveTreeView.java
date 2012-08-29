@@ -4,6 +4,7 @@
 package org.amanzi.awe.views.drive.view;
 
 import org.amanzi.awe.views.drive.provider.DriveTreeContentProvider;
+import org.amanzi.awe.views.drive.provider.DriveTreeLabelProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -38,4 +39,9 @@ public class DriveTreeView extends AbstractTreeView {
         super.createPartControl(parent);
     }
 
+    @Override
+    protected void setProviders() {
+        super.setProviders();
+        getTreeViewer().setLabelProvider(new DriveTreeLabelProvider());
+    }
 }

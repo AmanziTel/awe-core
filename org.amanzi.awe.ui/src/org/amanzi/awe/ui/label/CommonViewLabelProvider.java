@@ -32,10 +32,18 @@ public class CommonViewLabelProvider extends LabelProvider {
         if (element instanceof IModel) {
             return ((IModel)element).getName();
         } else if (element instanceof IDataElement) {
-            String name = (String)((IDataElement)element).getName();
-            return name != null ? name : element.toString();
+            return getStringFromDataElement((IDataElement)element);
         }
         return null;
+    }
+
+    /**
+     * @param element
+     * @return
+     */
+    protected String getStringFromDataElement(IDataElement element) {
+        String name = element.getName();
+        return name != null ? name : element.toString();
     }
 
     /**

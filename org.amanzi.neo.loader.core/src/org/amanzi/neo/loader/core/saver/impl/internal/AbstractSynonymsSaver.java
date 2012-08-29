@@ -198,7 +198,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             //convert to time
             try {
                 if (dateFormat == null) {
-                    dateFormat = DateFormatManager.getInstance().autoParseString(value);
+                    dateFormat = DateFormatManager.getInstance().autoParseStringToDate(value);
                 }
                 if (dateFormat != null) {
                     return dateFormat.parse(value).getTime();

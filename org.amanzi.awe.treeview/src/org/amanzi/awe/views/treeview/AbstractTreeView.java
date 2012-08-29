@@ -98,7 +98,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     @Override
     public void createPartControl(final Composite parent) {
         LOGGER.info("start create controls");
-        treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+        treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
         setProviders();
         getTreeViewer().setInput(getSite());
         getSite().setSelectionProvider(getTreeViewer());

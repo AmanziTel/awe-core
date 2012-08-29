@@ -28,5 +28,10 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
-   
+    <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.views.drive.preferencestore.PreferenceStoreInitialiser">
+      </initializer>
+   </extension>
 </plugin>

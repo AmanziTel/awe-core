@@ -138,7 +138,7 @@ public class DateFormatManager {
      * @param date
      * @return
      */
-    public DateFormat autoParseString(final String date) {
+    public DateFormat autoParseStringToDate(final String date) {
         assert !StringUtils.isEmpty(date);
 
         for (String value : formatMapping.values()) {
@@ -146,10 +146,21 @@ public class DateFormatManager {
                 parseString(date, value);
                 return new SimpleDateFormat(value);
             } catch (ParseException e) {
-                //do nothing
+                // do nothing
             }
         }
         return null;
+    }
+
+    /**
+     * parse long to default string format
+     * 
+     * @param timestamp
+     * @return
+     */
+    public String parseLongToStringDate(Long timestamp) {
+        assert timestamp != null;
+        return defaultFormat.format(new Date(timestamp));
     }
 
     /**
