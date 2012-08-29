@@ -91,7 +91,9 @@ public class KpiComboViewerWidget extends AbstractAWEWidget<Composite, IKpiTreeL
         if (selected != null) {
             selection = selected;
         }
-        treeViewer.setInput(groups);
+        groups.add(SELECT_ALL_ITEM);
+        treeViewer.setInput(groups.toArray(new String[groups.size()]));
+        groups.remove(SELECT_ALL_ITEM);
         if (!selection.isEmpty()) {
             treeViewer.setCheckedElements(selection.toArray());
             if (selection.size() == groups.size()) {

@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
  * @since 1.0.0
  */
 public class RegexViewerFilter extends ViewerFilter {
+
     private String filter;
 
     public RegexViewerFilter() {

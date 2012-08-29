@@ -43,8 +43,6 @@ public interface IStatisticsModel extends IModel {
 
     Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
 
-    Iterable<IStatisticsGroup> getStatisticsGroups() throws ModelException;
-
     Set<String> getColumns();
 
     String getAggregatedProperty();

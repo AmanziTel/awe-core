@@ -99,22 +99,6 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     }
 
-    private class StatisticsGroupIterator extends AbstractDataElementIterator<IStatisticsGroup> {
-
-        /**
-         * @param nodeIterator
-         */
-        protected StatisticsGroupIterator(final Iterator<Node> nodeIterator) {
-            super(nodeIterator);
-        }
-
-        @Override
-        protected IStatisticsGroup createDataElement(final Node node) {
-            return createStatisticsGroupFromNode(node);
-        }
-
-    }
-
     private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
     private final IStatisticsNodeProperties statisticsNodeProperties;
@@ -729,30 +713,4 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
-    @Override
-    public Iterable<IStatisticsGroup> getStatisticsGroups() throws ModelException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("getStatisticsRows"));
-        }
-
-        // TODO: LN: 20.08.2012, validate input
-
-        Iterable<IStatisticsGroup> statisticsRows = null;
-
-        Node periodNode = getStatisticsLevelNode(DimensionType.TIME, "hourly");
-        try {
-            Iterator<Node> groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
-
-            statisticsRows = new StatisticsGroupIterator(groupNodeIterator).toIterable();
-
-        } catch (ServiceException e) {
-            processException("Error on getting chain of Statistics Rows", e);
-        }
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("getStatisticsRows"));
-        }
-
-        return statisticsRows;
-    }
 }

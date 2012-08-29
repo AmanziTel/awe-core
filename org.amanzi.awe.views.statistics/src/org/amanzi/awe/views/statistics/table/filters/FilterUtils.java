@@ -34,11 +34,11 @@ public class FilterUtils {
         return FilterUtilsConstatntHolder.FILTERS_UTILS;
     }
 
+    private static final String COMPARER_PATTERN = ".*%s.*";
+
     private FilterUtils() {
 
     }
-
-    private static final String COMPARER_PATTERN = ".*%s.*";
 
     public boolean match(String filterText, String secondString) {
         Pattern pattern = Pattern.compile(String.format(COMPARER_PATTERN, filterText), Pattern.CASE_INSENSITIVE);

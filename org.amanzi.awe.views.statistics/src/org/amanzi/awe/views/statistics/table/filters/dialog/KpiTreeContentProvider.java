@@ -13,8 +13,7 @@
 
 package org.amanzi.awe.views.statistics.table.filters.dialog;
 
-import java.util.Set;
-
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -38,15 +37,15 @@ public class KpiTreeContentProvider implements ITreeContentProvider {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object[] getElements(Object inputElement) {
-        Set<String> input = (Set<String>)inputElement;
-        int size = input.size();
-        Object[] elements = new Object[size + 1];
-        System.arraycopy(input.toArray(), 0, elements, 1, size);
-        elements[0] = KpiComboViewerWidget.SELECT_ALL_ITEM;
-        return elements;
+        String[] array = (String[])inputElement;
+        int index = ArrayUtils.indexOf(array, KpiComboViewerWidget.SELECT_ALL_ITEM);
+
+        String temp = array[0];
+        array[0] = array[index];
+        array[index] = temp;
+        return array;
     }
 
     @Override

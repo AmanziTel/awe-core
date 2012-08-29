@@ -82,6 +82,10 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
 
     private static final String CANCEL = "Cancel";
 
+    private static final int MIN_SHWLL_HEIGHT = 400;
+
+    private static final int MIN_SHELL_WIDTH = 300;
+
     private Button bSortZA;
 
     private TableColumn column;
@@ -112,8 +116,8 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
         // locate dialog
         Point location = table.getDisplay().getCursorLocation();
         Rectangle clientArea = table.getDisplay().getClientArea();
-        int shellWidth = Math.min(300, clientArea.width - location.x);
-        int shellHeight = 400;
+        int shellWidth = Math.min(MIN_SHELL_WIDTH, clientArea.width - location.x);
+        int shellHeight = MIN_SHWLL_HEIGHT;
         shell.setSize(shellWidth, shellHeight);
         shell.setLocation(location);
         shell.setLayout(ONE_COLUMN_LAYOUT);

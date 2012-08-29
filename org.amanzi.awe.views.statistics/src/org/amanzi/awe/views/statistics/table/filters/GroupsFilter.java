@@ -28,6 +28,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
  * @since 1.0.0
  */
 public class GroupsFilter extends ViewerFilter {
+    
     private List<String> values;
 
     public GroupsFilter(List<String> values) {

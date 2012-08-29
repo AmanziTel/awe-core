@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
@@ -68,6 +68,8 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     private List<TableColumn> columns = new ArrayList<TableColumn>();
 
+    private Period period;
+
     /**
      * @param parent
      * @param style
@@ -103,6 +105,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     public void setPeriod(final Period period) {
+        this.period = period;
         contentProvider.setPeriod(period);
         labelProvider.setPeriod(period);
     }
@@ -147,8 +150,8 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     private void initStatisticsGroups() {
         groups = new HashSet<String>();
         try {
-            for (IStatisticsGroup group : model.getStatisticsGroups()) {
-                groups.add(group.getPropertyValue());
+            for (IStatisticsRow group : model.getStatisticsRows(period.getId())) {
+                groups.add(group.getStatisticsGroup().getPropertyValue());
             }
         } catch (ModelException e) {
             // TODO Auto-generated catch block
