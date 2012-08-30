@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.statistics.table;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -69,6 +71,8 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
     private static final DateFormat YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy");
 
+    private static final int DECIMAL_SIZE = 2;
+
     private IStatisticsRow previousRow = null;
 
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
@@ -120,8 +124,11 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
                 return getStatisticsRowName(statisticsRow);
             default:
                 Number value = cellList.get(columnIndex - 2).getValue();
-
-                return value == null ? StringUtils.EMPTY : value.toString();
+                if (value != null) {
+                    float floatValue = value.floatValue();
+                    BigDecimal bd = new BigDecimal(floatValue).setScale(DECIMAL_SIZE, RoundingMode.HALF_EVEN);
+                    return bd.toString();
+                }
             }
         }
 
