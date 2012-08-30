@@ -61,7 +61,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
     private static final String WEEK_PERIOD_PATTERN = "Week {0}";
 
-    private static final String MONTH_PERIOD_PATTERN = "Month {0}";
+    private static final String MONTH_PERIOD_PATTERN = "{0}";
 
     private static final DateFormat MONTH_DATE_FORMAT = new SimpleDateFormat("MMM");
 

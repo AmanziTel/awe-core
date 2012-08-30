@@ -162,6 +162,7 @@ public class StatisticsView extends ViewPart
         scrolledComposite.setContent(mainComposite);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
+        // TODO KV: should be better solution than static field
         if (MIN_WIDTH == null) {
             Rectangle clientArea = this.getViewSite().getShell().getClientArea();
             MIN_WIDTH = (int)(clientArea.width + (clientArea.width * ADDITIONAL_WIDTH_PERCENTAGE));
