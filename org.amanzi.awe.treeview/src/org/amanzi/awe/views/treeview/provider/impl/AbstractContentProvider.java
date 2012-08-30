@@ -215,4 +215,5 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     protected IProjectModel getActiveProjectModel() {
         return projectModelProvider.getActiveProjectModel();
     }
+
 }

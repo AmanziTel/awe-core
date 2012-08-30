@@ -21,7 +21,6 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
