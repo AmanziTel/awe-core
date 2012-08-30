@@ -41,8 +41,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -107,6 +109,11 @@ public class StatisticsView extends ViewPart
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
 
+    private static final float ADDITIONAL_WIDTH_PERCENTAGE = 0.15f;
+    private static Integer MIN_WIDTH = null;
+
+    private static final int MIN_HEIGHT = 300;
+
     // TODO: LN: 21.08.2012, refactor: move all Layouts and LayoutData's to constants or some
     // Factory
 
@@ -135,8 +142,12 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void createPartControl(final Composite parent) {
-        Composite mainComposite = new Composite(parent, SWT.NONE);
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+        scrolledComposite.setLayout(ONE_ROW_GRID_LAYOUT);
+
+        Composite mainComposite = new Composite(scrolledComposite, SWT.FILL);
         mainComposite.setLayout(ONE_ROW_GRID_LAYOUT);
+        mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
         Composite controlsComposite = new Composite(mainComposite, SWT.NONE);
         controlsComposite.setLayout(new GridLayout(4, false));
@@ -147,6 +158,16 @@ public class StatisticsView extends ViewPart
 
         statisticsTable = addStatisticsTableWidget(mainComposite, this);
         statisticsTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        scrolledComposite.setContent(mainComposite);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+        if (MIN_WIDTH == null) {
+            Rectangle clientArea = this.getViewSite().getShell().getClientArea();
+            MIN_WIDTH = (int)(clientArea.width + (clientArea.width * ADDITIONAL_WIDTH_PERCENTAGE));
+        }
+        scrolledComposite.setMinSize(MIN_WIDTH, MIN_HEIGHT);
+        scrolledComposite.pack();
 
         isInitialized = true;
         driveCombo.updateSelection();

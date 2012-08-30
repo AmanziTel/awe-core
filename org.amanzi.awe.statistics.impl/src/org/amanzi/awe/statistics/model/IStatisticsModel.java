@@ -42,7 +42,7 @@ public interface IStatisticsModel extends IModel {
             throws ModelException;
 
     Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
-
+ 
     Set<String> getColumns();
 
     String getAggregatedProperty();

@@ -13,7 +13,9 @@
 
 package org.amanzi.neo.providers.impl.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
@@ -49,11 +51,13 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     protected static class MultiKey implements IKey {
 
-        private final Map<Class< ? extends IKey>, IKey> keyMap = new HashMap<Class< ? extends IKey>, IKey>();
+        // private final Map<Class< ? extends IKey>, IKey> keyMap = new HashMap<Class< ? extends
+        // IKey>, IKey>();
+        private final List<IKey> keys = new ArrayList<IKey>();
 
         public MultiKey(IKey... keys) {
             for (IKey singleKey : keys) {
-                keyMap.put(singleKey.getClass(), singleKey);
+                this.keys.add(singleKey);
             }
         }
 
@@ -62,7 +66,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
             if (o instanceof MultiKey) {
                 MultiKey anotherKey = (MultiKey)o;
 
-                return this.keyMap.equals(anotherKey.keyMap);
+                return this.keys.equals(anotherKey.keys);
             }
 
             return false;
@@ -70,7 +74,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
         @Override
         public int hashCode() {
-            return keyMap.hashCode();
+            return keys.hashCode();
         }
 
     }

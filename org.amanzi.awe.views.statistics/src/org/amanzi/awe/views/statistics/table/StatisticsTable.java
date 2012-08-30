@@ -150,8 +150,9 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     private void initStatisticsGroups() {
         groups = new HashSet<String>();
         try {
-            for (IStatisticsRow group : model.getStatisticsRows(period.getId())) {
-                groups.add(group.getStatisticsGroup().getPropertyValue());
+            Iterable<IStatisticsRow> rows = model.getStatisticsRows(period.getId());
+            for (IStatisticsRow row : rows) {
+                groups.add(row.getStatisticsGroup().getPropertyValue());
             }
         } catch (ModelException e) {
             // TODO Auto-generated catch block
