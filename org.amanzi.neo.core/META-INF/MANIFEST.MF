@@ -4,7 +4,8 @@ Bundle-Name: Core
 Bundle-SymbolicName: org.amanzi.neo.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.neo.core.transactional,
+Export-Package: org.amanzi.neo.core.period,
+ org.amanzi.neo.core.transactional,
  org.amanzi.neo.dateformat,
  org.amanzi.neo.dto,
  org.amanzi.neo.nodeproperties,

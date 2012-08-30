@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.statistics.period.Period;
+import org.amanzi.neo.core.period.Period;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;

@@ -15,17 +15,17 @@ package org.amanzi.awe.views.statistics.widget;
 
 import java.util.Collection;
 
-import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget;
 import org.amanzi.awe.views.statistics.widget.PeriodComboWidget.IPeriodSelectionListener;
+import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.eclipse.swt.widgets.Composite;
 
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -43,7 +43,8 @@ public class PeriodComboWidget extends AbstractComboWidget<Period, IPeriodSelect
      * @param parent
      * @param label
      */
-    public PeriodComboWidget(final Composite parent, final IPeriodSelectionListener listener, final String label, final int minimalLabelWidth) {
+    public PeriodComboWidget(final Composite parent, final IPeriodSelectionListener listener, final String label,
+            final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
     }
 

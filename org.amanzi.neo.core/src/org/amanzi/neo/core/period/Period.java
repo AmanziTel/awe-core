@@ -11,14 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.period;
+package org.amanzi.neo.core.period;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.amanzi.awe.statistics.internal.Messages;
+import org.amanzi.neo.core.internal.Messages;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**

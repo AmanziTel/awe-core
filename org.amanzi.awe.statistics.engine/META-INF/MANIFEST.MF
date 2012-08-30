@@ -8,7 +8,6 @@ Require-Bundle: org.amanzi.awe.scripting;bundle-version="1.0.0",
  org.amanzi.awe.statistics.impl;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.awe.statistics.exceptions,
  org.amanzi.awe.statistics.manager,
- org.amanzi.awe.statistics.period,
  org.amanzi.awe.statistics.template
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.amanzi.awe.statistics.internal.StatisticsPlugin

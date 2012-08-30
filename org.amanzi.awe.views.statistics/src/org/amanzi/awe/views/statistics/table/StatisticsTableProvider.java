@@ -14,7 +14,7 @@
 package org.amanzi.awe.views.statistics.table;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.period.Period;
+import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;

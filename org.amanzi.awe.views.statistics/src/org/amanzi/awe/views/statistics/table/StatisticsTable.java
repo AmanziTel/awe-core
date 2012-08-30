@@ -20,12 +20,12 @@ import java.util.Set;
 
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.period.Period;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilterDialogEvent;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog.IFilterDialogListener;
+import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
