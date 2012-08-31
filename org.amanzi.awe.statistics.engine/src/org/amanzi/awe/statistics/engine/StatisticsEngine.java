@@ -32,6 +32,7 @@ import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.statistics.template.ITemplateColumn;
 import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
 import org.amanzi.neo.core.period.Period;
+import org.amanzi.neo.core.period.PeriodManager;
 import org.amanzi.neo.core.transactional.AbstractTransactional;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -58,6 +59,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class StatisticsEngine extends AbstractTransactional {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsEngine.class);
+
+    private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
 
     private static final String UNKNOWN_VALUE = "unknown";
 
@@ -266,7 +269,7 @@ public class StatisticsEngine extends AbstractTransactional {
                 monitor.worked(1);
             } else {
                 long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
-                long nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+                long nextStartTime = PERIOD_MANAGER.getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
 
                 String subTaskName = "Period <" + period + ">";
                 IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
@@ -324,7 +327,7 @@ public class StatisticsEngine extends AbstractTransactional {
                     }
 
                     currentStartTime = nextStartTime;
-                    nextStartTime = getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+                    nextStartTime = PERIOD_MANAGER.getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
 
                     if (monitor.isCanceled()) {
                         break;
@@ -354,14 +357,6 @@ public class StatisticsEngine extends AbstractTransactional {
         }
 
         return function.update(value).getResult();
-    }
-
-    private long getNextStartDate(final Period period, final long endDate, final long currentStartDate) {
-        long nextStartDate = period.addPeriod(currentStartDate);
-        if (!period.equals(Period.HOURLY) && (nextStartDate > endDate)) {
-            nextStartDate = endDate;
-        }
-        return nextStartDate;
     }
 
     protected void flush() {

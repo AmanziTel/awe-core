@@ -15,9 +15,11 @@ package org.amanzi.awe.views.drive.provider;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.drive.provider.namesmanager.MeasurementNamesManager;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 
 /**
@@ -41,6 +43,19 @@ public class DriveTreeLabelProvider extends CommonTreeViewLabelProvider {
     public DriveTreeLabelProvider(ITimePeriodNodeProperties timePeriodNodeProperties) {
         super();
         nodeProperties = timePeriodNodeProperties;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public String getText(Object element) {
+        if (element instanceof ITreeItem) {
+            DriveTreeViewItem<IDriveModel, Object> item = (DriveTreeViewItem<IDriveModel, Object>)element;
+            if (item.isPeriodContainer()) {
+                return item.getName();
+            }
+        }
+        // TODO Auto-generated method stub
+        return super.getText(element);
     }
 
     protected String getStringFromDataElement(IDataElement element) {

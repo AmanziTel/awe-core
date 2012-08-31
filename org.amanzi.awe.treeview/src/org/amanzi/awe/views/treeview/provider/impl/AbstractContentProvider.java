@@ -24,7 +24,6 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -41,7 +40,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
-    private static final DataElementComparator DATA_ELEMENT_COMPARER = new DataElementComparator();
+    private static final DataElementComparator DEFAULT_DATA_ELEMENT_COMPARER = new DataElementComparator();
 
     private Iterable<IDataElement> children = null;
 
@@ -103,16 +102,16 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     @SuppressWarnings("unchecked")
     @Override
     public boolean hasChildren(final Object element) {
-        Object[] children = null;
         try {
             ITreeItem<T> item = (ITreeItem<T>)element;
-            children = getChildren(item);
-            return !ArrayUtils.isEmpty(children) && additionalCheckChild(element);
+            return checkNext(item);
         } catch (ModelException e) {
             LOGGER.error("exception when trying to get child", e);
         }
         return false;
     }
+
+    protected abstract boolean checkNext(ITreeItem<T> item) throws ModelException;
 
     /**
      * @param element
@@ -128,11 +127,23 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     protected Object[] processReturment(final T model) {
         List<ITreeItem<T>> dataElements = new ArrayList<ITreeItem<T>>();
         for (IDataElement dataElement : children) {
-            ITreeItem<T> item = new TreeViewItem<T>(model, dataElement);
+            ITreeItem<T> item = createItem(model, dataElement);
+            processItem(item);
             dataElements.add(item);
         }
         Collections.sort(dataElements, getDataElementComparer());
         return dataElements.toArray();
+    }
+
+    /**
+     * you need to override this method in children class to make more action with tree item, by
+     * default this method is empty
+     * 
+     * @param item
+     */
+    protected void processItem(ITreeItem<T> item) {
+        // TODO Auto-generated method stub
+
     }
 
     /**
@@ -151,7 +162,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
             if (getActiveProjectModel() != null) {
                 roots = getRootElements();
                 for (T root : roots) {
-                    rootList.add(new TreeViewItem<T>(root, root.asDataElement()));
+                    rootList.add(createItem(root, root.asDataElement()));
                 }
             }
         } catch (ModelException e) {
@@ -159,6 +170,16 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         }
 
         return rootList.toArray();
+    }
+
+    /**
+     * create Root item
+     * 
+     * @param root
+     * @return
+     */
+    protected ITreeItem<T> createItem(T root, IDataElement element) {
+        return new TreeViewItem<T>(root, element);
     }
 
     /**
@@ -202,7 +223,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @return Returns the DATA_ELEMENT_COMPARATOR.
      */
     public DataElementComparator getDataElementComparer() {
-        return DATA_ELEMENT_COMPARER;
+        return DEFAULT_DATA_ELEMENT_COMPARER;
     };
 
     /**

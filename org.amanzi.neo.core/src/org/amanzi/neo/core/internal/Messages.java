@@ -33,11 +33,26 @@ public class Messages extends NLS {
 
     // For Call Time Periods
     public static String ctrHourly;
+
     public static String ctrDaily;
+
     public static String ctrWeekly;
+
     public static String ctrMonthly;
+
     public static String ctrYearly;
+
     public static String ctrTotal;
+
+    public static String singlePeriodPattern = "{0} - {1}";
+
+    public static String multiPeriodPattern = "{0} to {1}";
+
+    public static String weekPeriodPattern = "Week {0}";
+
+    public static String monthPeriodPattern = "{0}";
+
+    public static String yearPeriodPattern = "Year {0}";
 
     /**
      * Constructor.

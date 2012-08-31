@@ -69,4 +69,9 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     protected List<INetworkModel> getRootElements() throws ModelException {
         return networkModelProvider.findAll(getActiveProjectModel());
     }
+
+    @Override
+    protected boolean checkNext(ITreeItem<INetworkModel> item) throws ModelException {
+        return item.getParent().getChildren(item.getDataElement()).iterator().hasNext();
+    }
 }

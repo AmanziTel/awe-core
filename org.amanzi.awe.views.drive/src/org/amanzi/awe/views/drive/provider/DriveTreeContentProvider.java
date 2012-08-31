@@ -1,24 +1,42 @@
 package org.amanzi.awe.views.drive.provider;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.neo.core.period.Period;
+import org.amanzi.neo.core.period.PeriodManager;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 
 /**
- * @author Bondoronok_P
+ * @author Kondratenko_Vladislav
  */
 public class DriveTreeContentProvider extends AbstractContentProvider<IDriveModel> {
 
+    private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
+
     private final IDriveModelProvider driveModelProvider;
+
+    private List<DriveTreeViewItem<IDriveModel, Object>> items;
 
     public DriveTreeContentProvider() {
         this(AWEUIPlugin.getDefault().getDriveModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
+    }
+
+    @SuppressWarnings("rawtypes")
+    protected static class DataElementComparator implements Comparator<DriveTreeViewItem> {
+        @Override
+        public int compare(final DriveTreeViewItem dataElement1, final DriveTreeViewItem dataElement2) {
+            return dataElement1.getStartDate().compareTo(dataElement2.getStartDate());
+        }
     }
 
     /**
@@ -39,9 +57,67 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void handleInnerElements(ITreeItem<IDriveModel> parentElement) throws ModelException {
-        setChildren(parentElement.getParent().getChildren(parentElement.getDataElement()));
+        items = new ArrayList<DriveTreeViewItem<IDriveModel, Object>>();
+        DriveTreeViewItem<IDriveModel, Object> item = (DriveTreeViewItem<IDriveModel, Object>)parentElement;
+        IDriveModel model = item.getParent();
+
+        if (item.isPeriodContainer()) {
+            buildLevelTree(item, item.getStartDate(), item.getEndDate(), item.getPeriod().getUnderlyingPeriod());
+        } else if (item.getParent().asDataElement().equals(item.getDataElement())) {
+            Period period = Period.getHighestPeriod(model.getMinTimestamp(), model.getMaxTimestamp());
+            if (period == Period.ALL) {
+                period = Period.YEARLY;
+            }
+            buildLevelTree(item, model.getMinTimestamp(), model.getMaxTimestamp(), period);
+        } else {
+            for (IDataElement element : item.getParent().getChildren(item.getDataElement())) {
+                items.add(new DriveTreeViewItem<IDriveModel, Object>(item.getParent(), element));
+            }
+        }
+    }
+
+    /**
+     * @param period
+     * @param L * @param underlyingPeriod
+     * @throws ModelException
+     */
+    private void buildLevelTree(DriveTreeViewItem<IDriveModel, Object> item, Long start, Long end, Period period)
+            throws ModelException {
+        IDriveModel model = item.getParent();
+        if (period != null) {
+            long currentStartTime = period.getStartTime(start);
+            long nextStartTime = PERIOD_MANAGER.getNextStartDate(period, model.getMaxTimestamp(), currentStartTime);
+
+            do {
+                DriveTreeViewItem<IDriveModel, Object> checkForExistanceItem = new DriveTreeViewItem<IDriveModel, Object>(
+                        item.getParent(), currentStartTime, nextStartTime, period);
+                if (checkNext(checkForExistanceItem)) {
+                    items.add(checkForExistanceItem);
+                }
+                currentStartTime = nextStartTime;
+                nextStartTime = PERIOD_MANAGER.getNextStartDate(period, end, currentStartTime);
+            } while (currentStartTime < end);
+
+        } else {
+            for (IDataElement element : model.getElements(item.getStartDate(), item.getEndDate())) {
+                items.add(new DriveTreeViewItem<IDriveModel, Object>(item.getParent(), element));
+            }
+        }
+
+    }
+
+    @Override
+    protected ITreeItem<IDriveModel> createItem(IDriveModel root, IDataElement element) {
+        return new DriveTreeViewItem<IDriveModel, Object>(root, element);
+    }
+
+    @Override
+    protected Object[] processReturment(IDriveModel model) {
+        Collections.sort(items, getDataElementComparer());
+        return items.toArray();
     }
 
     @Override
@@ -54,4 +130,16 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
         handleInnerElements(item);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected boolean checkNext(ITreeItem<IDriveModel> item) throws ModelException {
+        DriveTreeViewItem<IDriveModel, Object> driveItem = (DriveTreeViewItem<IDriveModel, Object>)item;
+        IDriveModel model = driveItem.getParent();
+        if (driveItem.isPeriodContainer()) {
+            return model.getElements(driveItem.getStartDate(), driveItem.getEndDate()).iterator().hasNext();
+        } else {
+            return driveItem.getParent().getChildren(item.getDataElement()).iterator().hasNext();
+        }
+
+    }
 }

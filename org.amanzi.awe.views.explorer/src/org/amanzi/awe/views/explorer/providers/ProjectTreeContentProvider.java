@@ -94,4 +94,14 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
         return getProjectModelProvider().findAll();
     }
 
+    @Override
+    protected boolean checkNext(ITreeItem<IProjectModel> item) throws ModelException {
+        if (item.getParent().asDataElement().equals(item.getDataElement())) {
+            return !networkModelProvider.findAll(item.getParent()).isEmpty()
+                    || !driveModelProvider.findAll(item.getParent()).isEmpty();
+        } else {
+            return false;
+        }
+
+    }
 }

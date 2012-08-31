@@ -617,7 +617,6 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             Iterator<Node> groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
 
             Iterator<Node> allRowsIterator = null;
-
             while (groupNodeIterator.hasNext()) {
                 Iterator<Node> rowsIterator = getNodeService().getChildrenChain(groupNodeIterator.next());
 
