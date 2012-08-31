@@ -8,7 +8,7 @@
             class="org.amanzi.awe.views.drive.view.DriveTreeView"
             icon="icons/drive.png"
             id="org.amanzi.awe.views.drive.DriveTreeView"
-            name="Drive Tree">
+            name="Data">
       </view>
    </extension>
    
