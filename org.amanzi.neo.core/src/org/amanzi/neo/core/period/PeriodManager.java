@@ -75,7 +75,6 @@ public class PeriodManager {
 
                 return MessageFormat.format(Messages.weekPeriodPattern, weekDateFormat.format(startDate));
             case MONTHLY:
-
                 return MessageFormat.format(Messages.monthPeriodPattern, MONTH_YEAR_DATE_FORMAT.format(startDate));
             case YEARLY:
                 return MessageFormat.format(Messages.yearPeriodPattern, YEAR_DATE_FORMAT.format(startDate));
