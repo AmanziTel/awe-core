@@ -26,7 +26,7 @@ public abstract class AbstractRendererStyles {
     private int alpha = (int)(0.6 * 255.0);
     private int largeElementSize = 30;
     private int mediumElementSize = 10;
-    private Color borderColor = Color.BLACK;
+    private Color borderColor = new Color(0, 0, 0, alpha);
     private boolean antialiazing = true;
     private int maxSymbolSize = 40;
     private boolean drawLabels = false;

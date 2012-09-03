@@ -123,6 +123,9 @@ public class NetworkRenderer extends AbstractRenderer {
         path.closePath();
         destination.draw(path);
         destination.fill(path);
+        // create border
+        destination.setColor(networkRendererStyle.getBorderColor());
+        destination.draw(path);
     }
 
     /**
