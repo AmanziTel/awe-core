@@ -101,7 +101,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         }
         if (commonStyle.getScale().equals(Scale.LARGE) && commonStyle.isScaleSymbols()) {
             int largeSectorsSize = commonStyle.getLargeElementSize();
-            largeSectorsSize *= Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled));
+            largeSectorsSize *= Math.round(0.5 + Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled)));
             largeSectorsSize = Math.min(largeSectorsSize, commonStyle.getMaxSymbolSize());
             commonStyle.setLargeElementSize(largeSectorsSize);
         }
