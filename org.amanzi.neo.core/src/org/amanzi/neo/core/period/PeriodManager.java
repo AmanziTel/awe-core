@@ -42,8 +42,6 @@ public class PeriodManager {
 
     private static final DateFormat WEEK_YEAR_DATE_FORMAT = new SimpleDateFormat("w, yyyy");
 
-    private static final DateFormat MONTH_DATE_FORMAT = new SimpleDateFormat("MMMM");
-
     private static final DateFormat MONTH_YEAR_DATE_FORMAT = new SimpleDateFormat("MMMM yyyy");
 
     private static final DateFormat YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy");
@@ -77,9 +75,8 @@ public class PeriodManager {
 
                 return MessageFormat.format(Messages.weekPeriodPattern, weekDateFormat.format(startDate));
             case MONTHLY:
-                DateFormat monthDateFormat = isNeedYear(startDate, endDate) ? MONTH_DATE_FORMAT : MONTH_YEAR_DATE_FORMAT;
 
-                return MessageFormat.format(Messages.monthPeriodPattern, monthDateFormat.format(startDate));
+                return MessageFormat.format(Messages.monthPeriodPattern, MONTH_YEAR_DATE_FORMAT.format(startDate));
             case YEARLY:
                 return MessageFormat.format(Messages.yearPeriodPattern, YEAR_DATE_FORMAT.format(startDate));
             default:
