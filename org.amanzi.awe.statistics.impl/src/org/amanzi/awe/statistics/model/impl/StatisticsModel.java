@@ -14,11 +14,13 @@
 package org.amanzi.awe.statistics.model.impl;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,7 +48,6 @@ import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -54,6 +55,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+
+import com.google.common.collect.Lists;
 
 /**
  * TODO Purpose of
@@ -601,7 +604,6 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return statisticsCells;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Iterable<IStatisticsRow> getStatisticsRows(final String period) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
@@ -616,15 +618,13 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         try {
             Iterator<Node> groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
 
-            Iterator<Node> allRowsIterator = null;
+            List<Node> allRowsIterator = new ArrayList<Node>();
+            // TODO KV: seems like IteratorUtils.chaindedIterator() works badly, check this
+            // solution.
             while (groupNodeIterator.hasNext()) {
-                Iterator<Node> rowsIterator = getNodeService().getChildrenChain(groupNodeIterator.next());
-
-                allRowsIterator = allRowsIterator == null ? rowsIterator : IteratorUtils.chainedIterator(allRowsIterator,
-                        rowsIterator);
-
-                statisticsRows = new StatisticsRowIterator(allRowsIterator).toIterable();
+                allRowsIterator.addAll(Lists.newArrayList(getNodeService().getChildrenChain(groupNodeIterator.next())));
             }
+            statisticsRows = new StatisticsRowIterator(allRowsIterator.iterator()).toIterable();
         } catch (ServiceException e) {
             processException("Error on getting chain of Statistics Rows", e);
         }

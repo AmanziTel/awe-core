@@ -81,7 +81,7 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
 
     /**
      * @param period
-     * @param L * @param underlyingPeriod
+     * @param underlyingPeriod
      * @throws ModelException
      */
     private void buildLevelTree(DriveTreeViewItem<IDriveModel, Object> item, Long start, Long end, Period period)
