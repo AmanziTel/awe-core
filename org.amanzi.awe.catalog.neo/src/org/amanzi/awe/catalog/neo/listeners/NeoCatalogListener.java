@@ -35,6 +35,7 @@ import org.amanzi.neo.models.render.IGISModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -76,7 +77,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
             List<ILayer> layerList = new ArrayList<ILayer>();
             List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
 
-            if (!checkForExistCoordinateElement(model)) {
+            if (!model.canRender()) {
                 LOGGER.info("Can't add layer to map because model: " + model.getName() + " doesn't contain locations");
                 return;
             }
@@ -102,11 +103,6 @@ public class NeoCatalogListener implements IAWEEventListenter {
         }
     }
 
-    private boolean checkForExistCoordinateElement(final IGISModel gis) {
-        return ((gis.getMaxLongitude() != 0d) && (gis.getMinLongitude() != 0d) && (gis.getMaxLatitude() != 0d) && (gis
-                .getMinLatitude() != 0d));
-    }
-
     /**
      * Get geo resource for model
      * 
@@ -118,7 +114,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
      */
     private IGeoResource getResourceForGis(final IService service, final IMap map, final IGISModel gis) throws IOException {
         if ((service != null) && (getLayerModelPair(map, gis).getRight() == null)) {
-            for (IGeoResource iGeoResource : service.resources(null)) {
+            for (IGeoResource iGeoResource : service.resources(new NullProgressMonitor())) {
                 if (iGeoResource.canResolve(IGISModel.class)) {
 
                     IGISModel resolvedElement = iGeoResource.resolve(IGISModel.class, null);

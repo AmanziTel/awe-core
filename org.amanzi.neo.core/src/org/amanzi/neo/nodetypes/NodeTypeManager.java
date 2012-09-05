@@ -148,5 +148,4 @@ public final class NodeTypeManager {
     protected Set<Class< ? >> getRegisteredNodeTypes() {
         return registeredNodeTypes;
     }
-
 }

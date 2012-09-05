@@ -39,6 +39,7 @@ public class MultiFileConfiguration extends AbstractConfiguration implements IMu
     }
 
     public void addFiles(final Collection<File> files) {
+        this.files.clear();
         this.files.addAll(files);
     }
 

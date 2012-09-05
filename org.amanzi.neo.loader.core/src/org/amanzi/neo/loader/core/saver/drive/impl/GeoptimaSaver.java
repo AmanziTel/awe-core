@@ -94,7 +94,8 @@ public class GeoptimaSaver extends AbstractDriveSaver {
 
         String event = (String)result.get(measurementNodeProperties.getEventProperty());
         if (!StringUtils.isEmpty(event)) {
-            String imei = (String)result.get(measurementNodeProperties.getIMEIProperty());
+            Object imeiObject = result.get(measurementNodeProperties.getIMEIProperty());
+            String imei = imeiObject == null ? StringUtils.EMPTY : imeiObject.toString();
 
             if (!StringUtils.isEmpty(imei)) {
                 if (event.equals(SIGNAL_EVENT_NAME)) {
