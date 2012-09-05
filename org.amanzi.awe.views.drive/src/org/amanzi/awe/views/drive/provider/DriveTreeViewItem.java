@@ -61,6 +61,16 @@ public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends 
         name = generateName();
     }
 
+    @Override
+    public int hashCode() {
+        if (StringUtils.isEmpty(name)) {
+            return super.hashCode();
+        } else {
+            return name.hashCode();
+        }
+
+    }
+
     /**
      * @return
      */

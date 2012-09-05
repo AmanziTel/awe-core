@@ -59,7 +59,8 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
      * @param listener
      * @param label
      */
-    public DateTimeWidget(final Composite parent, final ITimeChangedListener listener, final String label, final int minimalLabelWidth) {
+    public DateTimeWidget(final Composite parent, final ITimeChangedListener listener, final String label,
+            final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
     }
 
@@ -68,8 +69,8 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(3, false));
 
-        date = addDateTime(composite);
-        time = addDateTime(composite);
+        date = addDateTime(composite, SWT.BORDER | SWT.DATE);
+        time = addDateTime(composite, SWT.BORDER | SWT.TIME);
 
         skipButton = new Button(composite, SWT.NONE);
         skipButton.setText("X");
@@ -79,8 +80,8 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         return composite;
     }
 
-    private DateTime addDateTime(final Composite parent) {
-        DateTime result = new DateTime(parent, SWT.BORDER);
+    private DateTime addDateTime(final Composite parent, int style) {
+        DateTime result = new DateTime(parent, style);
 
         result.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
         result.setVisible(true);
@@ -92,7 +93,10 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         CALENDAR.setTime(newDate);
 
         date.setDate(CALENDAR.get(Calendar.YEAR), CALENDAR.get(Calendar.MONTH), CALENDAR.get(Calendar.DAY_OF_MONTH));
+
         time.setHours(CALENDAR.get(Calendar.HOUR_OF_DAY));
+        time.setMinutes(CALENDAR.get(Calendar.MINUTE));
+        time.setSeconds(CALENDAR.get(Calendar.SECOND));
     }
 
     public void setDate(final Date newDate) {
