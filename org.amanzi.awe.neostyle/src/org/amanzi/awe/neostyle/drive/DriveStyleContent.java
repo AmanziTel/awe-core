@@ -26,7 +26,7 @@ public class DriveStyleContent extends StyleContent {
 
     private static final Color DEFAULT_LINE_COLOR = Color.DARK_GRAY;
     private static final Color DEFAULT_LABEL_COLOR = Color.DARK_GRAY;
-    private static final Color DEFAULT_LOCATION_COLOR = Color.MAGENTA;
+    private static final Color DEFAULT_LOCATION_COLOR = new Color(200, 128, 255);
 
     private static final String LINE_PRFX = "NET_LINE";
     private static final String LABEL_PRFX = "NET_LABEL";
