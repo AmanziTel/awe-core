@@ -64,6 +64,8 @@ public class StatisticsEngine extends AbstractTransactional {
 
     private static final String UNKNOWN_VALUE = "unknown";
 
+    private static final Object DATASET_AGGREGATION = "dataset";
+
     @SuppressWarnings("unused")
     private static class ID {
 
@@ -282,7 +284,7 @@ public class StatisticsEngine extends AbstractTransactional {
                 do {
                     for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
                         String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
-                                : UNKNOWN_VALUE;
+                                : propertyName.equals(DATASET_AGGREGATION) ? measurementModel.getName() : UNKNOWN_VALUE;
 
                         IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
                         IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,

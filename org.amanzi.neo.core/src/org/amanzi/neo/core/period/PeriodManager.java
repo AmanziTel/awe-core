@@ -16,7 +16,6 @@ package org.amanzi.neo.core.period;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 import org.amanzi.neo.core.internal.Messages;
@@ -37,8 +36,6 @@ public class PeriodManager {
     private static final DateFormat DAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     private static final DateFormat DAY_YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-    private static final DateFormat WEEK_DATE_FORMAT = new SimpleDateFormat("w");
 
     private static final DateFormat WEEK_YEAR_DATE_FORMAT = new SimpleDateFormat("w, yyyy");
 
@@ -71,9 +68,7 @@ public class PeriodManager {
             case DAILY:
                 return DAY_DATE_FORMAT.format(startDate);
             case WEEKLY:
-                DateFormat weekDateFormat = isNeedYear(startDate, endDate) ? WEEK_DATE_FORMAT : WEEK_YEAR_DATE_FORMAT;
-
-                return MessageFormat.format(Messages.weekPeriodPattern, weekDateFormat.format(startDate));
+                return MessageFormat.format(Messages.weekPeriodPattern, WEEK_YEAR_DATE_FORMAT.format(startDate));
             case MONTHLY:
                 return MessageFormat.format(Messages.monthPeriodPattern, MONTH_YEAR_DATE_FORMAT.format(startDate));
             case YEARLY:
@@ -84,18 +79,6 @@ public class PeriodManager {
         }
 
         return StringUtils.EMPTY;
-    }
-
-    private boolean isNeedYear(final Date startDate, final Date endDate) {
-        Calendar startDateCalendar = DateUtils.toCalendar(startDate);
-        Calendar endDateCalendar = DateUtils.toCalendar(endDate);
-        Calendar currentDateCalendar = Calendar.getInstance();
-
-        int startYear = startDateCalendar.get(Calendar.YEAR);
-        int endYear = endDateCalendar.get(Calendar.YEAR);
-        int currentYear = currentDateCalendar.get(Calendar.YEAR);
-
-        return !((startYear == currentYear) || (startYear == endYear));
     }
 
     public long getNextStartDate(final Period period, final long endDate, final long currentStartDate) {

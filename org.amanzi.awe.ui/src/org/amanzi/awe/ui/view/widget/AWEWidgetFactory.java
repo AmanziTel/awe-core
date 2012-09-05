@@ -51,7 +51,8 @@ public final class AWEWidgetFactory {
 
     public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText,
             final Composite parent, final int minimalLabelWidth) {
-        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider, minimalLabelWidth));
+        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider,
+                minimalLabelWidth));
     }
 
     public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText,
@@ -59,7 +60,8 @@ public final class AWEWidgetFactory {
         return initializeWidget(new PropertyComboWidget(parent, listener, labelText, minimalLabelWidth));
     }
 
-    public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent, final int minimalLabelWidth) {
+    public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent,
+            final int minimalLabelWidth) {
         return initializeWidget(new DateTimeWidget(parent, listener, label, minimalLabelWidth));
     }
 

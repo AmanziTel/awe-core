@@ -17,7 +17,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.scripting.JRubyRuntimeWrapper;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
@@ -51,6 +53,8 @@ public class StatisticsManager {
 
     private static Collection<ITemplate> allTemplates;
 
+    private static final String DATASET_DEFAULT_PROPERTY = "dataset";
+
     private final IMeasurementModel model;
 
     private Collection<ITemplate> availableTemplates;
@@ -62,6 +66,8 @@ public class StatisticsManager {
     private Period period;
 
     private boolean isBuilt;
+
+    private Set<String> defaultProperties = null;
 
     private StatisticsManager(final IMeasurementModel measurementModel) {
         this.model = measurementModel;
@@ -149,6 +155,14 @@ public class StatisticsManager {
         } finally {
             isBuilt = true;
         }
+    }
+
+    public Iterable<String> getDefaultProperties() {
+        if (defaultProperties == null) {
+            defaultProperties = new HashSet<String>();
+            defaultProperties.add(DATASET_DEFAULT_PROPERTY);
+        }
+        return defaultProperties;
     }
 
     public boolean isBuilt() {

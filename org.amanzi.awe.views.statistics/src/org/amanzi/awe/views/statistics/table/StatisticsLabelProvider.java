@@ -15,11 +15,7 @@ package org.amanzi.awe.views.statistics.table;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -28,7 +24,6 @@ import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.core.period.PeriodManager;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;

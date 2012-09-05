@@ -14,6 +14,8 @@
 package org.amanzi.awe.ui.view.widget;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget;
@@ -26,8 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -39,6 +41,10 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
 
     }
 
+    private static final String SEPARATOR = "------";
+
+    private Set<String> defaultProperties = new LinkedHashSet<String>();
+
     private IPropertyStatisticsModel propertyModel;
 
     private INodeType nodeType;
@@ -47,20 +53,33 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
      * @param parent
      * @param label
      */
-    protected PropertyComboWidget(final Composite parent, final IPropertySelectionListener listener, final String label, final int minimalLabelWidth) {
+    protected PropertyComboWidget(final Composite parent, final IPropertySelectionListener listener, final String label,
+            final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
     }
 
     @Override
     protected Collection<String> getItems() {
         if (propertyModel != null) {
-            if (nodeType == null) {
-                return propertyModel.getPropertyNames();
-            } else {
-                return propertyModel.getPropertyNames(nodeType);
+            Set<String> properties = new LinkedHashSet<String>();
+            properties.addAll(defaultProperties);
+            if (!defaultProperties.isEmpty()) {
+                properties.add(SEPARATOR);
             }
+            if (nodeType == null) {
+                properties.addAll(propertyModel.getPropertyNames());
+            } else {
+                properties.addAll(propertyModel.getPropertyNames(nodeType));
+            }
+            return properties;
         }
         return null;
+    }
+
+    public void setDefaultProperties(Iterable<String> properties) {
+        for (String prop : properties) {
+            defaultProperties.add(prop);
+        }
     }
 
     @Override

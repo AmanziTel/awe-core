@@ -110,6 +110,7 @@ public class StatisticsView extends ViewPart
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
 
     private static final float ADDITIONAL_WIDTH_PERCENTAGE = 0.15f;
+
     private static Integer MIN_WIDTH = null;
 
     private static final int MIN_HEIGHT = 300;
@@ -257,6 +258,7 @@ public class StatisticsView extends ViewPart
             templateCombo.setStatisticsManager(statisticsManager);
             templateCombo.setEnabled(true);
 
+            propertyComboWidget.setDefaultProperties(StatisticsManager.getManager(model).getDefaultProperties());
             propertyComboWidget.setModel(model);
             propertyComboWidget.setEnabled(true);
 
