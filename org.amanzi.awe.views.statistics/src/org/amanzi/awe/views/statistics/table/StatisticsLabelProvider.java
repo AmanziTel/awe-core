@@ -42,6 +42,8 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
     private static final int DECIMAL_SIZE = 2;
 
+    private static final String SUMMURY_ROW_LABEL = "total";
+
     private IStatisticsRow previousRow = null;
 
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
@@ -111,7 +113,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
     private String getStatisticsRowName(final IStatisticsRow row) {
         if (row.isSummury()) {
-            return "total";
+            return SUMMURY_ROW_LABEL;
         }
         Date startDate = new Date(row.getStartDate());
         Date endDate = new Date(row.getEndDate());
