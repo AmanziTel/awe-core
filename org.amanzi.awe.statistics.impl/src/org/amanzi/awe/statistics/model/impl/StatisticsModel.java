@@ -736,21 +736,25 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     protected void updateSummury(StatisticsRow summuryRow, long startTime, long endTime) throws ServiceException {
-        Node rowNode = summuryRow.getNode();
         if (endTime > summuryRow.getEndDate()) {
-            Date date = new Date(endTime);
-            String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
+            updateSummuryRowDate(summuryRow, endTime, timePeriodNodeProperties.getEndDateProperty(),
+                    timePeriodNodeProperties.getEndDateTimestampProperty());
             summuryRow.setEndDate(endTime);
-            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getEndDateProperty(), dateString);
-            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getEndDateTimestampProperty(), endTime);
 
         }
         if (startTime < summuryRow.getStartDate()) {
-            Date date = new Date(startTime);
-            String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
-            summuryRow.setEndDate(startTime);
-            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getStartDateProperty(), dateString);
-            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getStartDateTimestampProperty(), startTime);
+            updateSummuryRowDate(summuryRow, startTime, timePeriodNodeProperties.getStartDateProperty(),
+                    timePeriodNodeProperties.getStartDateTimestampProperty());
+            summuryRow.setStartDate(startTime);
+
         }
+    }
+
+    private void updateSummuryRowDate(StatisticsRow row, long currentDate, String dateProperty, String dateTimestampProperty)
+            throws ServiceException {
+        Date date = new Date(currentDate);
+        String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
+        getNodeService().updateProperty(row.getNode(), dateProperty, dateString);
+        getNodeService().updateProperty(row.getNode(), dateTimestampProperty, currentDate);
     }
 }
