@@ -217,6 +217,7 @@ public class StatisticsEngine extends AbstractTransactional {
 
         int periodCount = 0;
         for (IStatisticsRow previousStatisticsRow : statisticsModel.getStatisticsRows(previousPeriod.getId())) {
+
             IStatisticsGroup previousStatisticsGroup = previousStatisticsRow.getStatisticsGroup();
 
             IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(),
@@ -224,9 +225,13 @@ public class StatisticsEngine extends AbstractTransactional {
 
             long startTime = period.getStartTime(previousStatisticsRow.getStartDate());
             long endTime = period.getEndTime(startTime);
-
-            IStatisticsRow currentStatisticsRow = statisticsModel.getStatisticsRow(currentStatisticsGroup, previousStatisticsRow,
-                    startTime, endTime);
+            IStatisticsRow currentStatisticsRow = null;
+            if (previousStatisticsRow.isSummury()) {
+                currentStatisticsRow = statisticsModel.getSummuryRow(currentStatisticsGroup);
+            } else {
+                currentStatisticsRow = statisticsModel.getStatisticsRow(currentStatisticsGroup, previousStatisticsRow, startTime,
+                        endTime);
+            }
 
             for (IStatisticsCell previousStatisticsCell : previousStatisticsRow.getStatisticsCells()) {
                 String columnName = previousStatisticsCell.getName();
@@ -287,6 +292,7 @@ public class StatisticsEngine extends AbstractTransactional {
                                 : propertyName.equals(DATASET_AGGREGATION) ? measurementModel.getName() : UNKNOWN_VALUE;
 
                         IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
+                        IStatisticsRow summuryRow = statisticsModel.getSummuryRow(statisticsGroup);
                         IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
                                 nextStartTime);
 
@@ -306,15 +312,17 @@ public class StatisticsEngine extends AbstractTransactional {
                                 }
 
                                 Number statisticsResult = null;
+                                Number summuryResult = null;
                                 if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
                                     statisticsResult = calculateValue(statisticsRow, column, (Number)statisticsValue);
+                                    summuryResult = calculateValue(summuryRow, column, (Number)statisticsValue);
                                 }
 
                                 if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult,
                                         dataElement)) {
                                     periodCount++;
                                 }
-
+                                statisticsModel.updateStatisticsCell(summuryRow, column.getName(), summuryResult, dataElement);
                                 updateTransaction();
                             }
                         } catch (Exception e) {

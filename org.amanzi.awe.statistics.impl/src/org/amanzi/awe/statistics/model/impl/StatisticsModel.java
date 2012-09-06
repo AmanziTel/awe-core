@@ -119,6 +119,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     private final Map<Pair<String, Long>, IStatisticsRow> statisticsRowCache = new HashMap<Pair<String, Long>, IStatisticsRow>();
 
     private final Map<Pair<StatisticsRow, String>, Node> statisticsCellNodeCache = new HashMap<Pair<StatisticsRow, String>, Node>();
+    private final Map<StatisticsGroup, StatisticsRow> summuryCache = new HashMap<StatisticsGroup, StatisticsRow>();
 
     private Set<String> columnNames = new LinkedHashSet<String>();
 
@@ -321,12 +322,11 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         }
 
         // TODO: LN: 15.08.2012, validate input
-        Pair<String, Long> key = new ImmutablePair<String, Long>(group.getPeriod(), startDate);
+        Pair<String, Long> key = new ImmutablePair<String, Long>(group.getName(), startDate);
 
         IStatisticsRow result = statisticsRowCache.get(key);
         if (result == null) {
             result = getStatisticsRowFromDatabase((StatisticsGroup)group, sourceRow, startDate, endDate);
-
             statisticsRowCache.put(key, result);
         }
 
@@ -359,6 +359,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
                 sRowNode = getNodeService()
                         .createNodeInChain(statisticsGroup.getNode(), StatisticsNodeType.S_ROW, name, properties);
+                updateSummury((StatisticsRow)getSummuryRow(statisticsGroup), startDate, endDate);
                 if (sourceRow != null) {
                     statisticsService.addSourceNode(sRowNode, ((DataElement)sourceRow).getNode());
                 }
@@ -395,10 +396,10 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
                     true);
 
             row = createStatisticsRow(node, startDate, endDate);
-
+            boolean isSummury = getNodeService().getNodeProperty(node, statisticsNodeProperties.isSummuryProperty(), false, false);
             Node groupNode = getNodeService().getChainParent(node);
             IStatisticsGroup group = createStatisticsGroupFromNode(groupNode);
-
+            row.setSummury(isSummury);
             row.setStatisticsGroup(group);
             row.setStatisticsCells(getStatisticsCells(node));
         } catch (Exception e) {
@@ -712,4 +713,44 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return result;
     }
 
+    @Override
+    public IStatisticsRow getSummuryRow(IStatisticsGroup statisticsGroup) throws ModelException {
+        try {
+            StatisticsRow row = (StatisticsRow)summuryCache.get(statisticsGroup);
+            if (row == null) {
+
+                row = (StatisticsRow)getStatisticsRowFromDatabase((StatisticsGroup)statisticsGroup, null, Long.MAX_VALUE,
+                        Long.MIN_VALUE);
+                Node sRowNode = row.getNode();
+                row.setSummury(true);
+                getNodeService().updateProperty(sRowNode, statisticsNodeProperties.isSummuryProperty(), true);
+                row.setStatisticsGroup(statisticsGroup);
+                summuryCache.put((StatisticsGroup)statisticsGroup, row);
+            }
+
+            return row;
+        } catch (ServiceException e) {
+            processException("can't get syummury row from group" + statisticsGroup, e);
+        }
+        return null;
+    }
+
+    protected void updateSummury(StatisticsRow summuryRow, long startTime, long endTime) throws ServiceException {
+        Node rowNode = summuryRow.getNode();
+        if (endTime > summuryRow.getEndDate()) {
+            Date date = new Date(endTime);
+            String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
+            summuryRow.setEndDate(endTime);
+            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getEndDateProperty(), dateString);
+            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getEndDateTimestampProperty(), endTime);
+
+        }
+        if (startTime < summuryRow.getStartDate()) {
+            Date date = new Date(startTime);
+            String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
+            summuryRow.setEndDate(startTime);
+            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getStartDateProperty(), dateString);
+            getNodeService().updateProperty(rowNode, timePeriodNodeProperties.getStartDateTimestampProperty(), startTime);
+        }
+    }
 }

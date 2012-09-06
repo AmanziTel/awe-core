@@ -33,4 +33,6 @@ public interface IStatisticsNodeProperties extends INodeProperties {
 
     String getColumnNamesProperty();
 
+    String isSummuryProperty();
+
 }

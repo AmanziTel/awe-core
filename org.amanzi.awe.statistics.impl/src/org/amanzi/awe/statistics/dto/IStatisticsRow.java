@@ -18,8 +18,8 @@ import org.amanzi.neo.dto.IDataElement;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -32,5 +32,7 @@ public interface IStatisticsRow extends IDataElement {
     Iterable<IStatisticsCell> getStatisticsCells();
 
     IStatisticsGroup getStatisticsGroup();
+
+    boolean isSummury();
 
 }

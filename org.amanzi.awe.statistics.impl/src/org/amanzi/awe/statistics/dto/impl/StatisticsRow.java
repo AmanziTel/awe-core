@@ -41,6 +41,8 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
 
     private List<IStatisticsCell> statisticsCells = new ArrayList<IStatisticsCell>();
 
+    private boolean summury = false;
+
     private IStatisticsGroup statisticsGroup;
 
     public StatisticsRow(final Node node) {
@@ -119,4 +121,17 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
         this.statisticsGroup = statisticsGroup;
     }
 
+    /**
+     * @return Returns the summury.
+     */
+    public boolean isSummury() {
+        return summury;
+    }
+
+    /**
+     * @param summury The summury to set.
+     */
+    public void setSummury(boolean summury) {
+        this.summury = summury;
+    }
 }

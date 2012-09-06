@@ -42,7 +42,7 @@ public interface IStatisticsModel extends IModel {
             throws ModelException;
 
     Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
- 
+
     Set<String> getColumns();
 
     String getAggregatedProperty();
@@ -52,5 +52,12 @@ public interface IStatisticsModel extends IModel {
     void setLevelCount(DimensionType dimension, String levelName, int count) throws ModelException;
 
     int getLevelCount(DimensionType dimension, String levelName) throws ModelException;
+
+    /**
+     * @param statisticsGroup
+     * @return
+     * @throws ModelException
+     */
+    IStatisticsRow getSummuryRow(IStatisticsGroup statisticsGroup) throws ModelException;
 
 }

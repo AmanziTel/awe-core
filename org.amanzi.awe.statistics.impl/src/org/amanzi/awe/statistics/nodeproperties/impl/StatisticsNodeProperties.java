@@ -33,6 +33,8 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
 
     private static final String COLUMN_NAMES_PROPERTY = "column_names";
 
+    private static final String IS_SUMMURY_PROPERTY = "is_summury";
+
     @Override
     public String getTemplateNameProperty() {
         return TEMPLATE_NAME;
@@ -51,6 +53,13 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
     @Override
     public String getColumnNamesProperty() {
         return COLUMN_NAMES_PROPERTY;
+    }
+
+    /**
+     * @return Returns the isSummuryProperty.
+     */
+    public String isSummuryProperty() {
+        return IS_SUMMURY_PROPERTY;
     }
 
 }
