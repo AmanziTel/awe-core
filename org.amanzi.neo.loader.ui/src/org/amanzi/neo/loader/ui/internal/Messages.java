@@ -52,10 +52,11 @@ public class Messages extends NLS {
     public static String DriveDataFileSelector_AddAllButton;
     public static String DriveDataFileSelector_RemoveButton;
     public static String DriveDataFileSelector_RemoveAllButton;
-    public static String dateTypesPreferencePageExampleColumnName;
-    public static String dateTypesPreferencePageDateFormatColumnName;
-    public static String dateTypesPreferencePageAddButton;
-    public static String dateTypesPreferencePageIsDefault;
+
+    public static String DriveSynonymsPreferencePage_DriveSynonymsPage_Description;
+
+    public static String NetworkSynonymsPreferencePage_NetworkSynonymsPage_Description;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
