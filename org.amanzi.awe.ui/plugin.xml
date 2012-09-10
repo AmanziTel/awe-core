@@ -17,5 +17,19 @@
          </eventStatus>
       </listener>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.amanzi.awe.ui.preferences.AWEPreferencesPage"
+            id="org.amanzi.awe.preferences"
+            name="AWE">
+      </page>
+      <page
+            category="org.amanzi.awe.preferences"
+            class="org.amanzi.awe.ui.preferences.dateformat.DateFormatPreferencePage"
+            id="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
+            name="Date format definition">
+      </page>
+   </extension>
 
 </plugin>

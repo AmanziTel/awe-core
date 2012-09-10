@@ -11,10 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.preference.dateformat;
+package org.amanzi.awe.ui.preferences.dateformat;
 
+import org.amanzi.awe.ui.internal.Messages;
 import org.amanzi.neo.dateformat.DateFormatManager;
-import org.amanzi.neo.loader.ui.internal.Messages;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;

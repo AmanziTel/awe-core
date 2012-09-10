@@ -90,13 +90,4 @@
             commandId="org.amanzi.command.launchLoader">
       </handler>
    </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-          <page
-            class="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
-            id="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
-            name="Date format definition"
-            >
-      </page>
-   </extension>
 </plugin>
