@@ -90,4 +90,13 @@
             commandId="org.amanzi.command.launchLoader">
       </handler>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.amanzi.awe.preferences"
+            class="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage"
+            id="org.amanzi.awe.loader.synonyms"
+            name="Import Synonyms">
+      </page>
+   </extension>
 </plugin>
