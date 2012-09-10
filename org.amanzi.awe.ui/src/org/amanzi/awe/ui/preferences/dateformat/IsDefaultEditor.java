@@ -1,4 +1,4 @@
-package org.amanzi.neo.loader.ui.preference.dateformat;
+package org.amanzi.awe.ui.preferences.dateformat;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;

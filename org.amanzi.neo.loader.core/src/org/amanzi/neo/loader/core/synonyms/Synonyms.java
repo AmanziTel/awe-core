@@ -56,13 +56,13 @@ public class Synonyms {
 
     private final String propertyName;
 
-    private final String[] possibleHeaders;
+    private String[] possibleHeaders;
 
     private final boolean isMandatory;
 
     /**
-	 * 
-	 */
+     * 
+     */
     public Synonyms(final String propertyName, final SynonymType synonymType, final boolean isMandatory,
             final String[] possibleHeaders) {
         this.propertyName = propertyName;
@@ -75,7 +75,7 @@ public class Synonyms {
         this(propertyName, SynonymType.UNKOWN, false, possibleHeaders);
     }
 
-    private String[] trim(String[] originalArray) {
+    private String[] trim(final String[] originalArray) {
         String[] result = new String[originalArray.length];
 
         for (int i = 0; i < originalArray.length; i++) {
@@ -104,6 +104,10 @@ public class Synonyms {
      */
     public String[] getPossibleHeaders() {
         return ArrayUtils.clone(possibleHeaders);
+    }
+
+    public void setPossibleHeaders(final String[] possibleHeaders) {
+        this.possibleHeaders = ArrayUtils.clone(possibleHeaders);
     }
 
     public boolean isMandatory() {

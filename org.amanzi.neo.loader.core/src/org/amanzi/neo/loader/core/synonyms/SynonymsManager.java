@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import java.util.regex.Pattern;
 import org.amanzi.neo.loader.core.synonyms.Synonyms.SynonymType;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -212,6 +215,22 @@ public class SynonymsManager {
         }
 
         return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void updateSynonyms(final String synonymsType, final INodeType nodeType, final String propertyName, final String[] updatedSynonyms) {
+        List<Synonyms> previousList = getSynonyms(synonymsType, nodeType);
+
+        for (Synonyms singleSynonym : previousList) {
+            if (singleSynonym.getPropertyName().equals(propertyName)) {
+                Collection<String> previousSynonyms = Arrays.asList(singleSynonym.getPossibleHeaders());
+                Collection<String> newSynonyms = Arrays.asList(updatedSynonyms);
+
+                Collection<String> resultedSynonyms = CollectionUtils.union(previousSynonyms, newSynonyms);
+
+                singleSynonym.setPossibleHeaders(resultedSynonyms.toArray(new String[resultedSynonyms.size()]));
+            }
+        }
     }
 
     public Map<INodeType, List<Synonyms>> getSynonyms(final String synonymsType) {

@@ -92,11 +92,29 @@
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
-          <page
-            class="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
-            id="org.amanzi.neo.loader.ui.preference.dateformat.DateFormatPreferencePage"
-            name="Date format definition"
-            >
+      <page
+            category="org.amanzi.awe.preferences"
+            class="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage"
+            id="org.amanzi.awe.loader.synonyms"
+            name="Import Synonyms">
       </page>
+      <page
+            category="org.amanzi.awe.loader.synonyms"
+            class="org.amanzi.neo.loader.ui.preferences.NetworkSynonymsPreferencePage"
+            id="org.amanzi.awe.loader.network_synonyms"
+            name="Network Synonyms">
+      </page>
+      <page
+            category="org.amanzi.awe.loader.synonyms"
+            class="org.amanzi.neo.loader.ui.preferences.DriveSynonymsPreferencePage"
+            id="org.amanzi.awe.loader.drive_synonyms"
+            name="Drive Synonyms">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.neo.loader.ui.preferences.internal.SynonymsPreferencesInitializer">
+      </initializer>
    </extension>
 </plugin>

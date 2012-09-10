@@ -18,5 +18,6 @@ Export-Package: org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.parser,
  org.amanzi.neo.loader.core.saver,
  org.amanzi.neo.loader.core.saver.impl,
+ org.amanzi.neo.loader.core.synonyms,
  org.amanzi.neo.loader.core.validator
 
