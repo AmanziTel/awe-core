@@ -16,6 +16,7 @@ package org.amanzi.awe.ui.events.impl;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 
 /**
  * TODO Purpose of
@@ -27,31 +28,34 @@ import org.amanzi.neo.dto.IDataElement;
  */
 public class ShowInViewEvent extends AbstractEvent {
 
-    private String viewId;
-    private IDataElement element;
+    private final IDataElement element;
+    private final IModel parent;
 
     /**
      * @param status
      * @param isAsync
      */
-    public ShowInViewEvent(String viewId, IDataElement elementName) {
-        super(EventStatus.SHOW_IN_VIEW, true);
-        this.viewId = viewId;
-        this.element = elementName;
+    public ShowInViewEvent(final IModel model) {
+        this(model, null);
     }
 
-    /**
-     * @return Returns the viewId.
-     */
-    public String getViewId() {
-        return viewId;
+    public ShowInViewEvent(final IModel parent, final IDataElement element) {
+        super(EventStatus.SHOW_IN_VIEW, true);
+
+        this.parent = parent;
+        this.element = element;
     }
+
 
     /**
      * @return Returns the element.
      */
     public IDataElement getElement() {
         return element;
+    }
+
+    public IModel getParent() {
+        return parent;
     }
 
 }

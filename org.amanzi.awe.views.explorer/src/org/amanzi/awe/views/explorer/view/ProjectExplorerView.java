@@ -8,18 +8,11 @@
 package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
-import org.amanzi.awe.views.explorer.providers.SourceProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.neo.models.IModel;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.ISourceProviderService;
 
 /**
  * project explorer view
@@ -27,7 +20,7 @@ import org.eclipse.ui.services.ISourceProviderService;
  * @author Vladislav_Kondratenko
  * @since 0.3
  */
-public class ProjectExplorerView extends AbstractTreeView implements ISelectionChangedListener {
+public class ProjectExplorerView extends AbstractTreeView {
     /*
      * ID of this View
      */
@@ -40,43 +33,31 @@ public class ProjectExplorerView extends AbstractTreeView implements ISelectionC
         }
 
         @Override
-        public int hashCode(Object element) {
+        public int hashCode(final Object element) {
             return element.hashCode();
         }
     };
-
-    private SourceProvider commandStateService;
 
     /**
      * The constructor.
      */
     public ProjectExplorerView() {
         this(new ProjectTreeContentProvider());
-        ISourceProviderService sourceProviderService = (ISourceProviderService)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getService(ISourceProviderService.class);
-        commandStateService = (SourceProvider)sourceProviderService.getSourceProvider(SourceProvider.STATE);
     }
 
-    protected ProjectExplorerView(ProjectTreeContentProvider projectTreeContentProvider) {
+    protected ProjectExplorerView(final ProjectTreeContentProvider projectTreeContentProvider) {
         super(projectTreeContentProvider);
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         super.createPartControl(parent);
         MenuManager menuManager = new MenuManager();
         Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
         getTreeViewer().getControl().setMenu(menu);
         getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
-        getTreeViewer().addSelectionChangedListener(this);
-        getSite().registerContextMenu(menuManager, getTreeViewer());
-    }
 
-    @Override
-    public void selectionChanged(SelectionChangedEvent event) {
-        IStructuredSelection selection = (IStructuredSelection)getTreeViewer().getSelection();
-        IModel item = (IModel)selection.getFirstElement();
-        commandStateService.setShowInTreeMenuState(item);
+        getSite().registerContextMenu(menuManager, getTreeViewer());
     }
 
 }
