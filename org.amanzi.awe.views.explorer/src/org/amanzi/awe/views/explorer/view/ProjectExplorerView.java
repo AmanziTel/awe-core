@@ -10,8 +10,7 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.SourceProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.models.project.IProjectModel;
+import org.amanzi.neo.models.IModel;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -73,11 +72,10 @@ public class ProjectExplorerView extends AbstractTreeView implements ISelectionC
         getSite().registerContextMenu(menuManager, getTreeViewer());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void selectionChanged(SelectionChangedEvent event) {
         IStructuredSelection selection = (IStructuredSelection)getTreeViewer().getSelection();
-        ITreeItem<IProjectModel> item = (ITreeItem<IProjectModel>)selection.getFirstElement();
+        IModel item = (IModel)selection.getFirstElement();
         commandStateService.setShowInTreeMenuState(item);
     }
 

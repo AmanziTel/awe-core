@@ -16,8 +16,8 @@ package org.amanzi.awe.views.explorer.providers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
 
@@ -50,8 +50,13 @@ public class SourceProvider extends AbstractSourceProvider {
         return new String[] {STATE};
     }
 
-    public void setShowInTreeMenuState(ITreeItem< ? extends IModel> item) {
-        curState = item != null && !item.getParent().asDataElement().equals(item.getDataElement());
+    public void setShowInTreeMenuState(IModel item) {
+        if (item instanceof IProjectModel) {
+            curState = false;
+
+        } else {
+            curState = true;
+        }
         fireSourceChanged(ISources.WORKBENCH, STATE, curState);
     }
 }

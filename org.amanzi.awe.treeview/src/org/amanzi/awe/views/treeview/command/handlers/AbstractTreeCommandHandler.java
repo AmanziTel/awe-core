@@ -16,7 +16,6 @@ package org.amanzi.awe.views.treeview.command.handlers;
 import java.util.Iterator;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.models.IModel;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -33,7 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public abstract class AbstractTreeCommandHandler extends AbstractHandler {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
@@ -41,7 +40,8 @@ public abstract class AbstractTreeCommandHandler extends AbstractHandler {
             IStructuredSelection strucSelection = (IStructuredSelection)selection;
             Iterator<Object> elements = strucSelection.iterator();
             while (elements.hasNext()) {
-                ITreeItem<IModel> element = (ITreeItem<IModel>)elements.next();
+
+                ITreeItem element = (ITreeItem)elements.next();
                 handleElement(element);
             }
             return null;
@@ -50,6 +50,7 @@ public abstract class AbstractTreeCommandHandler extends AbstractHandler {
 
     }
 
-    protected abstract void handleElement(ITreeItem<IModel> element);
+    @SuppressWarnings("rawtypes")
+    protected abstract void handleElement(ITreeItem element);
 
 }

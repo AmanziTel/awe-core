@@ -17,6 +17,7 @@ import java.util.List;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -28,13 +29,8 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
+public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel, IDataElement> {
     private INetworkModelProvider networkModelProvider;
-
-    public NetworkTreeContentProvider() {
-        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
-
-    }
 
     /**
      * @param networkModelProvider
@@ -45,33 +41,25 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
         this.networkModelProvider = networkModelProvider;
     }
 
-    @Override
-    public Object getParent(Object element) {
-        return null;
+    /**
+     * create instance of network tree content provider
+     */
+    public NetworkTreeContentProvider() {
+        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
     }
 
     @Override
-    protected void handleInnerElements(ITreeItem<INetworkModel> item) throws ModelException {
-        setChildren(item.getParent().getChildren(item.getDataElement()));
+    public ITreeItem<INetworkModel, IDataElement> createInnerItem(INetworkModel key, IDataElement value) {
+        return new NetworkTreeItem(key, value);
     }
 
     @Override
-    protected void handleRoot(ITreeItem<INetworkModel> item) throws ModelException {
-        handleInnerElements(item);
+    public List<INetworkModel> getRootList() throws ModelException {
+        return networkModelProvider.findAll(getProjectModelProvider().getActiveProjectModel());
     }
 
     @Override
-    protected boolean additionalCheckChild(Object element) throws ModelException {
-        return true;
-    }
-
-    @Override
-    protected List<INetworkModel> getRootElements() throws ModelException {
-        return networkModelProvider.findAll(getActiveProjectModel());
-    }
-
-    @Override
-    protected boolean checkNext(ITreeItem<INetworkModel> item) throws ModelException {
-        return item.getParent().getChildren(item.getDataElement()).iterator().hasNext();
+    public ITreeItem<INetworkModel, IDataElement> createInnerItem(INetworkModel key, INetworkModel value) {
+        return createInnerItem(key, value.asDataElement());
     }
 }

@@ -35,10 +35,10 @@ public class ShowInTreeCommand extends AbstractTreeCommandHandler {
     }
 
     @Override
-    protected void handleElement(ITreeItem<IModel> element) {
-        if (element.getDataElement().getNodeType().equals(NetworkElementType.NETWORK)) {
-            AWEEventManager.getManager().fireShowInViewEvent(NETWORK_TREE_VIEW_ID, element.getDataElement());
-        }
+    protected void handleElement(ITreeItem element) {
+//        if (element.getChild().getNodeType().equals(NetworkElementType.NETWORK)) {
+//            AWEEventManager.getManager().fireShowInViewEvent(NETWORK_TREE_VIEW_ID, element.getDataElement());
+//        }
 
     }
 }
