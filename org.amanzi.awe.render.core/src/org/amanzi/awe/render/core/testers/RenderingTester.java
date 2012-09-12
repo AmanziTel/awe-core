@@ -17,11 +17,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -49,7 +54,21 @@ public class RenderingTester extends PropertyTester {
             while (selectedElements.hasNext()) {
                 Object selectedElement = selectedElements.next();
 
-                if (selectedElement instanceof ITreeItem) {
+                if (selectedElement instanceof IPeriodTreeItem) {
+                    IPeriodTreeItem<?, ?> periodItem = (IPeriodTreeItem<?, ?>)selectedElement;
+
+                    if (periodItem.getParent() instanceof IMeasurementModel) {
+                        IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
+
+                        try {
+                            Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                        } catch (ModelException e) {
+                            //TODO: handle
+                        }
+                        parent = parentModel;
+                        testElements = true;
+                    }
+                } else if (selectedElement instanceof ITreeItem) {
                     ITreeItem<?, ?> treeItem = (ITreeItem<?, ?>)selectedElement;
 
                     if (treeItem.getChild() instanceof IDataElement) {

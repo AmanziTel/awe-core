@@ -65,7 +65,8 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
 
         if (item.isPeriodContainer()) {
             buildLevelTree(item, item.getStartDate(), item.getEndDate(), item.getPeriod().getUnderlyingPeriod());
-        } else if (item.getParent().asDataElement().equals(item.getChild())) {
+        } else if (isRoot(parentElement)) {
+            model = getRoot(item);
             Period period = Period.getHighestPeriod(model.getMinTimestamp(), model.getMaxTimestamp());
             if (period == Period.ALL) {
                 period = Period.YEARLY;
@@ -79,8 +80,8 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
     }
 
     @Override
-    protected ITreeItem<IDriveModel, Object> createrootItem(IDriveModel model) {
-        return createItem(model, model.asDataElement());
+    protected ITreeItem<IDriveModel, IDriveModel> createRootItem(IDriveModel model) {
+        return new DriveTreeViewItem<IDriveModel, IDriveModel>(null, model);
     }
 
     /**
@@ -90,14 +91,14 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
      */
     private void buildLevelTree(DriveTreeViewItem<IDriveModel, Object> item, Long start, Long end, Period period)
             throws ModelException {
-        IDriveModel model = item.getParent();
+        IDriveModel model = getRoot(item);
         if (period != null) {
             long currentStartTime = period.getStartTime(start);
             long nextStartTime = PERIOD_MANAGER.getNextStartDate(period, model.getMaxTimestamp(), currentStartTime);
 
             do {
                 DriveTreeViewItem<IDriveModel, Object> checkForExistanceItem = new DriveTreeViewItem<IDriveModel, Object>(
-                        item.getParent(), currentStartTime, nextStartTime, period);
+                        model, currentStartTime, nextStartTime, period);
                 if (checkNext(checkForExistanceItem)) {
                     items.add(checkForExistanceItem);
                 }
@@ -141,6 +142,10 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
         if (driveItem.isPeriodContainer()) {
             return model.getElements(driveItem.getStartDate(), driveItem.getEndDate()).iterator().hasNext();
         } else {
+            if (isRoot(item)) {
+                model = (IDriveModel)item.getChild();
+                return model.getChildren(model.asDataElement()).iterator().hasNext();
+            }
             return driveItem.getParent().getChildren((IDataElement)item.getChild()).iterator().hasNext();
         }
 

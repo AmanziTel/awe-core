@@ -13,6 +13,10 @@
 
 package org.amanzi.awe.statistics.provider.impl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.model.impl.StatisticsModel;
 import org.amanzi.awe.statistics.nodeproperties.IStatisticsNodeProperties;
@@ -42,8 +46,8 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsModelProvider extends AbstractModelProvider<StatisticsModel, IStatisticsModel>
-implements
-IStatisticsModelProvider {
+        implements
+            IStatisticsModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsModelProvider.class);
 
@@ -69,7 +73,8 @@ IStatisticsModelProvider {
 
     @Override
     protected StatisticsModel createInstance() {
-        return new StatisticsModel(statisticsService, nodeService, generalNodeProperties, timePeriodNodeProperties, statisticsNodeProperties);
+        return new StatisticsModel(statisticsService, nodeService, generalNodeProperties, timePeriodNodeProperties,
+                statisticsNodeProperties);
     }
 
     @Override
@@ -78,7 +83,8 @@ IStatisticsModelProvider {
     }
 
     @Override
-    public IStatisticsModel find(final IMeasurementModel analyzedModel, final String template, final String propertyName) throws ModelException {
+    public IStatisticsModel find(final IMeasurementModel analyzedModel, final String template, final String propertyName)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("find", analyzedModel, template, propertyName));
         }
@@ -124,7 +130,37 @@ IStatisticsModelProvider {
     }
 
     @Override
-    public IStatisticsModel create(final IMeasurementModel analyzedModel, final String template, final String propertyName) throws ModelException {
+    public Iterable<IStatisticsModel> findAll(IMeasurementModel analyzedModel) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("find all statistics models from parent", analyzedModel));
+        }
+
+        // validate arguments
+        if (analyzedModel == null) {
+            throw new ParameterInconsistencyException("parent");
+        }
+
+        AbstractModel model = (AbstractModel)analyzedModel;
+
+        List<IStatisticsModel> models = new ArrayList<IStatisticsModel>();
+
+        try {
+            Iterator<Node> statisticsNodes = statisticsService.findAllStatisticsNode(model.getRootNode());
+
+            while (statisticsNodes.hasNext()) {
+                StatisticsModel statistic = initializeFromNode(statisticsNodes.next());
+                models.add(statistic);
+            }
+
+        } catch (ServiceException e) {
+            processException("Exception on searching for a Statistics Models", e);
+        }
+        return models;
+    }
+
+    @Override
+    public IStatisticsModel create(final IMeasurementModel analyzedModel, final String template, final String propertyName)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("create", analyzedModel, template, propertyName));
         }

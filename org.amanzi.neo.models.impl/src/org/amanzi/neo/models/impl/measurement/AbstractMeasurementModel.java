@@ -97,21 +97,18 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
         private ILocationElement moveToNext() {
             try {
-                if (dataElements.hasNext()) {
-                    ILocationElement element = getElementLocation((DataElement)dataElements.next());
+                ILocationElement element = null;
+                while (dataElements.hasNext() && (element == null)) {
+                    element = getElementLocation((DataElement)dataElements.next());
 
-                    if ((element == null) || locationElements.contains(nextElement)) {
-                        element = moveToNext();
-                    }
-
-                    if (element != null) {
-                        locationElements.add(element);
-                    }
-
-                    return element;
-                } else {
-                    return null;
+                    element = locationElements.contains(element) ? null : element;
                 }
+
+                if (element != null) {
+                    locationElements.add(element);
+                }
+
+                return element;
             } finally {
                 moveToNext = false;
             }

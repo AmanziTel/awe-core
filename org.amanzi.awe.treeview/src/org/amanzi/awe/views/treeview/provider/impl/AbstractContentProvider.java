@@ -45,7 +45,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
 
     private final IProjectModelProvider projectModelProvider;
 
-    private final List<ITreeItem<T, Object>> rootList = new ArrayList<ITreeItem<T, Object>>();
+    private final List<ITreeItem<T, T>> rootList = new ArrayList<ITreeItem<T, T>>();
 
     /**
      * @param networkModelProvider
@@ -94,7 +94,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
             LOGGER.error("can't get child for parentElement " + parentElement, e);
             return null;
         }
-        return processReturment(item.getParent());
+        return processReturment(getRoot(item));
     }
 
     @SuppressWarnings("unchecked")
@@ -160,7 +160,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
             if (getActiveProjectModel() != null) {
                 roots = getRootElements();
                 for (T root : roots) {
-                    rootList.add(createrootItem(root));
+                    rootList.add(createRootItem(root));
                 }
             }
         } catch (ModelException e) {
@@ -170,12 +170,12 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         return rootList.toArray();
     }
 
-    protected ITreeItem<T, Object> createrootItem(T model) {
-        return new TreeViewItem<T, Object>(model, model.asDataElement());
+    protected ITreeItem<T, T> createRootItem(T model) {
+        return new TreeViewItem<T, T>(null, model);
     }
 
     /**
-     * create Root item
+     * create item
      * 
      * @param root
      * @return
@@ -210,7 +210,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
     /**
      * @return Returns the rootList.
      */
-    protected List<ITreeItem<T, Object>> getRootList() {
+    protected List<ITreeItem<T, T>> getRootList() {
         return rootList;
     }
 
@@ -239,4 +239,16 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         return projectModelProvider.getActiveProjectModel();
     }
 
+    protected boolean isRoot(ITreeItem< ? , ? > item) {
+        return item.getParent() == null;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected T getRoot(ITreeItem<T, ? > item) {
+        if (isRoot(item)) {
+            return (T)item.getChild();
+        } else {
+            return item.getParent();
+        }
+    }
 }

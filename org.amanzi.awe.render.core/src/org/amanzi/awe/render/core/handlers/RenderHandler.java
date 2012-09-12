@@ -20,8 +20,11 @@ import java.util.Set;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
+import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.core.commands.AbstractHandler;
@@ -30,6 +33,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -46,6 +51,8 @@ public class RenderHandler extends AbstractHandler {
     public Object execute(final ExecutionEvent event) throws ExecutionException {
         ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
 
+        //TODO: LN, 12.09.2012, a lot of duplications with RenderingTester
+
         if (selection instanceof IStructuredSelection) {
             Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
 
@@ -56,7 +63,18 @@ public class RenderHandler extends AbstractHandler {
 
             while (selectionIterator.hasNext()) {
                 Object selectedObject = selectionIterator.next();
-                if (selectedObject instanceof ITreeItem) {
+                if (selectedObject instanceof IPeriodTreeItem) {
+                    IPeriodTreeItem<?, ?> periodItem = (IPeriodTreeItem<?, ?>)selectedObject;
+
+                    IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
+
+                    try {
+                        Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                    } catch (ModelException e) {
+                        //TODO: handle
+                    }
+                    model = parentModel;
+                } else if (selectedObject instanceof ITreeItem) {
                     ITreeItem<?, ?> treeItem = (ITreeItem<?, ?>)selectedObject;
 
                     if (treeItem.getChild() instanceof IRenderableModel) {
