@@ -10,39 +10,16 @@
                id="org.amanzi.awe.drilldown.menu"
                label="Show in ...">
             <command
-                  commandId="org.amanzi.awe.render.showonmap.model"
+                  commandId="org.amanzi.awe.render.showonmap"
                   label="Show on Map"
                   style="push">
                <visibleWhen
                      checkEnabled="false">
-                  <and>
-                     <with
-                           variable="activeMenuSelection">
-                        <count
-                              value="1">
-                        </count>
-                     </with>
                      <iterate>
                      	<instanceof
                         	   value="org.amanzi.neo.models.render.IRenderableModel">
                      	</instanceof>
                      </iterate>
-                  </and>
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="org.amanzi.awe.render.showonmap.elements"
-                  label="Show on Map"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="false">
-                  <and>
-                     <iterate>
-                        <instanceof
-                              value="org.amanzi.neo.dto.IDataElement">
-                        </instanceof>
-                     </iterate>
-                  </and>
                </visibleWhen>
             </command>
          </menu>
@@ -51,49 +28,24 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            id="org.amanzi.awe.render.showonmap.model"
-            name="Show on Map">
-      </command>
-      <command
-            id="org.amanzi.awe.render.showonmap.elements"
+            id="org.amanzi.awe.render.showonmap"
             name="Show on Map">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.amanzi.awe.render.core.handlers.RenderModelHandler"
-            commandId="org.amanzi.awe.render.showonmap.model">
+            class="org.amanzi.awe.render.core.handlers.RenderHandler"
+            commandId="org.amanzi.awe.render.showonmap">
          <activeWhen>
             <with
                   variable="activeMenuSelection">
-               <iterate
-                     ifEmpty="false"
-                     operator="and">
-                  <test
-                        forcePluginActivation="true"
-                        property="org.amanzi.awe.render.core.isRenderable">
+               <test
+                    forcePluginActivation="true"
+                    property="org.amanzi.awe.render.core.isRenderable">
                </test>
-               </iterate>
             </with>
          </activeWhen>
-      </handler>
-      <handler
-            class="org.amanzi.awe.render.core.handlers.RenderElementsHandler"
-            commandId="org.amanzi.awe.render.showonmap.elements">
-         <activeWhen>
-            <with
-                  variable="activeMenuSelection">
-               <iterate
-                     ifEmpty="false"
-                     operator="and">
-                  <test
-                        args="activeMenuSelection"
-                        forcePluginActivation="true"
-                        property="org.amanzi.awe.render.core.isRenderable">
-                  </test>
-               </iterate>
-            </with></activeWhen>
       </handler>
    </extension>
    <extension
@@ -103,14 +55,7 @@
             id="org.amanzi.awe.render.core.modeltester"
             namespace="org.amanzi.awe.render.core"
             properties="isRenderable"
-            type="org.amanzi.neo.models.render.IRenderableModel">
-      </propertyTester>
-      <propertyTester
-            class="org.amanzi.awe.render.core.testers.RenderingTester"
-            id="org.amanzi.awe.render.core.elementtester"
-            namespace="org.amanzi.awe.render.core"
-            properties="isRenderable"
-            type="org.amanzi.neo.dto.IDataElement">
+            type="org.eclipse.jface.viewers.IStructuredSelection">
       </propertyTester>
    </extension>
 
