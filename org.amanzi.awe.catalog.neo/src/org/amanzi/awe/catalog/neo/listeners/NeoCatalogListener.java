@@ -16,6 +16,7 @@ package org.amanzi.awe.catalog.neo.listeners;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
@@ -31,11 +32,14 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 
 /**
  * TODO Purpose of
@@ -61,6 +65,9 @@ public class NeoCatalogListener implements IAWEEventListenter {
             ShowGISOnMap showEvent = (ShowGISOnMap)event;
             showOnMap(showEvent.getModel(), showEvent.getZoom());
             break;
+        case SHOW_ELEMENTS:
+
+            break;
         default:
             break;
         }
@@ -68,6 +75,12 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
     protected void updateCatalog() {
         NeoCatalogPlugin.getDefault().updateMapServices();
+    }
+
+    protected void showOnMap(final IRenderableModel model, final Set<IDataElement> elements, final ReferencedEnvelope bounds) {
+        boolean computeBounds = bounds == null;
+
+
     }
 
     protected void showOnMap(final IGISModel model, final int zoom) {

@@ -91,6 +91,12 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
         public int getRenderableElementCount() {
             return 0;
         }
+
+        @Override
+        public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) throws ModelException {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
 
     private IIndexModel indexModel;

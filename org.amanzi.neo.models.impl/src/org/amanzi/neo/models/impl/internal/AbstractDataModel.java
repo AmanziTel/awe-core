@@ -114,4 +114,10 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         }
         return new DataElementIterator(childs).toIterable();
     }
+
+    @Override
+    public <T extends IDataModel> Iterable<T> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

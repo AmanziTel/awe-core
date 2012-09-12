@@ -355,4 +355,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         LOGGER.info("Finishing up model <" + getName() + ">");
         super.finishUp();
     }
+
+    @Override
+    public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) throws ModelException {
+
+        return null;
+    }
 }
