@@ -15,9 +15,9 @@ package org.amanzi.awe.views.treeview;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.label.CommonViewLabelProvider;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -45,7 +45,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
 
-    private static final CommonViewLabelProvider LABEL_PROVIDER = new CommonViewLabelProvider();
+    private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
     private final IContentProvider contentProvider;
     /**
      * event manager
