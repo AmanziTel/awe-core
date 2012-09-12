@@ -41,7 +41,7 @@ public class ShowGISOnMap extends AbstractEvent {
     }
 
     public ShowGISOnMap(final IGISModel model, final int zoom) {
-        super(EventStatus.SHOW_GIS_ON_MAP, true);
+        super(EventStatus.SHOW_GIS, true);
         this.zoom = zoom;
         this.model = model;
     }

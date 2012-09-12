@@ -25,7 +25,7 @@ import org.eclipse.core.commands.ExecutionException;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class RenderHandler extends AbstractHandler {
+public class RenderElementsHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

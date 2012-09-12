@@ -57,7 +57,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
         case PROJECT_CHANGED:
             updateCatalog();
             break;
-        case SHOW_GIS_ON_MAP:
+        case SHOW_GIS:
             ShowGISOnMap showEvent = (ShowGISOnMap)event;
             showOnMap(showEvent.getModel(), showEvent.getZoom());
             break;

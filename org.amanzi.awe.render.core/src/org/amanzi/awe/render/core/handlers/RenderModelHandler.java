@@ -11,18 +11,26 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.render.core.handlers;
+
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum EventStatus {
+public class RenderModelHandler extends AbstractHandler {
 
-    AWE_STARTED, AWE_STOPPED, PROJECT_CHANGED, DATA_UPDATED, SHOW_IN_VIEW, INITIALISATION,
-    SHOW_GIS, SHOW_ELEMENTS;
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.render.core.testers;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.core.expressions.PropertyTester;
 
@@ -30,6 +31,8 @@ public class RenderingTester extends PropertyTester {
     public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
         if (receiver instanceof IRenderableModel) {
             return ((IRenderableModel)receiver).isRenderable();
+        } else if (receiver instanceof IDataElement) {
+            //TODO
         }
         return false;
     }

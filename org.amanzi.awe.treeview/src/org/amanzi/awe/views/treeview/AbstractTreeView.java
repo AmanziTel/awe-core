@@ -20,6 +20,7 @@ import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.apache.log4j.Logger;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -30,6 +31,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
@@ -103,6 +105,12 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
         getTreeViewer().setInput(getSite());
         getSite().setSelectionProvider(getTreeViewer());
         setLayout(parent);
+
+        MenuManager menuManager = new MenuManager();
+        Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
+        getTreeViewer().getControl().setMenu(menu);
+
+        getSite().registerContextMenu(menuManager, getTreeViewer());
     }
 
     /**
