@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
@@ -36,17 +35,17 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractContentProvider<T extends IModel> implements ITreeContentProvider {
+public abstract class AbstractContentProvider<T extends IModel, E extends Object> implements ITreeContentProvider {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
     private static final DataElementComparator DEFAULT_DATA_ELEMENT_COMPARER = new DataElementComparator();
 
-    private Iterable<IDataElement> children = null;
+    private Iterable<E> children = null;
 
     private final IProjectModelProvider projectModelProvider;
 
-    private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
+    private final List<ITreeItem<T, Object>> rootList = new ArrayList<ITreeItem<T, Object>>();
 
     /**
      * @param networkModelProvider
@@ -68,8 +67,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     protected static class DataElementComparator implements Comparator<ITreeItem> {
         @Override
         public int compare(final ITreeItem dataElement1, final ITreeItem dataElement2) {
-            return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
-                    .getDataElement().compareTo(dataElement2.getDataElement());
+            return dataElement1.getChild() == null ? -1 : dataElement2.getChild() == null ? 1 : 0;
         }
     }
 
@@ -84,7 +82,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     @SuppressWarnings("unchecked")
     @Override
     public Object[] getChildren(final Object parentElement) {
-        ITreeItem<T> item = (ITreeItem<T>)parentElement;
+        ITreeItem<T, E> item = (ITreeItem<T, E>)parentElement;
         try {
             if (isInRootList(item)) {
                 handleRoot(item);
@@ -103,7 +101,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     @Override
     public boolean hasChildren(final Object element) {
         try {
-            ITreeItem<T> item = (ITreeItem<T>)element;
+            ITreeItem<T, E> item = (ITreeItem<T, E>)element;
             return checkNext(item);
         } catch (ModelException e) {
             LOGGER.error("exception when trying to get child", e);
@@ -111,7 +109,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         return false;
     }
 
-    protected abstract boolean checkNext(ITreeItem<T> item) throws ModelException;
+    protected abstract boolean checkNext(ITreeItem<T, E> item) throws ModelException;
 
     /**
      * @param element
@@ -125,9 +123,9 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @return
      */
     protected Object[] processReturment(final T model) {
-        List<ITreeItem<T>> dataElements = new ArrayList<ITreeItem<T>>();
-        for (IDataElement dataElement : children) {
-            ITreeItem<T> item = createItem(model, dataElement);
+        List<ITreeItem<T, E>> dataElements = new ArrayList<ITreeItem<T, E>>();
+        for (E dataElement : children) {
+            ITreeItem<T, E> item = createItem(model, dataElement);
             processItem(item);
             dataElements.add(item);
         }
@@ -141,7 +139,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * 
      * @param item
      */
-    protected void processItem(ITreeItem<T> item) {
+    protected void processItem(ITreeItem<T, E> item) {
         // TODO Auto-generated method stub
 
     }
@@ -152,7 +150,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
      * @param parentElement
      * @throws ModelException
      */
-    protected abstract void handleInnerElements(ITreeItem<T> parentElement) throws ModelException;
+    protected abstract void handleInnerElements(ITreeItem<T, E> parentElement) throws ModelException;
 
     @Override
     public Object[] getElements(final Object inputElement) {
@@ -162,7 +160,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
             if (getActiveProjectModel() != null) {
                 roots = getRootElements();
                 for (T root : roots) {
-                    rootList.add(createItem(root, root.asDataElement()));
+                    rootList.add(createrootItem(root));
                 }
             }
         } catch (ModelException e) {
@@ -172,14 +170,18 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
         return rootList.toArray();
     }
 
+    protected ITreeItem<T, Object> createrootItem(T model) {
+        return new TreeViewItem<T, Object>(model, model.asDataElement());
+    }
+
     /**
      * create Root item
      * 
      * @param root
      * @return
      */
-    protected ITreeItem<T> createItem(T root, IDataElement element) {
-        return new TreeViewItem<T>(root, element);
+    protected ITreeItem<T, E> createItem(T root, E element) {
+        return new TreeViewItem<T, E>(root, element);
     }
 
     /**
@@ -203,12 +205,12 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * handle get roots element child
      */
-    protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
+    protected abstract void handleRoot(ITreeItem<T, E> item) throws ModelException;
 
     /**
      * @return Returns the rootList.
      */
-    protected List<ITreeItem<T>> getRootList() {
+    protected List<ITreeItem<T, Object>> getRootList() {
         return rootList;
     }
 
@@ -229,7 +231,7 @@ public abstract class AbstractContentProvider<T extends IModel> implements ITree
     /**
      * @param children
      */
-    protected void setChildren(final Iterable<IDataElement> children) {
+    protected void setChildren(final Iterable<E> children) {
         this.children = children;
     }
 

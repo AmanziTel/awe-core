@@ -17,6 +17,7 @@ import java.util.List;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -28,7 +29,7 @@ import org.amanzi.neo.providers.IProjectModelProvider;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel> {
+public class NetworkTreeContentProvider extends AbstractContentProvider<INetworkModel, IDataElement> {
     private INetworkModelProvider networkModelProvider;
 
     public NetworkTreeContentProvider() {
@@ -51,12 +52,12 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     }
 
     @Override
-    protected void handleInnerElements(ITreeItem<INetworkModel> item) throws ModelException {
-        setChildren(item.getParent().getChildren(item.getDataElement()));
+    protected void handleInnerElements(ITreeItem<INetworkModel, IDataElement> item) throws ModelException {
+        setChildren(item.getParent().getChildren(item.getChild()));
     }
 
     @Override
-    protected void handleRoot(ITreeItem<INetworkModel> item) throws ModelException {
+    protected void handleRoot(ITreeItem<INetworkModel, IDataElement> item) throws ModelException {
         handleInnerElements(item);
     }
 
@@ -71,7 +72,7 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     }
 
     @Override
-    protected boolean checkNext(ITreeItem<INetworkModel> item) throws ModelException {
-        return item.getParent().getChildren(item.getDataElement()).iterator().hasNext();
+    protected boolean checkNext(ITreeItem<INetworkModel, IDataElement> item) throws ModelException {
+        return item.getParent().getChildren(item.getChild()).iterator().hasNext();
     }
 }

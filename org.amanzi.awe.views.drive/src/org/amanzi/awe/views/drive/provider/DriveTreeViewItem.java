@@ -18,7 +18,6 @@ import java.util.Date;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.core.period.PeriodManager;
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends TreeViewItem<T> {
+public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends TreeViewItem<T, E> {
 
     private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
 
@@ -48,7 +47,7 @@ public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends 
      * @param model
      * @param element
      */
-    public DriveTreeViewItem(T model, IDataElement element) {
+    public DriveTreeViewItem(T model, E element) {
         super(model, element);
     }
 

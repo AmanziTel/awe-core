@@ -15,7 +15,6 @@ package org.amanzi.awe.views.treeview.provider.impl;
 
 import org.amanzi.awe.ui.label.CommonViewLabelProvider;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.models.IDataModel;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -34,23 +33,23 @@ public class CommonTreeViewLabelProvider extends CommonViewLabelProvider {
         super();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public String getText(final Object element) {
         if (element instanceof ITreeItem) {
-            ITreeItem<IDataModel> item = (ITreeItem<IDataModel>)element;
-            return super.getText(item.getDataElement());
+            ITreeItem item = (ITreeItem)element;
+            return super.getText(item.getChild());
         } else {
             return super.getText(element);
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public Image getImage(Object element) {
         if (element instanceof ITreeItem) {
-            ITreeItem<IDataModel> item = (ITreeItem<IDataModel>)element;
-            return super.getImage(item.getDataElement());
+            ITreeItem item = (ITreeItem)element;
+            return super.getImage(item.getChild());
         } else {
             return super.getImage(element);
         }

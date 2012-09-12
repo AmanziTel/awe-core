@@ -16,7 +16,6 @@ package org.amanzi.awe.views.treeview.provider.impl;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * <p>
@@ -26,23 +25,23 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
+public class TreeViewItem<T extends IModel, E extends Object> implements ITreeItem<T, E> {
 
     private final T model;
-    private final IDataElement element;
+    private final E element;
 
     /**
      * @param model
      * @param element
      */
-    public TreeViewItem(T model, IDataElement element) {
+    public TreeViewItem(T model, E element) {
         super();
         this.model = model;
         this.element = element;
     }
 
     @Override
-    public IDataElement getDataElement() {
+    public E getChild() {
         return element;
 
     }
@@ -54,7 +53,7 @@ public class TreeViewItem<T extends IModel> implements ITreeItem<T> {
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(element, false);
+        return element.hashCode();
     }
 
     @Override
