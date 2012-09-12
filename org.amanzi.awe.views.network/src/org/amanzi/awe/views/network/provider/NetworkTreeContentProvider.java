@@ -53,6 +53,11 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
 
     @Override
     protected void handleInnerElements(ITreeItem<INetworkModel, IDataElement> item) throws ModelException {
+        if (isRoot(item)) {
+            INetworkModel model = getRoot(item);
+            setChildren(model.getChildren(model.asDataElement()));
+            return;
+        }
         setChildren(item.getParent().getChildren(item.getChild()));
     }
 
@@ -73,6 +78,10 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
 
     @Override
     protected boolean checkNext(ITreeItem<INetworkModel, IDataElement> item) throws ModelException {
+        if (isRoot(item)) {
+            INetworkModel model = getRoot(item);
+            return model.getChildren(model.asDataElement()).iterator().hasNext();
+        }
         return item.getParent().getChildren(item.getChild()).iterator().hasNext();
     }
 }

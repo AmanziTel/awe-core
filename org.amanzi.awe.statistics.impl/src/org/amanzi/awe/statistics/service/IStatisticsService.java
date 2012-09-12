@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.service;
 
+import java.util.Iterator;
+
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
@@ -39,4 +41,6 @@ public interface IStatisticsService extends IService {
     void addSourceNode(Node node, Node sourceNode) throws ServiceException;
 
     String getStatisticsLevelName(Node groupNode, DimensionType dimensionType) throws ServiceException;
+
+    Iterator<Node> findAllStatisticsNode(Node parentNode) throws ServiceException;
 }

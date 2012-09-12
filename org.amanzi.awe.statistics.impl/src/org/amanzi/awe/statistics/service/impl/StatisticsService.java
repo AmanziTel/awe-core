@@ -14,6 +14,7 @@
 package org.amanzi.awe.statistics.service.impl;
 
 import java.text.MessageFormat;
+import java.util.Iterator;
 
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
@@ -72,6 +73,11 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
                 StatisticsRelationshipType.STATISTICS);
     }
 
+    public Iterator<Node> findAllStatisticsNode(Node parentNode) throws ServiceException {
+        assert parentNode != null;
+        return nodeService.getChildren(parentNode, StatisticsNodeType.STATISTICS, StatisticsRelationshipType.STATISTICS);
+    }
+
     @Override
     public Node getStatisticsLevel(final Node parentNode, final DimensionType dimensionType, final String propertyName)
             throws ServiceException {
@@ -95,8 +101,7 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         assert dimensionType != null;
         assert !StringUtils.isEmpty(propertyName);
 
-        return nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL,
-                dimensionType.getRelationshipType());
+        return nodeService.getChildByName(parentNode, propertyName, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType());
     }
 
     @Override
@@ -157,7 +162,8 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         assert dimensionType != null;
 
         try {
-            Iterable<Relationship> relationships = groupNode.getRelationships(Direction.INCOMING, NodeServiceRelationshipType.CHILD);
+            Iterable<Relationship> relationships = groupNode
+                    .getRelationships(Direction.INCOMING, NodeServiceRelationshipType.CHILD);
 
             for (Relationship singleRelationship : relationships) {
                 if (singleRelationship.getStartNode().hasRelationship(Direction.INCOMING, dimensionType.getRelationshipType())) {

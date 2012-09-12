@@ -70,14 +70,15 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     @Override
     protected void handleInnerElements(final ITreeItem<IProjectModel, IModel> item) throws ModelException {
         List<IModel> models = new ArrayList<IModel>();
-        if (!item.getParent().asDataElement().equals(item.getChild())) {
+        if (!isRoot(item)) {
             setChildren(EMPTY_ELEMENTS_COLLECTION);
             return;
         }
-        for (INetworkModel model : networkModelProvider.findAll(item.getParent())) {
+        IProjectModel parent = getRoot(item);
+        for (INetworkModel model : networkModelProvider.findAll(parent)) {
             models.add(model);
         }
-        for (IDriveModel model : driveModelProvider.findAll(item.getParent())) {
+        for (IDriveModel model : driveModelProvider.findAll(parent)) {
             models.add(model);
         }
 
@@ -96,9 +97,9 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
 
     @Override
     protected boolean checkNext(ITreeItem<IProjectModel, IModel> item) throws ModelException {
-        if (item.getParent().asDataElement().equals(item.getChild())) {
-            return !networkModelProvider.findAll(item.getParent()).isEmpty()
-                    || !driveModelProvider.findAll(item.getParent()).isEmpty();
+        if (isRoot(item)) {
+            IProjectModel model = getRoot(item);
+            return !networkModelProvider.findAll(model).isEmpty() || !driveModelProvider.findAll(model).isEmpty();
         } else {
             return false;
         }

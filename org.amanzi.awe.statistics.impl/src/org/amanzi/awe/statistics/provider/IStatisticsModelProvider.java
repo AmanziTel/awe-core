@@ -32,4 +32,5 @@ public interface IStatisticsModelProvider extends IModelProvider<IStatisticsMode
 
     IStatisticsModel create(IMeasurementModel analyzedModel, String template, String propertyName) throws ModelException;
 
+    Iterable<IStatisticsModel> findAll(IMeasurementModel analyzedModel) throws ModelException;
 }
