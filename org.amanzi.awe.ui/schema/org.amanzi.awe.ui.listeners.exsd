@@ -81,13 +81,15 @@
                   </enumeration>
                   <enumeration value="DATA_UPDATED">
                   </enumeration>
-                  <enumeration value="SHOW_GIS_ON_MAP">
-                  </enumeration>
                   <enumeration value="AWE_STOPPED">
                   </enumeration>
                   <enumeration value="SHOW_IN_VIEW">
                   </enumeration>
                   <enumeration value="INITIALISATION">
+                  </enumeration>
+                  <enumeration value="SHOW_GIS">
+                  </enumeration>
+                  <enumeration value="SHOW_ELEMENTS">
                   </enumeration>
                </restriction>
             </simpleType>

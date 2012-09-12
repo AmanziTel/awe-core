@@ -9,10 +9,8 @@ package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
 
 /**
  * project explorer view
@@ -52,12 +50,8 @@ public class ProjectExplorerView extends AbstractTreeView {
     @Override
     public void createPartControl(final Composite parent) {
         super.createPartControl(parent);
-        MenuManager menuManager = new MenuManager();
-        Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
-        getTreeViewer().getControl().setMenu(menu);
-        getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
 
-        getSite().registerContextMenu(menuManager, getTreeViewer());
+        getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
     }
 
 }

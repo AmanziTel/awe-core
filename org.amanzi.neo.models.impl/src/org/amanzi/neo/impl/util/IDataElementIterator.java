@@ -11,18 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.neo.impl.util;
+
+import java.util.Iterator;
+
+import org.amanzi.neo.dto.IDataElement;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
+ * @param <T>
  */
-public enum EventStatus {
+public interface IDataElementIterator<T extends IDataElement> extends Iterator<T> {
 
-    AWE_STARTED, AWE_STOPPED, PROJECT_CHANGED, DATA_UPDATED, SHOW_IN_VIEW, INITIALISATION,
-    SHOW_GIS, SHOW_ELEMENTS;
+    public abstract Iterable<T> toIterable();
+
 }

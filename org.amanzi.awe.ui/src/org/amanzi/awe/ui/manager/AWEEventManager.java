@@ -26,16 +26,20 @@ import org.amanzi.awe.ui.events.impl.AWEStoppedEvent;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.InitialiseEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
+import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.listener.IAWEEventListenter.Priority;
 import org.amanzi.awe.ui.util.ActionUtil;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 
 /**
  * TODO Purpose of
@@ -166,6 +170,14 @@ public final class AWEEventManager {
 
     public synchronized void fireShowOnMapEvent(final IGISModel model) {
         fireEvent(new ShowGISOnMap(model), true);
+    }
+
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements) {
+        fireEvent(new ShowElementsOnMap(model, elements), true);
+    }
+
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, final ReferencedEnvelope bounds) {
+        fireEvent(new ShowElementsOnMap(model, elements, bounds), true);
     }
 
     public synchronized void fireInitialiseEvent() {

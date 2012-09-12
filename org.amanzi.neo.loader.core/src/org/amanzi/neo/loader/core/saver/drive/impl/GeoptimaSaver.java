@@ -61,6 +61,8 @@ public class GeoptimaSaver extends AbstractDriveSaver {
 
     private static final String DELTA_RSSI_PROPERTY = "delta_rssi";
 
+    private static final String TIMESTAMP_PROPERTY = "Time";
+
     private final IMeasurementNodeProperties measurementNodeProperties;
 
     private final Map<String, Map<String, Object>> signalCache = new HashMap<String, Map<String, Object>>();
@@ -90,6 +92,8 @@ public class GeoptimaSaver extends AbstractDriveSaver {
     @Override
     protected Map<String, Object> getElementProperties(final INodeType nodeType, final IMappedStringData data,
             final boolean addNonMappedHeaders) {
+        fixDate(data);
+
         Map<String, Object> result = super.getElementProperties(nodeType, data, addNonMappedHeaders);
 
         String event = (String)result.get(measurementNodeProperties.getEventProperty());
@@ -152,6 +156,13 @@ public class GeoptimaSaver extends AbstractDriveSaver {
         }
 
         data.put(DOMINANT_PROPERTY, dominantValue == null ? UNKNOWN_VALUE : dominantValue);
+    }
+
+    private void fixDate(final IMappedStringData data) {
+        String time = data.get(TIMESTAMP_PROPERTY);
+        int lastPointIndex = time.lastIndexOf(".");
+        time = time.substring(0, lastPointIndex + 4);
+        data.put(TIMESTAMP_PROPERTY, time);
     }
 
 }

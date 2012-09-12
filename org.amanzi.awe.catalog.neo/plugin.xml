@@ -19,13 +19,16 @@
                status="DATA_UPDATED">
          </eventStatus>
          <eventStatus
-               status="SHOW_GIS_ON_MAP">
+               status="SHOW_GIS">
          </eventStatus>
          <eventStatus
                status="AWE_STARTED">
          </eventStatus>
          <eventStatus
                status="PROJECT_CHANGED">
+         </eventStatus>
+         <eventStatus
+               status="SHOW_ELEMENTS">
          </eventStatus>
       </listener>
    </extension>
