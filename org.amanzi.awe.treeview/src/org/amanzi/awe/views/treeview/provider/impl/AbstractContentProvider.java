@@ -13,35 +13,40 @@
 
 package org.amanzi.awe.views.treeview.provider.impl;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 /**
- * TODO Purpose of
  * <p>
+ * common content provider
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractContentProvider<T extends IModel, E extends Object> implements ITreeContentProvider {
+public abstract class AbstractContentProvider<T extends IModel> implements ITreeContentProvider {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
+    private static final DataElementComparator DEFAULT_DATA_ELEMENT_COMPARER = new DataElementComparator();
+
+    private Iterable<IDataElement> children = null;
+
     private final IProjectModelProvider projectModelProvider;
 
-    private final Map<Object, ITreeItem<T, E>> treeItemCache = new HashMap<Object, ITreeItem<T, E>>();
+    private final List<ITreeItem<T>> rootList = new ArrayList<ITreeItem<T>>();
 
     /**
      * @param networkModelProvider
@@ -51,83 +56,185 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         this.projectModelProvider = projectModelProvider;
     }
 
+    /**
+     * <p>
+     * Comparator for treeElements
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
+    @SuppressWarnings("rawtypes")
+    protected static class DataElementComparator implements Comparator<ITreeItem> {
+        @Override
+        public int compare(final ITreeItem dataElement1, final ITreeItem dataElement2) {
+            return dataElement1.getDataElement() == null ? -1 : dataElement2.getDataElement() == null ? 1 : dataElement1
+                    .getDataElement().compareTo(dataElement2.getDataElement());
+        }
+    }
+
+    @Override
+    public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
+    }
+
     @Override
     public void dispose() {
-
     }
-
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-
-    }
-
-    @Override
-    public Object[] getElements(Object inputElement) {
-        List<T> roots;
-        try {
-            roots = getRootList();
-
-            for (T model : roots) {
-                if (!treeItemCache.containsKey(model)) {
-                    treeItemCache.put(model, createInnerItem(model, model));
-                }
-            }
-            return roots.toArray();
-        } catch (ModelException e) {
-            LOGGER.error("can't get roots from element ");
-        }
-        return null;
-    }
-
-    public abstract ITreeItem<T, E> createInnerItem(T key, T value);
-
-    public abstract ITreeItem<T, E> createInnerItem(T key, E value);
-
-    /**
-     * @return rootList
-     * @throws ModelException
-     */
-    public abstract List<T> getRootList() throws ModelException;
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object[] getChildren(Object parentElement) {
-        ITreeItem<T, E> item = treeItemCache.get(parentElement);
-        E[] children = null;
+    public Object[] getChildren(final Object parentElement) {
+        ITreeItem<T> item = (ITreeItem<T>)parentElement;
         try {
-            Iterator<E> childrenIterator = item.getChildren().iterator();
-            children = (E[])IteratorUtils.toArray(childrenIterator);
+            if (isInRootList(item)) {
+                handleRoot(item);
 
-            for (E element : children) {
-                treeItemCache.put(element, createInnerItem(item.getModel(), element));
+            } else {
+                handleInnerElements(item);
             }
         } catch (ModelException e) {
-            LOGGER.error("can't get children from element " + item);
+            LOGGER.error("can't get child for parentElement " + parentElement, e);
+            return null;
         }
-        return children;
+        return processReturment(item.getParent());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getParent(Object element) {
-        return null;
-    }
-
-    @Override
-    public boolean hasChildren(Object element) {
-        ITreeItem<T, E> item = treeItemCache.get(element);
+    public boolean hasChildren(final Object element) {
         try {
-            return item.hasChildren();
+            ITreeItem<T> item = (ITreeItem<T>)element;
+            return checkNext(item);
         } catch (ModelException e) {
-            LOGGER.error("can't get validate childrent for element " + item);
-            return false;
+            LOGGER.error("exception when trying to get child", e);
         }
+        return false;
+    }
+
+    protected abstract boolean checkNext(ITreeItem<T> item) throws ModelException;
+
+    /**
+     * @param element
+     * @return
+     * @throws ModelException
+     */
+    protected abstract boolean additionalCheckChild(Object element) throws ModelException;
+
+    /**
+     * @param t
+     * @return
+     */
+    protected Object[] processReturment(final T model) {
+        List<ITreeItem<T>> dataElements = new ArrayList<ITreeItem<T>>();
+        for (IDataElement dataElement : children) {
+            ITreeItem<T> item = createItem(model, dataElement);
+            processItem(item);
+            dataElements.add(item);
+        }
+        Collections.sort(dataElements, getDataElementComparer());
+        return dataElements.toArray();
+    }
+
+    /**
+     * you need to override this method in children class to make more action with tree item, by
+     * default this method is empty
+     * 
+     * @param item
+     */
+    protected void processItem(ITreeItem<T> item) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /**
+     * handle inner elements
+     * 
+     * @param parentElement
+     * @throws ModelException
+     */
+    protected abstract void handleInnerElements(ITreeItem<T> parentElement) throws ModelException;
+
+    @Override
+    public Object[] getElements(final Object inputElement) {
+        rootList.clear();
+        List<T> roots = null;
+        try {
+            if (getActiveProjectModel() != null) {
+                roots = getRootElements();
+                for (T root : roots) {
+                    rootList.add(createItem(root, root.asDataElement()));
+                }
+            }
+        } catch (ModelException e) {
+            LOGGER.error("can't get roots", e);
+        }
+
+        return rootList.toArray();
+    }
+
+    /**
+     * create Root item
+     * 
+     * @param root
+     * @return
+     */
+    protected ITreeItem<T> createItem(T root, IDataElement element) {
+        return new TreeViewItem<T>(root, element);
+    }
+
+    /**
+     * get root elements
+     * 
+     * @return
+     * @throws ModelException
+     */
+    protected abstract List<T> getRootElements() throws ModelException;
+
+    /**
+     * check if object in rootList
+     * 
+     * @param object
+     * @return
+     */
+    private boolean isInRootList(final Object object) {
+        return rootList.contains(object);
+    }
+
+    /**
+     * handle get roots element child
+     */
+    protected abstract void handleRoot(ITreeItem<T> item) throws ModelException;
+
+    /**
+     * @return Returns the rootList.
+     */
+    protected List<ITreeItem<T>> getRootList() {
+        return rootList;
     }
 
     /**
      * @return Returns the projectModelProvider.
      */
-    public IProjectModelProvider getProjectModelProvider() {
+    protected IProjectModelProvider getProjectModelProvider() {
         return projectModelProvider;
+    }
+
+    /**
+     * @return Returns the DATA_ELEMENT_COMPARATOR.
+     */
+    public DataElementComparator getDataElementComparer() {
+        return DEFAULT_DATA_ELEMENT_COMPARER;
+    };
+
+    /**
+     * @param children
+     */
+    protected void setChildren(final Iterable<IDataElement> children) {
+        this.children = children;
+    }
+
+    protected IProjectModel getActiveProjectModel() {
+        return projectModelProvider.getActiveProjectModel();
     }
 
 }

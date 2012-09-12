@@ -13,24 +13,20 @@
 
 package org.amanzi.awe.views.treeview.provider;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
- * TODO Purpose of
  * <p>
+ * storage for interface for tree items
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface ITreeItem<T extends IModel, E extends Object> {
-    Iterable<E> getChildren() throws ModelException;
+public interface ITreeItem<T extends IModel> {
+    IDataElement getDataElement();
 
-    boolean hasChildren() throws ModelException;
-
-    T getModel();
-
-    E getChild();
+    T getParent();
 
 }

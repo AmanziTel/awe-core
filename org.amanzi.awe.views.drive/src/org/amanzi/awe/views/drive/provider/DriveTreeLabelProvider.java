@@ -14,10 +14,12 @@
 package org.amanzi.awe.views.drive.provider;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
-import org.amanzi.awe.ui.label.CommonViewLabelProvider;
 import org.amanzi.awe.views.drive.provider.namesmanager.MeasurementNamesManager;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 
 /**
@@ -27,7 +29,7 @@ import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class DriveTreeLabelProvider extends CommonViewLabelProvider {
+public class DriveTreeLabelProvider extends CommonTreeViewLabelProvider {
     private final MeasurementNamesManager manager = MeasurementNamesManager.getInstance();
     private final ITimePeriodNodeProperties nodeProperties;
 
@@ -43,11 +45,16 @@ public class DriveTreeLabelProvider extends CommonViewLabelProvider {
         nodeProperties = timePeriodNodeProperties;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public String getText(Object element) {
-        if (element instanceof PeriodItem) {
-            return ((PeriodItem)element).getName();
+        if (element instanceof ITreeItem) {
+            DriveTreeViewItem<IDriveModel, Object> item = (DriveTreeViewItem<IDriveModel, Object>)element;
+            if (item.isPeriodContainer()) {
+                return item.getName();
+            }
         }
+        // TODO Auto-generated method stub
         return super.getText(element);
     }
 
