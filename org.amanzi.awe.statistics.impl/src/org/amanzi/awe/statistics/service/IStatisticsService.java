@@ -43,4 +43,6 @@ public interface IStatisticsService extends IService {
     String getStatisticsLevelName(Node groupNode, DimensionType dimensionType) throws ServiceException;
 
     Iterator<Node> findAllStatisticsNode(Node parentNode) throws ServiceException;
+
+    Iterator<Node> findAllStatisticsLevelNode(Node parentNode, DimensionType dimensionType) throws ServiceException;
 }

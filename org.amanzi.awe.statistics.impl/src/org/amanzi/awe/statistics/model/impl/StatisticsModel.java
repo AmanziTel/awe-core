@@ -45,6 +45,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
@@ -98,6 +99,22 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         @Override
         protected IStatisticsCell createDataElement(final Node node) {
             return createStatisticsCell(node);
+        }
+
+    }
+
+    private class StatisticsGroupIterator extends AbstractDataElementIterator<IStatisticsGroup> {
+
+        /**
+         * @param nodeIterator
+         */
+        protected StatisticsGroupIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IStatisticsGroup createDataElement(final Node node) {
+            return createStatisticsGroupFromNode(node);
         }
 
     }
@@ -414,8 +431,12 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         StatisticsCell cell = new StatisticsCell(node);
         try {
             cell.setName(getNodeService().getNodeName(node));
+            cell.setNodeType(getNodeService().getNodeType(node));
             cell.setValue((Number)getNodeService().getNodeProperty(node, statisticsNodeProperties.getValueProperty(), null, false));
         } catch (ServiceException e) {
+            LOGGER.error("Error on getting StatisticsRow Node from Database", e);
+            return null;
+        } catch (NodeTypeNotExistsException e) {
             LOGGER.error("Error on getting StatisticsRow Node from Database", e);
             return null;
         }
@@ -756,5 +777,43 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
         getNodeService().updateProperty(row.getNode(), dateProperty, dateString);
         getNodeService().updateProperty(row.getNode(), dateTimestampProperty, currentDate);
+    }
+
+    @Override
+    public Iterable<IStatisticsGroup> getAllStatisticsGroups(DimensionType type, String levelName) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getStatisticsRows", levelName));
+        }
+
+        // TODO: LN: 20.08.2012, validate input
+
+        Node periodNode = getStatisticsLevelNode(type, levelName);
+        Iterator<Node> groupNodeIterator = null;
+        try {
+            groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
+        } catch (ServiceException e) {
+            processException("can't find groups", e);
+        }
+        return new StatisticsGroupIterator(groupNodeIterator).toIterable();
+    }
+
+    @Override
+    public Iterable<IDataElement> findAllStatisticsLevels(DimensionType type) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type));
+        }
+
+        Iterator<Node> levels = null;
+
+        try {
+            levels = statisticsService.findAllStatisticsLevelNode(getRootNode(), type);
+        } catch (ServiceException e) {
+            processException("Error when try to find all levels nodes", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getLevelCount"));
+        }
+        return new DataElementIterator(levels).toIterable();
     }
 }

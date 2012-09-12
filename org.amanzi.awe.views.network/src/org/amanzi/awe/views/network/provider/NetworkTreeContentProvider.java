@@ -62,11 +62,6 @@ public class NetworkTreeContentProvider extends AbstractContentProvider<INetwork
     }
 
     @Override
-    protected void handleRoot(ITreeItem<INetworkModel, IDataElement> item) throws ModelException {
-        handleInnerElements(item);
-    }
-
-    @Override
     protected boolean additionalCheckChild(Object element) throws ModelException {
         return true;
     }

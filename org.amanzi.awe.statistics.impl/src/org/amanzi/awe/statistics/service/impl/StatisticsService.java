@@ -105,6 +105,14 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
     }
 
     @Override
+    public Iterator<Node> findAllStatisticsLevelNode(final Node parentNode, final DimensionType dimensionType)
+            throws ServiceException {
+        assert parentNode != null;
+        assert dimensionType != null;
+        return nodeService.getChildren(parentNode, StatisticsNodeType.LEVEL, dimensionType.getRelationshipType());
+    }
+
+    @Override
     public Node getGroup(final Node propertyLevelNode, final Node periodLevelNode) throws ServiceException {
         assert propertyLevelNode != null;
         assert periodLevelNode != null;

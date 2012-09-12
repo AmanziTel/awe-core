@@ -60,4 +60,18 @@ public interface IStatisticsModel extends IModel {
      */
     IStatisticsRow getSummuryRow(IStatisticsGroup statisticsGroup) throws ModelException;
 
+    /**
+     * @param type
+     * @throws ModelException
+     */
+    Iterable<IDataElement> findAllStatisticsLevels(DimensionType type) throws ModelException;
+
+    /**
+     * @param type
+     * @param levelName
+     * @return
+     * @throws ModelException
+     */
+    Iterable<IStatisticsGroup> getAllStatisticsGroups(DimensionType type, String levelName) throws ModelException;
+
 }

@@ -86,11 +86,6 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     }
 
     @Override
-    protected void handleRoot(final ITreeItem<IProjectModel, IModel> item) throws ModelException {
-        handleInnerElements(item);
-    }
-
-    @Override
     protected List<IProjectModel> getRootElements() throws ModelException {
         return getProjectModelProvider().findAll();
     }

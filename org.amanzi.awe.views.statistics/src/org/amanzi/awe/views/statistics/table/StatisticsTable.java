@@ -18,7 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
@@ -150,13 +151,12 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     private void initStatisticsGroups() {
         groups = new HashSet<String>();
         try {
-            Iterable<IStatisticsRow> rows = model.getStatisticsRows(period.getId());
-            for (IStatisticsRow row : rows) {
-                groups.add(row.getStatisticsGroup().getPropertyValue());
+            Iterable<IStatisticsGroup> statGroups = model.getAllStatisticsGroups(DimensionType.TIME, period.getId());
+            for (IStatisticsGroup group : statGroups) {
+                groups.add(group.getPropertyValue());
             }
         } catch (ModelException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // TODO KV: handle exception;
         }
 
     }

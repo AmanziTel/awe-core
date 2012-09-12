@@ -13,8 +13,11 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
@@ -47,6 +50,32 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     protected static final String INITIALIZE_METHOD_NAME = "initialize";
 
     private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
+
+    protected final class DataElementIterator extends AbstractDataElementIterator<IDataElement> {
+
+        /**
+         * @param nodeIterator
+         */
+        public DataElementIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IDataElement createDataElement(final Node node) {
+            String name = null;
+            INodeType type = null;
+
+            try {
+                name = getNodeService().getNodeProperty(node, getGeneralNodeProperties().getNodeNameProperty(), null, false);
+                type = getNodeService().getNodeType(node);
+            } catch (Exception e) {
+                LOGGER.info("can't get required property from node " + node);
+                return null;
+            }
+
+            return getDataElement(node, type, name);
+        }
+    }
 
     private String name;
     private Node rootNode;

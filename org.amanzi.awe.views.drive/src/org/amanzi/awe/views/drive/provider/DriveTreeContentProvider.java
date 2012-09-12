@@ -130,10 +130,6 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
         return driveModelProvider.findAll(getActiveProjectModel());
     }
 
-    @Override
-    protected void handleRoot(ITreeItem<IDriveModel, Object> item) throws ModelException {
-        handleInnerElements(item);
-    }
 
     @Override
     protected boolean checkNext(ITreeItem<IDriveModel, Object> item) throws ModelException {

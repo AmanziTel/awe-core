@@ -84,12 +84,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
     public Object[] getChildren(final Object parentElement) {
         ITreeItem<T, E> item = (ITreeItem<T, E>)parentElement;
         try {
-            if (isInRootList(item)) {
-                handleRoot(item);
-
-            } else {
-                handleInnerElements(item);
-            }
+            handleInnerElements(item);
         } catch (ModelException e) {
             LOGGER.error("can't get child for parentElement " + parentElement, e);
             return null;
@@ -126,22 +121,10 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         List<ITreeItem<T, E>> dataElements = new ArrayList<ITreeItem<T, E>>();
         for (E dataElement : children) {
             ITreeItem<T, E> item = createItem(model, dataElement);
-            processItem(item);
             dataElements.add(item);
         }
         Collections.sort(dataElements, getDataElementComparer());
         return dataElements.toArray();
-    }
-
-    /**
-     * you need to override this method in children class to make more action with tree item, by
-     * default this method is empty
-     * 
-     * @param item
-     */
-    protected void processItem(ITreeItem<T, E> item) {
-        // TODO Auto-generated method stub
-
     }
 
     /**
@@ -191,21 +174,6 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
      * @throws ModelException
      */
     protected abstract List<T> getRootElements() throws ModelException;
-
-    /**
-     * check if object in rootList
-     * 
-     * @param object
-     * @return
-     */
-    private boolean isInRootList(final Object object) {
-        return rootList.contains(object);
-    }
-
-    /**
-     * handle get roots element child
-     */
-    protected abstract void handleRoot(ITreeItem<T, E> item) throws ModelException;
 
     /**
      * @return Returns the rootList.
