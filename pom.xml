@@ -101,6 +101,7 @@
 	<module>org.amanzi.awe.views.drive</module>
 	<module>org.amanzi.awe.views.network</module>
 	<module>org.amanzi.awe.views.statistics</module>
+	<module>org.amanzi.awe.views.statistcstree</module>
       </modules>
     </profile>
   </profiles>
