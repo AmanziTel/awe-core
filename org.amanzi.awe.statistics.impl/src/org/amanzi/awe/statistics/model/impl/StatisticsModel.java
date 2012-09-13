@@ -346,6 +346,13 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             result = getStatisticsRowFromDatabase((StatisticsGroup)group, sourceRow, startDate, endDate);
             statisticsRowCache.put(key, result);
         }
+        if (sourceRow != null) {
+            try {
+                statisticsService.addSourceNode(((StatisticsRow)result).getNode(), ((DataElement)sourceRow).getNode());
+            } catch (ServiceException e) {
+                processException("Can't add source to row " + sourceRow, e);
+            }
+        }
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getStatisticsRow"));
@@ -377,11 +384,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
                 sRowNode = getNodeService()
                         .createNodeInChain(statisticsGroup.getNode(), StatisticsNodeType.S_ROW, name, properties);
                 updateSummury((StatisticsRow)getSummuryRow(statisticsGroup), startDate, endDate);
-                if (sourceRow != null) {
-                    statisticsService.addSourceNode(sRowNode, ((DataElement)sourceRow).getNode());
-                }
             }
-
             result = createStatisticsRow(sRowNode, startDate, endDate);
         } catch (ServiceException e) {
             processException("Exception on getting Statistics Row from Database", e);

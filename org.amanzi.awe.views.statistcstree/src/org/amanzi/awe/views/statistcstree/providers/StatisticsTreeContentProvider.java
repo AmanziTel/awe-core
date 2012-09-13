@@ -14,6 +14,7 @@
 package org.amanzi.awe.views.statistcstree.providers;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,9 +48,47 @@ import org.apache.commons.collections.IteratorUtils;
  */
 public class StatisticsTreeContentProvider extends AbstractContentProvider<IStatisticsModel, IDataElement> {
 
+    private static final StatisticsTreeComparer STATISTICS_TREE_COMPARER = new StatisticsTreeComparer();
+
     private IStatisticsModelProvider statisticsModelProvider;
+
     private IDriveModelProvider driveModelProvider;
+
     private DimensionType type;
+
+    @SuppressWarnings("rawtypes")
+    protected static class StatisticsTreeComparer implements Comparator<ITreeItem> {
+
+        @Override
+        public int compare(final ITreeItem item1, final ITreeItem item2) {
+            int result;
+            if (item1.getChild() == null) {
+                result = -1;
+            } else if (item2.getChild() == null) {
+                result = 1;
+            } else {
+                IDataElement element1 = (IDataElement)item1.getChild();
+                IDataElement element2 = (IDataElement)item2.getChild();
+                if (element1.getNodeType().equals(StatisticsNodeType.S_ROW)
+                        && element2.getNodeType().equals(StatisticsNodeType.S_ROW)) {
+                    IStatisticsRow row1 = ((IStatisticsRow)element1);
+                    IStatisticsRow row2 = ((IStatisticsRow)element2);
+                    if (row1.isSummury()) {
+                        result = -1;
+                    } else if (row2.isSummury()) {
+                        result = 1;
+                    } else {
+                        Long timestamp1 = row1.getStartDate();
+                        Long timestamp2 = ((IStatisticsRow)element2).getStartDate();
+                        result = timestamp1.compareTo(timestamp2);
+                    }
+                } else {
+                    result = element1.compareTo(element2);
+                }
+            }
+            return result;
+        }
+    }
 
     /**
      * @param projectModelProvider
@@ -84,8 +123,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
                 return model.getAllStatisticsGroups(type, item.getChild().getName()).iterator().hasNext();
             } else if (item.getChild().getNodeType().equals(StatisticsNodeType.GROUP)) {
                 IStatisticsGroup group = (IStatisticsGroup)item.getChild();
-                Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
-                return getRowsForGroup(rows, item.getChild()).iterator().hasNext();
+                return model.getStatisticsRows(group.getPeriod()).iterator().hasNext();
             } else if (item.getChild().getNodeType().equals(StatisticsNodeType.S_ROW)) {
                 Iterable<IStatisticsCell> cells = ((IStatisticsRow)item.getChild()).getStatisticsCells();
                 return cells.iterator().hasNext();
@@ -152,6 +190,12 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
             }
         }
         return groups;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    protected Comparator<ITreeItem> getDataElementComparer() {
+        return STATISTICS_TREE_COMPARER;
     }
 
     @Override

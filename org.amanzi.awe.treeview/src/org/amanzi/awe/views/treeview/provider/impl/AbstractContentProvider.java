@@ -39,7 +39,8 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContentProvider.class);
 
-    private static final DataElementComparator DEFAULT_DATA_ELEMENT_COMPARER = new DataElementComparator();
+    @SuppressWarnings("rawtypes")
+    private static final Comparator<ITreeItem> DEFAULT_DATA_ELEMENT_COMPARER = new DataElementComparator();
 
     private Iterable<E> children = null;
 
@@ -192,7 +193,8 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
     /**
      * @return Returns the DATA_ELEMENT_COMPARATOR.
      */
-    public DataElementComparator getDataElementComparer() {
+    @SuppressWarnings("rawtypes")
+    protected Comparator<ITreeItem> getDataElementComparer() {
         return DEFAULT_DATA_ELEMENT_COMPARER;
     };
 
