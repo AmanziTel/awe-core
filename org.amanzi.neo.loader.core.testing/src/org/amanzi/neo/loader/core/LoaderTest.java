@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.core.validator.IValidationResult.Result;
 import org.amanzi.neo.loader.core.validator.IValidator;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -217,8 +219,13 @@ public class LoaderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckFinishUpWhenException() throws Exception {
+        File mockedFile = mock(File.class);
+        when(mockedFile.getName()).thenReturn(StringUtils.EMPTY);
         when(parser.next()).thenThrow(new IllegalArgumentException());
+        when(parser.getLastParsedFile()).thenReturn(mockedFile);
+        when(parser.getLastParsedLineNumber()).thenReturn(0);
         doNothing().when(parser).finishUp();
+
         for (ISaver<IConfiguration, IData> saver : savers) {
             doNothing().when(saver).finishUp();
         }

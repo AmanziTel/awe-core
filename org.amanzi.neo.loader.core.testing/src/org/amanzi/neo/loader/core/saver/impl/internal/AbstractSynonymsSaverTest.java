@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.saver.impl.internal;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,7 +59,7 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
 
     private static final String PROPERTY_NAME = "property";
 
-    private static final DateFormat DATE_TIME_PATTERN = DateFormat.getDateInstance(DateFormat.FULL);
+    private static final DateFormat DATE_TIME_PATTERN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     private long currentTimestamp;
 
@@ -184,7 +185,8 @@ public class AbstractSynonymsSaverTest extends AbstractMockitoTest {
             Property< ? > result = saver.createProperty(TestNodeType.TEST_TYPE_FOR_SAVER, header, false);
 
             assertEquals("unexpected property", getPropertyClass(type), result.getClass());
-            assertEquals("unexpected property name", type == SynonymType.UNKOWN ? header : PROPERTY_NAME, result.getPropertyName());
+            assertEquals("unexpected property name", type == SynonymType.UNKOWN ? header.toLowerCase() : PROPERTY_NAME,
+                    result.getPropertyName());
         }
     }
 
