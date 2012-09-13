@@ -84,7 +84,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
     public Object[] getChildren(final Object parentElement) {
         ITreeItem<T, E> item = (ITreeItem<T, E>)parentElement;
         try {
-            handleInnerElements(item);
+            getChildren(item);
         } catch (ModelException e) {
             LOGGER.error("can't get child for parentElement " + parentElement, e);
             return null;
@@ -133,7 +133,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
      * @param parentElement
      * @throws ModelException
      */
-    protected abstract void handleInnerElements(ITreeItem<T, E> parentElement) throws ModelException;
+    protected abstract void getChildren(ITreeItem<T, E> parentElement) throws ModelException;
 
     @Override
     public Object[] getElements(final Object inputElement) {

@@ -15,6 +15,7 @@ package org.amanzi.awe.statistics.model;
 
 import java.util.Set;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.dto.IDataElement;
@@ -53,25 +54,16 @@ public interface IStatisticsModel extends IModel {
 
     int getLevelCount(DimensionType dimension, String levelName) throws ModelException;
 
-    /**
-     * @param statisticsGroup
-     * @return
-     * @throws ModelException
-     */
     IStatisticsRow getSummuryRow(IStatisticsGroup statisticsGroup) throws ModelException;
 
-    /**
-     * @param type
-     * @throws ModelException
-     */
     Iterable<IDataElement> findAllStatisticsLevels(DimensionType type) throws ModelException;
 
-    /**
-     * @param type
-     * @param levelName
-     * @return
-     * @throws ModelException
-     */
     Iterable<IStatisticsGroup> getAllStatisticsGroups(DimensionType type, String levelName) throws ModelException;
+
+    Iterable<IDataElement> getSources(IDataElement cell) throws ModelException;
+
+    Iterable<IStatisticsCell> getSourceCells(IStatisticsCell cell) throws ModelException;
+
+    Iterable<IStatisticsRow> getSourceRows(IStatisticsRow row) throws ModelException;
 
 }

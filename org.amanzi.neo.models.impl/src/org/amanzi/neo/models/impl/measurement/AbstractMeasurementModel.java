@@ -14,8 +14,10 @@
 package org.amanzi.neo.models.impl.measurement;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.filters.IFilter;
 import org.amanzi.neo.dto.IDataElement;
@@ -23,6 +25,7 @@ import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.dto.FileElement;
 import org.amanzi.neo.impl.dto.LocationElement;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
+import org.amanzi.neo.impl.util.IDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
@@ -57,6 +60,77 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     private static final Logger LOGGER = Logger.getLogger(AbstractMeasurementModel.class);
 
     private static final INodeType DEFAULT_PRIMARY_TYPE = MeasurementNodeType.M;
+
+    private final class ElementLocationIterable implements IDataElementIterator<ILocationElement> {
+
+        private final Iterator<IDataElement> dataElements;
+
+        private final Set<ILocationElement> locationElements = new HashSet<ILocationElement>();
+
+        private boolean moveToNext;
+
+        private ILocationElement nextElement;
+
+        public ElementLocationIterable(final Iterable<IDataElement> dataElements) {
+            this.dataElements = dataElements.iterator();
+
+            moveToNext = true;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (moveToNext) {
+                nextElement = moveToNext();
+            }
+            return nextElement != null;
+        }
+
+        @Override
+        public ILocationElement next() {
+            if (moveToNext) {
+                nextElement = moveToNext();
+            }
+
+            moveToNext = true;
+            return nextElement;
+        }
+
+        private ILocationElement moveToNext() {
+            try {
+                ILocationElement element = null;
+                while (dataElements.hasNext() && (element == null)) {
+                    element = getElementLocation((DataElement)dataElements.next());
+
+                    element = locationElements.contains(element) ? null : element;
+                }
+
+                if (element != null) {
+                    locationElements.add(element);
+                }
+
+                return element;
+            } finally {
+                moveToNext = false;
+            }
+        }
+
+        @Override
+        public void remove() {
+            dataElements.remove();
+        }
+
+        @Override
+        public Iterable<ILocationElement> toIterable() {
+            return new Iterable<ILocationElement>() {
+
+                @Override
+                public Iterator<ILocationElement> iterator() {
+                    return ElementLocationIterable.this;
+                }
+            };
+        }
+
+    }
 
     protected final class MeasurementIterator extends AbstractDataElementIterator<IDataElement> {
 
@@ -416,5 +490,26 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
                 timePeriodNodeProperties.getTimestampProperty());
 
         return new DataElementIterator(nodeIterator).toIterable();
+    }
+
+    protected ILocationElement getElementLocation(final DataElement dataElement) {
+        ILocationElement result = null;
+
+        try {
+            Node locationNode = getNodeService().getSingleChild(dataElement.getNode(), MeasurementNodeType.MP, MeasurementRelationshipType.LOCATION);
+
+            if (locationNode != null) {
+                result = getLocationElement(locationNode);
+            }
+        } catch (ServiceException e) {
+            LOGGER.error("Error on calculating location Node", e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
+        return new ElementLocationIterable(dataElements).toIterable();
     }
 }

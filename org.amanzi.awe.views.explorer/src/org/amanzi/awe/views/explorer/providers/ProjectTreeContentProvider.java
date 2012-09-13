@@ -68,7 +68,7 @@ public class ProjectTreeContentProvider extends AbstractContentProvider<IProject
     }
 
     @Override
-    protected void handleInnerElements(final ITreeItem<IProjectModel, IModel> item) throws ModelException {
+    protected void getChildren(final ITreeItem<IProjectModel, IModel> item) throws ModelException {
         List<IModel> models = new ArrayList<IModel>();
         if (!isRoot(item)) {
             setChildren(EMPTY_ELEMENTS_COLLECTION);

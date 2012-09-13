@@ -26,7 +26,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDataElementIterator<T extends IDataElement> implements Iterator<T> {
+public abstract class AbstractDataElementIterator<T extends IDataElement> implements IDataElementIterator<T> {
 
     private Iterator<Node> nodeIterator;
 
@@ -55,6 +55,7 @@ public abstract class AbstractDataElementIterator<T extends IDataElement> implem
         nodeIterator.remove();
     }
 
+    @Override
     public Iterable<T> toIterable() {
         return new Iterable<T>() {
 

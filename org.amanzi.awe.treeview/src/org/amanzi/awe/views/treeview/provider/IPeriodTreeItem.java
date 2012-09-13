@@ -11,18 +11,36 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.views.treeview.provider;
+
+import org.amanzi.neo.core.period.Period;
+import org.amanzi.neo.models.IModel;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
+ * @param <T>
+ * @param <E>
  */
-public enum EventStatus {
+public interface IPeriodTreeItem<T extends IModel, E extends Object> extends ITreeItem<T, E> {
 
-    AWE_STARTED, AWE_STOPPED, PROJECT_CHANGED, DATA_UPDATED, SHOW_IN_VIEW, INITIALISATION,
-    SHOW_GIS, SHOW_ELEMENTS;
+    /**
+     * @return Returns the endDate.
+     */
+    Long getEndDate();
+
+    /**
+     * @return Returns the startDate.
+     */
+    Long getStartDate();
+
+    /**
+     * @return Returns the period.
+     */
+    Period getPeriod();
+
 }

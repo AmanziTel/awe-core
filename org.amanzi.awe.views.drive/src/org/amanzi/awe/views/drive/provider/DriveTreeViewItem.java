@@ -15,6 +15,7 @@ package org.amanzi.awe.views.drive.provider;
 
 import java.util.Date;
 
+import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.core.period.PeriodManager;
@@ -29,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends TreeViewItem<T, E> {
+public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends TreeViewItem<T, E> implements IPeriodTreeItem<T, E> {
 
     private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
 
@@ -47,11 +48,11 @@ public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends 
      * @param model
      * @param element
      */
-    public DriveTreeViewItem(T model, E element) {
+    public DriveTreeViewItem(final T model, final E element) {
         super(model, element);
     }
 
-    public DriveTreeViewItem(T model, Long startDate, Long endDate, Period period) {
+    public DriveTreeViewItem(final T model, final Long startDate, final Long endDate, final Period period) {
         super(model, null);
         isPeriodContainer = true;
         this.startDate = startDate;
@@ -82,6 +83,7 @@ public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends 
     /**
      * @return Returns the endDate.
      */
+    @Override
     public Long getEndDate() {
         return endDate;
     }
@@ -89,6 +91,7 @@ public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends 
     /**
      * @return Returns the startDate.
      */
+    @Override
     public Long getStartDate() {
         return startDate;
     }
@@ -96,6 +99,7 @@ public class DriveTreeViewItem<T extends IDriveModel, E extends Object> extends 
     /**
      * @return Returns the period.
      */
+    @Override
     public Period getPeriod() {
         return period;
     }

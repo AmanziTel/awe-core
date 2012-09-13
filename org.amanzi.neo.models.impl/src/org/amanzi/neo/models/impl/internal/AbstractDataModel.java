@@ -20,6 +20,8 @@ import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
@@ -52,7 +54,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
             LOGGER.debug(getStartLogStatement("getParentElement", childElement));
         }
 
-        IDataElement result = null;
+        DataElement result = null;
 
         try {
             Node childNode = ((DataElement)childElement).getNode();
@@ -60,8 +62,12 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
             Node parentNode = getParent(childNode);
 
             result = new DataElement(parentNode);
+
+            result.setNodeType(getNodeService().getNodeType(parentNode));
         } catch (ServiceException e) {
             processException("An error occured on searching for a Parent Element", e);
+        } catch (NodeTypeNotExistsException e) {
+            processException("An error occured on initializing child element", e);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -85,5 +91,11 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
             processException("Service exception found", e);
         }
         return new DataElementIterator(childs).toIterable();
+    }
+
+    @Override
+    public <T extends IDataModel> Iterable<T> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

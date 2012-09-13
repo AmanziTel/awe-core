@@ -75,42 +75,66 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     @Override
     protected boolean checkNext(ITreeItem<IStatisticsModel, IDataElement> item) throws ModelException {
         IStatisticsModel model = getRoot(item);
+
         if (isRoot(item)) {
             return model.findAllStatisticsLevels(type).iterator().hasNext();
-        } else if (item.getChild().getNodeType().equals(StatisticsNodeType.LEVEL)) {
-            return model.getAllStatisticsGroups(type, item.getChild().getName()).iterator().hasNext();
-        } else if (item.getChild().getNodeType().equals(StatisticsNodeType.GROUP)) {
-            IStatisticsGroup group = (IStatisticsGroup)item.getChild();
-            Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
-            return getRowsForGroup(rows, item.getChild()).iterator().hasNext();
-        } else if (item.getChild().getNodeType().equals(StatisticsNodeType.S_ROW)) {
-            Iterable<IStatisticsCell> cells = ((IStatisticsRow)item.getChild()).getStatisticsCells();
-            return cells.iterator().hasNext();
+        } else {
+            IDataElement child = item.getChild();
+            if (item.getChild().getNodeType().equals(StatisticsNodeType.LEVEL)) {
+                return model.getAllStatisticsGroups(type, item.getChild().getName()).iterator().hasNext();
+            } else if (item.getChild().getNodeType().equals(StatisticsNodeType.GROUP)) {
+                IStatisticsGroup group = (IStatisticsGroup)item.getChild();
+                Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
+                return getRowsForGroup(rows, item.getChild()).iterator().hasNext();
+            } else if (item.getChild().getNodeType().equals(StatisticsNodeType.S_ROW)) {
+                Iterable<IStatisticsCell> cells = ((IStatisticsRow)item.getChild()).getStatisticsCells();
+                return cells.iterator().hasNext();
+            } else if (child.getNodeType().equals(StatisticsNodeType.S_CELL)) {
+                IStatisticsCell cell = (IStatisticsCell)child;
+                Iterable<IDataElement> cells = model.getSources(cell);
+                return cells.iterator().hasNext();
+            }
         }
         return false;
     }
 
     @Override
     protected boolean additionalCheckChild(Object element) throws ModelException {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void handleInnerElements(ITreeItem<IStatisticsModel, IDataElement> parentElement) throws ModelException {
+    protected void getChildren(ITreeItem<IStatisticsModel, IDataElement> parentElement) throws ModelException {
         IStatisticsModel model = getRoot(parentElement);
         if (isRoot(parentElement)) {
             setChildren(model.findAllStatisticsLevels(type));
-        } else if (parentElement.getChild().getNodeType().equals(StatisticsNodeType.LEVEL)) {
-            setChildren(IteratorUtils.toList(model.getAllStatisticsGroups(type, parentElement.getChild().getName()).iterator()));
-        } else if (parentElement.getChild().getNodeType().equals(StatisticsNodeType.GROUP)) {
-            IStatisticsGroup group = (IStatisticsGroup)parentElement.getChild();
-            Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
-            setChildren(getRowsForGroup(rows, parentElement.getChild()));
-        } else if (parentElement.getChild().getNodeType().equals(StatisticsNodeType.S_ROW)) {
-            Iterable<IStatisticsCell> cells = ((IStatisticsRow)parentElement.getChild()).getStatisticsCells();
-            setChildren(IteratorUtils.toList(cells.iterator()));
+        } else {
+            IDataElement children = parentElement.getChild();
+            if (children.getNodeType().equals(StatisticsNodeType.LEVEL)) {
+                setChildren(IteratorUtils.toList(model.getAllStatisticsGroups(type, children.getName()).iterator()));
+            } else if (children.getNodeType().equals(StatisticsNodeType.GROUP)) {
+                IStatisticsGroup group = (IStatisticsGroup)children;
+                Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
+                setChildren(getRowsForGroup(rows, children));
+            } else if (children.getNodeType().equals(StatisticsNodeType.S_ROW)) {
+                IStatisticsRow row = (IStatisticsRow)children;
+                Iterable<IStatisticsRow> subRows = model.getSourceRows(row);
+                if (subRows == null) {
+                    Iterable<IStatisticsCell> cells = ((IStatisticsRow)children).getStatisticsCells();
+                    setChildren(IteratorUtils.toList(cells.iterator()));
+                } else {
+                    setChildren(IteratorUtils.toList(subRows.iterator()));
+                }
+            } else if (children.getNodeType().equals(StatisticsNodeType.S_CELL)) {
+                IStatisticsCell cell = (IStatisticsCell)children;
+                Iterable<IStatisticsCell> cells = model.getSourceCells(cell);
+                if (cells == null) {
+                    setChildren(model.getSources(cell));
+                } else {
+                    setChildren(IteratorUtils.toList(cells.iterator()));
+                }
+            }
         }
 
     }

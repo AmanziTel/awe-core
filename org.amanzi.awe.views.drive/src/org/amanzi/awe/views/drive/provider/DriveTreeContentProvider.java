@@ -58,7 +58,7 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
     }
 
     @Override
-    protected void handleInnerElements(ITreeItem<IDriveModel, Object> parentElement) throws ModelException {
+    protected void getChildren(ITreeItem<IDriveModel, Object> parentElement) throws ModelException {
         items = new ArrayList<DriveTreeViewItem<IDriveModel, Object>>();
         DriveTreeViewItem<IDriveModel, Object> item = (DriveTreeViewItem<IDriveModel, Object>)parentElement;
         IDriveModel model = item.getParent();

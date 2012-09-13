@@ -15,6 +15,7 @@ package org.amanzi.neo.models;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * <p>
@@ -36,5 +37,7 @@ public interface IDataModel extends IModel {
     IDataElement getParentElement(IDataElement childElement) throws ModelException;
 
     Iterable<IDataElement> getChildren(IDataElement parentElement) throws ModelException;
+
+    <T extends IDataModel> Iterable<T> getAllElementsByType(INodeType nodeType) throws ModelException;
 
 }

@@ -45,4 +45,6 @@ public interface IStatisticsService extends IService {
     Iterator<Node> findAllStatisticsNode(Node parentNode) throws ServiceException;
 
     Iterator<Node> findAllStatisticsLevelNode(Node parentNode, DimensionType dimensionType) throws ServiceException;
+
+    Iterator<Node> getAllSources(Node rootNode) throws ServiceException;
 }

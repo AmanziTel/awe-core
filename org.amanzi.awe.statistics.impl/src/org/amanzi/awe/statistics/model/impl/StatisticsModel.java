@@ -523,11 +523,10 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         try {
             if (value != null) {
                 getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
-            }
-
-            for (IDataElement singleElement : sourceElement) {
-                DataElement source = (DataElement)singleElement;
-                statisticsService.addSourceNode(statisticsCellNode, source.getNode());
+                for (IDataElement singleElement : sourceElement) {
+                    DataElement source = (DataElement)singleElement;
+                    statisticsService.addSourceNode(statisticsCellNode, source.getNode());
+                }
             }
         } catch (ServiceException e) {
             processException("Error on updating value of Statistics Cell <" + name + "> in Row <" + statisticsRow + ">", e);
@@ -815,5 +814,71 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
             LOGGER.debug(getFinishLogStatement("getLevelCount"));
         }
         return new DataElementIterator(levels).toIterable();
+    }
+
+    private boolean hasUnderlineSource(IDataElement element) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("hasUnderlineSource", element));
+        }
+        DataElement statElement = (DataElement)element;
+        Iterator<Node> sources = null;
+        try {
+            sources = statisticsService.getAllSources(statElement.getNode());
+            if (sources.hasNext() && element.getNodeType().equals(getNodeService().getNodeType(sources.next()))) {
+                return true;
+            }
+        } catch (ServiceException e) {
+            processException("can't get sources from node " + statElement, e);
+        } catch (NodeTypeNotExistsException e) {
+            LOGGER.error("can't get node type for", e);
+        }
+        return false;
+    }
+
+    @Override
+    public Iterable<IStatisticsCell> getSourceCells(IStatisticsCell cell) throws ModelException {
+        if (!hasUnderlineSource(cell)) {
+            return null;
+        }
+        Iterator<Node> sources = getSourcesNodes(cell);
+        return new StatisticsCellIterator(sources).toIterable();
+
+    }
+
+    @Override
+    public Iterable<IDataElement> getSources(IDataElement cell) throws ModelException {
+        Iterator<Node> sources = getSourcesNodes(cell);
+        if (cell.getNodeType().equals(StatisticsNodeType.S_CELL)) {
+            return new DataElementIterator(sources, cell.getName()).toIterable();
+        }
+        return new DataElementIterator(sources).toIterable();
+    }
+
+    @Override
+    public Iterable<IStatisticsRow> getSourceRows(IStatisticsRow row) throws ModelException {
+        if (!hasUnderlineSource(row)) {
+            return null;
+        }
+        Iterator<Node> sources = getSourcesNodes(row);
+        return new StatisticsRowIterator(sources).toIterable();
+    }
+
+    private Iterator<Node> getSourcesNodes(IDataElement element) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getCellSources", element));
+        }
+
+        DataElement statCell = (DataElement)element;
+        Iterator<Node> sources = null;
+        try {
+            sources = statisticsService.getAllSources(statCell.getNode());
+        } catch (ServiceException e) {
+            processException("can't get sources from node " + element, e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getCellSources"));
+        }
+        return sources;
     }
 }

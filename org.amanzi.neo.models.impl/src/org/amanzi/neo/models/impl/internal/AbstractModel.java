@@ -52,6 +52,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
 
     protected final class DataElementIterator extends AbstractDataElementIterator<IDataElement> {
+        String defaultProperty = getGeneralNodeProperties().getNodeNameProperty();
 
         /**
          * @param nodeIterator
@@ -60,13 +61,18 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             super(nodeIterator);
         }
 
+        public DataElementIterator(final Iterator<Node> nodeIterator, String defaultProperty) {
+            this(nodeIterator);
+            this.defaultProperty = defaultProperty;
+        }
+
         @Override
         protected IDataElement createDataElement(final Node node) {
             String name = null;
             INodeType type = null;
 
             try {
-                name = getNodeService().getNodeProperty(node, getGeneralNodeProperties().getNodeNameProperty(), null, false);
+                name = getNodeService().getNodeProperty(node, getGeneralNodeProperties().getNodeNameProperty(), defaultProperty, false);
                 type = getNodeService().getNodeType(node);
             } catch (Exception e) {
                 LOGGER.info("can't get required property from node " + node);

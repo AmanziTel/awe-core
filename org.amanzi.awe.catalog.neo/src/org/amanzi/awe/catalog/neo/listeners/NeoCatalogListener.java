@@ -16,6 +16,7 @@ package org.amanzi.awe.catalog.neo.listeners;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
@@ -24,18 +25,24 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.command.CompositeCommand;
 import net.refractions.udig.project.internal.command.navigation.AbstractNavCommand;
 import net.refractions.udig.project.internal.command.navigation.SetViewportBBoxCommand;
+import net.refractions.udig.project.internal.command.navigation.ZoomCommand;
 import net.refractions.udig.project.internal.command.navigation.ZoomExtentCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IGISModel;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 
 /**
  * TODO Purpose of
@@ -57,9 +64,13 @@ public class NeoCatalogListener implements IAWEEventListenter {
         case PROJECT_CHANGED:
             updateCatalog();
             break;
-        case SHOW_GIS_ON_MAP:
+        case SHOW_GIS:
             ShowGISOnMap showEvent = (ShowGISOnMap)event;
             showOnMap(showEvent.getModel(), showEvent.getZoom());
+            break;
+        case SHOW_ELEMENTS:
+            ShowElementsOnMap showElementsEvent = (ShowElementsOnMap)event;
+            showOnMap(showElementsEvent.getModel(), showElementsEvent.getElements(), showElementsEvent.getBounds());
             break;
         default:
             break;
@@ -68,6 +79,50 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
     protected void updateCatalog() {
         NeoCatalogPlugin.getDefault().updateMapServices();
+    }
+
+    protected void showOnMap(final IRenderableModel model, final Set<IDataElement> elements, ReferencedEnvelope bounds) {
+        boolean computeBounds = bounds == null;
+
+        Iterable<ILocationElement> selectedLocations = model.getElementsLocations(elements);
+
+        if (computeBounds) {
+            double minLat = Double.MAX_VALUE;
+            double minLon = Double.MAX_VALUE;
+            double maxLat = -Double.MAX_VALUE;
+            double maxLon = -Double.MAX_VALUE;
+
+            for (ILocationElement element : selectedLocations) {
+                minLat = Math.min(minLat, element.getLatitude());
+                maxLat = Math.max(maxLat, element.getLatitude());
+
+                minLon = Math.min(minLon, element.getLongitude());
+                maxLon = Math.max(maxLon, element.getLongitude());
+            }
+
+            bounds = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat, model.getMainGIS().getCRS());
+        }
+
+        try {
+            IMap map = ApplicationGIS.getActiveMap();
+
+            List<ILayer> layerList = new ArrayList<ILayer>();
+
+            for (IGISModel gis : model.getAllGIS()) {
+                Pair<IGISModel, ILayer> pair = getLayerModelPair(map, gis);
+
+                ILayer layer = pair.getRight();
+
+                if (layer != null) {
+                    layer.refresh(null);
+                    layerList.add(layer);
+                }
+            }
+
+            executeCommands(layerList, bounds);
+        } catch (Exception e) {
+            LOGGER.error("Error on putting model <" + model + "> on a Map", e);
+        }
     }
 
     protected void showOnMap(final IGISModel model, final int zoom) {
@@ -99,7 +154,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
             executeCommands(layerList, model, zoom);
         } catch (Exception e) {
-
+            LOGGER.error("Error on putting model <" + model + "> on a Map", e);
         }
     }
 
@@ -169,6 +224,16 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
         commands.add(new ZoomExtentCommand());
         commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
+
+        sendCommandsToLayer(layerList, commands);
+    }
+
+    private void executeCommands(final List<ILayer> layerList, final ReferencedEnvelope bounds) {
+        List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
+
+        commands.add(new SetViewportBBoxCommand(bounds));
+        commands.add(new ZoomCommand(bounds));
+        commands.add(new ZoomCommand(0.90));
 
         sendCommandsToLayer(layerList, commands);
     }

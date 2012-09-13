@@ -14,15 +14,18 @@
 package org.amanzi.neo.models.impl.network;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.filters.IFilter;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.dto.SectorElement;
 import org.amanzi.neo.impl.dto.SiteElement;
+import org.amanzi.neo.impl.util.IDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
@@ -54,6 +57,93 @@ import com.vividsolutions.jts.geom.Envelope;
 public class NetworkModel extends AbstractDatasetModel implements INetworkModel {
 
     private static final Logger LOGGER = Logger.getLogger(NetworkModel.class);
+
+    //TODO: LN: 12.09.2012, duplicates AbstractMeasurementModel.ElementLocationIterator
+    private final class ElementLocationIterator implements IDataElementIterator<ILocationElement> {
+
+        private final Iterator<IDataElement> dataElements;
+
+        private ILocationElement nextElement;
+
+        private boolean moveToNext;
+
+        private final Set<ILocationElement> locationElements = new HashSet<ILocationElement>();
+
+        public ElementLocationIterator(final Iterable<IDataElement> dataElements) {
+            this.dataElements = dataElements.iterator();
+
+            moveToNext = true;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (moveToNext) {
+                nextElement = moveToNext();
+            }
+            return nextElement != null;
+        }
+
+        @Override
+        public ILocationElement next() {
+            if (moveToNext) {
+                nextElement = moveToNext();
+            }
+
+            moveToNext = true;
+            return nextElement;
+        }
+
+        private ILocationElement moveToNext() {
+            try {
+                ILocationElement element = null;
+                while (dataElements.hasNext() && (element == null)) {
+                    IDataElement dataElement = dataElements.next();
+
+                    if (dataElement.getNodeType().equals(NetworkElementType.SITE)) {
+                        element = getLocationElement(((DataElement)dataElement).getNode());
+                    } else if (dataElement.getNodeType() instanceof INetworkElementType) {
+                        if (NetworkElementType.compare(NetworkElementType.SITE, (NetworkElementType)dataElement.getNodeType()) < 0) {
+                            IDataElement tempElement = dataElement;
+                            while (!tempElement.getNodeType().equals(NetworkElementType.SITE)) {
+                                tempElement = NetworkModel.this.getParentElement(tempElement);
+                            }
+
+                            element = getLocationElement(((DataElement)tempElement).getNode());
+                        }
+
+                    }
+                }
+
+                if (element != null) {
+                    locationElements.add(element);
+                }
+
+                return element;
+            } catch (ModelException e) {
+                LOGGER.error(e);
+                return null;
+            } finally {
+                moveToNext = false;
+            }
+        }
+
+        @Override
+        public void remove() {
+            dataElements.remove();
+        }
+
+        @Override
+        public Iterable<ILocationElement> toIterable() {
+            return new Iterable<ILocationElement>() {
+
+                @Override
+                public Iterator<ILocationElement> iterator() {
+                    return ElementLocationIterator.this;
+                }
+            };
+        }
+
+    }
 
     private final INetworkNodeProperties networkNodeProperties;
 
@@ -354,5 +444,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
         super.finishUp();
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
+        return new ElementLocationIterator(dataElements).toIterable();
     }
 }

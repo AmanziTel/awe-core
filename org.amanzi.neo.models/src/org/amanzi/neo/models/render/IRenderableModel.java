@@ -16,6 +16,7 @@ package org.amanzi.neo.models.render;
 import java.util.List;
 
 import org.amanzi.awe.filters.IFilter;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
@@ -43,5 +44,7 @@ public interface IRenderableModel extends IModel {
     Iterable<ILocationElement> getElements(Envelope bound, IFilter filter);
 
     int getRenderableElementCount();
+
+    Iterable<ILocationElement> getElementsLocations(Iterable<IDataElement> dataElements);
 
 }

@@ -16,12 +16,11 @@ package org.amanzi.awe.views.statistcstree.view;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeContentProvider;
 import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeLabelProvider;
+import org.amanzi.awe.views.statistcstree.view.actions.ChangeDimensionAction;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 
 /**
  * TODO Purpose of
@@ -45,12 +44,12 @@ public class StatisticsTreeView extends AbstractTreeView {
      */
     @Override
     public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
         IActionBars actionBars = getViewSite().getActionBars();
         IMenuManager dropDownMenu = actionBars.getMenuManager();
         for (DimensionType type : DimensionType.values()) {
-            dropDownMenu.add(new CustomAction(type));
+            dropDownMenu.add(new ChangeDimensionAction(type, getTreeViewer()));
         }
-        super.createPartControl(parent);
     }
 
     @Override
@@ -59,23 +58,4 @@ public class StatisticsTreeView extends AbstractTreeView {
         getTreeViewer().setLabelProvider(new StatisticsTreeLabelProvider());
     }
 
-    private class CustomAction extends Action implements IWorkbenchAction {
-
-        private static final String ID = "org.amanzi.awe.views.statisticstree.action";
-        private DimensionType type;
-
-        public CustomAction(DimensionType type) {
-            setId(ID + type.name());
-            setText(type.name());
-            this.type = type;
-        }
-
-        public void run() {
-            getTreeViewer().setContentProvider(new StatisticsTreeContentProvider(type));
-        }
-
-        public void dispose() {
-        }
-
-    }
 }
