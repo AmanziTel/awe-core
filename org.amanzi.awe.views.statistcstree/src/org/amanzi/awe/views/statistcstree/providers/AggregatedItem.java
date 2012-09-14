@@ -29,10 +29,11 @@ import org.amanzi.neo.dto.IDataElement;
  */
 public class AggregatedItem {
 
-    private String name;
-    private Iterator<IDataElement> sources;
-
     private static final int THRESHOLD = 50;
+
+    private String name;
+
+    private Iterator<IDataElement> sources;
 
     protected AggregatedItem(Iterator<IDataElement> sources) {
         this.sources = sources;
