@@ -17,6 +17,7 @@ import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
@@ -34,7 +35,17 @@ public class CommonViewLabelProvider extends LabelProvider {
         } else if (element instanceof IDataElement) {
             return getStringFromDataElement((IDataElement)element);
         }
-        return null;
+        return getStrignFromOtherElement(element);
+    }
+
+    /**
+     * should be override if necessary
+     * 
+     * @param element
+     * @return
+     */
+    protected String getStrignFromOtherElement(Object element) {
+        return StringUtils.EMPTY;
     }
 
     /**

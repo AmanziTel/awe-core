@@ -40,6 +40,14 @@ public class StatisticsTreeLabelProvider extends CommonTreeViewLabelProvider {
 
     private static final int DECIMAL_SIZE = 2;
 
+    @Override
+    protected String getStrignFromOtherElement(Object element) {
+        if (element instanceof AggregatedItem) {
+            return ((AggregatedItem)element).getName();
+        }
+        return super.getStrignFromOtherElement(element);
+    }
+
     /**
      * @param element
      * @return
@@ -51,7 +59,6 @@ public class StatisticsTreeLabelProvider extends CommonTreeViewLabelProvider {
                 return TOTAL_NAME;
             }
             Period period = Period.findById(row.getStatisticsGroup().getPeriod());
-
             return PeriodManager.getInstance().getPeriodName(period, new Date(row.getStartDate()), new Date(row.getEndDate()));
         } else if (element.getNodeType().equals(StatisticsNodeType.S_CELL)) {
             IStatisticsCell cell = (IStatisticsCell)element;
