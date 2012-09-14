@@ -36,7 +36,6 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.IteratorUtils;
 
 /**
  * TODO Purpose of
@@ -141,7 +140,6 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void getChildren(ITreeItem<IStatisticsModel, IDataElement> parentElement) throws ModelException {
         IStatisticsModel model = getRoot(parentElement);
@@ -150,7 +148,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
         } else {
             IDataElement children = parentElement.getChild();
             if (children.getNodeType().equals(StatisticsNodeType.LEVEL)) {
-                setChildren(IteratorUtils.toList(model.getAllStatisticsGroups(type, children.getName()).iterator()));
+                setChildren(new StatisticsElementIterable(model.getAllStatisticsGroups(type, children.getName())));
             } else if (children.getNodeType().equals(StatisticsNodeType.GROUP)) {
                 IStatisticsGroup group = (IStatisticsGroup)children;
                 Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
@@ -160,9 +158,9 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
                 Iterable<IStatisticsRow> subRows = model.getSourceRows(row);
                 if (subRows == null) {
                     Iterable<IStatisticsCell> cells = ((IStatisticsRow)children).getStatisticsCells();
-                    setChildren(IteratorUtils.toList(cells.iterator()));
+                    setChildren(new StatisticsElementIterable(cells));
                 } else {
-                    setChildren(IteratorUtils.toList(subRows.iterator()));
+                    setChildren(new StatisticsElementIterable(subRows));
                 }
             } else if (children.getNodeType().equals(StatisticsNodeType.S_CELL)) {
                 IStatisticsCell cell = (IStatisticsCell)children;
@@ -170,7 +168,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
                 if (cells == null) {
                     setChildren(model.getSources(cell));
                 } else {
-                    setChildren(IteratorUtils.toList(cells.iterator()));
+                    setChildren(new StatisticsElementIterable(cells));
                 }
             }
         }
