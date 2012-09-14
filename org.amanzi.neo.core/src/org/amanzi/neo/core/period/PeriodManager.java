@@ -61,12 +61,12 @@ public class PeriodManager {
             switch (period) {
             case HOURLY:
                 boolean isSameDay = DateUtils.isSameDay(startDate, endDate);
-                String pattern = isSameDay ? Messages.singlePeriodPattern : Messages.multiPeriodPattern;
+                String pattern = isSameDay ? Messages.hourFormat : Messages.multiPeriodPattern;
                 DateFormat dayDateFormat = isSameDay ? HOUR_DATE_FORMAT : DAY_YEAR_DATE_FORMAT;
                 if (isSameDay) {
                     String day = DAY_DATE_FORMAT.format(startDate);
                     String hours = MessageFormat.format(pattern, dayDateFormat.format(startDate), dayDateFormat.format(endDate));
-                    return MessageFormat.format(pattern, day, hours);
+                    return MessageFormat.format(Messages.fullHourDateFormat, day, hours);
                 }
                 return MessageFormat.format(pattern, dayDateFormat.format(startDate), dayDateFormat.format(endDate));
             case DAILY:
