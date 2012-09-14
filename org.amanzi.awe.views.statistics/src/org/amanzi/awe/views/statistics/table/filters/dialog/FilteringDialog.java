@@ -111,7 +111,7 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
 
     public FilteringDialog(TableViewer tableViewer, TableColumn column, Set<String> groups) {
         Table table = tableViewer.getTable();
-        shell = new Shell(table.getShell(), SWT.SHELL_TRIM);
+        shell = new Shell(table.getShell(), SWT.SHELL_TRIM & (~SWT.RESIZE));
         shell.setText("Aggregation filters setting");
         // locate dialog
         Point location = table.getDisplay().getCursorLocation();
