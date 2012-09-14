@@ -29,6 +29,7 @@ import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
 import org.amanzi.neo.services.INodeService;
@@ -61,20 +62,23 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
 
     private final IStatisticsService statisticsService;
 
+    private IMeasurementNodeProperties measurementNodeProperties;
+
     public StatisticsModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
             final ITimePeriodNodeProperties timePeriodNodeProperties, final IStatisticsNodeProperties statisticsNodeProperties,
-            final IStatisticsService statisticsService) {
+            final IMeasurementNodeProperties measurementProperties, final IStatisticsService statisticsService) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
         this.timePeriodNodeProperties = timePeriodNodeProperties;
         this.statisticsNodeProperties = statisticsNodeProperties;
         this.statisticsService = statisticsService;
+        this.measurementNodeProperties = measurementProperties;
     }
 
     @Override
     protected StatisticsModel createInstance() {
         return new StatisticsModel(statisticsService, nodeService, generalNodeProperties, timePeriodNodeProperties,
-                statisticsNodeProperties);
+                statisticsNodeProperties, measurementNodeProperties);
     }
 
     @Override

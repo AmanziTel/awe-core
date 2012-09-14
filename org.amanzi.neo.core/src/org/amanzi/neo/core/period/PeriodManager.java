@@ -31,7 +31,7 @@ import org.apache.commons.lang3.time.DateUtils;
  */
 public class PeriodManager {
 
-    private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("HH:mm");
+    private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     private static final DateFormat DAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 

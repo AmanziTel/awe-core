@@ -44,6 +44,7 @@ import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
@@ -140,15 +141,18 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private Set<String> columnNames = new LinkedHashSet<String>();
 
+    private IMeasurementNodeProperties measurementNodeProperties;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
+     * @param measurementNodeProperties
      */
     public StatisticsModel(final IStatisticsService statisticsService, final INodeService nodeService,
             final IGeneralNodeProperties generalNodeProperties, final ITimePeriodNodeProperties timePeriodNodeProperties,
-            final IStatisticsNodeProperties statisticsNodeProperties) {
+            final IStatisticsNodeProperties statisticsNodeProperties, IMeasurementNodeProperties measurementNodeProperties) {
         super(nodeService, generalNodeProperties);
-
+        this.measurementNodeProperties = measurementNodeProperties;
         this.statisticsService = statisticsService;
         this.timePeriodNodeProperties = timePeriodNodeProperties;
         this.statisticsNodeProperties = statisticsNodeProperties;
@@ -852,7 +856,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     public Iterable<IDataElement> getSources(IDataElement cell) throws ModelException {
         Iterator<Node> sources = getSourcesNodes(cell);
         if (cell.getNodeType().equals(StatisticsNodeType.S_CELL)) {
-            return new DataElementIterator(sources, cell.getName()).toIterable();
+            return new DataElementIterator(sources, measurementNodeProperties.getEventProperty()).toIterable();
         }
         return new DataElementIterator(sources).toIterable();
     }
