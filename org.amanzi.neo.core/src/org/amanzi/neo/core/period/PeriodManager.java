@@ -31,7 +31,7 @@ import org.apache.commons.lang3.time.DateUtils;
  */
 public class PeriodManager {
 
-    private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
     private static final DateFormat DAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -63,7 +63,11 @@ public class PeriodManager {
                 boolean isSameDay = DateUtils.isSameDay(startDate, endDate);
                 String pattern = isSameDay ? Messages.singlePeriodPattern : Messages.multiPeriodPattern;
                 DateFormat dayDateFormat = isSameDay ? HOUR_DATE_FORMAT : DAY_YEAR_DATE_FORMAT;
-
+                if (isSameDay) {
+                    String day = DAY_DATE_FORMAT.format(startDate);
+                    String hours = MessageFormat.format(pattern, dayDateFormat.format(startDate), dayDateFormat.format(endDate));
+                    return MessageFormat.format(pattern, day, hours);
+                }
                 return MessageFormat.format(pattern, dayDateFormat.format(startDate), dayDateFormat.format(endDate));
             case DAILY:
                 return DAY_DATE_FORMAT.format(startDate);
