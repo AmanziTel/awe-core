@@ -39,8 +39,8 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public abstract class AbstractComboWidget<D extends Object, L extends IComboSelectionListener>
-extends
-AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
+        extends
+            AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
 
     public interface IComboSelectionListener extends AbstractAWEWidget.IAWEWidgetListener {
 
@@ -60,6 +60,15 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
         super(parent, listener, label, minimalLabelWidth);
 
         AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
+    }
+
+    /**
+     * @param parent
+     * @param label
+     */
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
+            boolean widthoutListeners) {
+        super(parent, listener, label, minimalLabelWidth);
     }
 
     @Override

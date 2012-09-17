@@ -19,6 +19,7 @@ import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.template.ITemplate;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widget.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widget.DateTimeWidget;
@@ -72,14 +73,17 @@ public class StatisticsView extends ViewPart
     private class StatisticsJob extends Job {
 
         private final StatisticsManager statisticsManager;
+        private boolean isNeedtoRefresh;
 
         /**
+         * @param isNeedToCreateBuild
          * @param name
          */
         public StatisticsJob(final StatisticsManager statisticsManager) {
             super("Calculate statistics");
-
             this.statisticsManager = statisticsManager;
+            // TODO KV: check this way solution
+            this.isNeedtoRefresh = !statisticsManager.isBuilt();
         }
 
         @Override
@@ -94,6 +98,9 @@ public class StatisticsView extends ViewPart
                         updateTable(model);
                     }
                 }, true);
+                if (isNeedtoRefresh) {
+                    AWEEventManager.getManager().fireDataUpdatedEvent();
+                }
             } catch (StatisticsEngineException e) {
                 return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
             }
@@ -279,6 +286,7 @@ public class StatisticsView extends ViewPart
             if (statisticsManager.isBuilt()) {
                 updateStatistics();
             }
+
         }
     }
 
@@ -290,7 +298,6 @@ public class StatisticsView extends ViewPart
     private void updateStatistics() {
         if (statisticsManager != null) {
             StatisticsJob job = new StatisticsJob(statisticsManager);
-
             job.schedule();
         }
     }
