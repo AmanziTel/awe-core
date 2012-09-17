@@ -471,11 +471,11 @@ public abstract class AbstractRenderer extends RendererImpl {
         return 0d;
     }
 
-    protected boolean isSelected(IDataElement element, boolean locationsOnly) {
+    protected boolean isSelected(IDataElement element, boolean locationsOnly, boolean elementsOnly) {
         if (selection == null) {
             return false;
         } else {
-            boolean isSelected = selection.getSelectedLocations().contains(element);
+            boolean isSelected = elementsOnly ? false : selection.getSelectedLocations().contains(element);
 
             if (!isSelected && !locationsOnly) {
                 isSelected |= selection.getSelectedElements().contains(element);

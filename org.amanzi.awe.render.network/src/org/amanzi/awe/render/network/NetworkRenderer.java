@@ -52,6 +52,8 @@ public class NetworkRenderer extends AbstractRenderer {
 
     private static final double FULL_CIRCLE = 360.0;
 
+    private static final Color SELECTED_SECTOR_COLOR = Color.BLACK;
+
     /**
      * styler for current renderer
      */
@@ -75,8 +77,12 @@ public class NetworkRenderer extends AbstractRenderer {
             Pair<Double, Double> sectorParameters = null;
             for (ISectorElement sector : siteElement.getSectors()) {
 
-                sectorParameters = getSectorParameters(siteElement, sector, i, siteElement.getSectors().size());
+                sectorParameters = getSectorParameters(sector, i, siteElement.getSectors().size());
                 renderSector(destination, point, sectorParameters.getLeft(), sectorParameters.getRight(), sector);
+
+                if (isSelected(sector, false, true)) {
+                    renderSelectionBorder(destination, point, sector, i, siteElement.getSectors().size());
+                }
                 i++;
             }
         }
@@ -90,8 +96,7 @@ public class NetworkRenderer extends AbstractRenderer {
      * @param i
      * @return
      */
-    private Pair<Double, Double> getSectorParameters(final ISiteElement site, final ISectorElement sector, final int i,
-            final int sectorCount) {
+    private Pair<Double, Double> getSectorParameters(final ISectorElement sector, final int i, final int sectorCount) {
         Double azimuth = sector.getAzimuth();
         Double beamwidth = sector.getBeamwidth();
         if ((azimuth == null) || (beamwidth == null) || (beamwidth == 0)) {
@@ -126,6 +131,30 @@ public class NetworkRenderer extends AbstractRenderer {
         // create border
         destination.setColor(networkRendererStyle.getBorderColor());
         destination.draw(path);
+    }
+
+    /**
+     * Draw black border around selected sector
+     * 
+     * @param destination
+     * @param point
+     * @param model
+     * @param sector
+     */
+    private void renderSelectionBorder(Graphics2D destination, Point point, ISectorElement sector, int index, int count) {
+        Pair<Double, Double> sectorParameters = getSectorParameters(sector, index, count);
+        int size = getSize();
+        double azimuth = sectorParameters.getLeft();
+        double beamwidth = sectorParameters.getRight();
+
+        GeneralPath path = new GeneralPath();
+        path.moveTo(getSectorXCoordinate(point, size), getSectorYCoordinate(point, size));
+        Arc2D a = createSector(point, networkRendererStyle.getLargeElementSize(), getAngle(azimuth, beamwidth), beamwidth);
+        path.append(a.getPathIterator(null), true);
+        path.closePath();
+        destination.setColor(networkRendererStyle.changeColor(SELECTED_SECTOR_COLOR, networkRendererStyle.getAlpha()));
+        destination.draw(path);
+        destination.drawString(sector.toString(), (int)a.getEndPoint().getX() + 10, (int)a.getEndPoint().getY());
     }
 
     /**
@@ -222,6 +251,10 @@ public class NetworkRenderer extends AbstractRenderer {
             break;
         case LARGE:
             drawCoordinateElement(RenderShape.ELLIPSE, destination, point, element, true);
+        }
+
+        if (isSelected(element, false, true)) {
+            highlightSelectedItem(destination, point);
         }
     }
 

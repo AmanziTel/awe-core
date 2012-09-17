@@ -101,7 +101,7 @@ public class DriveRenderer extends AbstractRenderer {
             drawCoordinateElement(RenderShape.ELLIPSE, destination, point, element, true);
         }
 
-        if (isSelected(element, true)) {
+        if (isSelected(element, true, false)) {
             highlightSelectedItem(destination, point);
         }
     }
