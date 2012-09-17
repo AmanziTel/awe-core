@@ -61,9 +61,9 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             super(nodeIterator);
         }
 
-        public DataElementIterator(final Iterator<Node> nodeIterator, String defaultProperty) {
+        public DataElementIterator(final Iterator<Node> nodeIterator, String propertyName) {
             this(nodeIterator);
-            this.defaultProperty = defaultProperty;
+            this.defaultProperty = propertyName;
         }
 
         @Override
@@ -72,7 +72,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             INodeType type = null;
 
             try {
-                name = getNodeService().getNodeProperty(node, getGeneralNodeProperties().getNodeNameProperty(), defaultProperty, false);
+                name = getNodeService().getNodeProperty(node, defaultProperty, null, false);
                 type = getNodeService().getNodeType(node);
             } catch (Exception e) {
                 LOGGER.info("can't get required property from node " + node);

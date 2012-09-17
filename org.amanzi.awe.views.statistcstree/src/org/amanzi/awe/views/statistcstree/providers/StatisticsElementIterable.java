@@ -25,7 +25,7 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsElementIterable implements Iterable<IDataElement> {
+public class StatisticsElementIterable implements Iterable<Object> {
 
     private Iterable< ? extends IDataElement> statisticsIterable;
 
@@ -35,8 +35,8 @@ public class StatisticsElementIterable implements Iterable<IDataElement> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Iterator<IDataElement> iterator() {
-        return (Iterator<IDataElement>)statisticsIterable.iterator();
+    public Iterator<Object> iterator() {
+        return (Iterator<Object>)statisticsIterable.iterator();
     }
 
 }

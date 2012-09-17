@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.statistcstree.providers;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
@@ -34,8 +36,17 @@ import org.amanzi.neo.dto.IDataElement;
 public class StatisticsTreeLabelProvider extends CommonTreeViewLabelProvider {
 
     private static final String TOTAL_NAME = "total";
-
     private static final String CELL_NAME_FORMAT = "%s: %s";
+
+    private static final int DECIMAL_SIZE = 2;
+
+    @Override
+    protected String getStrignFromOtherElement(Object element) {
+        if (element instanceof AggregatedItem) {
+            return ((AggregatedItem)element).getName();
+        }
+        return super.getStrignFromOtherElement(element);
+    }
 
     /**
      * @param element
@@ -47,15 +58,16 @@ public class StatisticsTreeLabelProvider extends CommonTreeViewLabelProvider {
             if (row.isSummury()) {
                 return TOTAL_NAME;
             }
-            return PeriodManager.getInstance().getPeriodName(Period.findById(row.getStatisticsGroup().getPeriod()),
-                    new Date(row.getStartDate()), new Date(row.getEndDate()));
+            Period period = Period.findById(row.getStatisticsGroup().getPeriod());
+            return PeriodManager.getInstance().getPeriodName(period, new Date(row.getStartDate()), new Date(row.getEndDate()));
         } else if (element.getNodeType().equals(StatisticsNodeType.S_CELL)) {
             IStatisticsCell cell = (IStatisticsCell)element;
             Number value = cell.getValue();
             if (value == null) {
                 value = 0.0d;
             }
-            return String.format(CELL_NAME_FORMAT, cell.getName(), value);
+            BigDecimal bd = new BigDecimal(value.floatValue()).setScale(DECIMAL_SIZE, RoundingMode.HALF_EVEN);
+            return String.format(CELL_NAME_FORMAT, cell.getName(), bd);
         }
         return super.getStringFromDataElement(element);
     }

@@ -33,6 +33,7 @@ import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.commons.collections.CollectionUtils;
@@ -45,7 +46,7 @@ import org.apache.commons.collections.CollectionUtils;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsTreeContentProvider extends AbstractContentProvider<IStatisticsModel, IDataElement> {
+public class StatisticsTreeContentProvider extends AbstractContentProvider<IStatisticsModel, Object> {
 
     private static final StatisticsTreeComparer STATISTICS_TREE_COMPARER = new StatisticsTreeComparer();
 
@@ -60,12 +61,12 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
 
         @Override
         public int compare(final ITreeItem item1, final ITreeItem item2) {
-            int result;
+            int result = 0;
             if (item1.getChild() == null) {
                 result = -1;
             } else if (item2.getChild() == null) {
                 result = 1;
-            } else {
+            } else if (item1.getChild() instanceof IDataElement && item2.getChild() instanceof IDataElement) {
                 IDataElement element1 = (IDataElement)item1.getChild();
                 IDataElement element2 = (IDataElement)item2.getChild();
                 if (element1.getNodeType().equals(StatisticsNodeType.S_ROW)
@@ -111,25 +112,18 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     }
 
     @Override
-    protected boolean checkNext(ITreeItem<IStatisticsModel, IDataElement> item) throws ModelException {
+    protected boolean checkNext(ITreeItem<IStatisticsModel, Object> item) throws ModelException {
         IStatisticsModel model = getRoot(item);
 
         if (isRoot(item)) {
             return model.findAllStatisticsLevels(type).iterator().hasNext();
         } else {
-            IDataElement child = item.getChild();
-            if (item.getChild().getNodeType().equals(StatisticsNodeType.LEVEL)) {
-                return model.getAllStatisticsGroups(type, item.getChild().getName()).iterator().hasNext();
-            } else if (item.getChild().getNodeType().equals(StatisticsNodeType.GROUP)) {
-                IStatisticsGroup group = (IStatisticsGroup)item.getChild();
-                return model.getStatisticsRows(group.getPeriod()).iterator().hasNext();
-            } else if (item.getChild().getNodeType().equals(StatisticsNodeType.S_ROW)) {
-                Iterable<IStatisticsCell> cells = ((IStatisticsRow)item.getChild()).getStatisticsCells();
-                return cells.iterator().hasNext();
-            } else if (child.getNodeType().equals(StatisticsNodeType.S_CELL)) {
-                IStatisticsCell cell = (IStatisticsCell)child;
-                Iterable<IDataElement> cells = model.getSources(cell);
-                return cells.iterator().hasNext();
+            Object inner = item.getChild();
+            if (inner instanceof IDataElement) {
+                return checkInner((IDataElement)inner, model);
+            } else if (inner instanceof AggregatedItem) {
+                AggregatedItem aggregated = (AggregatedItem)inner;
+                return aggregated.hasNext();
             }
         }
         return false;
@@ -141,38 +135,92 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     }
 
     @Override
-    protected void getChildren(ITreeItem<IStatisticsModel, IDataElement> parentElement) throws ModelException {
+    protected void getChildren(ITreeItem<IStatisticsModel, Object> parentElement) throws ModelException {
         IStatisticsModel model = getRoot(parentElement);
         if (isRoot(parentElement)) {
-            setChildren(model.findAllStatisticsLevels(type));
+            setChildren(new StatisticsElementIterable(model.findAllStatisticsLevels(type)));
         } else {
-            IDataElement children = parentElement.getChild();
-            if (children.getNodeType().equals(StatisticsNodeType.LEVEL)) {
-                setChildren(new StatisticsElementIterable(model.getAllStatisticsGroups(type, children.getName())));
-            } else if (children.getNodeType().equals(StatisticsNodeType.GROUP)) {
-                IStatisticsGroup group = (IStatisticsGroup)children;
-                Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
-                setChildren(getRowsForGroup(rows, children));
-            } else if (children.getNodeType().equals(StatisticsNodeType.S_ROW)) {
-                IStatisticsRow row = (IStatisticsRow)children;
-                Iterable<IStatisticsRow> subRows = model.getSourceRows(row);
-                if (subRows == null) {
-                    Iterable<IStatisticsCell> cells = ((IStatisticsRow)children).getStatisticsCells();
-                    setChildren(new StatisticsElementIterable(cells));
-                } else {
-                    setChildren(new StatisticsElementIterable(subRows));
-                }
-            } else if (children.getNodeType().equals(StatisticsNodeType.S_CELL)) {
-                IStatisticsCell cell = (IStatisticsCell)children;
-                Iterable<IStatisticsCell> cells = model.getSourceCells(cell);
-                if (cells == null) {
-                    setChildren(model.getSources(cell));
-                } else {
-                    setChildren(new StatisticsElementIterable(cells));
+            Object inner = parentElement.getChild();
+            if (inner instanceof IDataElement) {
+                setChildren(handleDataElement((IDataElement)inner, model));
+            } else if (inner instanceof AggregatedItem) {
+                AggregatedItem aggregated = (AggregatedItem)inner;
+                if (aggregated.hasNext()) {
+                    setChildren(aggregated.getNextSources());
                 }
             }
         }
 
+    }
+
+    private boolean checkInner(IDataElement child, IStatisticsModel model) throws ModelException {
+        INodeType nodeType = child.getNodeType();
+        if (nodeType.equals(StatisticsNodeType.GROUP)) {
+            IStatisticsGroup group = (IStatisticsGroup)child;
+            return model.getStatisticsRows(group.getPeriod()).iterator().hasNext();
+        }
+        Iterable<Object> innerObjects = handleDataElement(child, model);
+        if (innerObjects == null) {
+            return false;
+        } else {
+            return innerObjects.iterator().hasNext();
+        }
+    }
+
+    /**
+     * @param inner
+     * @return
+     * @throws ModelException
+     */
+    private Iterable<Object> handleDataElement(IDataElement child, IStatisticsModel model) throws ModelException {
+        INodeType nodeType = child.getNodeType();
+        if (nodeType.equals(StatisticsNodeType.LEVEL)) {
+            return new StatisticsElementIterable(model.getAllStatisticsGroups(type, child.getName()));
+        } else if (nodeType.equals(StatisticsNodeType.GROUP)) {
+            IStatisticsGroup group = (IStatisticsGroup)child;
+            Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
+            return getRowsForGroup(rows, child);
+        } else if (nodeType.equals(StatisticsNodeType.S_ROW)) {
+            IStatisticsRow row = (IStatisticsRow)child;
+            return getRowsChildren(row, model);
+        } else if (nodeType.equals(StatisticsNodeType.S_CELL)) {
+            IStatisticsCell cell = (IStatisticsCell)child;
+            return getCellsChildren(cell, model);
+
+        }
+        return null;
+    }
+
+    /**
+     * @param cell
+     * @param model
+     * @return
+     * @throws ModelException
+     */
+    private Iterable<Object> getCellsChildren(IStatisticsCell cell, IStatisticsModel model) throws ModelException {
+        Iterable<IStatisticsCell> cells = model.getSourceCells(cell);
+        if (cells == null) {
+            AggregatedItem item = new AggregatedItem(model.getSources(cell).iterator());
+            return item.getNextSources();
+        } else {
+            return new StatisticsElementIterable(cells);
+        }
+    }
+
+    /**
+     * @param row
+     * @param subRows
+     * @return
+     * @throws ModelException
+     */
+    private Iterable<Object> getRowsChildren(IStatisticsRow row, IStatisticsModel model) throws ModelException {
+        Iterable<IStatisticsRow> subRows = model.getSourceRows(row);
+        if (subRows == null) {
+            Iterable<IStatisticsCell> cells = row.getStatisticsCells();
+            return new StatisticsElementIterable(cells);
+        } else {
+            return new StatisticsElementIterable(subRows);
+        }
     }
 
     /**
@@ -180,8 +228,8 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @param groupd
      * @return
      */
-    private Iterable<IDataElement> getRowsForGroup(Iterable<IStatisticsRow> rows, IDataElement group) {
-        Set<IDataElement> groups = new HashSet<IDataElement>();
+    private Iterable<Object> getRowsForGroup(Iterable<IStatisticsRow> rows, IDataElement group) {
+        Set<Object> groups = new HashSet<Object>();
         for (IStatisticsRow row : rows) {
             if (row.getStatisticsGroup().equals(group)) {
                 groups.add((IDataElement)row);

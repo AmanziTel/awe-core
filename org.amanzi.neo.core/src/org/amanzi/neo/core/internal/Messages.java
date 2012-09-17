@@ -44,7 +44,7 @@ public class Messages extends NLS {
 
     public static String ctrTotal;
 
-    public static String singlePeriodPattern = "{0} - {1}";
+    public static String hourPeriodPattern = "{0}  {1}";
 
     public static String multiPeriodPattern = "{0} to {1}";
 

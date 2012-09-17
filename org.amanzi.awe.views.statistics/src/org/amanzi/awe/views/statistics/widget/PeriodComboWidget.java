@@ -76,5 +76,4 @@ public class PeriodComboWidget extends AbstractComboWidget<Period, IPeriodSelect
     protected void fireListener(final IPeriodSelectionListener listener, final Period selectedItem) {
         listener.onPeriodSelected(selectedItem);
     }
-
 }
