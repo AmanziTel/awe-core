@@ -25,6 +25,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
+import org.amanzi.awe.catalog.neo.selection.ISelection;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.neo.dto.IDataElement;
@@ -69,6 +70,8 @@ public abstract class AbstractRenderer extends RendererImpl {
     public static final String SPACE_SEPARATOR = " ";
     public static final String EQUAL_SEPARATOR = "=";
 
+    private ISelection selection;
+
     /**
      * initialize default renderer styles;
      * 
@@ -101,7 +104,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         }
         if (commonStyle.getScale().equals(Scale.LARGE) && commonStyle.isScaleSymbols()) {
             int largeSectorsSize = commonStyle.getLargeElementSize();
-            largeSectorsSize *= Math.round(0.5 + Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled)));
+            largeSectorsSize *= Math.round(0.5 + (Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled))));
             largeSectorsSize = Math.min(largeSectorsSize, commonStyle.getMaxSymbolSize());
             commonStyle.setLargeElementSize(largeSectorsSize);
         }
@@ -120,7 +123,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         ILayer layer = getContext().getLayer();
         IGeoResource resource = layer.findGeoResource(GeoResource.class);
         // c+v
-        layer.getMap().getBlackboard().get(BLACKBOARD_NODE_LIST);
+        selection = (ISelection)layer.getMap().getBlackboard().get(ISelection.SELECTION_BLACKBOARD_PROPERTY);
         if (resource != null) {
             try {
                 renderGeoResource(destination, resource, monitor);
@@ -151,6 +154,11 @@ public abstract class AbstractRenderer extends RendererImpl {
             setStyle(destination);
             // find a resource to render
             model = resource.resolve(IGISModel.class, monitor);
+
+            if ((selection != null) && !selection.getModel().getAllGIS().contains(model)) {
+                selection = null;
+            }
+
             // get rendering bounds and zoom
             setCrsTransforms(resource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
@@ -461,5 +469,19 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     protected double calculateResult(final Envelope dbounds, final IGISModel resource) {
         return 0d;
+    }
+
+    protected boolean isSelected(IDataElement element, boolean locationsOnly) {
+        if (selection == null) {
+            return false;
+        } else {
+            boolean isSelected = selection.getSelectedLocations().contains(element);
+
+            if (!isSelected && !locationsOnly) {
+                isSelected |= selection.getSelectedElements().contains(element);
+            }
+
+            return isSelected;
+        }
     }
 }

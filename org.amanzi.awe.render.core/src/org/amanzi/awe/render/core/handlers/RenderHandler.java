@@ -39,8 +39,8 @@ import com.google.common.collect.Iterables;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -51,7 +51,7 @@ public class RenderHandler extends AbstractHandler {
     public Object execute(final ExecutionEvent event) throws ExecutionException {
         ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
 
-        //TODO: LN, 12.09.2012, a lot of duplications with RenderingTester
+        // TODO: LN, 12.09.2012, a lot of duplications with RenderingTester
 
         if (selection instanceof IStructuredSelection) {
             Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
@@ -64,18 +64,22 @@ public class RenderHandler extends AbstractHandler {
             while (selectionIterator.hasNext()) {
                 Object selectedObject = selectionIterator.next();
                 if (selectedObject instanceof IPeriodTreeItem) {
-                    IPeriodTreeItem<?, ?> periodItem = (IPeriodTreeItem<?, ?>)selectedObject;
+                    IPeriodTreeItem< ? , ? > periodItem = (IPeriodTreeItem< ? , ? >)selectedObject;
 
-                    IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
+                    if (periodItem.getPeriod() != null) {
+                        IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
 
-                    try {
-                        Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
-                    } catch (ModelException e) {
-                        //TODO: handle
+                        try {
+                            Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                        } catch (ModelException e) {
+                            // TODO: handle
+                        }
+                        model = parentModel;
+                        continue;
                     }
-                    model = parentModel;
-                } else if (selectedObject instanceof ITreeItem) {
-                    ITreeItem<?, ?> treeItem = (ITreeItem<?, ?>)selectedObject;
+                }
+                if (selectedObject instanceof ITreeItem) {
+                    ITreeItem< ? , ? > treeItem = (ITreeItem< ? , ? >)selectedObject;
 
                     if (treeItem.getChild() instanceof IRenderableModel) {
                         model = (IRenderableModel)treeItem.getChild();
