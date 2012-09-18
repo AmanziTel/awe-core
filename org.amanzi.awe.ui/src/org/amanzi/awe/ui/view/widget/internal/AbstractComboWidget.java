@@ -74,7 +74,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     @Override
     public void onEvent(final IEvent event) {
         if (ArrayUtils.contains(SUPPORTED_EVENTS, event.getStatus())) {
-            fillCombo();
+            fillCombo(false);
         }
     }
 
@@ -86,7 +86,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     @Override
     public void initializeWidget() {
         super.initializeWidget();
-        fillCombo();
+        fillCombo(true);
     }
 
     @Override
@@ -108,7 +108,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         return selectedItem;
     }
 
-    protected void fillCombo() {
+    protected void fillCombo(boolean isNeedToFireEvent) {
         getControl().removeAll();
         itemsMap.clear();
 
@@ -122,10 +122,10 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
             }
         }
 
-        updateSelection();
+        updateSelection(isNeedToFireEvent);
     }
 
-    public void updateSelection() {
+    public void updateSelection(boolean isNeedToFireEvent) {
         String text = null;
 
         if (selectedItem != null) {
@@ -145,8 +145,9 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         }
 
         getControl().setText(text);
-
-        fireEvent();
+        if (isNeedToFireEvent) {
+            fireEvent();
+        }
     }
 
     protected abstract Collection<D> getItems();

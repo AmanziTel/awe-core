@@ -30,8 +30,8 @@ public class AWEStoppedEvent extends AbstractEvent {
      * @param status
      * @param isAsync
      */
-    public AWEStoppedEvent() {
-        super(EventStatus.AWE_STOPPED, false);
+    public AWEStoppedEvent(Object source) {
+        super(EventStatus.AWE_STOPPED, false, source);
     }
 
 }

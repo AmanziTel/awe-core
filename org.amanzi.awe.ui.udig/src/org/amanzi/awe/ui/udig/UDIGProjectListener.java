@@ -71,7 +71,7 @@ public class UDIGProjectListener implements IAWEEventListenter, Adapter {
             if (!newProjectName.equals(previousProjectName)) {
                 previousProjectName = newProjectName;
 
-                AWEEventManager.getManager().fireProjectNameChangedEvent(newProjectName);
+                AWEEventManager.getManager().fireProjectNameChangedEvent(newProjectName, this);
             }
         }
     }

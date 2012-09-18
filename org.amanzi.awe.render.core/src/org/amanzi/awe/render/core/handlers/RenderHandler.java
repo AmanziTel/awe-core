@@ -106,14 +106,14 @@ public class RenderHandler extends AbstractHandler {
     }
 
     private void showOnMap(final IRenderableModel model, final Set<IDataElement> elements) {
-        AWEEventManager.getManager().fireShowOnMapEvent(model, elements);
+        AWEEventManager.getManager().fireShowOnMapEvent(model, elements, this);
     }
 
     private void showOnMap(final IRenderableModel model) {
         EventChain eventChain = new EventChain(true);
 
         for (IGISModel gis : model.getAllGIS()) {
-            eventChain.addEvent(new ShowGISOnMap(gis));
+            eventChain.addEvent(new ShowGISOnMap(gis, this));
         }
 
         AWEEventManager.getManager().fireEventChain(eventChain);

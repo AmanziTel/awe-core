@@ -143,9 +143,9 @@ public class AWEEventManagerTest extends AbstractIntegrationTest {
 
         eventManager.fireAWEStartedEvent();
 
-        verify(listener1).onEvent(eq(new AWEStartedEvent()));
-        verify(listener2, never()).onEvent(eq(new AWEStartedEvent()));
-        verify(listener3).onEvent(eq(new AWEStartedEvent()));
+        verify(listener1).onEvent(eq(new AWEStartedEvent(null)));
+        verify(listener2, never()).onEvent(eq(new AWEStartedEvent(null)));
+        verify(listener3).onEvent(eq(new AWEStartedEvent(null)));
     }
 
     @Test

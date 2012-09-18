@@ -83,7 +83,7 @@ public abstract class AbstractSaver<C extends IConfiguration, D extends IData> e
 
                 if (model.isRenderable()) {
                     for (IGISModel gisModel : ((IRenderableModel)model).getAllGIS()) {
-                        eventChain.addEvent(new ShowGISOnMap(gisModel));
+                        eventChain.addEvent(new ShowGISOnMap(gisModel, this));
                     }
                 }
             } catch (ModelException e) {

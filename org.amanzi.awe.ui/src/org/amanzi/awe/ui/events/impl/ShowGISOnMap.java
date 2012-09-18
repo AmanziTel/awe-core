@@ -36,12 +36,12 @@ public class ShowGISOnMap extends AbstractEvent {
     /**
      * @param status
      */
-    public ShowGISOnMap(final IGISModel model) {
-        this(model, DEFAULT_ZOOM);
+    public ShowGISOnMap(final IGISModel model, Object source) {
+        this(model, DEFAULT_ZOOM, source);
     }
 
-    public ShowGISOnMap(final IGISModel model, final int zoom) {
-        super(EventStatus.SHOW_GIS, true);
+    public ShowGISOnMap(final IGISModel model, final int zoom, Object source) {
+        super(EventStatus.SHOW_GIS, true, source);
         this.zoom = zoom;
         this.model = model;
     }

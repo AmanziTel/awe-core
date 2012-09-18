@@ -29,8 +29,8 @@ public class DataUpdatedEvent extends AbstractEvent {
     /**
      * @param status
      */
-    public DataUpdatedEvent() {
-        super(EventStatus.DATA_UPDATED, true);
+    public DataUpdatedEvent(Object source) {
+        super(EventStatus.DATA_UPDATED, true, source);
     }
 
 }
