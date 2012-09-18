@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Impl
+Bundle-SymbolicName: org.amanzi.awe.charts.impl;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.charts.impl.ChartModelPlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.amanzi.awe.statistics.impl;bundle-version="1.1.1";visibility:=reexport,
+ org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.awe.charts.impl,
+ org.amanzi.awe.charts.model,
+ org.amanzi.awe.charts.model.provider

@@ -51,8 +51,6 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     protected static class MultiKey implements IKey {
 
-        // private final Map<Class< ? extends IKey>, IKey> keyMap = new HashMap<Class< ? extends
-        // IKey>, IKey>();
         private final List<IKey> keys = new ArrayList<IKey>();
 
         public MultiKey(IKey... keys) {
