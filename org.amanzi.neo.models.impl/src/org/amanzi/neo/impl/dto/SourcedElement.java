@@ -11,28 +11,38 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.dto;
+package org.amanzi.neo.impl.dto;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.dto.ISourcedElement;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsRow extends ISourcedElement {
+public class SourcedElement extends DataElement implements ISourcedElement {
 
-    long getStartDate();
+    public interface ICollectFunction {
 
-    long getEndDate();
+        Iterable<IDataElement> collectSourceElements(IDataElement parent);
 
-    Iterable<IStatisticsCell> getStatisticsCells();
+    }
 
-    IStatisticsGroup getStatisticsGroup();
+    private final ICollectFunction function;
 
-    boolean isSummury();
+    public SourcedElement(final Node node, final ICollectFunction collectFunction) {
+        super(node);
+        this.function = collectFunction;
+    }
+
+    @Override
+    public Iterable<IDataElement> getSources() {
+        return function.collectSourceElements(this);
+    }
 
 }

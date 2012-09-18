@@ -232,6 +232,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
         commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
         commands.add(new ZoomCommand(selectedModel.getBounds()));
+        commands.add(new ZoomCommand(0.80));
 
         sendCommandsToLayer(layerList, commands);
     }

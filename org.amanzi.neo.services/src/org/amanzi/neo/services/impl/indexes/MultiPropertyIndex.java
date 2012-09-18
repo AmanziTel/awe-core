@@ -280,7 +280,7 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Float correctOrig(final Float e, final Float stepSize) {
-            return e + (stepSize / 2);
+            return e - (stepSize / 2);
         }
     }
 
@@ -306,7 +306,7 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Double correctOrig(final Double e, final Double stepSize) {
-            return e + (stepSize / 2);
+            return e - (stepSize / 2);
         }
     }
 
@@ -332,7 +332,7 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Integer correctOrig(final Integer e, final Integer stepSize) {
-            return e + (stepSize / 2);
+            return e - (stepSize / 2);
         }
     }
 
@@ -358,7 +358,7 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Long correctOrig(final Long e, final Long stepSize) {
-            return e + (stepSize / 2);
+            return e - (stepSize / 2);
         }
     }
 

@@ -11,28 +11,18 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.dto;
-
-import org.amanzi.neo.dto.ISourcedElement;
+package org.amanzi.neo.models;
 
 /**
  * TODO Purpose of
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsRow extends ISourcedElement {
+public interface IAnalyzisModel<S extends IModel> extends IModel {
 
-    long getStartDate();
-
-    long getEndDate();
-
-    Iterable<IStatisticsCell> getStatisticsCells();
-
-    IStatisticsGroup getStatisticsGroup();
-
-    boolean isSummury();
+    S getSourceModel();
 
 }

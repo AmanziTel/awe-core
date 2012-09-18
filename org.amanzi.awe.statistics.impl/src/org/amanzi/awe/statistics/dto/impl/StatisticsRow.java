@@ -19,7 +19,7 @@ import java.util.List;
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.dto.SourcedElement;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.neo4j.graphdb.Node;
 
@@ -33,20 +33,20 @@ import com.google.common.collect.Iterables;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsRow extends DataElement implements IStatisticsRow {
+public class StatisticsRow extends SourcedElement implements IStatisticsRow {
 
     private long startDate;
 
     private long endDate;
 
-    private List<IStatisticsCell> statisticsCells = new ArrayList<IStatisticsCell>();
+    private final List<IStatisticsCell> statisticsCells = new ArrayList<IStatisticsCell>();
 
     private boolean summury = false;
 
     private IStatisticsGroup statisticsGroup;
 
-    public StatisticsRow(final Node node) {
-        super(node);
+    public StatisticsRow(final Node node, final ICollectFunction collectFunction) {
+        super(node, collectFunction);
     }
 
     /**
@@ -110,6 +110,7 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
     /**
      * @return Returns the statisticsGroup.
      */
+    @Override
     public IStatisticsGroup getStatisticsGroup() {
         return statisticsGroup;
     }
@@ -124,6 +125,7 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
     /**
      * @return Returns the summury.
      */
+    @Override
     public boolean isSummury() {
         return summury;
     }
@@ -131,7 +133,7 @@ public class StatisticsRow extends DataElement implements IStatisticsRow {
     /**
      * @param summury The summury to set.
      */
-    public void setSummury(boolean summury) {
+    public void setSummury(final boolean summury) {
         this.summury = summury;
     }
 }
