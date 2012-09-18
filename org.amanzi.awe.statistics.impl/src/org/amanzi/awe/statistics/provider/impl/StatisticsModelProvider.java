@@ -47,8 +47,8 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsModelProvider extends AbstractModelProvider<StatisticsModel, IStatisticsModel>
-        implements
-            IStatisticsModelProvider {
+implements
+IStatisticsModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsModelProvider.class);
 
@@ -62,7 +62,7 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
 
     private final IStatisticsService statisticsService;
 
-    private IMeasurementNodeProperties measurementNodeProperties;
+    private final IMeasurementNodeProperties measurementNodeProperties;
 
     public StatisticsModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
             final ITimePeriodNodeProperties timePeriodNodeProperties, final IStatisticsNodeProperties statisticsNodeProperties,
@@ -119,6 +119,8 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
                 if (statisticsNode != null) {
                     result = initializeFromNode(statisticsNode);
 
+                    initializeStatisticsModel(result, analyzedModel);
+
                     addToCache(result, key);
                 }
             } catch (ServiceException e) {
@@ -134,7 +136,7 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
     }
 
     @Override
-    public Iterable<IStatisticsModel> findAll(IMeasurementModel analyzedModel) throws ModelException {
+    public Iterable<IStatisticsModel> findAll(final IMeasurementModel analyzedModel) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("find all statistics models from parent", analyzedModel));
         }
@@ -153,6 +155,9 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
 
             while (statisticsNodes.hasNext()) {
                 StatisticsModel statistic = initializeFromNode(statisticsNodes.next());
+
+                initializeStatisticsModel(statistic, analyzedModel);
+
                 models.add(statistic);
             }
 
@@ -192,11 +197,17 @@ public class StatisticsModelProvider extends AbstractModelProvider<StatisticsMod
         StatisticsModel statisticsModel = createInstance();
         statisticsModel.initialize(parentModel.getRootNode(), template, propertyName);
 
+        initializeStatisticsModel(statisticsModel, analyzedModel);
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("create"));
         }
 
         return statisticsModel;
+    }
+
+    private void initializeStatisticsModel(final StatisticsModel model, final IMeasurementModel parent) {
+        model.setSourceModel(parent);
     }
 
 }
