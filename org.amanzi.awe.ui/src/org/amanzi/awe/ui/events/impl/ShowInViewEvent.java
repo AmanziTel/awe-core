@@ -35,17 +35,16 @@ public class ShowInViewEvent extends AbstractEvent {
      * @param status
      * @param isAsync
      */
-    public ShowInViewEvent(final IModel model) {
-        this(model, null);
+    public ShowInViewEvent(final IModel model, Object source) {
+        this(model, null, source);
     }
 
-    public ShowInViewEvent(final IModel parent, final IDataElement element) {
-        super(EventStatus.SHOW_IN_VIEW, true);
+    public ShowInViewEvent(final IModel parent, final IDataElement element, Object source) {
+        super(EventStatus.SHOW_IN_VIEW, true, source);
 
         this.parent = parent;
         this.element = element;
     }
-
 
     /**
      * @return Returns the element.

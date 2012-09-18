@@ -35,7 +35,7 @@ public class ProjectChangedListenerTest extends AbstractMockitoTest {
 
     private static final String NEW_PROJECT_NAME = "some new name";
 
-    private static final IEvent EVENT = new ProjectNameChangedEvent("some new name");
+    private static final IEvent EVENT = new ProjectNameChangedEvent("some new name", null);
 
     private ProjectChangedListener listener;
 
@@ -76,7 +76,7 @@ public class ProjectChangedListenerTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckNothingHappenedOnWrongEvent() {
-        listener.onEvent(new AWEStartedEvent());
+        listener.onEvent(new AWEStartedEvent(null));
 
         verifyNoMoreInteractions(projectModelProvider);
     }

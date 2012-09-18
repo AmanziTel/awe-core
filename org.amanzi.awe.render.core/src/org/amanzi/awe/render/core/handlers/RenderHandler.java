@@ -23,6 +23,9 @@ import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.ISourcedElement;
+import org.amanzi.neo.models.IAnalyzisModel;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.render.IGISModel;
@@ -67,22 +70,34 @@ public class RenderHandler extends AbstractHandler {
                     IPeriodTreeItem< ? , ? > periodItem = (IPeriodTreeItem< ? , ? >)selectedObject;
 
                     if (periodItem.getPeriod() != null) {
-                        IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
+                        IMeasurementModel parentModel = getParentModel(periodItem, IMeasurementModel.class);
 
-                        try {
-                            Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
-                        } catch (ModelException e) {
-                            // TODO: handle
+                        if (parentModel != null) {
+                            try {
+                                Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                            } catch (ModelException e) {
+                                // TODO: handle
+                            }
+                            model = parentModel;
+                            continue;
                         }
-                        model = parentModel;
-                        continue;
                     }
                 }
                 if (selectedObject instanceof ITreeItem) {
                     ITreeItem< ? , ? > treeItem = (ITreeItem< ? , ? >)selectedObject;
 
-                    if (treeItem.getChild() instanceof IRenderableModel) {
-                        model = (IRenderableModel)treeItem.getChild();
+                    if (treeItem.getChild() instanceof ISourcedElement) {
+                        IRenderableModel elementParent = getParentModel(treeItem, IRenderableModel.class);
+
+                        if (elementParent != null) {
+                            Iterables.addAll(elements, ((ISourcedElement)treeItem.getChild()).getSources());
+
+                            model = elementParent;
+                            continue;
+                        }
+
+                    } else if (treeItem.getChild() instanceof IDataElement) {
+                        model = getParentModel(treeItem, IRenderableModel.class);
                         isModel = true;
                         break;
                     } else if (treeItem.getChild() instanceof IDataElement) {
@@ -90,7 +105,7 @@ public class RenderHandler extends AbstractHandler {
 
                         elements.add(element);
 
-                        model = model == null ? (IRenderableModel)treeItem.getParent() : model;
+                        model = model == null ? getParentModel(treeItem, IRenderableModel.class) : model;
                     }
                 }
             }
@@ -106,17 +121,35 @@ public class RenderHandler extends AbstractHandler {
     }
 
     private void showOnMap(final IRenderableModel model, final Set<IDataElement> elements) {
-        AWEEventManager.getManager().fireShowOnMapEvent(model, elements);
+        AWEEventManager.getManager().fireShowOnMapEvent(model, elements, this);
     }
 
     private void showOnMap(final IRenderableModel model) {
         EventChain eventChain = new EventChain(true);
 
         for (IGISModel gis : model.getAllGIS()) {
-            eventChain.addEvent(new ShowGISOnMap(gis));
+            eventChain.addEvent(new ShowGISOnMap(gis, this));
         }
 
         AWEEventManager.getManager().fireEventChain(eventChain);
+    }
+
+    private <T extends IModel> T getParentModel(final ITreeItem<?, ?> treeItem, final Class<T> clazz) {
+        IModel model = treeItem.getParent();
+
+        if (model != null) {
+            if (model instanceof IAnalyzisModel) {
+                model = ((IAnalyzisModel<?>)model).getSourceModel();
+            }
+
+            if (model != null) {
+                if (clazz.isAssignableFrom(model.getClass())) {
+                    return clazz.cast(model);
+                }
+            }
+        }
+
+        return null;
     }
 
 }

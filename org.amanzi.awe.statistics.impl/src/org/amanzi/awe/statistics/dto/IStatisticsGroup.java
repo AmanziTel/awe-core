@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.statistics.dto;
 
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.ISourcedElement;
 
 /**
  * TODO Purpose of
@@ -23,7 +23,7 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsGroup extends IDataElement {
+public interface IStatisticsGroup extends ISourcedElement {
 
     public String getPeriod();
 

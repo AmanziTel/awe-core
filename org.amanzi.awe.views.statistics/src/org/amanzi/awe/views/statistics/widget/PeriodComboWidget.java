@@ -60,7 +60,7 @@ public class PeriodComboWidget extends AbstractComboWidget<Period, IPeriodSelect
         if (model != null) {
             this.model = model;
 
-            fillCombo();
+            fillCombo(true);
             setEnabled(true);
         } else {
             setEnabled(false);

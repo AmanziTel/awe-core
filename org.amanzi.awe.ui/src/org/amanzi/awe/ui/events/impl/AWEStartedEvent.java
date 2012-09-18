@@ -29,8 +29,8 @@ public class AWEStartedEvent extends AbstractEvent {
     /**
      * @param status
      */
-    public AWEStartedEvent() {
-        super(EventStatus.AWE_STARTED, true);
+    public AWEStartedEvent(Object source) {
+        super(EventStatus.AWE_STARTED, true, source);
     }
 
 }

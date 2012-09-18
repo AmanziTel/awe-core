@@ -73,7 +73,6 @@ public class StatisticsView extends ViewPart
     private class StatisticsJob extends Job {
 
         private final StatisticsManager statisticsManager;
-        private boolean isNeedtoRefresh;
 
         /**
          * @param isNeedToCreateBuild
@@ -82,8 +81,6 @@ public class StatisticsView extends ViewPart
         public StatisticsJob(final StatisticsManager statisticsManager) {
             super("Calculate statistics");
             this.statisticsManager = statisticsManager;
-            // TODO KV: check this way solution
-            this.isNeedtoRefresh = !statisticsManager.isBuilt();
         }
 
         @Override
@@ -98,9 +95,7 @@ public class StatisticsView extends ViewPart
                         updateTable(model);
                     }
                 }, true);
-                if (isNeedtoRefresh) {
-                    AWEEventManager.getManager().fireDataUpdatedEvent();
-                }
+                AWEEventManager.getManager().fireDataUpdatedEvent(null);
             } catch (StatisticsEngineException e) {
                 return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
             }
@@ -179,7 +174,7 @@ public class StatisticsView extends ViewPart
         scrolledComposite.pack();
 
         isInitialized = true;
-        driveCombo.updateSelection();
+        driveCombo.updateSelection(true);
     }
 
     private void addTemplateCompositeContent(final Composite parent) {

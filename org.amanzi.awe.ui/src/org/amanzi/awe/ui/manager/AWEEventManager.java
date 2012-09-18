@@ -65,13 +65,13 @@ public final class AWEEventManager {
 
     private static final String STATUS_ATTRIBUTE = "status";
 
-    private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
+    private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent(null);
 
-    private static final IEvent AWE_STOPPED_EVENT = new AWEStoppedEvent();
+    private static final IEvent AWE_STOPPED_EVENT = new AWEStoppedEvent(null);
 
-    public static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent();
+    public static final IEvent DATA_UPDATED_EVENT = new DataUpdatedEvent(null);
 
-    private static final IEvent INITIALISE_EVENT = new InitialiseEvent();
+    private static final IEvent INITIALISE_EVENT = new InitialiseEvent(null);
 
     private final Map<Priority, Map<EventStatus, Set<IAWEEventListenter>>> listeners = new HashMap<Priority, Map<EventStatus, Set<IAWEEventListenter>>>();
 
@@ -131,14 +131,27 @@ public final class AWEEventManager {
 
                 if (eventListeners != null) {
                     for (IAWEEventListenter singleListener : eventListeners) {
-                        if (inDisplay) {
-                            runEventListener(event, singleListener);
-                        } else {
-                            singleListener.onEvent(event);
-                        }
+                        run(event, singleListener, inDisplay);
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * @param event
+     * @param singleListener
+     * @param inDisplay
+     */
+    private void run(IEvent event, IAWEEventListenter singleListener, boolean inDisplay) {
+        if (event.getSource() != null && event.getSource().equals(singleListener)) {
+            return;
+        }
+
+        if (inDisplay) {
+            runEventListener(event, singleListener);
+        } else {
+            singleListener.onEvent(event);
         }
     }
 
@@ -160,24 +173,25 @@ public final class AWEEventManager {
         fireEvent(AWE_STOPPED_EVENT, true);
     }
 
-    public synchronized void fireProjectNameChangedEvent(final String newProjectName) {
-        fireEvent(new ProjectNameChangedEvent(newProjectName), true);
+    public synchronized void fireProjectNameChangedEvent(final String newProjectName, Object source) {
+        fireEvent(new ProjectNameChangedEvent(newProjectName, source), true);
     }
 
-    public synchronized void fireDataUpdatedEvent() {
-        fireEvent(new DataUpdatedEvent(), true);
+    public synchronized void fireDataUpdatedEvent(Object source) {
+        fireEvent(new DataUpdatedEvent(source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IGISModel model) {
-        fireEvent(new ShowGISOnMap(model), true);
+    public synchronized void fireShowOnMapEvent(final IGISModel model, Object source) {
+        fireEvent(new ShowGISOnMap(model, source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements) {
-        fireEvent(new ShowElementsOnMap(model, elements), true);
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, Object source) {
+        fireEvent(new ShowElementsOnMap(model, elements, source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, final ReferencedEnvelope bounds) {
-        fireEvent(new ShowElementsOnMap(model, elements, bounds), true);
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements,
+            final ReferencedEnvelope bounds, Object source) {
+        fireEvent(new ShowElementsOnMap(model, elements, bounds, source), true);
     }
 
     public synchronized void fireInitialiseEvent() {

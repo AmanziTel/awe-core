@@ -14,7 +14,7 @@
 package org.amanzi.awe.statistics.dto.impl;
 
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
-import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.dto.SourcedElement;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -25,7 +25,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsGroup extends DataElement implements IStatisticsGroup {
+public class StatisticsGroup extends SourcedElement implements IStatisticsGroup {
 
     private String period;
 
@@ -34,8 +34,8 @@ public class StatisticsGroup extends DataElement implements IStatisticsGroup {
     /**
      * @param node
      */
-    public StatisticsGroup(final Node node) {
-        super(node);
+    public StatisticsGroup(final Node node, final ICollectFunction function) {
+        super(node, function);
     }
 
     /**
