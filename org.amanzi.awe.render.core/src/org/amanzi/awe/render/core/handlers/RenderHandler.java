@@ -23,6 +23,7 @@ import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.ISourcedElement;
 import org.amanzi.neo.models.IAnalyzisModel;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -85,7 +86,17 @@ public class RenderHandler extends AbstractHandler {
                 if (selectedObject instanceof ITreeItem) {
                     ITreeItem< ? , ? > treeItem = (ITreeItem< ? , ? >)selectedObject;
 
-                    if (treeItem.getChild() instanceof IRenderableModel) {
+                    if (treeItem.getChild() instanceof ISourcedElement) {
+                        IRenderableModel elementParent = getParentModel(treeItem, IRenderableModel.class);
+
+                        if (elementParent != null) {
+                            Iterables.addAll(elements, ((ISourcedElement)treeItem.getChild()).getSources());
+
+                            model = elementParent;
+                            continue;
+                        }
+
+                    } else if (treeItem.getChild() instanceof IDataElement) {
                         model = getParentModel(treeItem, IRenderableModel.class);
                         isModel = true;
                         break;

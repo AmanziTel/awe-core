@@ -40,6 +40,7 @@ import org.amanzi.awe.statistics.service.impl.StatisticsService.StatisticsRelati
 import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.dto.SourcedElement.ICollectFunction;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
@@ -51,6 +52,7 @@ import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
+import org.apache.commons.collections.iterators.IteratorChain;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -59,6 +61,7 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -120,6 +123,88 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
     }
+
+    @SuppressWarnings("unchecked")
+    private final ICollectFunction statisticsRowSourcesCollectFunction = new ICollectFunction() {
+
+        @Override
+        public Iterable<IDataElement> collectSourceElements(final IDataElement element) {
+            if (element instanceof IStatisticsRow) {
+                try {
+                    final IteratorChain chain = new IteratorChain(getIteratorList((IStatisticsRow)element));
+                    return new Iterable<IDataElement>() {
+
+                        @Override
+                        public Iterator<IDataElement> iterator() {
+                            return chain;
+                        }
+                    };
+                } catch (ModelException e) {
+                    LOGGER.error("Error on collecting Sources of Statistics Row", e);
+                }
+            }
+
+            return Iterables.emptyIterable();
+        }
+
+        private List<Iterator<IDataElement>> getIteratorList(final IStatisticsRow row) throws ModelException {
+            List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+
+            Iterable<IStatisticsRow> rows = getSourceRows(row);
+            if (rows != null) {
+                for (IStatisticsRow sourceRow : rows) {
+                    result.addAll(getIteratorList(sourceRow));
+                }
+            }
+
+            for (IStatisticsCell cell : row.getStatisticsCells()) {
+                result.add(statisticsCellSourcesCollectFunction.collectSourceElements(cell).iterator());
+            }
+
+            return result;
+        }
+
+    };
+
+    @SuppressWarnings("unchecked")
+    private final ICollectFunction statisticsCellSourcesCollectFunction = new ICollectFunction() {
+
+        @Override
+        public Iterable<IDataElement> collectSourceElements(final IDataElement element) {
+            if (element instanceof IStatisticsCell) {
+                try {
+                    final IteratorChain chain = new IteratorChain(getIteratorList((IStatisticsCell)element));
+                    return new Iterable<IDataElement>() {
+
+                        @Override
+                        public Iterator<IDataElement> iterator() {
+                            return chain;
+                        }
+                    };
+                } catch (ModelException e) {
+                    LOGGER.error("Error on collecting Sources of Statistics Cell", e);
+                }
+            }
+
+            return Iterables.emptyIterable();
+        }
+
+        private List<Iterator<IDataElement>> getIteratorList(final IStatisticsCell cell) throws ModelException {
+            List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+
+            Iterable<IStatisticsCell> cells = getSourceCells(cell);
+            if (cells != null) {
+                for (IStatisticsCell sourceCell : cells) {
+                    result.addAll(getIteratorList(sourceCell));
+                }
+            }
+
+            result.add(getSources(cell).iterator());
+
+            return result;
+        }
+
+    };
 
     private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
@@ -403,7 +488,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     protected StatisticsRow createStatisticsRow(final Node node, final long startDate, final long endDate) {
-        StatisticsRow row = new StatisticsRow(node);
+        StatisticsRow row = new StatisticsRow(node, statisticsRowSourcesCollectFunction);
 
         row.setNodeType(StatisticsNodeType.S_ROW);
         row.setStartDate(startDate);
@@ -436,7 +521,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     protected IStatisticsCell createStatisticsCell(final Node node) {
-        StatisticsCell cell = new StatisticsCell(node);
+        StatisticsCell cell = new StatisticsCell(node, statisticsCellSourcesCollectFunction);
         try {
             cell.setName(getNodeService().getNodeName(node));
             cell.setNodeType(getNodeService().getNodeType(node));

@@ -20,6 +20,7 @@ import java.util.Set;
 import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.ISourcedElement;
 import org.amanzi.neo.models.IAnalyzisModel;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -82,7 +83,20 @@ public class RenderingTester extends PropertyTester {
                 if (selectedElement instanceof ITreeItem) {
                     ITreeItem< ? , ? > treeItem = (ITreeItem< ? , ? >)selectedElement;
 
-                    if (treeItem.getChild() instanceof IDataElement) {
+                    if (treeItem.getChild() instanceof ISourcedElement) {
+                        IRenderableModel elementParent = getParentModel(treeItem, IRenderableModel.class);
+
+                        if (elementParent != null) {
+                            Iterables.addAll(elements, ((ISourcedElement)treeItem.getChild()).getSources());
+
+
+                            parent = elementParent;
+                            testElements = true;
+
+                            continue;
+                        }
+
+                    } else if (treeItem.getChild() instanceof IDataElement) {
                         IRenderableModel elementParent = getParentModel(treeItem, IRenderableModel.class);
                         if (elementParent != null) {
                             if (parent == null) {
