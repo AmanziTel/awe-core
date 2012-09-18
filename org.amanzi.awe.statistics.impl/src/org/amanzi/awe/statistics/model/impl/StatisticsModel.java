@@ -42,7 +42,8 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
@@ -68,7 +69,7 @@ import com.google.common.collect.Lists;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsModel extends AbstractModel implements IStatisticsModel {
+public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> implements IStatisticsModel {
 
     private final static Logger LOGGER = Logger.getLogger(StatisticsModel.class);
 
@@ -141,7 +142,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
 
     private Set<String> columnNames = new LinkedHashSet<String>();
 
-    private IMeasurementNodeProperties measurementNodeProperties;
+    private final IMeasurementNodeProperties measurementNodeProperties;
 
     /**
      * @param nodeService
@@ -150,7 +151,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
      */
     public StatisticsModel(final IStatisticsService statisticsService, final INodeService nodeService,
             final IGeneralNodeProperties generalNodeProperties, final ITimePeriodNodeProperties timePeriodNodeProperties,
-            final IStatisticsNodeProperties statisticsNodeProperties, IMeasurementNodeProperties measurementNodeProperties) {
+            final IStatisticsNodeProperties statisticsNodeProperties, final IMeasurementNodeProperties measurementNodeProperties) {
         super(nodeService, generalNodeProperties);
         this.measurementNodeProperties = measurementNodeProperties;
         this.statisticsService = statisticsService;
@@ -741,9 +742,9 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public IStatisticsRow getSummuryRow(IStatisticsGroup statisticsGroup) throws ModelException {
+    public IStatisticsRow getSummuryRow(final IStatisticsGroup statisticsGroup) throws ModelException {
         try {
-            StatisticsRow row = (StatisticsRow)summuryCache.get(statisticsGroup);
+            StatisticsRow row = summuryCache.get(statisticsGroup);
             if (row == null) {
 
                 row = (StatisticsRow)getStatisticsRowFromDatabase((StatisticsGroup)statisticsGroup, null, Long.MAX_VALUE,
@@ -762,7 +763,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return null;
     }
 
-    protected void updateSummury(StatisticsRow summuryRow, long startTime, long endTime) throws ServiceException {
+    protected void updateSummury(final StatisticsRow summuryRow, final long startTime, final long endTime) throws ServiceException {
         if (endTime > summuryRow.getEndDate()) {
             updateSummuryRowDate(summuryRow, endTime, timePeriodNodeProperties.getEndDateProperty(),
                     timePeriodNodeProperties.getEndDateTimestampProperty());
@@ -777,7 +778,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         }
     }
 
-    private void updateSummuryRowDate(StatisticsRow row, long currentDate, String dateProperty, String dateTimestampProperty)
+    private void updateSummuryRowDate(final StatisticsRow row, final long currentDate, final String dateProperty, final String dateTimestampProperty)
             throws ServiceException {
         Date date = new Date(currentDate);
         String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
@@ -786,7 +787,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public Iterable<IStatisticsGroup> getAllStatisticsGroups(DimensionType type, String levelName) throws ModelException {
+    public Iterable<IStatisticsGroup> getAllStatisticsGroups(final DimensionType type, final String levelName) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRows", levelName));
         }
@@ -804,7 +805,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public Iterable<IDataElement> findAllStatisticsLevels(DimensionType type) throws ModelException {
+    public Iterable<IDataElement> findAllStatisticsLevels(final DimensionType type) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type));
         }
@@ -823,7 +824,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return new DataElementIterator(levels).toIterable();
     }
 
-    private boolean hasUnderlineSource(IDataElement element) throws ModelException {
+    private boolean hasUnderlineSource(final IDataElement element) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("hasUnderlineSource", element));
         }
@@ -843,7 +844,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public Iterable<IStatisticsCell> getSourceCells(IStatisticsCell cell) throws ModelException {
+    public Iterable<IStatisticsCell> getSourceCells(final IStatisticsCell cell) throws ModelException {
         if (!hasUnderlineSource(cell)) {
             return null;
         }
@@ -853,7 +854,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public Iterable<IDataElement> getSources(IDataElement cell) throws ModelException {
+    public Iterable<IDataElement> getSources(final IDataElement cell) throws ModelException {
         Iterator<Node> sources = getSourcesNodes(cell);
         if (cell.getNodeType().equals(StatisticsNodeType.S_CELL)) {
             return new DataElementIterator(sources, measurementNodeProperties.getEventProperty()).toIterable();
@@ -862,7 +863,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     }
 
     @Override
-    public Iterable<IStatisticsRow> getSourceRows(IStatisticsRow row) throws ModelException {
+    public Iterable<IStatisticsRow> getSourceRows(final IStatisticsRow row) throws ModelException {
         if (!hasUnderlineSource(row)) {
             return null;
         }
@@ -870,7 +871,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
         return new StatisticsRowIterator(sources).toIterable();
     }
 
-    private Iterator<Node> getSourcesNodes(IDataElement element) throws ModelException {
+    private Iterator<Node> getSourcesNodes(final IDataElement element) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getCellSources", element));
         }

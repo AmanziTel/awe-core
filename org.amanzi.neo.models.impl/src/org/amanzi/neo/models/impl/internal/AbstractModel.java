@@ -61,7 +61,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             super(nodeIterator);
         }
 
-        public DataElementIterator(final Iterator<Node> nodeIterator, String propertyName) {
+        public DataElementIterator(final Iterator<Node> nodeIterator, final String propertyName) {
             this(nodeIterator);
             this.defaultProperty = propertyName;
         }
@@ -93,7 +93,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
     private IDataElement dataElement;
 
-    public AbstractModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
+    protected AbstractModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
     }
