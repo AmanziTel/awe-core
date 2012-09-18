@@ -13,9 +13,7 @@
 
 package org.amanzi.awe.render.core.testers;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.amanzi.awe.views.treeview.provider.IPeriodTreeItem;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
@@ -26,10 +24,10 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.render.IRenderableModel;
+import org.apache.commons.collections.iterators.IteratorChain;
+import org.apache.commons.collections.iterators.SingletonIterator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
-
-import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -52,7 +50,7 @@ public class RenderingTester extends PropertyTester {
             IRenderableModel parent = null;
 
             boolean testElements = false;
-            Set<IDataElement> elements = new HashSet<IDataElement>();
+            final IteratorChain elementChain = new IteratorChain();
 
             while (selectedElements.hasNext()) {
                 Object selectedElement = selectedElements.next();
@@ -67,8 +65,7 @@ public class RenderingTester extends PropertyTester {
 
                             if (parentModel != null) {
                                 try {
-                                    Iterables.addAll(elements,
-                                            parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                                    elementChain.addIterator(parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()).iterator());
                                 } catch (ModelException e) {
                                     // TODO: handle
                                 }
@@ -87,8 +84,7 @@ public class RenderingTester extends PropertyTester {
                         IRenderableModel elementParent = getParentModel(treeItem, IRenderableModel.class);
 
                         if (elementParent != null) {
-                            Iterables.addAll(elements, ((ISourcedElement)treeItem.getChild()).getSources());
-
+                            elementChain.addIterator(((ISourcedElement)treeItem.getChild()).getSources().iterator());
 
                             parent = elementParent;
                             testElements = true;
@@ -107,7 +103,7 @@ public class RenderingTester extends PropertyTester {
                                 }
                             }
 
-                            elements.add((IDataElement)treeItem.getChild());
+                            elementChain.addIterator(new SingletonIterator(treeItem.getChild()));
                             testElements = true;
                         }
                     } else if (treeItem.getChild() instanceof IRenderableModel) {
@@ -128,7 +124,13 @@ public class RenderingTester extends PropertyTester {
             }
 
             if (testElements) {
-                if (!parent.getElementsLocations(elements).iterator().hasNext()) {
+                if (!parent.getElementsLocations(new Iterable<IDataElement>() {
+
+                    @Override
+                    public Iterator<IDataElement> iterator() {
+                        return elementChain;
+                    }
+                }).iterator().hasNext()) {
                     return false;
                 }
             }
