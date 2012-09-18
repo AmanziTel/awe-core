@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.chart.manger;
 
-import org.amanzi.awe.chart.builder.AbstractMultiAxisChartBuilder;
 import org.amanzi.awe.chart.builder.CategoryChartBuilder;
+import org.amanzi.awe.chart.builder.IChartBuilder;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.chart.JFreeChart;
@@ -38,9 +38,8 @@ public class ChartsManager {
     private ChartsManager() {
     }
 
-    @SuppressWarnings("rawtypes")
     public JFreeChart buildChart(IChartModel model) {
-        AbstractMultiAxisChartBuilder chart = null;
+        IChartBuilder chart = null;
         try {
             switch (model.getChartType()) {
             case PIE_CATEGORY_CHART:
