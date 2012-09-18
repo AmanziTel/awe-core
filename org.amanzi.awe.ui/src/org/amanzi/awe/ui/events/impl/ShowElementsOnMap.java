@@ -24,8 +24,8 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -41,16 +41,17 @@ public class ShowElementsOnMap extends AbstractEvent {
      * @param status
      * @param isAsync
      */
-    public ShowElementsOnMap(final IRenderableModel model, final Set<IDataElement> elements, final ReferencedEnvelope bounds) {
-        super(EventStatus.SHOW_ELEMENTS, true);
+    public ShowElementsOnMap(final IRenderableModel model, final Set<IDataElement> elements, final ReferencedEnvelope bounds,
+            Object source) {
+        super(EventStatus.SHOW_ELEMENTS, true, source);
 
         this.model = model;
         this.elements = elements;
         this.bounds = bounds;
     }
 
-    public ShowElementsOnMap(final IRenderableModel model, final Set<IDataElement> elements) {
-        this(model, elements, null);
+    public ShowElementsOnMap(final IRenderableModel model, final Set<IDataElement> elements, Object source) {
+        this(model, elements, null, source);
     }
 
     public IRenderableModel getModel() {

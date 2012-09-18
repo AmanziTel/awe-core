@@ -30,8 +30,8 @@ public class InitialiseEvent extends AbstractEvent {
      * @param status
      * @param isAsync
      */
-    public InitialiseEvent() {
-        super(EventStatus.INITIALISATION, false);
+    public InitialiseEvent(Object source) {
+        super(EventStatus.INITIALISATION, false, source);
     }
 
 }

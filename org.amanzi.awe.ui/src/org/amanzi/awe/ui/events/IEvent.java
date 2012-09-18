@@ -27,4 +27,6 @@ public interface IEvent {
 
     boolean isAsync();
 
+    Object getSource();
+
 }

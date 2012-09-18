@@ -31,8 +31,8 @@ public class ProjectNameChangedEvent extends AbstractEvent {
     /**
      * @param status
      */
-    public ProjectNameChangedEvent(final String newProjectName) {
-        super(EventStatus.PROJECT_CHANGED, true);
+    public ProjectNameChangedEvent(final String newProjectName, Object source) {
+        super(EventStatus.PROJECT_CHANGED, true, source);
 
         this.newProjectName = newProjectName;
     }

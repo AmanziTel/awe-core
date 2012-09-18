@@ -43,7 +43,8 @@ public class TemplateComboWidget extends AbstractComboWidget<ITemplate, ITemplat
      * @param parent
      * @param label
      */
-    public TemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener, final String label, final int minimalLabelWidth) {
+    public TemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener, final String label,
+            final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
     }
 
@@ -58,7 +59,7 @@ public class TemplateComboWidget extends AbstractComboWidget<ITemplate, ITemplat
 
     public void setStatisticsManager(final StatisticsManager manager) {
         this.statisticsManager = manager;
-        fillCombo();
+        fillCombo(true);
     }
 
     @Override

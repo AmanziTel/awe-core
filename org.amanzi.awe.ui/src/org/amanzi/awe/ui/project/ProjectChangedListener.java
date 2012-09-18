@@ -73,7 +73,7 @@ public class ProjectChangedListener implements IAWEEventListenter {
             IProjectModel projectModel = getProjectModelProvider().findProjectByName(name);
             if (projectModel == null) {
                 projectModel = getProjectModelProvider().createProjectModel(name);
-                AWEEventManager.getManager().fireDataUpdatedEvent();
+                AWEEventManager.getManager().fireDataUpdatedEvent(this);
             }
 
             getProjectModelProvider().setActiveProjectModel(projectModel);
