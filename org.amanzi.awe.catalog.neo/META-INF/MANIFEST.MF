@@ -9,6 +9,7 @@ Require-Bundle: net.refractions.udig.project.ui,
  org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.neo.db;bundle-version="1.0.0"
 Export-Package: org.amanzi.awe.catalog.neo,
+ org.amanzi.awe.catalog.neo.selection,
  org.amanzi.awe.models.catalog.neo
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-ExtensibleAPI: true

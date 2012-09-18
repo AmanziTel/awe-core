@@ -31,8 +31,8 @@ import com.google.common.collect.Iterables;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -55,21 +55,28 @@ public class RenderingTester extends PropertyTester {
                 Object selectedElement = selectedElements.next();
 
                 if (selectedElement instanceof IPeriodTreeItem) {
-                    IPeriodTreeItem<?, ?> periodItem = (IPeriodTreeItem<?, ?>)selectedElement;
+                    IPeriodTreeItem< ? , ? > periodItem = (IPeriodTreeItem< ? , ? >)selectedElement;
 
-                    if (periodItem.getParent() instanceof IMeasurementModel) {
-                        IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
+                    if (periodItem.getPeriod() != null) {
 
-                        try {
-                            Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
-                        } catch (ModelException e) {
-                            //TODO: handle
+                        if (periodItem.getParent() instanceof IMeasurementModel) {
+                            IMeasurementModel parentModel = (IMeasurementModel)periodItem.getParent();
+
+                            try {
+                                Iterables.addAll(elements,
+                                        parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                            } catch (ModelException e) {
+                                // TODO: handle
+                            }
+                            parent = parentModel;
+                            testElements = true;
+
+                            continue;
                         }
-                        parent = parentModel;
-                        testElements = true;
                     }
-                } else if (selectedElement instanceof ITreeItem) {
-                    ITreeItem<?, ?> treeItem = (ITreeItem<?, ?>)selectedElement;
+                }
+                if (selectedElement instanceof ITreeItem) {
+                    ITreeItem< ? , ? > treeItem = (ITreeItem< ? , ? >)selectedElement;
 
                     if (treeItem.getChild() instanceof IDataElement) {
                         IRenderableModel elementParent = (IRenderableModel)treeItem.getParent();
@@ -109,7 +116,5 @@ public class RenderingTester extends PropertyTester {
 
         return true;
     }
-
-
 
 }

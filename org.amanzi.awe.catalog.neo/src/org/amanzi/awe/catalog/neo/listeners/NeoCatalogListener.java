@@ -15,6 +15,7 @@ package org.amanzi.awe.catalog.neo.listeners;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,10 +27,11 @@ import net.refractions.udig.project.command.CompositeCommand;
 import net.refractions.udig.project.internal.command.navigation.AbstractNavCommand;
 import net.refractions.udig.project.internal.command.navigation.SetViewportBBoxCommand;
 import net.refractions.udig.project.internal.command.navigation.ZoomCommand;
-import net.refractions.udig.project.internal.command.navigation.ZoomExtentCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
+import org.amanzi.awe.catalog.neo.selection.ISelection;
+import org.amanzi.awe.catalog.neo.selection.Selection;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
@@ -84,7 +86,8 @@ public class NeoCatalogListener implements IAWEEventListenter {
     protected void showOnMap(final IRenderableModel model, final Set<IDataElement> elements, ReferencedEnvelope bounds) {
         boolean computeBounds = bounds == null;
 
-        Iterable<ILocationElement> selectedLocations = model.getElementsLocations(elements);
+        Iterable<ILocationElement> selectedElements = model.getElementsLocations(elements);
+        Set<ILocationElement> selectedLocations = new HashSet<ILocationElement>();
 
         if (computeBounds) {
             double minLat = Double.MAX_VALUE;
@@ -92,12 +95,14 @@ public class NeoCatalogListener implements IAWEEventListenter {
             double maxLat = -Double.MAX_VALUE;
             double maxLon = -Double.MAX_VALUE;
 
-            for (ILocationElement element : selectedLocations) {
+            for (ILocationElement element : selectedElements) {
                 minLat = Math.min(minLat, element.getLatitude());
                 maxLat = Math.max(maxLat, element.getLatitude());
 
                 minLon = Math.min(minLon, element.getLongitude());
                 maxLon = Math.max(maxLon, element.getLongitude());
+
+                selectedLocations.add(element);
             }
 
             bounds = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat, model.getMainGIS().getCRS());
@@ -118,6 +123,9 @@ public class NeoCatalogListener implements IAWEEventListenter {
                     layerList.add(layer);
                 }
             }
+
+            Selection selection = new Selection(model, elements, selectedLocations);
+            map.getBlackboard().put(ISelection.SELECTION_BLACKBOARD_PROPERTY, selection);
 
             executeCommands(layerList, bounds);
         } catch (Exception e) {
@@ -222,8 +230,8 @@ public class NeoCatalogListener implements IAWEEventListenter {
     private void executeCommands(final List<ILayer> layerList, final IGISModel selectedModel, final int zoom) {
         List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 
-        commands.add(new ZoomExtentCommand());
         commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
+        commands.add(new ZoomCommand(selectedModel.getBounds()));
 
         sendCommandsToLayer(layerList, commands);
     }
@@ -233,7 +241,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
         commands.add(new SetViewportBBoxCommand(bounds));
         commands.add(new ZoomCommand(bounds));
-        commands.add(new ZoomCommand(0.90));
+        commands.add(new ZoomCommand(0.80));
 
         sendCommandsToLayer(layerList, commands);
     }
