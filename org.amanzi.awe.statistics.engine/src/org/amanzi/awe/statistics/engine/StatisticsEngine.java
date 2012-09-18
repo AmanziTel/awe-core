@@ -223,8 +223,8 @@ public class StatisticsEngine extends AbstractTransactional {
             IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(),
                     previousStatisticsGroup.getPropertyValue());
 
-            long startTime = period.getStartTime(previousStatisticsRow.getStartDate());
-            long endTime = period.getEndTime(startTime);
+            long startTime = currentPeriod.getStartTime(previousStatisticsRow.getStartDate());
+            long endTime = currentPeriod.getEndTime(startTime);
             IStatisticsRow currentStatisticsRow = null;
             if (previousStatisticsRow.isSummury()) {
                 currentStatisticsRow = statisticsModel.getSummuryRow(currentStatisticsGroup);

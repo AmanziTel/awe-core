@@ -696,7 +696,7 @@ public class StatisticsModel extends AbstractModel implements IStatisticsModel {
     public void flush() throws ModelException {
         statisticsCellNodeCache.clear();
         statisticsRowCache.clear();
-
+        summuryCache.clear();
         super.flush();
     }
 

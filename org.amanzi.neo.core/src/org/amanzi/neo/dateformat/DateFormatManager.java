@@ -185,6 +185,10 @@ public class DateFormatManager {
         return formatMapping.get(defaultFormatId);
     }
 
+    public Date longToDate(long timestamp) {
+        return new Date(timestamp);
+    }
+
     /**
      * @return Returns the defaultFormat.
      */
