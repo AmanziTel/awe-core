@@ -6,6 +6,9 @@ package org.amanzi.awe.views.drive.view;
 import org.amanzi.awe.views.drive.provider.DriveTreeContentProvider;
 import org.amanzi.awe.views.drive.provider.DriveTreeLabelProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -26,7 +29,7 @@ public class DriveTreeView extends AbstractTreeView {
         this(new DriveTreeContentProvider());
     }
 
-    protected DriveTreeView(DriveTreeContentProvider contentProvider) {
+    protected DriveTreeView(final DriveTreeContentProvider contentProvider) {
         super(contentProvider);
 
     }
@@ -35,7 +38,7 @@ public class DriveTreeView extends AbstractTreeView {
      * This is a callback that will allow us to create the viewer and initialize it.
      */
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
         super.createPartControl(parent);
 
@@ -45,5 +48,11 @@ public class DriveTreeView extends AbstractTreeView {
     protected void setProviders() {
         super.setProviders();
         getTreeViewer().setLabelProvider(new DriveTreeLabelProvider());
+    }
+
+    @Override
+    protected ITreeItem< ? , ? > getTreeItem(final IModel model, final IDataElement element) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

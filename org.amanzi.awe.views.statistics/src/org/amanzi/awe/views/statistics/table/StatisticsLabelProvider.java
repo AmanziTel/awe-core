@@ -40,6 +40,10 @@ import com.google.common.collect.Iterables;
  */
 public class StatisticsLabelProvider implements ITableLabelProvider {
 
+    public enum CellType {
+        KPI, SUMMARY, PERIOD, PROPERTY;
+    }
+
     private static final int DECIMAL_SIZE = 2;
 
     private static final String SUMMURY_ROW_LABEL = "total";
@@ -104,6 +108,21 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
         }
 
         return StringUtils.EMPTY;
+    }
+
+    public CellType getCellType(final IStatisticsRow statisticsRow, final int columnIndex) {
+        if (statisticsRow.isSummury()) {
+            return CellType.SUMMARY;
+        } else {
+            switch (columnIndex) {
+            case 0:
+                return CellType.PROPERTY;
+            case 1:
+                return CellType.PERIOD;
+            default:
+                return CellType.KPI;
+            }
+        }
     }
 
     private void initializeCellList(final IStatisticsRow statisticsRow) {

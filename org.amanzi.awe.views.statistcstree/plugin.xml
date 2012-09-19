@@ -28,4 +28,13 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.views.statistcstree.listeners.ShowInStatisticsTreeListener">
+         <eventStatus
+               status="SHOW_IN_VIEW">
+         </eventStatus>
+      </listener>
+   </extension>
 </plugin>
