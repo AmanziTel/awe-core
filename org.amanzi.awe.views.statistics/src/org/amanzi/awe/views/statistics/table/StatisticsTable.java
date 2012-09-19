@@ -23,7 +23,10 @@ import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
+import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilterDialogEvent;
@@ -31,10 +34,8 @@ import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog.IFilterDialogListener;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
-import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
@@ -265,6 +266,8 @@ IFilterDialogListener {
 
             Set<IDataElement> elements = new HashSet<IDataElement>();
 
+            IDataElement elementToShow = null;
+
             if (sourceModel != null) {
                 switch (labelProvider.getCellType(row, column)) {
                 case KPI:
@@ -273,27 +276,31 @@ IFilterDialogListener {
 
                     Iterables.addAll(elements, cell.getSources());
 
+                    elementToShow = cell;
+
                     break;
                 case PERIOD:
                     Iterables.addAll(elements, row.getSources());
 
+                    elementToShow = row;
+
                     break;
                 case PROPERTY:
                     Iterables.addAll(elements, row.getStatisticsGroup().getSources());
+
+                    elementToShow = row.getStatisticsGroup();
+
                     break;
                 }
 
-                drillDownToMap(sourceModel, elements);
+                EventChain eventChain = new EventChain(true);
+
+                eventChain.addEvent(new ShowElementsOnMap(sourceModel, elements, this));
+                eventChain.addEvent(new ShowInViewEvent(model, elementToShow, this));
+
+                AWEEventManager.getManager().fireEventChain(eventChain);
             }
         }
-    }
-
-    private void drillDownToMap(final IRenderableModel model, final Set<IDataElement> elements) {
-        AWEEventManager.getManager().fireShowOnMapEvent(model, elements, this);
-    }
-
-    private void drillDownToViews(final IModel model, final Set<IDataElement> elements) {
-
     }
 
 

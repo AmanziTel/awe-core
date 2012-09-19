@@ -67,4 +67,6 @@ public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel> {
 
     Iterable<IStatisticsRow> getSourceRows(IStatisticsRow row) throws ModelException;
 
+    IDataElement getParent(IDataElement childElement, DimensionType dimension) throws ModelException;
+
 }

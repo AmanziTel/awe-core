@@ -14,8 +14,8 @@
 package org.amanzi.awe.views.treeview.provider.impl;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * <p>
@@ -34,7 +34,7 @@ public class TreeViewItem<T extends IModel, E extends Object> implements ITreeIt
      * @param model
      * @param element
      */
-    public TreeViewItem(T model, E element) {
+    public TreeViewItem(final T model, final E element) {
         super();
         this.model = model;
         this.element = element;
@@ -57,10 +57,11 @@ public class TreeViewItem<T extends IModel, E extends Object> implements ITreeIt
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof IDataElement) {
-            IDataElement element = (IDataElement)obj;
-            return this.element.equals(element);
+    public boolean equals(final Object obj) {
+        if (obj instanceof ITreeItem) {
+            ITreeItem<?, ?> anotherItem = (ITreeItem<?, ?>)obj;
+
+            return ObjectUtils.equals(getParent(), anotherItem.getParent()) && ObjectUtils.equals(getChild(), anotherItem.getChild());
         }
         return false;
     }

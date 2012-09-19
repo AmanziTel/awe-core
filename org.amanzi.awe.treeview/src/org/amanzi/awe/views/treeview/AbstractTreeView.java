@@ -17,8 +17,10 @@ import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IContentProvider;
@@ -207,4 +209,12 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     public Priority getPriority() {
         return Priority.NORMAL;
     }
+
+    public void showElement(final IModel model, final IDataElement element) {
+        ITreeItem<?, ?> item = getTreeItem(model, element);
+
+        getTreeViewer().setSelection(new StructuredSelection(item), true);
+    }
+
+    protected abstract ITreeItem<?, ?> getTreeItem(IModel model, IDataElement element);
 }

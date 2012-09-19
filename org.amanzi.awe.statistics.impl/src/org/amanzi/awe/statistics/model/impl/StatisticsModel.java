@@ -1014,4 +1014,53 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
         return sources;
     }
+
+    @Override
+    public IDataElement getParent(final IDataElement childElement, final DimensionType dimension) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getParent", childElement, dimension));
+        }
+
+        IDataElement result = null;
+        DataElement child = (DataElement)childElement;
+
+        if (child.getNodeType().equals(StatisticsNodeType.S_CELL)) {
+            try {
+                Node parentNode = getNodeService().getChainParent(child.getNode());
+
+                result = createStatisticsRow(parentNode);
+            } catch (ServiceException e) {
+                processException("Error on getting parent of SCell", e);
+            }
+        } else if (child instanceof IStatisticsRow) {
+            IStatisticsRow childRow = (IStatisticsRow)child;
+
+            result = childRow.getStatisticsGroup();
+        } else if (child instanceof IStatisticsGroup) {
+            IStatisticsGroup childGroup = (IStatisticsGroup)child;
+
+            String name = null;
+
+            switch (dimension) {
+            case PROPERTY:
+                name = childGroup.getPropertyValue();
+                break;
+            case TIME:
+                name = childGroup.getPeriod();
+                break;
+            }
+
+            Node periodNode = getStatisticsLevelNode(dimension, name);
+
+            result = getDataElement(periodNode, StatisticsNodeType.LEVEL, name);
+        } else if (child.getNodeType().equals(StatisticsNodeType.LEVEL)) {
+            return asDataElement();
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getParent"));
+        }
+
+        return result;
+    }
 }
