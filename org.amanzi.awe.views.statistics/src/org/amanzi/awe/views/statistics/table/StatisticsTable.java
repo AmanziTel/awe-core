@@ -18,21 +18,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilterDialogEvent;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog.IFilterDialogListener;
 import org.amanzi.neo.core.period.Period;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.models.render.IRenderableModel;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.TableCursor;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -41,6 +50,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -51,11 +62,19 @@ import org.eclipse.swt.widgets.TableColumn;
  * @since 1.0.0
  */
 public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStatisticsTableListener>
-        implements
-            IFilterDialogListener {
+implements
+IFilterDialogListener {
 
     public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
+
+    private final SelectionListener selectionListener = new SelectionAdapter() {
+
+        @Override
+        public void widgetSelected(final SelectionEvent e) {
+            drillDown();
+        }
+    };
 
     private TableViewer tableViewer;
 
@@ -67,9 +86,11 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     private Set<String> groups;
 
-    private List<TableColumn> columns = new ArrayList<TableColumn>();
+    private final List<TableColumn> columns = new ArrayList<TableColumn>();
 
     private Period period;
+
+    private TableCursor cursor;
 
     /**
      * @param parent
@@ -115,6 +136,9 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         tableViewer.getTable().addListener(UPDATE_SORTING_LISTENER, this);
+        tableViewer.getTable().addSelectionListener(selectionListener);
+
+        cursor = new TableCursor(table, SWT.NONE);
     }
 
     public void updateStatistics(final IStatisticsModel model) {
@@ -131,7 +155,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
      * @param currentColumn
      * @param direction
      */
-    private void updateSorting(TableColumn currentColumn, Integer direction) {
+    private void updateSorting(final TableColumn currentColumn, final Integer direction) {
         Table table = tableViewer.getTable();
         int columnNumber = columns.indexOf(currentColumn);
         Integer sortDirection = direction;
@@ -193,7 +217,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         column.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 if (table.getColumn(0).equals(column)) {
                     FilteringDialog filterDialog = new FilteringDialog(tableViewer, column, groups);
                     filterDialog.open();
@@ -203,9 +227,8 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
+            public void widgetDefaultSelected(final SelectionEvent e) {
+                widgetSelected(e);
             }
         });
         tableLayout.addColumnData(new ColumnWeightData(weight, true));
@@ -219,7 +242,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public void handleEvent(final Event event) {
         if (event instanceof FilterDialogEvent) {
             FilterDialogEvent filterEvent = (FilterDialogEvent)event;
             tableViewer.setFilters(filterEvent.getFilters());
@@ -227,4 +250,51 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         }
 
     }
+
+    private void drillDown() {
+        int column = cursor.getColumn();
+
+        if ((cursor.getRow() != null) && (cursor.getRow().getData() instanceof IStatisticsRow)) {
+            drillDown((IStatisticsRow)cursor.getRow().getData(), column);
+        }
+    }
+
+    private void drillDown(final IStatisticsRow row, final int column) {
+        if (model != null) {
+            IMeasurementModel sourceModel = model.getSourceModel();
+
+            Set<IDataElement> elements = new HashSet<IDataElement>();
+
+            if (sourceModel != null) {
+                switch (labelProvider.getCellType(row, column)) {
+                case KPI:
+                case SUMMARY:
+                    IStatisticsCell cell = Iterables.get(row.getStatisticsCells(), column - 2);
+
+                    Iterables.addAll(elements, cell.getSources());
+
+                    break;
+                case PERIOD:
+                    Iterables.addAll(elements, row.getSources());
+
+                    break;
+                case PROPERTY:
+                    Iterables.addAll(elements, row.getStatisticsGroup().getSources());
+                    break;
+                }
+
+                drillDownToMap(sourceModel, elements);
+            }
+        }
+    }
+
+    private void drillDownToMap(final IRenderableModel model, final Set<IDataElement> elements) {
+        AWEEventManager.getManager().fireShowOnMapEvent(model, elements, this);
+    }
+
+    private void drillDownToViews(final IModel model, final Set<IDataElement> elements) {
+
+    }
+
+
 }

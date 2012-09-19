@@ -96,7 +96,7 @@ public class RenderHandler extends AbstractHandler {
                             continue;
                         }
 
-                    } else if (treeItem.getChild() instanceof IDataElement) {
+                    } else if (treeItem.getChild() instanceof IRenderableModel) {
                         model = getParentModel(treeItem, IRenderableModel.class);
                         isModel = true;
                         break;

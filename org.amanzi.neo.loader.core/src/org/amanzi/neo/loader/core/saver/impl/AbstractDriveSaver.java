@@ -103,14 +103,15 @@ public abstract class AbstractDriveSaver extends AbstractSynonymsSaver<IConfigur
 
                 IDataElement measurement = driveModel.addMeasurement(rootElement, properties);
 
-                if ((lat != null) && (lon != null)) {
-                    if ((location == null) || isCoordinatesChanged(lat, lon)) {
-                        location = driveModel.createLocation(measurement, lat, lon, timestamp);
-                        previousLat = lat;
-                        previousLon = lon;
-                    } else {
-                        driveModel.addToLocation(measurement, location);
-                    }
+                boolean addToExistingLocation = ((location != null) && ((lat == null) || (lon == null))) ||
+                        ((lat != null) && (lon != null) && !isCoordinatesChanged(lat, lon));
+
+                if (addToExistingLocation) {
+                    driveModel.addToLocation(measurement, location);
+                } else if ((lat != null) && (lon != null)) {
+                    location = driveModel.createLocation(measurement, lat, lon, timestamp);
+                    previousLat = lat;
+                    previousLon = lon;
                 }
             }
         }
