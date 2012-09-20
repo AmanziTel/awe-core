@@ -38,6 +38,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
     private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
 
     private static final DateFormatManager DATE_FORMAT_MANAGER = DateFormatManager.getInstance();
+
     private Map<IRangeAxis, T> datasets;
 
     private IChartModel model;
@@ -47,14 +48,26 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
         this.model = model;
     }
 
+    /**
+     * added axis dataset to cache
+     * 
+     * @param axis
+     * @param dataset
+     */
     protected void addDataset(IRangeAxis axis, T dataset) {
         datasets.put(axis, dataset);
     }
 
+    @Override
     public T getDataset(IRangeAxis axis) {
         return datasets.get(axis);
     }
 
+    /**
+     * get model
+     * 
+     * @return
+     */
     protected IChartModel getModel() {
         return model;
     }
@@ -68,8 +81,21 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
 
     }
 
+    /**
+     * build dataset for axis
+     * 
+     * @param axis
+     * @return
+     * @throws ModelException
+     */
     protected abstract T buildAxis(IRangeAxis axis) throws ModelException;
 
+    /**
+     * get row name in according to its date format and period
+     * 
+     * @param row
+     * @return
+     */
     protected String getName(IStatisticsRow row) {
         return PERIOD_MANAGER.getPeriodName(getModel().getPeriod(), DATE_FORMAT_MANAGER.longToDate(row.getStartDate()),
                 DATE_FORMAT_MANAGER.longToDate(row.getEndDate()));

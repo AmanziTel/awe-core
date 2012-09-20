@@ -110,7 +110,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     @Override
     public Object getParent(final Object element) {
         if (element instanceof ITreeItem) {
-            ITreeItem<?, ?> treeItem = (ITreeItem<?, ?>)element;
+            ITreeItem< ? , ? > treeItem = (ITreeItem< ? , ? >)element;
 
             if ((treeItem.getParent() instanceof IStatisticsModel) && (treeItem.getChild() instanceof IDataElement)) {
                 IStatisticsModel model = (IStatisticsModel)treeItem.getParent();
@@ -238,13 +238,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @throws ModelException
      */
     private Iterable<Object> getRowsChildren(final IStatisticsRow row, final IStatisticsModel model) throws ModelException {
-        Iterable<IStatisticsRow> subRows = model.getSourceRows(row);
-        if (subRows == null) {
-            Iterable<IStatisticsCell> cells = row.getStatisticsCells();
-            return new StatisticsElementIterable(cells);
-        } else {
-            return new StatisticsElementIterable(subRows);
-        }
+        return new StatisticsElementIterable(row.getStatisticsCells());
     }
 
     /**

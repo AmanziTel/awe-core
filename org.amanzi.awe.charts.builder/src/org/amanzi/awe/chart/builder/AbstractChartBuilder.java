@@ -16,8 +16,8 @@ package org.amanzi.awe.chart.builder;
 import org.amanzi.awe.charts.model.IChartModel;
 
 /**
- * TODO Purpose of
  * <p>
+ * Common builder for all charts
  * </p>
  * 
  * @author Vladislav_Kondratenko

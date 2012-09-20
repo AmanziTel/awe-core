@@ -19,8 +19,7 @@ import java.util.List;
 
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widget.internal.AbstractLabeledWidget;
-import org.amanzi.awe.views.charts.dialog.FilteringDialog;
-import org.amanzi.awe.views.charts.dialog.FilteringDialog.IDialogSelectorListener;
+import org.amanzi.awe.views.charts.widget.FilteringDialog.IDialogSelectorListener;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
@@ -91,10 +90,6 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
             text += item + ITEM_SEPARATOR;
         }
         return text;
-    }
-
-    public enum SelectorType {
-        GROUPS, CELLS;
     }
 
     @Override

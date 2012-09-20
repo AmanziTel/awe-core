@@ -24,8 +24,8 @@ import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.data.general.Dataset;
 
 /**
- * TODO Purpose of
  * <p>
+ * contains common finctional for charts which can contains more than one axis
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -66,10 +66,10 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
         }
         domainAxis = configDomainAxis(getModel().getDomainAxisName());
         mainRangeAxis = configRangeAxis(getModel().getMainRangeAxis());
-        mainRenderer = createMainRenderer();
+        mainRenderer = configMainRenderer();
         plot = plotSetup(datasets.getDataset(getModel().getMainRangeAxis()), domainAxis, mainRangeAxis, mainRenderer);
         if (datasets.isMultyAxis()) {
-            subRenderer = createSubRenderer();
+            subRenderer = configSubRenderer();
             secondAxis = configRangeAxis(getModel().getSecondRangeAxis());
             setSecondAxisForPlot(plot, datasets.getDataset(getModel().getSecondRangeAxis()), subRenderer, secondAxis);
         }
@@ -78,22 +78,77 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
         return chart;
     }
 
+    /**
+     * set second axis for prepared plot
+     * 
+     * @param plot
+     * @param dataset
+     * @param subRenderer
+     * @param secondAxis
+     */
     protected abstract void setSecondAxisForPlot(P plot, Dataset dataset, R2 subRenderer, Y secondAxis);
 
+    /**
+     * config or create new range axis
+     * 
+     * @param axis
+     * @return
+     */
     protected abstract Y configRangeAxis(IRangeAxis axis);
 
+    /**
+     * config or create new domain axis
+     * 
+     * @param domainAxisName
+     * @return
+     */
     protected abstract X configDomainAxis(String domainAxisName);
 
+    /**
+     * create dataset containr
+     * 
+     * @param model
+     * @return
+     */
     protected abstract D createDataset(IChartModel model);
 
+    /**
+     * setup plot or create new one
+     * 
+     * @param dataset
+     * @param domainAxis2
+     * @param mainRangeAxis2
+     * @param mainRenderer2
+     * @return
+     */
     protected abstract P plotSetup(Dataset dataset, X domainAxis2, Y mainRangeAxis2, R mainRenderer2);
 
+    /**
+     * if it possible to create default chart -than create it; else this method should be empty
+     * 
+     * @return
+     */
     protected abstract JFreeChart createDefaultChart();
 
-    protected abstract R createMainRenderer();
+    /**
+     * create or config main renderer
+     * 
+     * @return
+     */
+    protected abstract R configMainRenderer();
 
-    protected abstract R2 createSubRenderer();
+    /**
+     * config sub renderer
+     * 
+     * @return
+     */
+    protected abstract R2 configSubRenderer();
 
+    /**
+     * get datasets container
+     * 
+     * @return
+     */
     protected D getDatasets() {
         return datasets;
     }
@@ -105,6 +160,13 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
         return plot;
     }
 
+    /**
+     * final actions for create chart this method also can me invoked for creation chart with early
+     * setup components
+     * 
+     * @param chart
+     * @return
+     */
     protected JFreeChart finishUp(JFreeChart chart) {
         return chart;
 

@@ -70,7 +70,7 @@ public class CategoryChartBuilder
     }
 
     @Override
-    protected BarRenderer createMainRenderer() {
+    protected BarRenderer configMainRenderer() {
         BarRenderer renderer = new BarRenderer();
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         renderer.setShadowVisible(false);
@@ -83,7 +83,7 @@ public class CategoryChartBuilder
     }
 
     @Override
-    protected LineAndShapeRenderer createSubRenderer() {
+    protected LineAndShapeRenderer configSubRenderer() {
         LineAndShapeRenderer renderer = new LineAndShapeRenderer();
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         renderer.setItemMargin(ITEM_MARGIN);

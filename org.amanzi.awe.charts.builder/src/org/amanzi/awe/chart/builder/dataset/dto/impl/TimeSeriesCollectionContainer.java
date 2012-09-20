@@ -148,6 +148,11 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
 
     }
 
+    /**
+     * compute dataset in according width cache
+     * 
+     * @param dataset
+     */
     private void prepareDataset(TimeSeriesCollection dataset) {
         for (TimeSeriesContainer container : tsCache.values()) {
             switch (getModel().getChartAggregation()) {
@@ -158,11 +163,13 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
                 break;
             }
             TimeSeries ts = getTimeSeries(dataset, container.getCellName());
-            updateTS(ts, container);
+            updateTimeSeries(ts, container);
         }
     }
 
     /**
+     * get existed timeseries from dataset or create new one if not exists
+     * 
      * @param dataset
      * @param cellName
      * @return
@@ -177,11 +184,13 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
     }
 
     /**
+     * update timeSeries
+     * 
      * @param dataset
      * @param container
      * @return
      */
-    private TimeSeries updateTS(TimeSeries ts, TimeSeriesContainer container) {
+    private TimeSeries updateTimeSeries(TimeSeries ts, TimeSeriesContainer container) {
 
         Date date = new Date(container.getStartDate());
         switch (getModel().getPeriod()) {
@@ -204,6 +213,13 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
         return ts;
     }
 
+    /**
+     * get TimeSeriesContainer from cache; or create new one if not exists
+     * 
+     * @param firstTime
+     * @param requiredCell
+     * @return
+     */
     private TimeSeriesContainer getContainer(Long firstTime, String requiredCell) {
         String key = String.format(CACHE_KEY_FORMAT, firstTime, requiredCell);
         TimeSeriesContainer container;

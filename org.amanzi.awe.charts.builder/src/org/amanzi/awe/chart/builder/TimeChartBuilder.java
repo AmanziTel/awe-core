@@ -118,13 +118,13 @@ public class TimeChartBuilder
     }
 
     @Override
-    protected XYLineAndShapeRenderer createMainRenderer() {
+    protected XYLineAndShapeRenderer configMainRenderer() {
         ((XYLineAndShapeRenderer)getPlot().getRenderer()).setBaseToolTipGenerator(STANDARD_TOOL_TIP_GENERATOR);
         return (XYLineAndShapeRenderer)getPlot().getRenderer();
     }
 
     @Override
-    protected StandardXYItemRenderer createSubRenderer() {
+    protected StandardXYItemRenderer configSubRenderer() {
         final StandardXYItemRenderer renderer = new StandardXYItemRenderer();
         renderer.setBaseToolTipGenerator(STANDARD_TOOL_TIP_GENERATOR);
         return renderer;

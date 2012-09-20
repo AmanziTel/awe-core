@@ -26,9 +26,22 @@ import org.jfree.data.general.Dataset;
  * @since 1.0.0
  */
 public interface IChartDatasetContainer {
+    /**
+     * compute dataset
+     * 
+     * @throws ModelException
+     */
     void computeDatasets() throws ModelException;
 
+    /**
+     * get dataset for axis
+     */
     Dataset getDataset(IRangeAxis rangeAxis);
 
+    /**
+     * check if currrent container is has more than one axis
+     * 
+     * @return
+     */
     boolean isMultyAxis();
 }

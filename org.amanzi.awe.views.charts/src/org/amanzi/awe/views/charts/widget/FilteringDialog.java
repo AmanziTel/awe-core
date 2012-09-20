@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.charts.dialog;
+package org.amanzi.awe.views.charts.widget;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
-import org.amanzi.awe.views.charts.dialog.FilteringDialog.IDialogSelectorListener;
+import org.amanzi.awe.views.charts.widget.FilteringDialog.IDialogSelectorListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -31,9 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 
 ;
 /**
- * TODO Purpose of
- * <p>
- * </p>
+ * widget for filtering data of {@link ItemsSelectorWidget}
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
@@ -134,7 +132,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
     }
 
     /**
-     *
+     * default lists initialisation
      */
     private void initLists() {
         for (String item : allItems) {
@@ -160,6 +158,13 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
         bRemoveAll = createButton(buttonsComposite, REMOVE_ALL);
     }
 
+    /**
+     * create buttons
+     * 
+     * @param buttonsComposite
+     * @param name
+     * @return
+     */
     private Button createButton(Composite buttonsComposite, String name) {
         Button button = new Button(buttonsComposite, SWT.NONE);
         button.setText(name);
@@ -190,6 +195,9 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
 
     }
 
+    /**
+     * send selected items to {@link ItemsSelectorWidget}
+     */
     private void fireUpdate() {
         selectedItems.clear();
         selectedItems.addAll(Arrays.asList(inListItems.getItems()));
@@ -198,6 +206,12 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
 
     }
 
+    /**
+     * change place of single selected item
+     * 
+     * @param source
+     * @param destination
+     */
     void changeOneItemPlace(org.eclipse.swt.widgets.List source, org.eclipse.swt.widgets.List destination) {
         if (source.getSelectionIndex() < 0) {
             return;
@@ -207,6 +221,12 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
         source.remove(selected);
     }
 
+    /**
+     * change place of all selected items
+     * 
+     * @param source
+     * @param destination
+     */
     void changeAllItemPlace(org.eclipse.swt.widgets.List source, org.eclipse.swt.widgets.List destination) {
         source.removeAll();
         destination.removeAll();
@@ -215,7 +235,6 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
 
     @Override
     public void widgetDefaultSelected(SelectionEvent e) {
-        // TODO Auto-generated method stub
 
     }
 }
