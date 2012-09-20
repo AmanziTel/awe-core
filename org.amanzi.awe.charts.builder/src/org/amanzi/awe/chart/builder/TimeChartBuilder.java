@@ -47,7 +47,7 @@ public class TimeChartBuilder
 
     private static final int MAXIMUM_FRACTION_DIGITS = 2;
 
-    private static final StandardXYToolTipGenerator STARD_TOOL_TIP_GENERATOR = new StandardXYToolTipGenerator();
+    private static final StandardXYToolTipGenerator STANDARD_TOOL_TIP_GENERATOR = new StandardXYToolTipGenerator();
 
     /**
      * @param model
@@ -79,7 +79,7 @@ public class TimeChartBuilder
             rangeAxis.getNumberFormatOverride().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
             rangeAxis.setAutoRangeIncludesZero(false);
         }
-        return null;
+        return rangeAxis;
     }
 
     @Override
@@ -88,6 +88,7 @@ public class TimeChartBuilder
         // TODO KV: move to date format manager;
         DateFormatSymbols dfs = DateFormatSymbols.getInstance();
         dateAxis.setDateFormatOverride(new SimpleDateFormat("dd-MMM-HH:mm", dfs));
+        dateAxis.setAutoRange(true);
         return dateAxis;
     }
 
@@ -99,6 +100,7 @@ public class TimeChartBuilder
     @Override
     protected XYPlot plotSetup(Dataset dataset, DateAxis domainAxis2, NumberAxis mainRangeAxis2,
             XYLineAndShapeRenderer mainRenderer2) {
+        getPlot().setOrientation(getModel().getPlotOrientation());
         return getPlot();
     }
 
@@ -117,13 +119,14 @@ public class TimeChartBuilder
 
     @Override
     protected XYLineAndShapeRenderer createMainRenderer() {
+        ((XYLineAndShapeRenderer)getPlot().getRenderer()).setBaseToolTipGenerator(STANDARD_TOOL_TIP_GENERATOR);
         return (XYLineAndShapeRenderer)getPlot().getRenderer();
     }
 
     @Override
     protected StandardXYItemRenderer createSubRenderer() {
         final StandardXYItemRenderer renderer = new StandardXYItemRenderer();
-        renderer.setBaseToolTipGenerator(STARD_TOOL_TIP_GENERATOR);
+        renderer.setBaseToolTipGenerator(STANDARD_TOOL_TIP_GENERATOR);
         return renderer;
     }
 

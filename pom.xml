@@ -102,6 +102,9 @@
 	<module>org.amanzi.awe.views.network</module>
 	<module>org.amanzi.awe.views.statistics</module>
 	<module>org.amanzi.awe.views.statistcstree</module>
+	<module>org.amanzi.awe.charts.builder</module>
+	<module>org.amanzi.awe.charts.impl</module>
+	<module>org.amanzi.awe.views.charts</module>
       </modules>
     </profile>
   </profiles>

@@ -75,6 +75,7 @@ public class CategoryChartBuilder
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
         renderer.setShadowVisible(false);
         renderer.setDrawBarOutline(false);
+
         renderer.setMaximumBarWidth(MAXIMUM_BAR_WIDTH);
         renderer.setSeriesPaint(0, GRADIENT_PAINT);
         renderer.setItemMargin(ITEM_MARGIN);
@@ -110,7 +111,6 @@ public class CategoryChartBuilder
         CategoryDataset catDataset = (CategoryDataset)dataset;
         CategoryPlot plot = new CategoryPlot(catDataset, domainAxis, mainRangeAxis, mainRenderer);
         plot.setOrientation(getModel().getPlotOrientation());
-
         setVisibleColumns(catDataset, domainAxis);
         return plot;
     }
@@ -143,7 +143,7 @@ public class CategoryChartBuilder
         plot.setDataset(1, (CategoryDataset)dataset);
         plot.mapDatasetToRangeAxis(1, 1);
         plot.setRangeAxis(1, secondAxis);
-        plot.setRangeAxisLocation(1, AxisLocation.BOTTOM_OR_RIGHT);
+        plot.setRangeAxisLocation(1, AxisLocation.TOP_OR_LEFT);
         plot.setRenderer(1, subRenderer);
     }
 
