@@ -444,7 +444,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         float radius = 60;
         float[] fractions = {0.01f, 1.0f};
         for (; elementSize > 0; elementSize *= 0.8) {
-            Color[] colors = {commonStyle.changeColor(Color.CYAN, elementSize),
+            Color[] colors = {commonStyle.changeColor(Color.CYAN, Color.TRANSLUCENT),
                     commonStyle.changeColor(Color.WHITE, Color.TRANSLUCENT)};
             destination.setPaint(new RadialGradientPaint((point.x - (elementSize / 3)), (point.y - (elementSize / 3)), radius,
                     fractions, colors));
@@ -471,7 +471,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         return 0d;
     }
 
-    protected boolean isSelected(IDataElement element, boolean locationsOnly, boolean elementsOnly) {
+    protected boolean isSelected(final IDataElement element, final boolean locationsOnly, final boolean elementsOnly) {
         if (selection == null) {
             return false;
         } else {

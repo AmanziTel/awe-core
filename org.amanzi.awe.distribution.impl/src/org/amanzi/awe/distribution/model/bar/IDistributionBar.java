@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.distribution;
+package org.amanzi.awe.distribution.model.bar;
 
 import java.awt.Color;
 
@@ -23,48 +23,28 @@ import org.amanzi.neo.dto.IDataElement;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IDistributionBar extends Comparable<IDistributionBar> {
+public interface IDistributionBar extends IDataElement {
 
     /**
      * Returns Color of this Bar
-     * 
+     *
      * @return
      */
-    Color getColor();
+    public Color getColor();
 
     /**
      * Set Color for this bar
-     * 
+     *
      * @param color
      */
-    void setColor(Color color);
+    public void setColor(Color color);
 
     /**
      * Number of Data Elements in this Bar
-     * 
+     *
      * @return
      */
-    int getCount();
-
-    /**
-     * Name of this Bar
-     * 
-     * @return
-     */
-    String getName();
-
-    /**
-     * Root Element of Bar
-     * 
-     * @return
-     */
-    IDataElement getRootElement();
-
-    /**
-     * Returns Distribution
-     * 
-     * @return
-     */
-    IDistributionModel getDistribution();
+    public int getCount();
 
 }
+

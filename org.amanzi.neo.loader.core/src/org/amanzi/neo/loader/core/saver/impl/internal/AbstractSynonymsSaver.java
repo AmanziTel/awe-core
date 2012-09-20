@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.saver.impl.internal;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -367,7 +368,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         List<Synonyms> synonymsList = notHandledSynonyms.get(nodeType);
 
         if (synonymsList == null) {
-            synonymsList = synonymsManager.getSynonyms(getSynonymsType(), nodeType);
+            synonymsList = new ArrayList<Synonyms>(synonymsManager.getSynonyms(getSynonymsType(), nodeType));
 
             notHandledSynonyms.put(nodeType, synonymsList);
         }

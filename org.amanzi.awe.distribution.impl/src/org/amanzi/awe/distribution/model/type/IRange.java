@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.distribution;
+package org.amanzi.awe.distribution.model.type;
 
 import java.awt.Color;
 
@@ -27,23 +27,23 @@ public interface IRange {
 
     /**
      * Returns name of this Range
-     * 
+     *
      * @return
      */
-    String getName();
+    public String getName();
 
     /**
      * Returns Filter of this Range
-     * 
+     *
      * @return
      */
-    IFilter getFilter();
+    public IFilter getFilter();
 
     /**
      * Returns Color of this Range
-     * 
+     *
      * @return
      */
-    Color getColor();
+    public Color getColor();
 
 }

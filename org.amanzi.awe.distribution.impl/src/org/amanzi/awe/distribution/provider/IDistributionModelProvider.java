@@ -11,16 +11,19 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.n2n;
+package org.amanzi.awe.distribution.provider;
+
+import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.neo.providers.internal.IModelProvider;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  *
  * </p>
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface INodeToNodeType {
+public interface IDistributionModelProvider extends IModelProvider<IDistributionModel> {
 
 }

@@ -5,8 +5,8 @@ Bundle-SymbolicName: org.amanzi.neo.models.impl;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0";visibility:=reexport,
- org.amanzi.neo.models;bundle-version="1.0.0",
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.models;bundle-version="1.0.0";visibility:=reexport,
+ org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.neo.impl.dto,
  org.amanzi.neo.impl.util,
  org.amanzi.neo.models.impl,

@@ -1,5 +1,5 @@
-m.lat@Double! = ((?i)lat.*), .*(?i)latitude
-m.lon@Double! = ((?i)lon.*), .*(?i)longitude
+m.lat@Double! = ((?i)lat.*), (?i)latitude
+m.lon@Double! = ((?i)lon.*), (?i)longitude
 m.timestamp@Timestamp! = ((?i)time)
 m.event@String = (?i)event
 m.imei@String = (?i)imei
