@@ -13,7 +13,10 @@
 
 package org.amanzi.awe.distribution.model;
 
+import org.amanzi.awe.distribution.model.bar.IDistributionBar;
+import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.neo.models.IAnalyzisModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 
 /**
@@ -25,5 +28,15 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
  * @since 1.0.0
  */
 public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalModel> {
+
+    IDistributionType<?> getDistributionType();
+
+    Iterable<IDistributionBar> getDistributionBars() throws ModelException;
+
+    int getDistributionBarsCount() throws ModelException;
+
+    void setCurrent(boolean isCurrent) throws ModelException;
+
+    void updateBar(IDistributionBar bar) throws ModelException;
 
 }

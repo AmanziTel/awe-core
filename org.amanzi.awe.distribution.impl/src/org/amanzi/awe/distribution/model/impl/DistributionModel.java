@@ -14,6 +14,8 @@
 package org.amanzi.awe.distribution.model.impl;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.bar.IDistributionBar;
+import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
@@ -41,6 +43,36 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public void finishUp() throws ModelException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public IDistributionType< ? > getDistributionType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Iterable<IDistributionBar> getDistributionBars() throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public int getDistributionBarsCount() throws ModelException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void setCurrent(final boolean isCurrent) throws ModelException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void updateBar(final IDistributionBar bar) throws ModelException {
         // TODO Auto-generated method stub
 
     }

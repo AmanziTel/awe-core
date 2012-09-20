@@ -23,7 +23,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IDistribution<T extends IRange> {
+public interface IDistributionType<T extends IRange> {
 
     /**
      * Type of Chart
