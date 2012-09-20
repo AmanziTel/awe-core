@@ -157,9 +157,6 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
             default:
                 break;
             }
-            if (container.getValue() == 0d) {
-                continue;
-            }
             TimeSeries ts = getTimeSeries(dataset, container.getCellName());
             updateTS(ts, container);
         }

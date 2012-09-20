@@ -199,6 +199,9 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
     }
 
     void changeOneItemPlace(org.eclipse.swt.widgets.List source, org.eclipse.swt.widgets.List destination) {
+        if (source.getSelectionIndex() < 0) {
+            return;
+        }
         String selected = source.getItem(source.getSelectionIndex());
         destination.add(selected);
         source.remove(selected);

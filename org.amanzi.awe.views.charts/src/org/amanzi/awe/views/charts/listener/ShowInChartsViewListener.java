@@ -11,16 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.statistcstree.listeners;
+package org.amanzi.awe.views.charts.listener;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
-import org.amanzi.awe.views.statistcstree.view.StatisticsTreeView;
-import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IModel;
+import org.amanzi.awe.views.charts.ChartsView;
+import org.amanzi.neo.core.period.Period;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -29,21 +28,21 @@ import org.eclipse.ui.PlatformUI;
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ShowInStatisticsTreeListener implements IAWEEventListenter {
+public class ShowInChartsViewListener implements IAWEEventListenter {
 
     @Override
     public void onEvent(final IEvent event) {
         if (event.getStatus().equals(EventStatus.SHOW_IN_VIEW)) {
             ShowInViewEvent showInViewEvent = (ShowInViewEvent)event;
 
-            if (showInViewEvent.getParent() instanceof IStatisticsModel && showInViewEvent.getElement() instanceof IDataElement) {
-                StatisticsTreeView view = showStatisticsView();
+            if (showInViewEvent.getParent() instanceof IStatisticsModel && showInViewEvent.getElement() instanceof Period) {
+                ChartsView view = showStatisticsView();
 
                 if (view != null) {
-                    showInView(view, showInViewEvent.getParent(), (IDataElement)showInViewEvent.getElement());
+                    showInView(view, (IStatisticsModel)showInViewEvent.getParent(), (Period)showInViewEvent.getElement());
                 }
             }
         }
@@ -54,17 +53,16 @@ public class ShowInStatisticsTreeListener implements IAWEEventListenter {
         return Priority.NORMAL;
     }
 
-    private StatisticsTreeView showStatisticsView() {
+    private ChartsView showStatisticsView() {
         try {
-            return (StatisticsTreeView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(StatisticsTreeView.VIEW_ID);
+            return (ChartsView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ChartsView.VIEW_ID);
         } catch (PartInitException e) {
             return null;
         }
     }
 
-    private void showInView(final StatisticsTreeView statisticsTreeView, final IModel model, final IDataElement element) {
-        statisticsTreeView.showElement(model, element);
+    private void showInView(final ChartsView chartsView, final IStatisticsModel model, final Period period) {
+        chartsView.fireStatisticsChanged(model, period);
     }
 
 }

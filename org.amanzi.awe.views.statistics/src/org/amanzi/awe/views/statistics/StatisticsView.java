@@ -19,7 +19,7 @@ import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.template.ITemplate;
-import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widget.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widget.DateTimeWidget;
@@ -95,12 +95,15 @@ public class StatisticsView extends ViewPart
                         updateTable(model);
                     }
                 }, true);
-                AWEEventManager.getManager().fireDataUpdatedEvent(null);
             } catch (StatisticsEngineException e) {
                 return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
             }
             return Status.OK_STATUS;
         }
+    }
+
+    public interface IStatisticsChartsUpdate extends IAWEEventListenter {
+
     }
 
     private static final GridLayout ONE_ROW_GRID_LAYOUT = new GridLayout(1, false);
@@ -277,11 +280,6 @@ public class StatisticsView extends ViewPart
         if (statisticsManager != null) {
             statisticsManager.setPeriod(period);
             statisticsTable.setPeriod(period);
-
-            if (statisticsManager.isBuilt()) {
-                updateStatistics();
-            }
-
         }
     }
 

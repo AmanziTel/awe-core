@@ -5,7 +5,7 @@
          point="org.eclipse.ui.views">
       <view
             class="org.amanzi.awe.views.charts.ChartsView"
-            id="org.amanzi.awe.views.charts.chartsview"
+            id="org.amanzi.awe.views.ChartsView"
             name="Charts View"
             restorable="true">
       </view>
@@ -15,15 +15,24 @@
       <perspectiveExtension
             targetID="*">
          <viewShortcut
-               id="org.amanzi.awe.views.charts.chartsview">
+               id="org.amanzi.awe.views.ChartsView">
          </viewShortcut>
          <view
-               id="org.amanzi.awe.views.charts.chartsview"
+               id="org.amanzi.awe.views.ChartsView"
                minimized="false"
                relationship="top"
                relative="net.refractions.udig.catalog.ui.CatalogView">
          </view>
       </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.views.charts.listener.ShowInChartsViewListener">
+         <eventStatus
+               status="SHOW_IN_VIEW">
+         </eventStatus>
+      </listener>
    </extension>
 
 </plugin>

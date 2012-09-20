@@ -15,7 +15,6 @@ package org.amanzi.awe.ui.events.impl;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
-import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 
 /**
@@ -28,7 +27,7 @@ import org.amanzi.neo.models.IModel;
  */
 public class ShowInViewEvent extends AbstractEvent {
 
-    private final IDataElement element;
+    private final Object element;
     private final IModel parent;
 
     /**
@@ -39,7 +38,7 @@ public class ShowInViewEvent extends AbstractEvent {
         this(model, null, source);
     }
 
-    public ShowInViewEvent(final IModel parent, final IDataElement element, Object source) {
+    public ShowInViewEvent(final IModel parent, final Object element, Object source) {
         super(EventStatus.SHOW_IN_VIEW, true, source);
 
         this.parent = parent;
@@ -49,7 +48,7 @@ public class ShowInViewEvent extends AbstractEvent {
     /**
      * @return Returns the element.
      */
-    public IDataElement getElement() {
+    public Object getElement() {
         return element;
     }
 

@@ -23,6 +23,7 @@ import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
@@ -63,8 +64,8 @@ import com.google.common.collect.Iterables;
  * @since 1.0.0
  */
 public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStatisticsTableListener>
-implements
-IFilterDialogListener {
+        implements
+            IFilterDialogListener {
 
     public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
@@ -147,6 +148,10 @@ IFilterDialogListener {
             this.model = model;
             initStatisticsGroups();
             updateTable(tableViewer.getTable());
+            EventChain eventChain = new EventChain(false);
+            eventChain.addEvent(new DataUpdatedEvent(null));
+            eventChain.addEvent(new ShowInViewEvent(model, period, this));
+            AWEEventManager.getManager().fireEventChain(eventChain);
         }
     }
 
@@ -297,11 +302,9 @@ IFilterDialogListener {
 
                 eventChain.addEvent(new ShowElementsOnMap(sourceModel, elements, this));
                 eventChain.addEvent(new ShowInViewEvent(model, elementToShow, this));
-
                 AWEEventManager.getManager().fireEventChain(eventChain);
             }
         }
     }
-
 
 }

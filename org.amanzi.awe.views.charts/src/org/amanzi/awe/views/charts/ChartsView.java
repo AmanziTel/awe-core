@@ -14,7 +14,9 @@
 package org.amanzi.awe.views.charts;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.awe.chart.manger.ChartsManager;
 import org.amanzi.awe.charts.impl.ChartModelPlugin;
@@ -24,17 +26,13 @@ import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.charts.model.provider.IChartModelProvider;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
-import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.measurement.IMeasurementModel;
-import org.amanzi.neo.providers.IDriveModelProvider;
-import org.amanzi.neo.providers.IProjectModelProvider;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -56,9 +54,15 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  */
 public class ChartsView extends ViewPart implements ItemSelectedListener {
 
+    private static final Logger LOGGER = Logger.getLogger(ChartsView.class);
+
+    public static final String VIEW_ID = "org.amanzi.awe.views.ChartsView";
+
     private static final String GROUPS_LABEL = "Group(s)";
 
     private static final String CELLS_LABEL = "Column(s)";
+
+    private static final String CHART_NAME_FORMAT = "%s, %s";
 
     private Composite controlsComposite;
 
@@ -69,6 +73,12 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
     private ChartComposite chartComposite;
 
     private ChartType type = ChartType.TIME_CHART;
+
+    private Map<IChartModel, JFreeChart> chartsCache = new HashMap<IChartModel, JFreeChart>();
+
+    private IStatisticsModel model;
+
+    private Period period;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -95,8 +105,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
         groupSelectorWidget.initializeWidget();
         columnsSelectorWidget.initializeWidget();
 
-        chartComposite = new ChartComposite(controlsComposite, SWT.FILL);
+        chartComposite = new ChartComposite(controlsComposite, SWT.NONE);
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        parent.pack();
     }
 
     /**
@@ -143,6 +154,56 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     @Override
     public void onItemSelected() {
-      
+        IChartModel chartModel = createChartModel(model, period);
+        updateChart(chartModel);
     }
+
+    /**
+     * @param model
+     * @param period
+     */
+    public void fireStatisticsChanged(IStatisticsModel model, Period period) {
+        this.model = model;
+        this.period = period;
+        List<String> groups;
+        try {
+            groups = getStatisticsGroups(model.getAllStatisticsGroups(DimensionType.TIME, period.getId()));
+            groupSelectorWidget.setItems(groups);
+            columnsSelectorWidget.setItems(model.getColumns());
+            IChartModel chartModel = createChartModel(model, period);
+            updateChart(chartModel);
+        } catch (ModelException e) {
+            LOGGER.error("can't init necessary field with statistics model " + model + " and period" + period);
+        }
+
+    }
+
+    /**
+     * firstly trying to find chart in cache. if not exists - create new one
+     * 
+     * @param chartModel
+     */
+    private void updateChart(IChartModel chartModel) {
+        JFreeChart chart = chartsCache.get(chartModel);
+        if (chart == null) {
+            chart = ChartsManager.getInstance().buildChart(chartModel);
+            chartsCache.put(chartModel, chart);
+        }
+        chartComposite.setChart(chart);
+        chartComposite.forceRedraw();
+    }
+
+    /**
+     * @param model
+     * @param period
+     */
+    private IChartModel createChartModel(IStatisticsModel model, Period period) {
+        IChartModelProvider chartProvider = ChartModelPlugin.getDefault().getChartModelProvider();
+        IChartDataFilter filter = chartProvider.getChartDataFilter(groupSelectorWidget.getSelected());
+        IRangeAxis axis = chartProvider.getRangeAxisContainer("value", columnsSelectorWidget.getSelected());
+        String chartName = String.format(CHART_NAME_FORMAT, model.getName(), period.getId());
+        return chartProvider.getChartModel(chartName, "cells", type, model, period, filter, axis);
+
+    }
+
 }

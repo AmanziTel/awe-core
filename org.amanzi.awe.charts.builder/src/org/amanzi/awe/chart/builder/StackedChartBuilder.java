@@ -44,10 +44,8 @@ public class StackedChartBuilder extends AbstractChartBuilder {
                 getModel().getName(), // chart
                 // title
                 getModel().getDomainAxisName(), getModel().getMainRangeAxis().getName(),
-                (CategoryDataset)dataset.getDataset(getModel().getMainRangeAxis()), // data
-                getModel().getPlotOrientation(), true, true, // tooltips
-                false // urls
-                );
+                (CategoryDataset)dataset.getDataset(getModel().getMainRangeAxis()), getModel().getPlotOrientation(), true, true,
+                false);
         ((CategoryPlot)chart.getPlot()).setRenderer(new StackedBarRenderer3D());
         return chart;
     }

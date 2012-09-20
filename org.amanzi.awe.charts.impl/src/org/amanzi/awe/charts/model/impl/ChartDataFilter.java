@@ -87,4 +87,41 @@ public class ChartDataFilter implements IChartDataFilter {
                     && groups.contains(row.getStatisticsGroup().getPropertyValue());
         }
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((groups == null) ? 0 : groups.hashCode());
+        result = prime * result + ((maxRowPeriod == null) ? 0 : maxRowPeriod.hashCode());
+        result = prime * result + ((minRowPeriod == null) ? 0 : minRowPeriod.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ChartDataFilter other = (ChartDataFilter)obj;
+        if (groups == null) {
+            if (other.groups != null)
+                return false;
+        } else if (!groups.containsAll(other.groups))
+            return false;
+        if (maxRowPeriod == null) {
+            if (other.maxRowPeriod != null)
+                return false;
+        } else if (!maxRowPeriod.equals(other.maxRowPeriod))
+            return false;
+        if (minRowPeriod == null) {
+            if (other.minRowPeriod != null)
+                return false;
+        } else if (!minRowPeriod.equals(other.minRowPeriod))
+            return false;
+        return true;
+    }
 }
