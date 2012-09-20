@@ -19,8 +19,9 @@ import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.IAnalyzisModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
 
 /**
  * TODO Purpose of
@@ -30,7 +31,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsModel extends IModel {
+public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel> {
 
     IStatisticsGroup getStatisticsGroup(String period, String propertyKey) throws ModelException;
 
@@ -65,5 +66,7 @@ public interface IStatisticsModel extends IModel {
     Iterable<IStatisticsCell> getSourceCells(IStatisticsCell cell) throws ModelException;
 
     Iterable<IStatisticsRow> getSourceRows(IStatisticsRow row) throws ModelException;
+
+    IDataElement getParent(IDataElement childElement, DimensionType dimension) throws ModelException;
 
 }

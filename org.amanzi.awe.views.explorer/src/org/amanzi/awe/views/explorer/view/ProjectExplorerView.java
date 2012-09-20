@@ -9,6 +9,9 @@ package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.swt.widgets.Composite;
 
@@ -52,6 +55,12 @@ public class ProjectExplorerView extends AbstractTreeView {
         super.createPartControl(parent);
 
         getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
+    }
+
+    @Override
+    protected ITreeItem< ? , ? > getTreeItem(final IModel model, final IDataElement element) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

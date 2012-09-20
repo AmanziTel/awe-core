@@ -154,7 +154,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         return rootList.toArray();
     }
 
-    protected ITreeItem<T, T> createRootItem(T model) {
+    protected ITreeItem<T, T> createRootItem(final T model) {
         return new TreeViewItem<T, T>(null, model);
     }
 
@@ -164,7 +164,7 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
      * @param root
      * @return
      */
-    protected ITreeItem<T, E> createItem(T root, E element) {
+    protected ITreeItem<T, E> createItem(final T root, final E element) {
         return new TreeViewItem<T, E>(root, element);
     }
 
@@ -209,12 +209,12 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         return projectModelProvider.getActiveProjectModel();
     }
 
-    protected boolean isRoot(ITreeItem< ? , ? > item) {
+    protected boolean isRoot(final ITreeItem< ? , ? > item) {
         return item.getParent() == null;
     }
 
     @SuppressWarnings("unchecked")
-    protected T getRoot(ITreeItem<T, ? > item) {
+    protected T getRoot(final ITreeItem<T, ? > item) {
         if (isRoot(item)) {
             return (T)item.getChild();
         } else {

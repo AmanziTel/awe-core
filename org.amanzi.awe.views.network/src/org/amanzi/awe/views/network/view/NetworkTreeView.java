@@ -14,6 +14,9 @@ package org.amanzi.awe.views.network.view;
 
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
+import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -38,7 +41,7 @@ public class NetworkTreeView extends AbstractTreeView {
         this(new NetworkTreeContentProvider());
     }
 
-    protected NetworkTreeView(NetworkTreeContentProvider networkTreeContentProvider) {
+    protected NetworkTreeView(final NetworkTreeContentProvider networkTreeContentProvider) {
         super(networkTreeContentProvider);
     }
 
@@ -46,8 +49,14 @@ public class NetworkTreeView extends AbstractTreeView {
      * This is a callback that will allow us to create the viewer and initialize it.
      */
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
         super.createPartControl(parent);
+    }
+
+    @Override
+    protected ITreeItem< ? , ? > getTreeItem(final IModel model, final IDataElement element) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

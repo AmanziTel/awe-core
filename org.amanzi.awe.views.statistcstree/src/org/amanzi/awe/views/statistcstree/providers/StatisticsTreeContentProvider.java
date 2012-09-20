@@ -30,6 +30,7 @@ import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.AbstractContentProvider;
+import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
@@ -50,9 +51,9 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
 
     private static final StatisticsTreeComparer STATISTICS_TREE_COMPARER = new StatisticsTreeComparer();
 
-    private IStatisticsModelProvider statisticsModelProvider;
+    private final IStatisticsModelProvider statisticsModelProvider;
 
-    private IDriveModelProvider driveModelProvider;
+    private final IDriveModelProvider driveModelProvider;
 
     private DimensionType type;
 
@@ -66,7 +67,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
                 result = -1;
             } else if (item2.getChild() == null) {
                 result = 1;
-            } else if (item1.getChild() instanceof IDataElement && item2.getChild() instanceof IDataElement) {
+            } else if ((item1.getChild() instanceof IDataElement) && (item2.getChild() instanceof IDataElement)) {
                 IDataElement element1 = (IDataElement)item1.getChild();
                 IDataElement element2 = (IDataElement)item2.getChild();
                 if (element1.getNodeType().equals(StatisticsNodeType.S_ROW)
@@ -93,26 +94,49 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     /**
      * @param projectModelProvider
      */
-    protected StatisticsTreeContentProvider(IProjectModelProvider projectModelProvider,
-            IStatisticsModelProvider statisticsModelProvider, IDriveModelProvider driveModelProvider) {
+    protected StatisticsTreeContentProvider(final IProjectModelProvider projectModelProvider,
+            final IStatisticsModelProvider statisticsModelProvider, final IDriveModelProvider driveModelProvider) {
         super(projectModelProvider);
         this.statisticsModelProvider = statisticsModelProvider;
         this.driveModelProvider = driveModelProvider;
     }
 
-    public StatisticsTreeContentProvider(DimensionType type) {
+    public StatisticsTreeContentProvider(final DimensionType type) {
         this(AWEUIPlugin.getDefault().getProjectModelProvider(), StatisticsModelPlugin.getDefault().getStatisticsModelProvider(),
                 AWEUIPlugin.getDefault().getDriveModelProvider());
         this.type = type;
     }
 
     @Override
-    public Object getParent(Object element) {
+    public Object getParent(final Object element) {
+        if (element instanceof ITreeItem) {
+            ITreeItem<?, ?> treeItem = (ITreeItem<?, ?>)element;
+
+            if ((treeItem.getParent() instanceof IStatisticsModel) && (treeItem.getChild() instanceof IDataElement)) {
+                IStatisticsModel model = (IStatisticsModel)treeItem.getParent();
+                IDataElement child = (IDataElement)treeItem.getChild();
+
+                try {
+                    IDataElement parent = model.getParent(child, type);
+
+                    if (parent != null) {
+                        if (parent.equals(model.asDataElement())) {
+                            return createRootItem(model);
+                        } else {
+                            return new TreeViewItem<IStatisticsModel, Object>(model, parent);
+                        }
+                    }
+                } catch (ModelException e) {
+                    return null;
+                }
+            }
+        }
+
         return null;
     }
 
     @Override
-    protected boolean checkNext(ITreeItem<IStatisticsModel, Object> item) throws ModelException {
+    protected boolean checkNext(final ITreeItem<IStatisticsModel, Object> item) throws ModelException {
         IStatisticsModel model = getRoot(item);
 
         if (isRoot(item)) {
@@ -130,12 +154,12 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     }
 
     @Override
-    protected boolean additionalCheckChild(Object element) throws ModelException {
+    protected boolean additionalCheckChild(final Object element) throws ModelException {
         return false;
     }
 
     @Override
-    protected void getChildren(ITreeItem<IStatisticsModel, Object> parentElement) throws ModelException {
+    protected void getChildren(final ITreeItem<IStatisticsModel, Object> parentElement) throws ModelException {
         IStatisticsModel model = getRoot(parentElement);
         if (isRoot(parentElement)) {
             setChildren(new StatisticsElementIterable(model.findAllStatisticsLevels(type)));
@@ -153,7 +177,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
 
     }
 
-    private boolean checkInner(IDataElement child, IStatisticsModel model) throws ModelException {
+    private boolean checkInner(final IDataElement child, final IStatisticsModel model) throws ModelException {
         INodeType nodeType = child.getNodeType();
         if (nodeType.equals(StatisticsNodeType.GROUP)) {
             IStatisticsGroup group = (IStatisticsGroup)child;
@@ -172,7 +196,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @return
      * @throws ModelException
      */
-    private Iterable<Object> handleDataElement(IDataElement child, IStatisticsModel model) throws ModelException {
+    private Iterable<Object> handleDataElement(final IDataElement child, final IStatisticsModel model) throws ModelException {
         INodeType nodeType = child.getNodeType();
         if (nodeType.equals(StatisticsNodeType.LEVEL)) {
             return new StatisticsElementIterable(model.getAllStatisticsGroups(type, child.getName()));
@@ -197,7 +221,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @return
      * @throws ModelException
      */
-    private Iterable<Object> getCellsChildren(IStatisticsCell cell, IStatisticsModel model) throws ModelException {
+    private Iterable<Object> getCellsChildren(final IStatisticsCell cell, final IStatisticsModel model) throws ModelException {
         Iterable<IStatisticsCell> cells = model.getSourceCells(cell);
         if (cells == null) {
             AggregatedItem item = new AggregatedItem(model.getSources(cell).iterator());
@@ -213,7 +237,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @return
      * @throws ModelException
      */
-    private Iterable<Object> getRowsChildren(IStatisticsRow row, IStatisticsModel model) throws ModelException {
+    private Iterable<Object> getRowsChildren(final IStatisticsRow row, final IStatisticsModel model) throws ModelException {
         Iterable<IStatisticsRow> subRows = model.getSourceRows(row);
         if (subRows == null) {
             Iterable<IStatisticsCell> cells = row.getStatisticsCells();
@@ -228,11 +252,11 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @param groupd
      * @return
      */
-    private Iterable<Object> getRowsForGroup(Iterable<IStatisticsRow> rows, IDataElement group) {
+    private Iterable<Object> getRowsForGroup(final Iterable<IStatisticsRow> rows, final IDataElement group) {
         Set<Object> groups = new HashSet<Object>();
         for (IStatisticsRow row : rows) {
             if (row.getStatisticsGroup().equals(group)) {
-                groups.add((IDataElement)row);
+                groups.add(row);
             }
         }
         return groups;
