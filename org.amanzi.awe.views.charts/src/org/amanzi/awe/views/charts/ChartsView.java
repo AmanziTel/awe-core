@@ -16,10 +16,25 @@ package org.amanzi.awe.views.charts;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.impl.ChartModelPlugin;
 import org.amanzi.awe.charts.model.ChartType;
+import org.amanzi.awe.charts.model.IChartDataFilter;
+import org.amanzi.awe.charts.model.IChartModel;
+import org.amanzi.awe.charts.model.IRangeAxis;
+import org.amanzi.awe.charts.model.provider.IChartModelProvider;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
+import org.amanzi.awe.statistics.model.DimensionType;
+import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
+import org.amanzi.neo.core.period.Period;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.providers.IDriveModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +43,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
+import org.jfree.chart.JFreeChart;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 /**
@@ -127,6 +143,6 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     @Override
     public void onItemSelected() {
-
+      
     }
 }
