@@ -193,7 +193,11 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public ReferencedEnvelope getBounds() {
-        return new ReferencedEnvelope(minLongitude, maxLongitude, minLatitude, maxLatitude, crs);
+        double updatedMinLongitude = minLongitude - ((maxLongitude - minLongitude) * 0.05);
+        double updatedMaxLongitude = maxLongitude + ((maxLongitude - minLongitude) * 0.05);
+        double updatedMinLatitude = minLatitude - ((maxLatitude - minLatitude) * 0.05);
+        double updatedMaxLatitude = maxLatitude + ((maxLatitude - minLatitude) * 0.05);
+        return new ReferencedEnvelope(updatedMinLongitude, updatedMaxLongitude, updatedMinLatitude, updatedMaxLatitude, crs);
     }
 
     @Override
