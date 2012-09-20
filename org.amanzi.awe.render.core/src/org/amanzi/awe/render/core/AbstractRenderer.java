@@ -442,7 +442,7 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected void highlightSelectedItem(final Graphics2D destination, final java.awt.Point point) {
         int elementSize = getSize() * 2;
         float radius = 60;
-        float[] fractions = {0.01f, 0.7f};
+        float[] fractions = {0.01f, 1.0f};
         for (; elementSize > 0; elementSize *= 0.8) {
             Color[] colors = {commonStyle.changeColor(Color.CYAN, Color.TRANSLUCENT),
                     commonStyle.changeColor(Color.WHITE, Color.TRANSLUCENT)};
