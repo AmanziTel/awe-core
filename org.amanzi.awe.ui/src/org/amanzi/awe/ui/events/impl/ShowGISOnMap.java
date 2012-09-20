@@ -27,30 +27,14 @@ import org.amanzi.neo.models.render.IGISModel;
  */
 public class ShowGISOnMap extends AbstractEvent {
 
-    private static final int DEFAULT_ZOOM = 900;
-
-    private final int zoom;
-
     private final IGISModel model;
 
     /**
      * @param status
      */
-    public ShowGISOnMap(final IGISModel model, Object source) {
-        this(model, DEFAULT_ZOOM, source);
-    }
-
-    public ShowGISOnMap(final IGISModel model, final int zoom, Object source) {
+    public ShowGISOnMap(final IGISModel model, final Object source) {
         super(EventStatus.SHOW_GIS, true, source);
-        this.zoom = zoom;
         this.model = model;
-    }
-
-    /**
-     * @return Returns the zoom.
-     */
-    public int getZoom() {
-        return zoom;
     }
 
     /**

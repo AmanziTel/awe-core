@@ -68,7 +68,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
             break;
         case SHOW_GIS:
             ShowGISOnMap showEvent = (ShowGISOnMap)event;
-            showOnMap(showEvent.getModel(), showEvent.getZoom());
+            showOnMap(showEvent.getModel());
             break;
         case SHOW_ELEMENTS:
             ShowElementsOnMap showElementsEvent = (ShowElementsOnMap)event;
@@ -108,34 +108,36 @@ public class NeoCatalogListener implements IAWEEventListenter {
             bounds = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat, model.getMainGIS().getCRS());
         }
 
-        if (!selectedLocations.isEmpty()) {
-            try {
-                IMap map = ApplicationGIS.getActiveMap();
 
-                List<ILayer> layerList = new ArrayList<ILayer>();
+        try {
+            IMap map = ApplicationGIS.getActiveMap();
 
-                for (IGISModel gis : model.getAllGIS()) {
-                    Pair<IGISModel, ILayer> pair = getLayerModelPair(map, gis);
+            List<ILayer> layerList = new ArrayList<ILayer>();
 
-                    ILayer layer = pair.getRight();
+            for (IGISModel gis : model.getAllGIS()) {
+                Pair<IGISModel, ILayer> pair = getLayerModelPair(map, gis);
 
-                    if (layer != null) {
-                        layer.refresh(null);
-                        layerList.add(layer);
-                    }
+                ILayer layer = pair.getRight();
+
+                if (layer != null) {
+                    layer.refresh(null);
+                    layerList.add(layer);
                 }
-
-                Selection selection = new Selection(model, elements, selectedLocations);
-                map.getBlackboard().put(ISelection.SELECTION_BLACKBOARD_PROPERTY, selection);
-
-                executeCommands(layerList, bounds);
-            } catch (Exception e) {
-                LOGGER.error("Error on putting model <" + model + "> on a Map", e);
             }
+
+            Selection selection = new Selection(model, elements, selectedLocations);
+            map.getBlackboard().put(ISelection.SELECTION_BLACKBOARD_PROPERTY, selection);
+
+            if (!selectedLocations.isEmpty()) {
+                executeCommands(layerList, bounds);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error on putting model <" + model + "> on a Map", e);
         }
+
     }
 
-    protected void showOnMap(final IGISModel model, final int zoom) {
+    protected void showOnMap(final IGISModel model) {
         try {
             IService curService = NeoCatalogPlugin.getDefault().getMapService();
             IMap map = ApplicationGIS.getActiveMap();
@@ -162,7 +164,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
             layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
 
-            executeCommands(layerList, model, zoom);
+            executeCommands(layerList, model);
         } catch (Exception e) {
             LOGGER.error("Error on putting model <" + model + "> on a Map", e);
         }
@@ -229,12 +231,11 @@ public class NeoCatalogListener implements IAWEEventListenter {
      * @param selectedModel selected model
      * @param data showOnMapEvent
      */
-    private void executeCommands(final List<ILayer> layerList, final IGISModel selectedModel, final int zoom) {
+    private void executeCommands(final List<ILayer> layerList, final IGISModel selectedModel) {
         List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 
         commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
         commands.add(new ZoomCommand(selectedModel.getBounds()));
-        commands.add(new ZoomCommand(0.90));
 
         sendCommandsToLayer(layerList, commands);
     }
