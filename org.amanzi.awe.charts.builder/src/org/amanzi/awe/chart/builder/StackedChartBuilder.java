@@ -39,6 +39,7 @@ public class StackedChartBuilder extends AbstractChartBuilder {
     @Override
     public JFreeChart createChart() throws ModelException {
         CategoryDatasetContainer dataset = new CategoryDatasetContainer(getModel());
+        dataset.computeDatasets();
         JFreeChart chart = ChartFactory.createStackedBarChart(
                 getModel().getName(), // chart
                 // title
@@ -48,7 +49,7 @@ public class StackedChartBuilder extends AbstractChartBuilder {
                 false // urls
                 );
         ((CategoryPlot)chart.getPlot()).setRenderer(new StackedBarRenderer3D());
-        return null;
+        return chart;
     }
 
 }

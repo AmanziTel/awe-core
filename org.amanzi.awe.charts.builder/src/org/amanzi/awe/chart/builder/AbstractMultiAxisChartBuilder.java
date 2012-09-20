@@ -59,6 +59,7 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
     @Override
     public JFreeChart createChart() throws ModelException {
         datasets = createDataset(getModel());
+        datasets.computeDatasets();
         this.chart = createDefaultChart();
         if (chart != null) {
             plot = (P)chart.getPlot();
@@ -73,7 +74,7 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
             setSecondAxisForPlot(plot, datasets.getDataset(getModel().getSecondRangeAxis()), subRenderer, secondAxis);
         }
 
-        finishUp(chart);
+        chart = finishUp(chart);
         return chart;
     }
 
@@ -104,7 +105,8 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
         return plot;
     }
 
-    protected void finishUp(JFreeChart chart) {
+    protected JFreeChart finishUp(JFreeChart chart) {
+        return chart;
 
     }
 

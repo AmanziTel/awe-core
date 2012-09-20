@@ -75,7 +75,7 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         skipButton = new Button(composite, SWT.NONE);
         skipButton.setText("X");
         skipButton.addSelectionListener(this);
-        skipButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+        skipButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
         return composite;
     }

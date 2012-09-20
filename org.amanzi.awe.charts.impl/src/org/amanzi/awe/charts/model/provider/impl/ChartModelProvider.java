@@ -47,7 +47,7 @@ public class ChartModelProvider implements IChartModelProvider {
 
     @Override
     public IChartModel getChartModel(String name, String domainAxisName, ChartType chartType, IStatisticsModel model,
-            Period period, ChartDataFilter filter, IRangeAxis... rangeAxis) {
+            Period period, IChartDataFilter filter, IRangeAxis... rangeAxis) {
         if (rangeAxis.length == 1) {
             return new ChartModel(name, domainAxisName, chartType, model, period, filter, rangeAxis[0]);
         } else {
@@ -56,12 +56,12 @@ public class ChartModelProvider implements IChartModelProvider {
     }
 
     @Override
-    public IRangeAxis getRangeAxisContainer(String name, String... cells) {
+    public IRangeAxis getRangeAxisContainer(String name, Iterable<String> cells) {
         return new RangeAxisContainer(name, cells);
     }
 
     @Override
-    public IChartDataFilter getChartDataFilter(long minRowPeriod, long maxRowPeriod, String... groups) {
+    public IChartDataFilter getChartDataFilter(long minRowPeriod, long maxRowPeriod, Iterable<String> groups) {
         return new ChartDataFilter(minRowPeriod, maxRowPeriod, groups);
     }
 
@@ -71,7 +71,7 @@ public class ChartModelProvider implements IChartModelProvider {
     }
 
     @Override
-    public IChartDataFilter getChartDataFilter(String... groups) {
+    public IChartDataFilter getChartDataFilter(Iterable<String> groups) {
         return new ChartDataFilter(groups);
     }
 

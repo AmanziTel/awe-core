@@ -15,6 +15,7 @@ package org.amanzi.awe.charts.model.impl;
 
 import org.amanzi.awe.charts.model.ChartAggregationType;
 import org.amanzi.awe.charts.model.ChartType;
+import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
@@ -36,7 +37,7 @@ public class ChartModel implements IChartModel {
 
     private IStatisticsModel model;
 
-    private PlotOrientation orientation = PlotOrientation.HORIZONTAL;
+    private PlotOrientation orientation = PlotOrientation.VERTICAL;
 
     private IRangeAxis mainRangeAxis;
 
@@ -44,14 +45,14 @@ public class ChartModel implements IChartModel {
 
     private ChartAggregationType chartAggregation = ChartAggregationType.SUMM;
 
-    private ChartDataFilter filter;
+    private IChartDataFilter filter;
 
     private Period period;
 
     private IRangeAxis secondAxis;
 
     public ChartModel(String name, String domainAxisName, ChartType chartType, IStatisticsModel model, Period period,
-            ChartDataFilter filter, IRangeAxis rangeAxis) {
+            IChartDataFilter filter, IRangeAxis rangeAxis) {
         this.name = name;
         this.domainAxisName = domainAxisName;
         this.model = model;
@@ -62,7 +63,7 @@ public class ChartModel implements IChartModel {
     }
 
     public ChartModel(String name, String domainAxisName, ChartType chartType, IStatisticsModel model, Period period,
-            ChartDataFilter filter, IRangeAxis rangeAxis, IRangeAxis secondAxis) {
+            IChartDataFilter filter, IRangeAxis rangeAxis, IRangeAxis secondAxis) {
         this(name, domainAxisName, chartType, model, period, filter, rangeAxis);
         this.secondAxis = secondAxis;
     }
@@ -103,7 +104,7 @@ public class ChartModel implements IChartModel {
     }
 
     @Override
-    public ChartDataFilter getChartDataFilter() {
+    public IChartDataFilter getChartDataFilter() {
         return filter;
     }
 

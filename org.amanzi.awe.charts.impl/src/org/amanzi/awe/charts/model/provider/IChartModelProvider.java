@@ -17,7 +17,6 @@ import org.amanzi.awe.charts.model.ChartType;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
-import org.amanzi.awe.charts.model.impl.ChartDataFilter;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.neo.core.period.Period;
 
@@ -31,13 +30,13 @@ import org.amanzi.neo.core.period.Period;
  */
 public interface IChartModelProvider {
     IChartModel getChartModel(String name, String domainAxisName, ChartType chartType, IStatisticsModel model, Period period,
-            ChartDataFilter filter, IRangeAxis... rangeAxis);
+            IChartDataFilter filter, IRangeAxis... rangeAxis);
 
-    IRangeAxis getRangeAxisContainer(String name, String... cells);
+    IRangeAxis getRangeAxisContainer(String name, Iterable<String> cells);
 
-    IChartDataFilter getChartDataFilter(long minRowPeriod, long maxRowPeriod, String... groups);
+    IChartDataFilter getChartDataFilter(long minRowPeriod, long maxRowPeriod, Iterable<String> groups);
 
     IChartDataFilter getChartDataFilter(long minRowPeriod, long maxRowPeriod);
 
-    IChartDataFilter getChartDataFilter(String... groups);
+    IChartDataFilter getChartDataFilter(Iterable<String> groups);
 }

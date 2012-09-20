@@ -15,6 +15,9 @@ package org.amanzi.awe.chart.manger;
 
 import org.amanzi.awe.chart.builder.CategoryChartBuilder;
 import org.amanzi.awe.chart.builder.IChartBuilder;
+import org.amanzi.awe.chart.builder.PieChartBuilder;
+import org.amanzi.awe.chart.builder.StackedChartBuilder;
+import org.amanzi.awe.chart.builder.TimeChartBuilder;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.chart.JFreeChart;
@@ -42,25 +45,17 @@ public class ChartsManager {
         IChartBuilder chart = null;
         try {
             switch (model.getChartType()) {
-            case PIE_CATEGORY_CHART:
+            case PIE_CHART:
+                chart = new PieChartBuilder(model);
                 break;
-            case BAR_DISTRIBUTION_CHART:
-            case BAR_DISTRIBUTION_MULTISERIES_CHART:
-            case BAR_TOP_WORSE_CHART:
-            case STACKED_KPI_VALUES_AS_STACKED_BAR_PER_GROUP_CHART:
-
+            case BAR_CHART:
                 chart = new CategoryChartBuilder(model);
                 break;
-            case LINE_CDF_CHART:
-            case LINE_CDF_MULTISERIES_CHART:
-            case LINE_REVERSE_CDF_CHART:
-            case LINE_REVERSE_CDF_MULTISERIES_CHART:
-            case LINE_STATISTICS_CHART:
-            case LINE_STATISTICS_FOR_MULTIPLE_GROUPS_CHART:
-            case LINE_STATISTICS_FOR_MULTIPLE_KPIS_CHART:
+            case TIME_CHART:
+                chart = new TimeChartBuilder(model);
                 break;
-            case LINE_TIME_CHART:
-            case LINE_TIME_MULTISERIES_CHART:
+            case STACKED_CHART:
+                chart = new StackedChartBuilder(model);
                 break;
             default:
                 break;

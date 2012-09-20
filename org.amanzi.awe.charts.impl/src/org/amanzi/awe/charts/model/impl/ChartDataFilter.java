@@ -14,12 +14,13 @@
 package org.amanzi.awe.charts.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -42,10 +43,10 @@ public class ChartDataFilter implements IChartDataFilter {
      * @param maxRowPeriod
      * @param groups
      */
-    public ChartDataFilter(long minRowPeriod, long maxRowPeriod, String... groups) {
+    public ChartDataFilter(long minRowPeriod, long maxRowPeriod, Iterable<String> groups) {
         this.minRowPeriod = minRowPeriod;
         this.maxRowPeriod = maxRowPeriod;
-        CollectionUtils.addAll(this.groups, groups);
+        Iterables.addAll(this.groups, groups);
     }
 
     /**
@@ -53,12 +54,13 @@ public class ChartDataFilter implements IChartDataFilter {
      * 
      * @param groups
      */
-    public ChartDataFilter(String... groups) {
+    public ChartDataFilter(Iterable<String> groups) {
         this(Long.MIN_VALUE, Long.MAX_VALUE, groups);
     }
 
+    @SuppressWarnings("unchecked")
     public ChartDataFilter(long minRowPeriod, long maxRowPeriod) {
-        this(minRowPeriod, maxRowPeriod, ArrayUtils.EMPTY_STRING_ARRAY);
+        this(minRowPeriod, maxRowPeriod, Collections.EMPTY_LIST);
     }
 
     @Override

@@ -13,12 +13,13 @@
 
 package org.amanzi.awe.chart.builder;
 
+import java.text.DateFormatSymbols;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 
 import org.amanzi.awe.chart.builder.dataset.dto.impl.TimeSeriesCollectionContainer;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
-import org.amanzi.neo.dateformat.DateFormatManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
@@ -27,6 +28,7 @@ import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.general.Dataset;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
@@ -41,7 +43,7 @@ import org.jfree.data.xy.XYDataset;
  */
 public class TimeChartBuilder
         extends
-            AbstractMultiAxisChartBuilder<XYPlot, TimeSeriesCollectionContainer, StandardXYItemRenderer, StandardXYItemRenderer, DateAxis, NumberAxis> {
+            AbstractMultiAxisChartBuilder<XYPlot, TimeSeriesCollectionContainer, XYLineAndShapeRenderer, StandardXYItemRenderer, DateAxis, NumberAxis> {
 
     private static final int MAXIMUM_FRACTION_DIGITS = 2;
 
@@ -72,10 +74,10 @@ public class TimeChartBuilder
             rangeAxis.setNumberFormatOverride(NumberFormat.getInstance());
             rangeAxis.getNumberFormatOverride().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
         } else {
-            final NumberAxis axis2 = new NumberAxis(getModel().getSecondRangeAxis().getName());
-            axis2.setNumberFormatOverride(NumberFormat.getInstance());
-            axis2.getNumberFormatOverride().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
-            axis2.setAutoRangeIncludesZero(false);
+            rangeAxis = new NumberAxis(getModel().getSecondRangeAxis().getName());
+            rangeAxis.setNumberFormatOverride(NumberFormat.getInstance());
+            rangeAxis.getNumberFormatOverride().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
+            rangeAxis.setAutoRangeIncludesZero(false);
         }
         return null;
     }
@@ -83,7 +85,9 @@ public class TimeChartBuilder
     @Override
     protected DateAxis configDomainAxis(String domainAxisName) {
         DateAxis dateAxis = (DateAxis)getPlot().getDomainAxis();
-        dateAxis.setDateFormatOverride(DateFormatManager.getInstance().getDefaultFormat());
+        // TODO KV: move to date format manager;
+        DateFormatSymbols dfs = DateFormatSymbols.getInstance();
+        dateAxis.setDateFormatOverride(new SimpleDateFormat("dd-MMM-HH:mm", dfs));
         return dateAxis;
     }
 
@@ -94,7 +98,7 @@ public class TimeChartBuilder
 
     @Override
     protected XYPlot plotSetup(Dataset dataset, DateAxis domainAxis2, NumberAxis mainRangeAxis2,
-            StandardXYItemRenderer mainRenderer2) {
+            XYLineAndShapeRenderer mainRenderer2) {
         return getPlot();
     }
 
@@ -112,8 +116,8 @@ public class TimeChartBuilder
     }
 
     @Override
-    protected StandardXYItemRenderer createMainRenderer() {
-        return (StandardXYItemRenderer)getPlot().getRenderer();
+    protected XYLineAndShapeRenderer createMainRenderer() {
+        return (XYLineAndShapeRenderer)getPlot().getRenderer();
     }
 
     @Override

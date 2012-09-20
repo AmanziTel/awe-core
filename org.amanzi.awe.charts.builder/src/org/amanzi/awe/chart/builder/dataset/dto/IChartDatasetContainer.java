@@ -14,6 +14,7 @@
 package org.amanzi.awe.chart.builder.dataset.dto;
 
 import org.amanzi.awe.charts.model.IRangeAxis;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.data.general.Dataset;
 
 /**
@@ -25,6 +26,8 @@ import org.jfree.data.general.Dataset;
  * @since 1.0.0
  */
 public interface IChartDatasetContainer {
+    void computeDatasets() throws ModelException;
+
     Dataset getDataset(IRangeAxis rangeAxis);
 
     boolean isMultyAxis();

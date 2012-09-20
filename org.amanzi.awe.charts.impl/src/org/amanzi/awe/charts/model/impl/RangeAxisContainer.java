@@ -17,9 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.charts.model.IRangeAxis;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -37,12 +38,12 @@ public class RangeAxisContainer implements IRangeAxis {
 
     private String name;
 
-    public RangeAxisContainer(String name, String... cells) {
+    public RangeAxisContainer(String name, Iterable<String> cells) {
         if (StringUtils.isEmpty(name)) {
             LOGGER.error("name can't be null");
         }
         this.name = name;
-        CollectionUtils.addAll(this.cells, cells);
+        Iterables.addAll(this.cells, cells);
 
     }
 

@@ -59,6 +59,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
         return model;
     }
 
+    @Override
     public void computeDatasets() throws ModelException {
         datasets.put(model.getMainRangeAxis(), buildAxis(model.getMainRangeAxis()));
         if (model.getSecondRangeAxis() != null) {

@@ -157,16 +157,35 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
             default:
                 break;
             }
-            dataset.addSeries(createTS(container));
+            if (container.getValue() == 0d) {
+                continue;
+            }
+            TimeSeries ts = getTimeSeries(dataset, container.getCellName());
+            updateTS(ts, container);
         }
     }
 
     /**
+     * @param dataset
+     * @param cellName
+     * @return
+     */
+    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, String cellName) {
+        TimeSeries ts = dataset.getSeries(cellName);
+        if (ts == null) {
+            ts = new TimeSeries(cellName);
+            dataset.addSeries(ts);
+        }
+        return ts;
+    }
+
+    /**
+     * @param dataset
      * @param container
      * @return
      */
-    private TimeSeries createTS(TimeSeriesContainer container) {
-        TimeSeries ts = new TimeSeries(container.getCellName());
+    private TimeSeries updateTS(TimeSeries ts, TimeSeriesContainer container) {
+
         Date date = new Date(container.getStartDate());
         switch (getModel().getPeriod()) {
         case HOURLY:

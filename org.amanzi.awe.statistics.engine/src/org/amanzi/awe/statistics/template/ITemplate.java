@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.statistics.template;
 
+import java.util.List;
+
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -35,4 +37,5 @@ public interface ITemplate {
 
     ITemplateColumn getColumn(String name);
 
+    List<ITemplateColumn> getColumns();
 }

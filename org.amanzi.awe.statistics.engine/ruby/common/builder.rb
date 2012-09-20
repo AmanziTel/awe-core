@@ -116,6 +116,10 @@ class Template
     @columns[name]
   end
 
+  def getColumns
+    @columns.values
+  end
+
   def column(name, &block)
     column=TemplateColumn.new(name)
     column.instance_eval &block if block_given?

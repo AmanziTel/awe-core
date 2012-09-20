@@ -36,6 +36,7 @@ public class PieChartBuilder extends AbstractChartBuilder {
     @Override
     public JFreeChart createChart() throws ModelException {
         PieDatasetContainer dataset = new PieDatasetContainer(getModel());
+        dataset.computeDatasets();
         return ChartFactory.createPieChart3D(getModel().getName(), dataset.getDataset(getModel().getMainRangeAxis()), true, true,
                 true);
     }
