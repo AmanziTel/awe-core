@@ -93,8 +93,10 @@ public class StatisticsView extends ViewPart
                     @Override
                     public void run() {
                         updateTable(model);
+                        setEnabledItems(true);
                     }
                 }, true);
+
             } catch (StatisticsEngineException e) {
                 return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
             }
@@ -290,9 +292,14 @@ public class StatisticsView extends ViewPart
 
     private void updateStatistics() {
         if (statisticsManager != null) {
+            setEnabledItems(false);
             StatisticsJob job = new StatisticsJob(statisticsManager);
             job.schedule();
         }
+    }
+
+    private void setEnabledItems(boolean isEnabled) {
+        buildButton.setEnabled(isEnabled);
     }
 
     @Override

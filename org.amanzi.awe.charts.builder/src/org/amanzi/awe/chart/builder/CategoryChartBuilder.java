@@ -15,7 +15,7 @@ package org.amanzi.awe.chart.builder;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
-import java.util.List;
+import java.awt.Paint;
 
 import org.amanzi.awe.chart.builder.dataset.dto.impl.CategoryDatasetContainer;
 import org.amanzi.awe.charts.model.IChartModel;
@@ -43,7 +43,7 @@ public class CategoryChartBuilder
         extends
             AbstractMultiAxisChartBuilder<CategoryPlot, CategoryDatasetContainer, BarRenderer, LineAndShapeRenderer, CategoryAxis, NumberAxis> {
 
-    private final static Color TRANSPERENT_COLOR = new Color(0, 0, 0, 0);
+    // private final static Color TRANSPERENT_COLOR = new Color(0, 0, 0, 0);
 
     private static final GradientPaint GRADIENT_PAINT = new GradientPaint(0.0f, 0.0f, Color.blue, 0.0f, 0.0f, new Color(0, 0, 64));
 
@@ -54,6 +54,8 @@ public class CategoryChartBuilder
     private static final int MAXIMUM_CATEGORY_LABEL_WIDTH = 10;
 
     private static final int MAXIMUM_CATEGIRY_LABEL_LINES = 2;
+
+    private static final Paint BACKGROUND_COLOR = new Color(196, 196, 196);
 
     public CategoryChartBuilder(IChartModel model) {
         super(model);
@@ -111,31 +113,10 @@ public class CategoryChartBuilder
         CategoryDataset catDataset = (CategoryDataset)dataset;
         CategoryPlot plot = new CategoryPlot(catDataset, domainAxis, mainRangeAxis, mainRenderer);
         plot.setOrientation(getModel().getPlotOrientation());
-        setVisibleColumns(catDataset, domainAxis);
+        plot.setBackgroundPaint(BACKGROUND_COLOR);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
         return plot;
-    }
-
-    /**
-     * setup count of visible columns for domain axis
-     * 
-     * @param catDataset
-     * @param domainAxis
-     */
-    @SuppressWarnings("unchecked")
-    private void setVisibleColumns(CategoryDataset catDataset, CategoryAxis domainAxis) {
-        List<Comparable< ? >> rowKey = catDataset.getColumnKeys();
-        int middleElement = rowKey.size() / 2;
-
-        int i = 0;
-        for (Comparable< ? > cat : rowKey) {
-            i++;
-            if (i == middleElement || i == 1 || i == rowKey.size()) {
-                domainAxis.setTickLabelPaint(cat, Color.black);
-            } else {
-                domainAxis.setTickLabelPaint(cat, TRANSPERENT_COLOR);
-            }
-        }
-
     }
 
     @Override

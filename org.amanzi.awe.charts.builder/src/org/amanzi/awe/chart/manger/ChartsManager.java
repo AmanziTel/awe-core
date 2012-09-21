@@ -13,6 +13,10 @@
 
 package org.amanzi.awe.chart.manger;
 
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
+
 import org.amanzi.awe.chart.builder.CategoryChartBuilder;
 import org.amanzi.awe.chart.builder.IChartBuilder;
 import org.amanzi.awe.chart.builder.PieChartBuilder;
@@ -29,6 +33,7 @@ import org.jfree.chart.JFreeChart;
  * @since 1.0.0
  */
 public class ChartsManager {
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-HH:mm", DateFormatSymbols.getInstance());
 
     private static class ChartBuilderInstanceHolder {
         private static final ChartsManager INSTANCE = new ChartsManager();
@@ -66,4 +71,7 @@ public class ChartsManager {
         }
     }
 
+    public DateFormat getDefaultDateFormat() {
+        return DATE_FORMAT;
+    }
 }
