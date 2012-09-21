@@ -444,8 +444,8 @@ public abstract class AbstractRenderer extends RendererImpl {
         float radius = 60;
         float[] fractions = {0.01f, 1.0f};
         for (; elementSize > 0; elementSize *= 0.8) {
-            Color[] colors = {commonStyle.changeColor(Color.CYAN, Color.TRANSLUCENT),
-                    commonStyle.changeColor(Color.WHITE, Color.TRANSLUCENT)};
+            Color[] colors = {commonStyle.changeColor(Color.CYAN, 5),
+                    commonStyle.changeColor(Color.WHITE, 5)};
             destination.setPaint(new RadialGradientPaint((point.x - (elementSize / 3)), (point.y - (elementSize / 3)), radius,
                     fractions, colors));
             destination.fillOval((int)(point.x - (elementSize * 2.25)), (int)(point.y - (elementSize * 2.25)), 4 * elementSize,
