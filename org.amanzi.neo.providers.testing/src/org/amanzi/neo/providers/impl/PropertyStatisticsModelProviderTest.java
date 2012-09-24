@@ -14,7 +14,6 @@
 package org.amanzi.neo.providers.impl;
 
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
@@ -75,7 +74,7 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
         }
 
         @Override
-        public <T extends IDataModel> Iterable<T> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
             // TODO Auto-generated method stub
             return null;
         }
