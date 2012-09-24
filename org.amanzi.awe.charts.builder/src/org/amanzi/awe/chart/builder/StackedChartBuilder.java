@@ -18,6 +18,7 @@ import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.StackedBarRenderer3D;
 import org.jfree.data.category.CategoryDataset;
@@ -47,6 +48,8 @@ public class StackedChartBuilder extends AbstractChartBuilder {
                 (CategoryDataset)dataset.getDataset(getModel().getMainRangeAxis()), getModel().getPlotOrientation(), true, true,
                 false);
         ((CategoryPlot)chart.getPlot()).setRenderer(new StackedBarRenderer3D());
+        CategoryAxis axis = ((CategoryPlot)chart.getPlot()).getDomainAxis();
+        axis.setTickLabelFont(getDefaultDomainAxisFont());
         return chart;
     }
 

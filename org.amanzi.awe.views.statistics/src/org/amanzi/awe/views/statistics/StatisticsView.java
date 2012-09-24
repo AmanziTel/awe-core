@@ -28,6 +28,8 @@ import org.amanzi.awe.ui.view.widget.DriveComboWidget;
 import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.impl.StatisticsFilterContainer;
 import org.amanzi.awe.views.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.views.statistics.table.StatisticsTable;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
@@ -92,7 +94,8 @@ public class StatisticsView extends ViewPart
 
                     @Override
                     public void run() {
-                        updateTable(model);
+                        updateTable(model, new StatisticsFilterContainer(periodCombo.getPeriod(), startTime.getDate().getTime(),
+                                endTime.getDate().getTime()));
                         setEnabledItems(true);
                     }
                 }, true);
@@ -179,12 +182,11 @@ public class StatisticsView extends ViewPart
         scrolledComposite.pack();
 
         isInitialized = true;
-        driveCombo.updateSelection(true);
+        driveCombo.updateSelection();
     }
 
     private void addTemplateCompositeContent(final Composite parent) {
         driveCombo = AWEWidgetFactory.getFactory().addDriveComboWidget(this, "Dataset:", parent, FIRST_ROW_LABEL_WIDTH);
-
         templateCombo = addTemplateComboWidget(parent, this);
         templateCombo.setEnabled(false);
 
@@ -272,8 +274,8 @@ public class StatisticsView extends ViewPart
             periodCombo.setModel(model);
             periodCombo.setEnabled(true);
 
-            startTime.setDate(new Date(model.getMinTimestamp()));
-            endTime.setDate(new Date(model.getMaxTimestamp()));
+            startTime.setDefaultDate(new Date(model.getMinTimestamp()));
+            endTime.setDefaultDate(new Date(model.getMaxTimestamp()));
         }
     }
 
@@ -281,7 +283,6 @@ public class StatisticsView extends ViewPart
     public void onPeriodSelected(final Period period) {
         if (statisticsManager != null) {
             statisticsManager.setPeriod(period);
-            statisticsTable.setPeriod(period);
         }
     }
 
@@ -307,13 +308,12 @@ public class StatisticsView extends ViewPart
         widgetSelected(e);
     }
 
-    private void updateTable(final IStatisticsModel statisticsModel) {
-        statisticsTable.updateStatistics(statisticsModel);
+    private void updateTable(final IStatisticsModel statisticsModel, IStatisticsFilterContainer filterContainer) {
+        statisticsTable.updateStatistics(statisticsModel, filterContainer);
     }
 
     @Override
     public void onTimeChanged(final Date newTime, final DateTimeWidget source) {
-
     }
 
 }

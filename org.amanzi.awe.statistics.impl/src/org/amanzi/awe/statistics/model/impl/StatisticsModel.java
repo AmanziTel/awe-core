@@ -760,6 +760,12 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     @Override
     public Iterable<IStatisticsRow> getStatisticsRows(final String period) throws ModelException {
+        return getStatisticsRowsInTimeRange(period, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    @Override
+    public Iterable<IStatisticsRow> getStatisticsRowsInTimeRange(final String period, long startTime, long endTime)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRows", period));
         }
@@ -776,7 +782,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             // TODO KV: seems like IteratorUtils.chaindedIterator() works badly, check this
             // solution.
             while (groupNodeIterator.hasNext()) {
-                allRowsIterator.addAll(Lists.newArrayList(getNodeService().getChildrenChain(groupNodeIterator.next())));
+                allRowsIterator.addAll(Lists.newArrayList(statisticsService.getRowsInTimeRange(groupNodeIterator.next(), startTime,
+                        endTime)));
             }
             statisticsRows = new StatisticsRowIterator(allRowsIterator.iterator()).toIterable();
         } catch (ServiceException e) {
@@ -903,8 +910,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
     }
 
-    private void updateSummuryRowDate(final StatisticsRow row, final long currentDate, final String dateProperty, final String dateTimestampProperty)
-            throws ServiceException {
+    private void updateSummuryRowDate(final StatisticsRow row, final long currentDate, final String dateProperty,
+            final String dateTimestampProperty) throws ServiceException {
         Date date = new Date(currentDate);
         String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
         getNodeService().updateProperty(row.getNode(), dateProperty, dateString);
@@ -912,7 +919,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     @Override
-    public Iterable<IStatisticsGroup> getAllStatisticsGroups(final DimensionType type, final String levelName) throws ModelException {
+    public Iterable<IStatisticsGroup> getAllStatisticsGroups(final DimensionType type, final String levelName)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRows", levelName));
         }

@@ -60,7 +60,7 @@ public class PeriodComboWidget extends AbstractComboWidget<Period, IPeriodSelect
         if (model != null) {
             this.model = model;
 
-            fillCombo(true);
+            fillCombo();
             setEnabled(true);
         } else {
             setEnabled(false);
@@ -70,6 +70,10 @@ public class PeriodComboWidget extends AbstractComboWidget<Period, IPeriodSelect
     @Override
     protected String getItemName(final Period item) {
         return item.getId();
+    }
+
+    public Period getPeriod() {
+        return getSelectedItem();
     }
 
     @Override

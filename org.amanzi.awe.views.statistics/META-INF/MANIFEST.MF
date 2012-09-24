@@ -9,3 +9,4 @@ Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.awe.libs;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.amanzi.awe.views.statistics.internal.StatisticsPlugin
+Export-Package: org.amanzi.awe.views.statistics.filter.container.dto

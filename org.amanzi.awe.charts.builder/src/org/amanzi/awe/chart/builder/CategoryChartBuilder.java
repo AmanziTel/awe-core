@@ -53,7 +53,7 @@ public class CategoryChartBuilder
 
     private static final int MAXIMUM_CATEGORY_LABEL_WIDTH = 10;
 
-    private static final int MAXIMUM_CATEGIRY_LABEL_LINES = 2;
+    private static final int MAXIMUM_CATEGORY_LABEL_LINES = 2;
 
     private static final Paint BACKGROUND_COLOR = new Color(196, 196, 196);
 
@@ -103,8 +103,8 @@ public class CategoryChartBuilder
     protected CategoryAxis configDomainAxis(String domainAxisName) {
         CategoryAxis domainAxis = new CategoryAxis(domainAxisName);
         domainAxis.setMaximumCategoryLabelWidthRatio(MAXIMUM_CATEGORY_LABEL_WIDTH);
-        domainAxis.setMaximumCategoryLabelLines(MAXIMUM_CATEGIRY_LABEL_LINES);
-
+        domainAxis.setMaximumCategoryLabelLines(MAXIMUM_CATEGORY_LABEL_LINES);
+        domainAxis.setTickLabelFont(getDefaultDomainAxisFont());
         return domainAxis;
     }
 
@@ -130,6 +130,8 @@ public class CategoryChartBuilder
 
     @Override
     protected JFreeChart finishUp(JFreeChart chart) {
-        return new JFreeChart(getModel().getName(), getPlot());
+        chart = new JFreeChart(getModel().getName(), getPlot());
+        chart.setBackgroundPaint(Color.WHITE);
+        return chart;
     }
 }

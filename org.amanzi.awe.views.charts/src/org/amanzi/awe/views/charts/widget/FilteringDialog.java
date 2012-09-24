@@ -58,6 +58,8 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
 
     private static final Point SHELL_SIZE = new Point(400, 400);
 
+    private static final int MIN_LISTS_WIDTH = 175;
+
     public interface IDialogSelectorListener extends org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget.IAWEWidgetListener {
         void fireSelection(List<String> selections);
 
@@ -112,13 +114,17 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
         filtersComposite.setLayout(THREE_COLUMNS_LAYOUT);
         filtersComposite.setLayoutData(getGridData());
 
-        notInListItems = new org.eclipse.swt.widgets.List(filtersComposite, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-        notInListItems.setLayoutData(getGridData());
+        notInListItems = new org.eclipse.swt.widgets.List(filtersComposite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        GridData data = getGridData();
+        data.widthHint = MIN_LISTS_WIDTH;
+        notInListItems.setLayoutData(data);
 
         createButtonComposite(filtersComposite);
 
-        inListItems = new org.eclipse.swt.widgets.List(filtersComposite, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-        inListItems.setLayoutData(getGridData());
+        inListItems = new org.eclipse.swt.widgets.List(filtersComposite, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+        data = getGridData();
+        data.widthHint = MIN_LISTS_WIDTH;
+        inListItems.setLayoutData(data);
 
         Composite confirmComposite = new Composite(shell, SWT.NONE);
         confirmComposite.setLayout(TWO_COLUMNS_LAYOUT);
@@ -173,7 +179,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
         return button;
     }
 
-    private Object getGridData() {
+    private GridData getGridData() {
         return new GridData(SWT.FILL, SWT.FILL, true, true);
     }
 
@@ -192,7 +198,6 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
         } else if (e.getSource().equals(bCancel)) {
             shell.close();
         }
-
     }
 
     /**
@@ -235,6 +240,6 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
 
     @Override
     public void widgetDefaultSelected(SelectionEvent e) {
-
+        widgetSelected(e);
     }
 }

@@ -50,6 +50,9 @@
             <serviceReference
                   refId="org.amanzi.service.NodeService">
             </serviceReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.TimePeriodNodeProperties">
+            </nodePropertiesReference>
          </parameters>
       </service>
    </extension>

@@ -87,6 +87,7 @@ public class TimeChartBuilder
         // TODO KV: move to date format manager;
         dateAxis.setDateFormatOverride(ChartsManager.getInstance().getDefaultDateFormat());
         dateAxis.setAutoRange(true);
+        dateAxis.setTickLabelFont(getDefaultDomainAxisFont());
         return dateAxis;
     }
 

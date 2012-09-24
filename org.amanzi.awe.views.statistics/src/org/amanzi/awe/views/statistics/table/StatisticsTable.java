@@ -29,11 +29,11 @@ import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilterDialogEvent;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog.IFilterDialogListener;
-import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
@@ -90,9 +90,9 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     private final List<TableColumn> columns = new ArrayList<TableColumn>();
 
-    private Period period;
-
     private TableCursor cursor;
+
+    private IStatisticsFilterContainer filterContainer;
 
     /**
      * @param parent
@@ -128,10 +128,9 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         return scrolledComposite;
     }
 
-    public void setPeriod(final Period period) {
-        this.period = period;
-        contentProvider.setPeriod(period);
-        labelProvider.setPeriod(period);
+    private void updateProviders(IStatisticsFilterContainer filterContainer) {
+        contentProvider.setFilter(filterContainer);
+        labelProvider.setFilter(filterContainer);
     }
 
     private void initializeTable(final Table table) {
@@ -143,14 +142,16 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         cursor = new TableCursor(table, SWT.NONE);
     }
 
-    public void updateStatistics(final IStatisticsModel model) {
+    public void updateStatistics(final IStatisticsModel model, IStatisticsFilterContainer filterContainer) {
         if (model != null) {
             this.model = model;
+            this.filterContainer = filterContainer;
+            updateProviders(filterContainer);
             initStatisticsGroups();
             updateTable(tableViewer.getTable());
             EventChain eventChain = new EventChain(false);
             eventChain.addEvent(new DataUpdatedEvent(null));
-            eventChain.addEvent(new ShowInViewEvent(model, period, this));
+            eventChain.addEvent(new ShowInViewEvent(model, filterContainer, this));
             AWEEventManager.getManager().fireEventChain(eventChain);
         }
     }
@@ -181,7 +182,8 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     private void initStatisticsGroups() {
         groups = new HashSet<String>();
         try {
-            Iterable<IStatisticsGroup> statGroups = model.getAllStatisticsGroups(DimensionType.TIME, period.getId());
+            Iterable<IStatisticsGroup> statGroups = model.getAllStatisticsGroups(DimensionType.TIME, filterContainer.getPeriod()
+                    .getId());
             for (IStatisticsGroup group : statGroups) {
                 groups.add(group.getPropertyValue());
             }

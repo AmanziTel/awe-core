@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.chart.builder;
 
+import java.awt.Font;
+
 import org.amanzi.awe.charts.model.IChartModel;
 
 /**
@@ -26,6 +28,7 @@ import org.amanzi.awe.charts.model.IChartModel;
 public abstract class AbstractChartBuilder implements IChartBuilder {
 
     private IChartModel model;
+    private static final Font DEFAULT_DOMAIN_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 
     protected AbstractChartBuilder(IChartModel model) {
         this.model = model;
@@ -33,5 +36,9 @@ public abstract class AbstractChartBuilder implements IChartBuilder {
 
     protected IChartModel getModel() {
         return model;
+    }
+
+    protected Font getDefaultDomainAxisFont() {
+        return DEFAULT_DOMAIN_FONT;
     }
 }

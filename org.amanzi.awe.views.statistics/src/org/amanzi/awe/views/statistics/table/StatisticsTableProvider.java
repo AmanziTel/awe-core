@@ -14,7 +14,7 @@
 package org.amanzi.awe.views.statistics.table;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.neo.core.period.Period;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,7 +34,7 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsTableProvider.class);
 
-    private Period period;
+    private IStatisticsFilterContainer filter;
 
     /**
      * 
@@ -53,10 +53,11 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
 
     @Override
     public Object[] getElements(final Object inputElement) {
-        if ((period != null) && (inputElement instanceof IStatisticsModel)) {
+        if ((filter.getPeriod() != null) && (inputElement instanceof IStatisticsModel)) {
             IStatisticsModel statisticsModel = (IStatisticsModel)inputElement;
             try {
-                return IteratorUtils.toArray(statisticsModel.getStatisticsRows(period.getId()).iterator());
+                return IteratorUtils.toArray(statisticsModel.getStatisticsRowsInTimeRange(filter.getPeriod().getId(),
+                        filter.getStartTime(), filter.getEndTime()).iterator());
             } catch (ModelException e) {
                 LOGGER.error("Error on getting Statistics Table content", e);
             }
@@ -64,7 +65,11 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
         return ArrayUtils.EMPTY_OBJECT_ARRAY;
     }
 
-    public void setPeriod(final Period period) {
-        this.period = period;
+    /**
+     * @param filterContainer
+     */
+    public void setFilter(IStatisticsFilterContainer filterContainer) {
+        this.filter = filterContainer;
+
     }
 }

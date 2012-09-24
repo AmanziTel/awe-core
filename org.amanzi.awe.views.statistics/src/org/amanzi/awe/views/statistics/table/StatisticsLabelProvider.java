@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.neo.core.period.Period;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
 import org.amanzi.neo.core.period.PeriodManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -52,7 +52,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
 
-    private Period period;
+    private IStatisticsFilterContainer filter;
 
     @Override
     public void addListener(final ILabelProviderListener listener) {
@@ -136,10 +136,14 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
         }
         Date startDate = new Date(row.getStartDate());
         Date endDate = new Date(row.getEndDate());
-        return PeriodManager.getInstance().getPeriodName(period, startDate, endDate);
+        return PeriodManager.getInstance().getPeriodName(filter.getPeriod(), startDate, endDate);
     }
 
-    public void setPeriod(final Period period) {
-        this.period = period;
+    /**
+     * @param filterContainer
+     */
+    public void setFilter(IStatisticsFilterContainer filterContainer) {
+        this.filter = filterContainer;
+
     }
 }
