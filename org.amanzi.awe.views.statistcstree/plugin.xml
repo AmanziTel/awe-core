@@ -21,6 +21,7 @@
                id="org.amanzi.awe.views.statistcstree.StatisticsTreeView"
                relationship="stack"
                relative="net.refractions.udig.project.ui.layerManager"
+               showTitle="true"
                visible="true">
          </view>
          <viewShortcut

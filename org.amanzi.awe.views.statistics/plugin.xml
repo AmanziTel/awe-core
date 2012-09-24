@@ -14,8 +14,9 @@
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
-            targetID="*">
+            targetID="org.amanzi.awe.perspective">
          <view
+               closeable="true"
                id="org.amanzi.awe.StatisticsView"
                minimized="false"
                relationship="stack"
@@ -23,6 +24,9 @@
                showTitle="true"
                visible="true">
          </view>
+         <viewShortcut
+               id="org.amanzi.views.distribution">
+         </viewShortcut>
       </perspectiveExtension>
    </extension>
 
