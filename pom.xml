@@ -100,6 +100,7 @@
         <module>org.amanzi.awe.treeview</module>
         <module>org.amanzi.awe.ui.db</module>
         <module>org.amanzi.awe.ui.udig</module>
+	<module>org.amanzi.awe.views.distribution</module>
         <module>org.amanzi.awe.views.explorer</module>
 	<module>org.amanzi.awe.views.drive</module>
 	<module>org.amanzi.awe.views.network</module>

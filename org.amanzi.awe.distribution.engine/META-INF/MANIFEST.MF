@@ -4,7 +4,7 @@ Bundle-Name: Engine
 Bundle-SymbolicName: org.amanzi.awe.distribution.engine
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin
-Require-Bundle: org.amanzi.awe.distribution.impl;bundle-version="1.0.0",
+Require-Bundle: org.amanzi.awe.distribution.impl;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.providers;bundle-version="1.0.0",
  org.amanzi.awe.libs;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
