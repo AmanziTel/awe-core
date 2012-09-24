@@ -14,6 +14,9 @@
 package org.amanzi.awe.views.distribution;
 
 import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
+import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
@@ -31,15 +34,19 @@ import org.eclipse.ui.part.ViewPart;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener {
+public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener {
 
-    private static final int FIRST_ROW_LABEL_WIDTH = 65;
+    private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
-    private static final int SECOND_ROW_LABEL_WIDTH = 75;
+    private static final int SECOND_ROW_LABEL_WIDTH = 60;
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
 
-    private DistributionDatasetWidget distributionDataset;
+    private DistributionDatasetWidget distributionDatasetCombo;
+
+    private PropertyComboWidget propertyCombo;
+
+    private boolean isInitialized = false;
 
     /**
      * 
@@ -55,10 +62,13 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         addDistributionTypeComposite(mainComposite);
+
+        isInitialized = true;
     }
 
     private void addDistributionTypeComposite(final Composite parent) {
-        addDistributionDatasetWidget(parent, this, FIRST_ROW_LABEL_WIDTH);
+        distributionDatasetCombo = addDistributionDatasetWidget(parent, this, FIRST_ROW_LABEL_WIDTH);
+        propertyCombo = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Property:", parent, SECOND_ROW_LABEL_WIDTH);
     }
 
     @Override
@@ -79,6 +89,13 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     @Override
     public void onDistributionDatasetSelected(final DistributionDataset distributionDataset) {
+        if (isInitialized) {
+            propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
+        }
+    }
+
+    @Override
+    public void onPropertySelected(final String property) {
         // TODO Auto-generated method stub
 
     }

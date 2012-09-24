@@ -43,7 +43,7 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
 
     private static final String SEPARATOR = "------";
 
-    private Set<String> defaultProperties = new LinkedHashSet<String>();
+    private final Set<String> defaultProperties = new LinkedHashSet<String>();
 
     private IPropertyStatisticsModel propertyModel;
 
@@ -76,7 +76,7 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
         return null;
     }
 
-    public void setDefaultProperties(Iterable<String> properties) {
+    public void setDefaultProperties(final Iterable<String> properties) {
         for (String prop : properties) {
             defaultProperties.add(prop);
         }
@@ -102,6 +102,9 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
     public void setModel(final IPropertyStatisticalModel model, final INodeType nodeType) {
         this.propertyModel = model.getPropertyStatistics();
         this.nodeType = nodeType;
+
+        fillCombo();
+        setEnabled(true);
     }
 
     public void setModel(final IPropertyStatisticalModel model) {
