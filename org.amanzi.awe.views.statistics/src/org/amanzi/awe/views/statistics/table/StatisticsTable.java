@@ -128,7 +128,7 @@ IFilterDialogListener {
         return scrolledComposite;
     }
 
-    private void updateProviders(IStatisticsFilterContainer filterContainer) {
+    private void updateProviders(final IStatisticsFilterContainer filterContainer) {
         contentProvider.setFilter(filterContainer);
         labelProvider.setFilter(filterContainer);
     }
@@ -137,12 +137,12 @@ IFilterDialogListener {
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         tableViewer.getTable().addListener(UPDATE_SORTING_LISTENER, this);
-        cursor.addSelectionListener(selectionListener);
 
         cursor = new TableCursor(table, SWT.NONE);
+        cursor.addSelectionListener(selectionListener);
     }
 
-    public void updateStatistics(final IStatisticsModel model, IStatisticsFilterContainer filterContainer) {
+    public void updateStatistics(final IStatisticsModel model, final IStatisticsFilterContainer filterContainer) {
         if (model != null) {
             this.model = model;
             this.filterContainer = filterContainer;
