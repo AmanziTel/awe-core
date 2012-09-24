@@ -59,7 +59,7 @@ public class TemplateComboWidget extends AbstractComboWidget<ITemplate, ITemplat
 
     public void setStatisticsManager(final StatisticsManager manager) {
         this.statisticsManager = manager;
-        fillCombo(true);
+        fillCombo();
     }
 
     @Override

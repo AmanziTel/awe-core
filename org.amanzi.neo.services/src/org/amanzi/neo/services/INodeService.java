@@ -124,4 +124,6 @@ public interface INodeService extends IService {
     TraversalDescription getChildrenTraversal(final INodeType nodeType, final RelationshipType relationshipType);
 
     Node getChainParent(Node node) throws ServiceException;
+
+    TraversalDescription getChildrenChainTraversal(final Node node);
 }

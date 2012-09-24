@@ -13,11 +13,10 @@
 
 package org.amanzi.awe.chart.builder;
 
-import java.text.DateFormatSymbols;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 
 import org.amanzi.awe.chart.builder.dataset.dto.impl.TimeSeriesCollectionContainer;
+import org.amanzi.awe.chart.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.jfree.chart.ChartFactory;
@@ -86,9 +85,9 @@ public class TimeChartBuilder
     protected DateAxis configDomainAxis(String domainAxisName) {
         DateAxis dateAxis = (DateAxis)getPlot().getDomainAxis();
         // TODO KV: move to date format manager;
-        DateFormatSymbols dfs = DateFormatSymbols.getInstance();
-        dateAxis.setDateFormatOverride(new SimpleDateFormat("dd-MMM-HH:mm", dfs));
+        dateAxis.setDateFormatOverride(ChartsManager.getInstance().getDefaultDateFormat());
         dateAxis.setAutoRange(true);
+        dateAxis.setTickLabelFont(getDefaultDomainAxisFont());
         return dateAxis;
     }
 

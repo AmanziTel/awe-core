@@ -19,6 +19,7 @@ import java.util.Iterator;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
 import org.amanzi.awe.statistics.service.IStatisticsService;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -28,8 +29,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
  * TODO Purpose of
@@ -47,6 +51,56 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
 
     private final INodeService nodeService;
 
+    private final ITimePeriodNodeProperties timePeriodNodeProperties;
+
+    /**
+     * <p>
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private static final class TimeRangeEvaluator implements Evaluator {
+        /** Node node field */
+        private long endTime;
+        private long startTime;
+        private String startTimeName;
+        private String endTimeName;
+
+        /**
+         * @param node
+         */
+        private TimeRangeEvaluator(String startTimeName, long startTime, String endTimeName, long endTime) {
+            this.startTimeName = startTimeName;
+            this.endTimeName = endTimeName;
+            this.startTime = startTime;
+            this.endTime = endTime;
+        }
+
+        @Override
+        public Evaluation evaluate(final Path path) {
+            boolean toContinue = true;
+            boolean include = true;
+            if (path.lastRelationship() != null) {
+                Relationship relation = path.lastRelationship();
+                Node node = relation.getEndNode();
+                long nodeStartTime = (Long)node.getProperty(startTimeName);
+                long nodeEndTime = (Long)node.getProperty(endTimeName);
+                if (nodeStartTime >= startTime && nodeEndTime <= endTime) {
+                    toContinue = true;
+                    include = toContinue;
+                } else {
+                    include = false;
+                }
+
+            } else {
+                include = false;
+            }
+
+            return Evaluation.of(include, toContinue);
+        }
+    }
+
     public static enum StatisticsRelationshipType implements RelationshipType {
         STATISTICS, TIME_DIMENSION, PROPERTY_DIMENSION, SOURCE;
     }
@@ -55,9 +109,11 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
      * @param graphDb
      * @param generalNodeProperties
      */
-    public StatisticsService(final GraphDatabaseService graphDb, final INodeService nodeService) {
+    public StatisticsService(final GraphDatabaseService graphDb, final INodeService nodeService,
+            ITimePeriodNodeProperties timePeriodNodeProperties) {
         super(graphDb, null);
         this.nodeService = nodeService;
+        this.timePeriodNodeProperties = timePeriodNodeProperties;
     }
 
     @Override
@@ -191,4 +247,15 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
         return null;
     }
 
+    @Override
+    public Iterator<Node> getRowsInTimeRange(Node groupNode, long startTime, long endTime) throws ServiceException {
+        assert groupNode != null;
+
+        return nodeService
+                .getChildrenChainTraversal(groupNode)
+                .evaluator(
+                        new TimeRangeEvaluator(timePeriodNodeProperties.getStartDateTimestampProperty(), startTime,
+                                timePeriodNodeProperties.getEndDateTimestampProperty(), endTime)).traverse(groupNode).nodes()
+                .iterator();
+    }
 }

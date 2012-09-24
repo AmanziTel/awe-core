@@ -46,13 +46,15 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
 
     }
 
-    private Date originalDate;
+    private Date defaultDate;
 
     private DateTime date;
 
     private DateTime time;
 
     private Button skipButton;
+
+    private Date currentDate;
 
     /**
      * @param parent
@@ -71,6 +73,9 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
 
         date = addDateTime(composite, SWT.BORDER | SWT.DATE);
         time = addDateTime(composite, SWT.BORDER | SWT.TIME);
+
+        date.addSelectionListener(this);
+        time.addSelectionListener(this);
 
         skipButton = new Button(composite, SWT.NONE);
         skipButton.setText("X");
@@ -93,21 +98,36 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         CALENDAR.setTime(newDate);
 
         date.setDate(CALENDAR.get(Calendar.YEAR), CALENDAR.get(Calendar.MONTH), CALENDAR.get(Calendar.DAY_OF_MONTH));
-
         time.setHours(CALENDAR.get(Calendar.HOUR_OF_DAY));
         time.setMinutes(CALENDAR.get(Calendar.MINUTE));
         time.setSeconds(CALENDAR.get(Calendar.SECOND));
     }
 
-    public void setDate(final Date newDate) {
-        this.originalDate = newDate;
+    public void setDefaultDate(final Date newDate) {
+        this.defaultDate = newDate;
+        this.currentDate = newDate;
+        updateDate(defaultDate);
+    }
 
-        updateDate(newDate);
+    public Date getDate() {
+        return currentDate;
     }
 
     @Override
     public void widgetSelected(final SelectionEvent e) {
-        updateDate(originalDate);
+        if (e.getSource().equals(skipButton)) {
+            currentDate = defaultDate;
+        } else {
+            CALENDAR.set(Calendar.YEAR, date.getYear());
+            CALENDAR.set(Calendar.DATE, date.getDay());
+            CALENDAR.set(Calendar.MONTH, date.getMonth());
+            CALENDAR.set(Calendar.SECOND, time.getSeconds());
+            CALENDAR.set(Calendar.MINUTE, time.getMinutes());
+            CALENDAR.set(Calendar.HOUR_OF_DAY, time.getHours());
+            currentDate = CALENDAR.getTime();
+        }
+
+        updateDate(currentDate);
     }
 
     @Override

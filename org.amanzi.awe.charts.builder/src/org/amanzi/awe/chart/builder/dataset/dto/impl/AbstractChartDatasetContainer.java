@@ -17,11 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.awe.chart.builder.dataset.dto.IChartDatasetContainer;
+import org.amanzi.awe.chart.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.neo.core.period.PeriodManager;
-import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.data.general.Dataset;
 
@@ -34,10 +33,6 @@ import org.jfree.data.general.Dataset;
  * @since 1.0.0
  */
 public abstract class AbstractChartDatasetContainer<T extends Dataset> implements IChartDatasetContainer {
-
-    private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
-
-    private static final DateFormatManager DATE_FORMAT_MANAGER = DateFormatManager.getInstance();
 
     private Map<IRangeAxis, T> datasets;
 
@@ -97,8 +92,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
      * @return
      */
     protected String getName(IStatisticsRow row) {
-        return PERIOD_MANAGER.getPeriodName(getModel().getPeriod(), DATE_FORMAT_MANAGER.longToDate(row.getStartDate()),
-                DATE_FORMAT_MANAGER.longToDate(row.getEndDate()));
+        return ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
     }
 
     @Override

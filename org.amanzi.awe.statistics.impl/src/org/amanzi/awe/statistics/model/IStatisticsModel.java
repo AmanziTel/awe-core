@@ -69,4 +69,6 @@ public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel> {
 
     IDataElement getParent(IDataElement childElement, DimensionType dimension) throws ModelException;
 
+    Iterable<IStatisticsRow> getStatisticsRowsInTimeRange(String period, long startTime, long endTime) throws ModelException;
+
 }

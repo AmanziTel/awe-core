@@ -206,7 +206,8 @@ public class NodeService extends AbstractService implements INodeService {
         return getChildrenChainTraversal(node).evaluator(getPropertyEvaluatorForType(nodeType));
     }
 
-    protected TraversalDescription getChildrenChainTraversal(final Node node) {
+    @Override
+    public TraversalDescription getChildrenChainTraversal(final Node node) {
         return CHAIN_TRAVERSAL.evaluator(new ChainEvaluator(node));
     }
 
