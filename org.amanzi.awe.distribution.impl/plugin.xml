@@ -45,7 +45,10 @@
             </serviceReference>
             <serviceReference
                   refId="org.amanzi.services.distributionService">
-            </serviceReference></parameters>
+            </serviceReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.distributionNodeProperties">
+            </nodePropertiesReference></parameters>
       </provider>
    </extension>
 

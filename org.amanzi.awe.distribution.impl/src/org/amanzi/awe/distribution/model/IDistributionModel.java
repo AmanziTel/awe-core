@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.distribution.model;
 
+import java.util.List;
+
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IRange;
 import org.amanzi.neo.dto.IDataElement;
@@ -30,13 +32,9 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
  */
 public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalModel> {
 
-    Iterable<IDistributionBar> getDistributionBars() throws ModelException;
-
-    int getDistributionBarsCount() throws ModelException;
+    List<IDistributionBar> getDistributionBars() throws ModelException;
 
     void setCurrent(boolean isCurrent) throws ModelException;
-
-    void updateBar(IDistributionBar bar) throws ModelException;
 
     IDistributionBar createDistributionBar(IRange range) throws ModelException;
 

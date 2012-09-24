@@ -13,15 +13,26 @@
 
 package org.amanzi.awe.distribution.model.impl;
 
+import java.awt.Color;
+import java.util.List;
+
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
+import org.amanzi.awe.distribution.model.bar.impl.DistributionBar;
 import org.amanzi.awe.distribution.model.type.IRange;
+import org.amanzi.awe.distribution.properties.IDistributionNodeProperties;
+import org.amanzi.awe.distribution.service.IDistributionService;
+import org.amanzi.awe.distribution.service.impl.DistributionService.DistributionRelationshipType;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -33,42 +44,77 @@ import org.amanzi.neo.services.INodeService;
  */
 public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatisticalModel> implements IDistributionModel {
 
+    private static final Logger LOGGER = Logger.getLogger(DistributionModel.class);
+
+    private List<IDistributionBar> distributionBars;
+
+    private final IDistributionService distributionService;
+
+    private final IDistributionNodeProperties distributionNodeProperties;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
-    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
+    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties, final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
         super(nodeService, generalNodeProperties);
+
+        this.distributionService = distributionService;
+        this.distributionNodeProperties = distributionNodeProperties;
     }
 
     @Override
     public void finishUp() throws ModelException {
-        // TODO Auto-generated method stub
-
+        if (distributionBars != null) {
+            for (IDistributionBar bar : distributionBars) {
+                updateBar(bar);
+            }
+        }
     }
 
     @Override
-    public Iterable<IDistributionBar> getDistributionBars() throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+    public List<IDistributionBar> getDistributionBars() throws ModelException {
+        if (distributionBars == null) {
+            initializeDistributionBars();
+        }
+
+        return distributionBars;
     }
 
-    @Override
-    public int getDistributionBarsCount() throws ModelException {
-        // TODO Auto-generated method stub
-        return 0;
+    protected void initializeDistributionBars() throws ModelException {
+
     }
 
     @Override
     public void setCurrent(final boolean isCurrent) throws ModelException {
-        // TODO Auto-generated method stub
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("setCurrent", isCurrent));
+        }
 
+        try {
+            distributionService.setCurrentDistribution(getParentNode(), getRootNode());
+        } catch (ServiceException e) {
+            processException("Error occured on setting current Distribution Model for " + getSourceModel(), e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("setCurrent"));
+        }
     }
 
-    @Override
-    public void updateBar(final IDistributionBar bar) throws ModelException {
-        // TODO Auto-generated method stub
+    protected void updateBar(final IDistributionBar bar) throws ModelException {
+        Node barNode = ((DistributionBar)bar).getNode();
 
+        try {
+            if (bar.getColor() != null) {
+                getNodeService().updateProperty(barNode, distributionNodeProperties.getBarColor(), convertColorToArray(bar.getColor()));
+            }
+
+            getNodeService().updateProperty(barNode, getGeneralNodeProperties().getSizeProperty(), bar.getCount());
+            getNodeService().updateProperty(barNode, getGeneralNodeProperties().getNodeNameProperty(), bar.getName());
+        } catch (ServiceException e) {
+            processException("Error occured on updating properties of bar <" + bar + ">", e);
+        }
     }
 
     @Override
@@ -79,7 +125,27 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public void createAggregation(final IDistributionBar bar, final IDataElement element) throws ModelException {
-        // TODO Auto-generated method stub
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createAggregation", bar, element));
+        }
 
+        DistributionBar distributionBar = (DistributionBar)bar;
+        DataElement dataElement = (DataElement)element;
+
+        try {
+            getNodeService().linkNodes(distributionBar.getNode(), dataElement.getNode(), DistributionRelationshipType.AGGREGATED);
+        } catch (ServiceException e) {
+            processException("Error occured on adding Aggregation between nodes", e);
+        }
+
+        distributionBar.setCount(distributionBar.getCount() + 1);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createAggregation"));
+        }
+    }
+
+    private static int[] convertColorToArray(final Color color) {
+        return new int[] {color.getRed(), color.getGreen(), color.getBlue()};
     }
 }

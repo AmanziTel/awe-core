@@ -16,6 +16,7 @@ package org.amanzi.awe.distribution.provider.impl;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.impl.DistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.awe.distribution.properties.IDistributionNodeProperties;
 import org.amanzi.awe.distribution.provider.IDistributionModelProvider;
 import org.amanzi.awe.distribution.service.IDistributionService;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
@@ -78,17 +79,20 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
     private final IDistributionService distributionService;
 
-    public DistributionModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties, final IDistributionService distributionService) {
+    private final IDistributionNodeProperties distributionNodeProperties;
+
+    public DistributionModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties, final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
         super();
 
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
         this.distributionService = distributionService;
+        this.distributionNodeProperties = distributionNodeProperties;
     }
 
     @Override
     protected DistributionModel createInstance() {
-        return new DistributionModel(nodeService, generalNodeProperties);
+        return new DistributionModel(nodeService, generalNodeProperties, distributionService, distributionNodeProperties);
     }
 
     @Override

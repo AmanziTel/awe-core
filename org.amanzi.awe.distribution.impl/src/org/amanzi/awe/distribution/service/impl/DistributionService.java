@@ -42,8 +42,8 @@ import org.neo4j.graphdb.traversal.Evaluator;
  */
 public class DistributionService extends AbstractService implements IDistributionService {
 
-    private enum DistributionRelationshipType implements RelationshipType {
-        DISTRIBUTION;
+    public static enum DistributionRelationshipType implements RelationshipType {
+        DISTRIBUTION, AGGREGATED;
     }
 
     private final IDistributionNodeProperties distributionNodeProperties;
@@ -123,6 +123,14 @@ public class DistributionService extends AbstractService implements IDistributio
         }
 
         return result;
+    }
+
+    @Override
+    public void setCurrentDistribution(final Node rootNode, final Node currentDistributionNode) throws ServiceException {
+        assert rootNode != null;
+        assert currentDistributionNode != null;
+
+        nodeService.updateProperty(rootNode, distributionNodeProperties.getCurrentDistributionProperty(), currentDistributionNode.getId());
     }
 
 }

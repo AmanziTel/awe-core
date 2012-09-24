@@ -34,4 +34,6 @@ public interface IDistributionService extends IService {
 
     Node getCurrentDistribution(Node rootNode) throws ServiceException;
 
+    void setCurrentDistribution(Node rootNode, Node currentDistributionNode) throws ServiceException;
+
 }

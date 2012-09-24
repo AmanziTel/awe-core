@@ -15,7 +15,7 @@ package org.amanzi.awe.distribution.model.bar;
 
 import java.awt.Color;
 
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.ISourcedElement;
 
 /**
  * Interface that represents Distribution Bar
@@ -23,7 +23,7 @@ import org.amanzi.neo.dto.IDataElement;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IDistributionBar extends IDataElement {
+public interface IDistributionBar extends ISourcedElement {
 
     /**
      * Returns Color of this Bar
