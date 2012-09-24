@@ -16,7 +16,7 @@ package org.amanzi.awe.views.charts.widget;
 import java.util.Arrays;
 import java.util.List;
 
-import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.charts.widget.FilteringDialog.IDialogSelectorListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -60,7 +60,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
 
     private static final int MIN_LISTS_WIDTH = 175;
 
-    public interface IDialogSelectorListener extends org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget.IAWEWidgetListener {
+    public interface IDialogSelectorListener extends org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener {
         void fireSelection(List<String> selections);
 
         List<String> getSelected();
@@ -68,11 +68,11 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
         List<String> getAllItems();
     }
 
-    private IDialogSelectorListener listener;
+    private final IDialogSelectorListener listener;
 
-    private List<String> selectedItems;
+    private final List<String> selectedItems;
 
-    private List<String> allItems;
+    private final List<String> allItems;
 
     private Shell shell;
 
@@ -97,7 +97,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
      * @param style
      * @param listener
      */
-    public FilteringDialog(Composite parent, int style, IDialogSelectorListener listener) {
+    public FilteringDialog(final Composite parent, final int style, final IDialogSelectorListener listener) {
         super(parent, style, listener);
         this.listener = listener;
         this.selectedItems = listener.getSelected();
@@ -105,7 +105,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
     }
 
     @Override
-    protected Shell createWidget(Composite parent, int style) {
+    protected Shell createWidget(final Composite parent, final int style) {
         shell = new Shell(parent.getShell(), SWT.SHELL_TRIM);
         shell.setLayout(ONE_COLUMNS_LAYOUT);
         shell.setSize(SHELL_SIZE);
@@ -153,7 +153,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
     /**
      * @param filtersComposite
      */
-    private void createButtonComposite(Composite filtersComposite) {
+    private void createButtonComposite(final Composite filtersComposite) {
         Composite buttonsComposite = new Composite(filtersComposite, SWT.NONE);
         buttonsComposite.setLayout(ONE_COLUMNS_LAYOUT);
         buttonsComposite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
@@ -171,7 +171,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
      * @param name
      * @return
      */
-    private Button createButton(Composite buttonsComposite, String name) {
+    private Button createButton(final Composite buttonsComposite, final String name) {
         Button button = new Button(buttonsComposite, SWT.NONE);
         button.setText(name);
         button.setLayoutData(getGridData());
@@ -184,7 +184,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
     }
 
     @Override
-    public void widgetSelected(SelectionEvent e) {
+    public void widgetSelected(final SelectionEvent e) {
         if (e.getSource().equals(bAddAll)) {
             changeAllItemPlace(notInListItems, inListItems);
         } else if (e.getSource().equals(bAddOne)) {
@@ -217,7 +217,7 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
      * @param source
      * @param destination
      */
-    void changeOneItemPlace(org.eclipse.swt.widgets.List source, org.eclipse.swt.widgets.List destination) {
+    void changeOneItemPlace(final org.eclipse.swt.widgets.List source, final org.eclipse.swt.widgets.List destination) {
         if (source.getSelectionIndex() < 0) {
             return;
         }
@@ -232,14 +232,14 @@ public class FilteringDialog extends AbstractAWEWidget<Shell, IDialogSelectorLis
      * @param source
      * @param destination
      */
-    void changeAllItemPlace(org.eclipse.swt.widgets.List source, org.eclipse.swt.widgets.List destination) {
+    void changeAllItemPlace(final org.eclipse.swt.widgets.List source, final org.eclipse.swt.widgets.List destination) {
         source.removeAll();
         destination.removeAll();
         destination.setItems(allItems.toArray(new String[allItems.size()]));
     }
 
     @Override
-    public void widgetDefaultSelected(SelectionEvent e) {
+    public void widgetDefaultSelected(final SelectionEvent e) {
         widgetSelected(e);
     }
 }

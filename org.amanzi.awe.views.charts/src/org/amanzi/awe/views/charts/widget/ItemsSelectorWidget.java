@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
-import org.amanzi.awe.ui.view.widget.internal.AbstractLabeledWidget;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractLabeledWidget;
 import org.amanzi.awe.views.charts.widget.FilteringDialog.IDialogSelectorListener;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.apache.commons.lang3.StringUtils;
@@ -42,9 +41,9 @@ import com.google.common.collect.Lists;
  * @since 1.0.0
  */
 public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSelectedListener>
-        implements
-            SelectionListener,
-            IDialogSelectorListener {
+implements
+SelectionListener,
+IDialogSelectorListener {
 
     private static final String ITEM_SEPARATOR = ";";
 
@@ -56,17 +55,17 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
 
     private List<String> selectedItems = new ArrayList<String>();
 
-    public interface ItemSelectedListener extends AbstractAWEWidget.IAWEWidgetListener {
+    public interface ItemSelectedListener extends org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener {
         void onItemSelected();
 
     }
 
-    public ItemsSelectorWidget(Composite parent, ItemSelectedListener listener, String label) {
+    public ItemsSelectorWidget(final Composite parent, final ItemSelectedListener listener, final String label) {
         super(parent, listener, label);
     }
 
-    public void setItems(Collection<String> items) {
-        if (this.allItems == null || !this.allItems.containsAll(items)) {
+    public void setItems(final Collection<String> items) {
+        if ((this.allItems == null) || !this.allItems.containsAll(items)) {
             this.allItems = Lists.newArrayList(items);
             changeSelected(allItems);
         }
@@ -76,7 +75,7 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
     /**
      * @param items
      */
-    private void changeSelected(List<String> items) {
+    private void changeSelected(final List<String> items) {
         selectedItems = Lists.newArrayList(items);
         field.setText(prepareStringFromCollection(selectedItems));
     }
@@ -84,7 +83,7 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
     /**
      * @param items
      */
-    private String prepareStringFromCollection(Collection<String> items) {
+    private String prepareStringFromCollection(final Collection<String> items) {
         String text = StringUtils.EMPTY;
         for (String item : items) {
             text += item + ITEM_SEPARATOR;
@@ -93,7 +92,7 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
     }
 
     @Override
-    protected Composite createControl(Composite parent) {
+    protected Composite createControl(final Composite parent) {
         parent.setLayoutData(getGridData(SWT.FILL));
 
         Composite composite = new Composite(parent, SWT.NONE);
@@ -110,12 +109,12 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
         return composite;
     }
 
-    private GridData getGridData(int fillOrLeft) {
+    private GridData getGridData(final int fillOrLeft) {
         return new GridData(fillOrLeft, SWT.CENTER, true, false);
     }
 
     @Override
-    public void widgetSelected(SelectionEvent e) {
+    public void widgetSelected(final SelectionEvent e) {
         if (e.getSource().equals(editButton)) {
             FilteringDialog dialog = new FilteringDialog(getControl(), SWT.NONE, this);
             dialog.initializeWidget();
@@ -123,13 +122,13 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
     }
 
     @Override
-    public void widgetDefaultSelected(SelectionEvent e) {
+    public void widgetDefaultSelected(final SelectionEvent e) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void fireSelection(List<String> selections) {
+    public void fireSelection(final List<String> selections) {
         changeSelected(selections);
         for (ItemSelectedListener listener : getListeners()) {
             listener.onItemSelected();
