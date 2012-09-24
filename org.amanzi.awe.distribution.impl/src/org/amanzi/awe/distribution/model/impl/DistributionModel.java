@@ -32,13 +32,14 @@ import org.amanzi.neo.services.INodeService;
  */
 public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatisticalModel> implements IDistributionModel {
 
+    private IDistributionType<?> distributionType;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
-    protected DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
+    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         super(nodeService, generalNodeProperties);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -49,8 +50,11 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public IDistributionType< ? > getDistributionType() {
-        // TODO Auto-generated method stub
-        return null;
+        return distributionType;
+    }
+
+    public void setDistributionType(final IDistributionType<?> distributionType) {
+        this.distributionType = distributionType;
     }
 
     @Override

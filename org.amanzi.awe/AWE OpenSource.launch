@@ -33,5 +33,5 @@
 <booleanAttribute key="useDefaultConfig" value="true"/>
 <booleanAttribute key="useDefaultConfigArea" value="true"/>
 <booleanAttribute key="useProduct" value="false"/>
-<stringAttribute key="yk-options" value="&#10;additional-options2=onexit\=snapshot&#10;startup=14&#10;"/>
+<stringAttribute key="yk-options" value="&#10;additional-options2=onexit\=snapshot&#10;startup=10&#10;"/>
 </launchConfiguration>

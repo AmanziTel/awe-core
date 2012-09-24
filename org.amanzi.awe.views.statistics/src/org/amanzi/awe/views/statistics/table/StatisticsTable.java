@@ -64,8 +64,8 @@ import com.google.common.collect.Iterables;
  * @since 1.0.0
  */
 public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStatisticsTableListener>
-        implements
-            IFilterDialogListener {
+implements
+IFilterDialogListener {
 
     public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
@@ -137,7 +137,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         tableViewer.getTable().addListener(UPDATE_SORTING_LISTENER, this);
-        tableViewer.getTable().addSelectionListener(selectionListener);
+        cursor.addSelectionListener(selectionListener);
 
         cursor = new TableCursor(table, SWT.NONE);
     }
@@ -277,8 +277,15 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
             if (sourceModel != null) {
                 switch (labelProvider.getCellType(row, column)) {
-                case KPI:
                 case SUMMARY:
+                    if (column < 2) {
+                        Iterables.addAll(elements, row.getSources());
+
+                        elementToShow = row;
+
+                        break;
+                    }
+                case KPI:
                     IStatisticsCell cell = Iterables.get(row.getStatisticsCells(), column - 2);
 
                     Iterables.addAll(elements, cell.getSources());

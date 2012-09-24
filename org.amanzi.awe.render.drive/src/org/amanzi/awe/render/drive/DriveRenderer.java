@@ -48,12 +48,12 @@ public class DriveRenderer extends AbstractRenderer {
     }
 
     @Override
-    protected void renderElement(Graphics2D destination, Point point, ILocationElement mpLocation, IGISModel model) {
+    protected void renderElement(final Graphics2D destination, final Point point, final ILocationElement mpLocation, final IGISModel model) {
         renderCoordinateElement(destination, point, mpLocation);
     }
 
     @Override
-    protected void setStyle(Graphics2D destination) {
+    protected void setStyle(final Graphics2D destination) {
         super.setStyle(destination);
         DriveStyle style = (DriveStyle)getContext().getLayer().getStyleBlackboard().get(DriveStyleContent.ID);
         driveRendererStyle.setDefaultLabelColor(style.getLabelColor());
@@ -65,16 +65,16 @@ public class DriveRenderer extends AbstractRenderer {
     }
 
     @Override
-    protected double calculateResult(Envelope dbounds, IGISModel resource) {
+    protected double calculateResult(final Envelope dbounds, final IGISModel resource) {
         return (getRenderableElementCount(resource) / (dbounds.getHeight() * dbounds.getWidth()));
     }
 
     @Override
-    protected void setDrawLabel(double countScaled) {
+    protected void setDrawLabel(final double countScaled) {
     }
 
     @Override
-    protected long getRenderableElementCount(IGISModel model) {
+    protected long getRenderableElementCount(final IGISModel model) {
         return model.getCount();
     }
 
@@ -84,12 +84,16 @@ public class DriveRenderer extends AbstractRenderer {
     }
 
     @Override
-    protected Color getDefaultFillColorByElement(IDataElement element) {
+    protected Color getDefaultFillColorByElement(final IDataElement element) {
         return driveRendererStyle.getDefaultLocationColor();
     }
 
     @Override
-    protected void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element) {
+    protected void renderCoordinateElement(final Graphics2D destination, final Point point, final IDataElement element) {
+        if (isSelected(element, true, false)) {
+            highlightSelectedItem(destination, point);
+        }
+
         switch (driveRendererStyle.getScale()) {
         case SMALL:
             drawCoordinateElement(RenderShape.RECTANGLE, destination, point, element, true);
@@ -99,10 +103,6 @@ public class DriveRenderer extends AbstractRenderer {
             break;
         case LARGE:
             drawCoordinateElement(RenderShape.ELLIPSE, destination, point, element, true);
-        }
-
-        if (isSelected(element, true, false)) {
-            highlightSelectedItem(destination, point);
         }
     }
 
