@@ -138,7 +138,7 @@ IFilterDialogListener {
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         tableViewer.getTable().addListener(UPDATE_SORTING_LISTENER, this);
-        tableViewer.getTable().addSelectionListener(selectionListener);
+        cursor.addSelectionListener(selectionListener);
 
         cursor = new TableCursor(table, SWT.NONE);
     }
