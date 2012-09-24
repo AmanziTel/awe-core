@@ -64,8 +64,8 @@ import com.google.common.collect.Iterables;
  * @since 1.0.0
  */
 public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStatisticsTableListener>
-        implements
-            IFilterDialogListener {
+implements
+IFilterDialogListener {
 
     public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
@@ -275,8 +275,15 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
             if (sourceModel != null) {
                 switch (labelProvider.getCellType(row, column)) {
-                case KPI:
                 case SUMMARY:
+                    if (column < 2) {
+                        Iterables.addAll(elements, row.getSources());
+
+                        elementToShow = row;
+
+                        break;
+                    }
+                case KPI:
                     IStatisticsCell cell = Iterables.get(row.getStatisticsCells(), column - 2);
 
                     Iterables.addAll(elements, cell.getSources());

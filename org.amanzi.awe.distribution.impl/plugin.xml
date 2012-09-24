@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.amanzi.nodeproperties">
+      <nodeProperties
+            class="org.amanzi.awe.distribution.properties.impl.DistributionNodeProperties"
+            id="org.amanzi.nodeproperties.distributionNodeProperties">
+      </nodeProperties>
+   </extension>
+   <extension
+         point="org.amanzi.nodetypes">
+      <nodetype
+            class="org.amanzi.awe.distribution.model.DistributionNodeType"></nodetype>
+   </extension>
+   <extension
+         point="org.amanzi.services">
+      <service
+            class="org.amanzi.awe.distribution.service.impl.DistributionService"
+            id="org.amanzi.services.distributionService">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.generalnodeproperties">
+            </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.distributionNodeProperties">
+            </nodePropertiesReference>
+            <serviceReference
+                  refId="org.amanzi.service.NodeService">
+            </serviceReference>
+         </parameters>
+      </service>
+   </extension>
+   <extension
+         point="org.amanzi.providers">
+      <provider
+            class="org.amanzi.awe.distribution.provider.impl.DistributionModelProvider"
+            id="org.amanzi.providers.distributionModelProvider">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.generalnodeproperties">
+            </nodePropertiesReference>
+            <serviceReference
+                  refId="org.amanzi.service.NodeService">
+            </serviceReference>
+            <serviceReference
+                  refId="org.amanzi.services.distributionService">
+            </serviceReference></parameters>
+      </provider>
+   </extension>
+
+</plugin>

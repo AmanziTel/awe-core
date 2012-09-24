@@ -27,7 +27,6 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
-import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
@@ -189,7 +188,7 @@ IStatisticsModelProvider {
 
         // validate uniqueness
         if (find(analyzedModel, template, propertyName) != null) {
-            throw new DuplicatedModelException(IProjectModel.class, statisticsNodeProperties.getTemplateNameProperty(), template);
+            throw new DuplicatedModelException(getModelClass(), statisticsNodeProperties.getTemplateNameProperty(), template);
         }
 
         AbstractModel parentModel = (AbstractModel)analyzedModel;
