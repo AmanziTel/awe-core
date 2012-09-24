@@ -94,7 +94,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
     }
 
     @Override
-    public <T extends IDataModel> Iterable<T> getAllElementsByType(final INodeType nodeType) throws ModelException {
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
         // TODO Auto-generated method stub
         return null;
     }

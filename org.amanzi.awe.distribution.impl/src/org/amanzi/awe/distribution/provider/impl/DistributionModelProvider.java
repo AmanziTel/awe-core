@@ -118,7 +118,7 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
                 if (distributionRoot != null) {
                     result = initializeFromNode(distributionRoot);
 
-                    initializeDistributionModel(result, analyzedModel, distributionType);
+                    initializeDistributionModel(result, analyzedModel);
 
                     addToCache(result, key);
                 }
@@ -151,7 +151,7 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
             if (distributionRoot != null) {
                 result = initializeFromNode(distributionRoot);
 
-                initializeDistributionModel(result, analyzedModel, null);
+                initializeDistributionModel(result, analyzedModel);
             }
         } catch (ServiceException e) {
             processException("Error on searching for a curernt Distribution Model of " + analyzedModel + "", e);
@@ -164,12 +164,8 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
         return result;
     }
 
-    private void initializeDistributionModel(final DistributionModel distributionModel, final IPropertyStatisticalModel sourceModel, final IDistributionType<?> distributionType) {
+    private void initializeDistributionModel(final DistributionModel distributionModel, final IPropertyStatisticalModel sourceModel) {
         distributionModel.setSourceModel(sourceModel);
-
-        if (distributionType != null) {
-            distributionModel.setDistributionType(distributionType);
-        }
     }
 
     @Override
@@ -195,7 +191,7 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
             if (distributionRoot != null) {
                 result = initializeFromNode(distributionRoot);
 
-                initializeDistributionModel(result, analyzedModel, distributionType);
+                initializeDistributionModel(result, analyzedModel);
 
                 addToCache(result, key);
             }

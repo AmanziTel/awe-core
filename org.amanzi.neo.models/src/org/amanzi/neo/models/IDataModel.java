@@ -38,6 +38,6 @@ public interface IDataModel extends IModel {
 
     Iterable<IDataElement> getChildren(IDataElement parentElement) throws ModelException;
 
-    <T extends IDataModel> Iterable<T> getAllElementsByType(INodeType nodeType) throws ModelException;
+    Iterable<IDataElement> getAllElementsByType(INodeType nodeType) throws ModelException;
 
 }

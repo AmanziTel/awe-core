@@ -183,11 +183,10 @@ public class StatisticsEngine extends AbstractTransactional {
         } catch (Exception e) {
             LOGGER.error("An error occured on Statistics Calculation", e);
             throw new FatalStatisticsException(e);
+        } finally {
+            saveTx(isSuccess, false);
+            monitor.done();
         }
-
-        saveTx(isSuccess, false);
-
-        monitor.done();
 
         LOGGER.info("Finished Statistics Calculation");
 
@@ -291,49 +290,49 @@ public class StatisticsEngine extends AbstractTransactional {
                         String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
                                 : propertyName.equals(DATASET_AGGREGATION) ? measurementModel.getName() : UNKNOWN_VALUE;
 
-                        IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
-                        IStatisticsRow summuryRow = statisticsModel.getSummuryRow(statisticsGroup);
-                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
-                                nextStartTime);
+                                IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
+                                IStatisticsRow summuryRow = statisticsModel.getSummuryRow(statisticsGroup);
+                                IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
+                                        nextStartTime);
 
-                        try {
-                            Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
-                                    .toSymbolMap(dataElement.asMap());
-                            IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
-                            Map<String, Object> result = template.calculate(rubyDataElement);
-                            for (Entry<String, Object> statisticsEntry : result.entrySet()) {
-                                ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
+                                try {
+                                    Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
+                                            .toSymbolMap(dataElement.asMap());
+                                    IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
+                                    Map<String, Object> result = template.calculate(rubyDataElement);
+                                    for (Entry<String, Object> statisticsEntry : result.entrySet()) {
+                                        ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
 
-                                Object statisticsValue = statisticsEntry.getValue();
+                                        Object statisticsValue = statisticsEntry.getValue();
 
-                                if (LOGGER.isTraceEnabled()) {
-                                    LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
-                                            + statisticsRow + ">: <" + statisticsValue + ">.");
+                                        if (LOGGER.isTraceEnabled()) {
+                                            LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
+                                                    + statisticsRow + ">: <" + statisticsValue + ">.");
+                                        }
+
+                                        Number statisticsResult = null;
+                                        Number summuryResult = null;
+                                        if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
+                                            statisticsResult = calculateValue(statisticsRow, column, (Number)statisticsValue);
+                                            summuryResult = calculateValue(summuryRow, column, (Number)statisticsValue);
+                                        }
+
+                                        if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult,
+                                                dataElement)) {
+                                            periodCount++;
+                                        }
+                                        statisticsModel.updateStatisticsCell(summuryRow, column.getName(), summuryResult, dataElement);
+                                        updateTransaction();
+                                    }
+                                } catch (Exception e) {
+                                    LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
+                                    throw new FatalStatisticsException(e);
                                 }
 
-                                Number statisticsResult = null;
-                                Number summuryResult = null;
-                                if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                                    statisticsResult = calculateValue(statisticsRow, column, (Number)statisticsValue);
-                                    summuryResult = calculateValue(summuryRow, column, (Number)statisticsValue);
+                                subProgressMonitor.worked(1);
+                                if (subProgressMonitor.isCanceled()) {
+                                    break;
                                 }
-
-                                if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult,
-                                        dataElement)) {
-                                    periodCount++;
-                                }
-                                statisticsModel.updateStatisticsCell(summuryRow, column.getName(), summuryResult, dataElement);
-                                updateTransaction();
-                            }
-                        } catch (Exception e) {
-                            LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
-                            throw new FatalStatisticsException(e);
-                        }
-
-                        subProgressMonitor.worked(1);
-                        if (subProgressMonitor.isCanceled()) {
-                            break;
-                        }
                     }
 
                     currentStartTime = nextStartTime;

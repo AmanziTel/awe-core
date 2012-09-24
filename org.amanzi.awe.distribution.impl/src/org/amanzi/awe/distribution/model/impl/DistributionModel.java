@@ -15,7 +15,8 @@ package org.amanzi.awe.distribution.model.impl;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
-import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.awe.distribution.model.type.IRange;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
@@ -32,8 +33,6 @@ import org.amanzi.neo.services.INodeService;
  */
 public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatisticalModel> implements IDistributionModel {
 
-    private IDistributionType<?> distributionType;
-
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -46,15 +45,6 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     public void finishUp() throws ModelException {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public IDistributionType< ? > getDistributionType() {
-        return distributionType;
-    }
-
-    public void setDistributionType(final IDistributionType<?> distributionType) {
-        this.distributionType = distributionType;
     }
 
     @Override
@@ -77,6 +67,18 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public void updateBar(final IDistributionBar bar) throws ModelException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public IDistributionBar createDistributionBar(final IRange range) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void createAggregation(final IDistributionBar bar, final IDataElement element) throws ModelException {
         // TODO Auto-generated method stub
 
     }
