@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.view.widget.internal;
+package org.amanzi.awe.ui.view.widgets.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget.IComboSelectionListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget.IComboSelectionListener;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;

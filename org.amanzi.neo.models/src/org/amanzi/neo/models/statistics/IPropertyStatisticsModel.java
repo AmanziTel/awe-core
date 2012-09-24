@@ -42,4 +42,6 @@ public interface IPropertyStatisticsModel extends IModel {
 
     int getValueCount(INodeType nodeType, String property, Object value);
 
+    Set<INodeType> getNodeTypes();
+
 }

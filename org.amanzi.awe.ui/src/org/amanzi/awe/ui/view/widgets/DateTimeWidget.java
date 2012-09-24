@@ -11,14 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.view.widget;
+package org.amanzi.awe.ui.view.widgets;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import org.amanzi.awe.ui.view.widget.DateTimeWidget.ITimeChangedListener;
-import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
-import org.amanzi.awe.ui.view.widget.internal.AbstractLabeledWidget;
+import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractLabeledWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;

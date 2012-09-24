@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl.statistics;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,6 +23,7 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.statistics.internal.NodeTypeVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
 import org.apache.log4j.Logger;
@@ -123,6 +125,17 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     @Override
     public int getValueCount(final INodeType nodeType, final String property, final Object value) {
         return statisticsVault.getValueCount(nodeType, property, value);
+    }
+
+    @Override
+    public Set<INodeType> getNodeTypes() {
+        Set<INodeType> result = new HashSet<INodeType>();
+
+        for (NodeTypeVault vault : statisticsVault.getAllNodeTypeVaults()) {
+            result.add(vault.getNodeType());
+        }
+
+        return result;
     }
 
 }

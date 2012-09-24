@@ -28,7 +28,7 @@ import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
-import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilterDialogEvent;

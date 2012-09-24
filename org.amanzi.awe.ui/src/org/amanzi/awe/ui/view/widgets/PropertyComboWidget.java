@@ -11,14 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.view.widget;
+package org.amanzi.awe.ui.view.widgets;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
-import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget;
+import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;

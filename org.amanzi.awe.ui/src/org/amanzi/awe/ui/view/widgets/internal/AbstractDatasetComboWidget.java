@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.view.widget.internal;
+package org.amanzi.awe.ui.view.widgets.internal;
 
-import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget.IComboSelectionListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget.IComboSelectionListener;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;

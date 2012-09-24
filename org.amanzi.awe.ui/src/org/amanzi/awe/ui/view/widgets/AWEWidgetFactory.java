@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.view.widget;
+package org.amanzi.awe.ui.view.widgets;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
-import org.amanzi.awe.ui.view.widget.DateTimeWidget.ITimeChangedListener;
-import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
-import org.amanzi.awe.ui.view.widget.PropertyComboWidget.IPropertySelectionListener;
-import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
+import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
+import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.widgets.Composite;

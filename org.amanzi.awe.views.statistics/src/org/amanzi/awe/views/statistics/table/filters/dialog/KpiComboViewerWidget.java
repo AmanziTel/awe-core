@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.amanzi.awe.ui.view.widget.internal.AbstractAWEWidget;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.statistics.table.filters.dialog.KpiComboViewerWidget.IKpiTreeListener;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;

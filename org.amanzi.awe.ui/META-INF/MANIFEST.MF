@@ -18,7 +18,7 @@ Export-Package: org.amanzi.awe.ui,
  org.amanzi.awe.ui.manager,
  org.amanzi.awe.ui.util,
  org.amanzi.awe.ui.view,
- org.amanzi.awe.ui.view.widget,
- org.amanzi.awe.ui.view.widget.internal
+ org.amanzi.awe.ui.view.widgets,
+ org.amanzi.awe.ui.view.widgets.internal
 Eclipse-ExtensibleAPI: true
  

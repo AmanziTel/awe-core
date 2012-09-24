@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.view.widget;
+package org.amanzi.awe.ui.view.widgets;
 
 import java.util.Collection;
 
-import org.amanzi.awe.ui.view.widget.DriveComboWidget.IDriveSelectionListener;
-import org.amanzi.awe.ui.view.widget.internal.AbstractComboWidget;
-import org.amanzi.awe.ui.view.widget.internal.AbstractDatasetComboWidget;
+import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractDatasetComboWidget;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;

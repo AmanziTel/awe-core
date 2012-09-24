@@ -5,4 +5,5 @@ Bundle-SymbolicName: org.amanzi.awe.views.distribution;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
- org.amanzi.awe.distribution.engine;bundle-version="1.0.0"
+ org.amanzi.awe.distribution.engine;bundle-version="1.0.0",
+ org.amanzi.awe.libs;bundle-version="1.0.0"
