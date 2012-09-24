@@ -11,5 +11,20 @@
             restorable="true">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.views.distribution"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView">
+         </view>
+         <viewShortcut
+               id="org.amanzi.views.distribution">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
 
 </plugin>
