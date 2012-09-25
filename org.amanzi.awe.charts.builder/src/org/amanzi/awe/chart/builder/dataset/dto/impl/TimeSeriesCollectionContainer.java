@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
@@ -122,8 +123,11 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
     @Override
     protected TimeSeriesCollection buildAxis(IRangeAxis axis) throws ModelException {
         TimeSeriesCollection dataset = new TimeSeriesCollection();
+        IChartDataFilter filter = getModel().getChartDataFilter();
         IStatisticsModel statisticsModel = getModel().getStatisticsModel();
-        for (IStatisticsRow row : statisticsModel.getStatisticsRows(getModel().getPeriod().getId())) {
+        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRowsInTimeRange(getModel().getPeriod().getId(),
+                filter.getMinRowPeriod(), filter.getMaxRowPeriod());
+        for (IStatisticsRow row : rows) {
             if (getModel().getChartDataFilter().check(row, false)) {
                 for (String requiredCell : axis.getCellsNames()) {
 

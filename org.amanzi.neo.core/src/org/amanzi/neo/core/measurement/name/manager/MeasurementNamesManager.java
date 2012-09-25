@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.drive.provider.namesmanager;
+package org.amanzi.neo.core.measurement.name.manager;
 
-import org.amanzi.awe.views.drive.DriveTreePlugin;
+import org.amanzi.neo.core.internal.NeoCorePlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
@@ -26,7 +26,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
  */
 public class MeasurementNamesManager {
 
-    private static final IPreferenceStore PREFERENCE_STORE = DriveTreePlugin.getDefault().getPreferenceStore();
+    private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
 
     public static final String MEASUREMENT_POINT_GENERAL_NAMES = "measuremrnt_point_general_names";
 

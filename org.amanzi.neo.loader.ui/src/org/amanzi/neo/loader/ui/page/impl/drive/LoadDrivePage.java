@@ -31,6 +31,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 
 /**
  * TODO Purpose of
@@ -65,7 +66,6 @@ public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
 
         driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
         WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
-
         driveResource = WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this, getFileFilter());
 
         loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());

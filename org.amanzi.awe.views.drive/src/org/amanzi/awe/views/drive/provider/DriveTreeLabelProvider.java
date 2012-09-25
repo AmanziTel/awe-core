@@ -14,9 +14,9 @@
 package org.amanzi.awe.views.drive.provider;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
-import org.amanzi.awe.views.drive.provider.namesmanager.MeasurementNamesManager;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
+import org.amanzi.neo.core.measurement.name.manager.MeasurementNamesManager;
 import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.drive.IDriveModel;
@@ -54,7 +54,6 @@ public class DriveTreeLabelProvider extends CommonTreeViewLabelProvider {
                 return item.getName();
             }
         }
-        // TODO Auto-generated method stub
         return super.getText(element);
     }
 

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.chart.builder.dataset.dto.impl;
 
+import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
@@ -41,9 +42,12 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
     @Override
     protected DefaultCategoryDataset buildAxis(IRangeAxis axis) throws ModelException {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        IChartDataFilter filter = getModel().getChartDataFilter();
         IStatisticsModel statisticsModel = getModel().getStatisticsModel();
-        for (IStatisticsRow row : statisticsModel.getStatisticsRows(getModel().getPeriod().getId())) {
-            if (getModel().getChartDataFilter().check(row, false)) {
+        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRowsInTimeRange(getModel().getPeriod().getId(),
+                filter.getMinRowPeriod(), filter.getMaxRowPeriod());
+        for (IStatisticsRow row : rows) {
+            if (filter.check(row, false)) {
                 for (String requiredCell : axis.getCellsNames()) {
                     Number value = null;
                     String rowName = getName(row);
@@ -63,5 +67,4 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
         return dataset;
 
     }
-
 }
