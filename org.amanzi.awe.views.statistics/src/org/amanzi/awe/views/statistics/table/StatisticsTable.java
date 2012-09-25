@@ -264,14 +264,20 @@ IFilterDialogListener {
 
     private void drillDown() {
         int column = cursor.getColumn();
+        IStatisticsRow statisticsRow = (IStatisticsRow)cursor.getRow().getData();
+
 
         if ((cursor.getRow() != null) && (cursor.getRow().getData() instanceof IStatisticsRow)) {
-            drillDown((IStatisticsRow)cursor.getRow().getData(), column);
+            drillDown(statisticsRow, column);
         }
 
         if (column > 1) {
             tableViewer.getTable().deselectAll();
         }
+
+        labelProvider.setSelectedColumn(column);
+        labelProvider.setSelectedRow(statisticsRow);
+        tableViewer.refresh();
     }
 
     private void drillDown(final IStatisticsRow row, final int column) {

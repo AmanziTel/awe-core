@@ -25,8 +25,12 @@ import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterCon
 import org.amanzi.neo.core.period.PeriodManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Iterables;
 
@@ -38,7 +42,7 @@ import com.google.common.collect.Iterables;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsLabelProvider implements ITableLabelProvider {
+public class StatisticsLabelProvider implements ITableLabelProvider, ITableColorProvider {
 
     public enum CellType {
         KPI, SUMMARY, PERIOD, PROPERTY;
@@ -53,6 +57,10 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
 
     private IStatisticsFilterContainer filter;
+
+    private IStatisticsRow selectedRow;
+
+    private int selectedColumn;
 
     @Override
     public void addListener(final ILabelProviderListener listener) {
@@ -142,8 +150,34 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
     /**
      * @param filterContainer
      */
-    public void setFilter(IStatisticsFilterContainer filterContainer) {
+    public void setFilter(final IStatisticsFilterContainer filterContainer) {
         this.filter = filterContainer;
 
+    }
+
+    public void setSelectedRow(final IStatisticsRow selectedRow) {
+        this.selectedRow = selectedRow;
+    }
+
+    public void setSelectedColumn(final int selectedColumn) {
+        this.selectedColumn = selectedColumn;
+    }
+
+    @Override
+    public Color getForeground(final Object element, final int columnIndex) {
+        if (element.equals(selectedRow) && (selectedColumn < 2)){
+            return Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Color getBackground(final Object element, final int columnIndex) {
+        if (element.equals(selectedRow) && (selectedColumn < 2)){
+            return Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        }
+
+        return null;
     }
 }
