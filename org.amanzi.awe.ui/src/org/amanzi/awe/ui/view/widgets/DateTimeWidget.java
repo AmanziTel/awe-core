@@ -104,9 +104,12 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
     }
 
     public void setDefaultDate(final Date newDate) {
-        this.defaultDate = newDate;
-        this.currentDate = newDate;
-        updateDate(defaultDate);
+        if (defaultDate == null || !newDate.equals(defaultDate)) {
+            this.currentDate = newDate;
+            this.defaultDate = newDate;
+        }
+
+        updateDate(currentDate);
     }
 
     public Date getDate() {
