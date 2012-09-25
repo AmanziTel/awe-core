@@ -82,8 +82,7 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
             boolean toContinue = true;
             boolean include = true;
             if (path.lastRelationship() != null) {
-                Relationship relation = path.lastRelationship();
-                Node node = relation.getEndNode();
+                Node node = path.endNode();
                 long nodeStartTime = (Long)node.getProperty(startTimeName);
                 long nodeEndTime = (Long)node.getProperty(endTimeName);
                 if (nodeStartTime >= startTime && nodeEndTime <= endTime) {
