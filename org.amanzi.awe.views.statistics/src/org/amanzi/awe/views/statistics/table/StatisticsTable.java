@@ -268,6 +268,10 @@ IFilterDialogListener {
         if ((cursor.getRow() != null) && (cursor.getRow().getData() instanceof IStatisticsRow)) {
             drillDown((IStatisticsRow)cursor.getRow().getData(), column);
         }
+
+        if (column > 1) {
+            tableViewer.getTable().deselectAll();
+        }
     }
 
     private void drillDown(final IStatisticsRow row, final int column) {
