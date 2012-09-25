@@ -49,6 +49,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -140,6 +141,8 @@ IFilterDialogListener {
 
         cursor = new TableCursor(table, SWT.NONE);
         cursor.addSelectionListener(selectionListener);
+        cursor.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION));
+        cursor.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
     }
 
     public void updateStatistics(final IStatisticsModel model, final IStatisticsFilterContainer filterContainer) {
