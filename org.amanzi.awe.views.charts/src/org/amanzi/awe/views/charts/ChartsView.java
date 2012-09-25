@@ -41,8 +41,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
@@ -54,7 +52,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ChartsView extends ViewPart implements ItemSelectedListener, ChartMouseListener {
+public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     private static final Logger LOGGER = Logger.getLogger(ChartsView.class);
 
@@ -109,7 +107,6 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
         chartComposite = new ChartComposite(controlsComposite, SWT.NONE);
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        chartComposite.addChartMouseListener(this);
         parent.pack();
     }
 
@@ -258,12 +255,4 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
     }
 
-    @Override
-    public void chartMouseClicked(ChartMouseEvent event) {
-    }
-
-    @Override
-    public void chartMouseMoved(ChartMouseEvent arg0) {
-        // TODO KV: not implemented.
-    }
 }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.amanzi.neo.core.measurement.name.manager.MeasurementNamesManager;
 import org.amanzi.neo.dateformat.DateFormatManager;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
@@ -48,6 +49,7 @@ public class PreferenceStoreInitialiser extends AbstractPreferenceInitializer {
                 PREFERENCE_STORE.setDefault(DateFormatManager.DEFAULT_FORMAT_KEY, DateFormatManager.DATE_KEY_PREFIX + i);
             }
         }
+        PREFERENCE_STORE.setDefault(MeasurementNamesManager.MEASUREMENT_POINT_GENERAL_NAMES, "event,name,timestamp");
     }
 
     /**

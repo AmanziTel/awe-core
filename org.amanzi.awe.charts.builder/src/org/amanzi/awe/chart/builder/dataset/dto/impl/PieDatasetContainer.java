@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
@@ -48,9 +49,11 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<PieDatase
         DefaultPieDataset dataset = new DefaultPieDataset();
         Map<String, Double> kpiCache = new HashMap<String, Double>();
 
+        IChartDataFilter filter = getModel().getChartDataFilter();
         IStatisticsModel statisticsModel = getModel().getStatisticsModel();
-
-        for (IStatisticsRow row : statisticsModel.getStatisticsRows(getModel().getPeriod().getId())) {
+        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRowsInTimeRange(getModel().getPeriod().getId(),
+                filter.getMinRowPeriod(), filter.getMaxRowPeriod());
+        for (IStatisticsRow row : rows) {
             if (getModel().getChartDataFilter().check(row, false)) {
                 for (String requiredCell : axis.getCellsNames()) {
                     Number value = null;
