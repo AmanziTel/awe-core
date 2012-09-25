@@ -107,7 +107,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
         chartComposite = new ChartComposite(controlsComposite, SWT.NONE);
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        parent.pack();
+        chartComposite.setVisible(false);
     }
 
     /**
@@ -190,6 +190,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
             chart = ChartsManager.getInstance().buildChart(chartModel);
             chartsCache.put(ID, chart);
         }
+        chartComposite.setVisible(true);
         chartComposite.setChart(chart);
         chartComposite.forceRedraw();
     }
