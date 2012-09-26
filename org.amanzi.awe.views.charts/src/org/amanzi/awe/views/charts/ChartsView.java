@@ -256,4 +256,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     }
 
+    @Override
+    public void dispose() {
+        chartsCache.clear();
+        super.dispose();
+    }
 }

@@ -13,13 +13,7 @@
 
 package org.amanzi.awe.chart.builder.dataset.dto.impl;
 
-import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
-import org.amanzi.awe.charts.model.IRangeAxis;
-import org.amanzi.awe.statistics.dto.IStatisticsCell;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
@@ -40,31 +34,15 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
     }
 
     @Override
-    protected DefaultCategoryDataset buildAxis(IRangeAxis axis) throws ModelException {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        IChartDataFilter filter = getModel().getChartDataFilter();
-        IStatisticsModel statisticsModel = getModel().getStatisticsModel();
-        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRowsInTimeRange(getModel().getPeriod().getId(),
-                filter.getMinRowPeriod(), filter.getMaxRowPeriod());
-        for (IStatisticsRow row : rows) {
-            if (filter.check(row, false)) {
-                for (String requiredCell : axis.getCellsNames()) {
-                    Number value = null;
-                    String rowName = getName(row);
-                    for (IStatisticsCell cell : row.getStatisticsCells()) {
-                        if (!cell.getName().equals(requiredCell)) {
-                            continue;
-                        }
-                        value = cell.getValue();
-                        if (value == null) {
-                            break;
-                        }
-                        dataset.addValue(value, requiredCell, rowName);
-                    }
-                }
-            }
+    protected void finishup(DefaultCategoryDataset dataset) {
+        Iterable<ColumnCachedItem> columns = getCachedColumns();
+        for (ColumnCachedItem column : columns) {
+            dataset.setValue(column.getValue(), column.getCellName(), column);
         }
-        return dataset;
+    }
 
+    @Override
+    protected DefaultCategoryDataset createDataset() {
+        return new DefaultCategoryDataset();
     }
 }

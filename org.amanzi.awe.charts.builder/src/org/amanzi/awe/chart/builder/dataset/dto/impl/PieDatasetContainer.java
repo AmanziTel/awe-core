@@ -17,15 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
-import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
 
 /**
  * TODO Purpose of
@@ -35,7 +30,7 @@ import org.jfree.data.general.PieDataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PieDatasetContainer extends AbstractChartDatasetContainer<PieDataset> {
+public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset> {
 
     /**
      * @param model
@@ -44,37 +39,7 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<PieDatase
         super(model);
     }
 
-    @Override
-    protected PieDataset buildAxis(IRangeAxis axis) throws ModelException {
-        DefaultPieDataset dataset = new DefaultPieDataset();
-        Map<String, Double> kpiCache = new HashMap<String, Double>();
-
-        IChartDataFilter filter = getModel().getChartDataFilter();
-        IStatisticsModel statisticsModel = getModel().getStatisticsModel();
-        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRowsInTimeRange(getModel().getPeriod().getId(),
-                filter.getMinRowPeriod(), filter.getMaxRowPeriod());
-        for (IStatisticsRow row : rows) {
-            if (getModel().getChartDataFilter().check(row, false)) {
-                for (String requiredCell : axis.getCellsNames()) {
-                    Number value = null;
-                    for (IStatisticsCell cell : row.getStatisticsCells()) {
-                        if (!cell.getName().equals(requiredCell)) {
-                            continue;
-                        }
-                        value = cell.getValue();
-                        if (value == null) {
-                            break;
-                        }
-                        updateCache(kpiCache, cell.getValue(), cell.getName());
-                    }
-                }
-            }
-        }
-        for (Entry<String, Double> entry : kpiCache.entrySet()) {
-            dataset.setValue(entry.getKey(), entry.getValue());
-        }
-        return dataset;
-    }
+    private Map<String, Double> kpiCache = new HashMap<String, Double>();
 
     /**
      * update cached cell value for dataset
@@ -94,5 +59,34 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<PieDatase
             kpiCache.put(cellName, oldValue + value.doubleValue());
         }
 
+    }
+
+    @Override
+    protected void finishup(DefaultPieDataset dataset) {
+        for (Entry<String, Double> entry : kpiCache.entrySet()) {
+            dataset.setValue(entry.getKey(), entry.getValue());
+        }
+
+    }
+
+    @Override
+    protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
+        Number value = null;
+        for (IStatisticsCell cell : row.getStatisticsCells()) {
+            if (!cell.getName().equals(requiredCell)) {
+                continue;
+            }
+            value = cell.getValue();
+            if (value == null) {
+                break;
+            }
+            updateCache(kpiCache, cell.getValue(), cell.getName());
+        }
+
+    }
+
+    @Override
+    protected DefaultPieDataset createDataset() {
+        return new DefaultPieDataset();
     }
 }
