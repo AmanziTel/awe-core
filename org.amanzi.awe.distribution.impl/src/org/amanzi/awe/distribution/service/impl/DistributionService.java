@@ -48,7 +48,7 @@ public class DistributionService extends AbstractService implements IDistributio
 
     private final IDistributionNodeProperties distributionNodeProperties;
 
-    private INodeService nodeService;
+    private final INodeService nodeService;
 
     /**
      * @param graphDb
@@ -57,6 +57,7 @@ public class DistributionService extends AbstractService implements IDistributio
     public DistributionService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties, final IDistributionNodeProperties distributionNodeProperties, final INodeService nodeService) {
         super(graphDb, generalNodeProperties);
 
+        this.nodeService = nodeService;
         this.distributionNodeProperties = distributionNodeProperties;
     }
 
@@ -96,7 +97,7 @@ public class DistributionService extends AbstractService implements IDistributio
 
             properties.put(getGeneralNodeProperties().getNodeNameProperty(), distributionType.getName());
             properties.put(distributionNodeProperties.getDistributionPropertyName(), distributionType.getPropertyName());
-            properties.put(distributionNodeProperties.getDistributionNodeType(), distributionType.getNodeType());
+            properties.put(distributionNodeProperties.getDistributionNodeType(), distributionType.getNodeType().getId());
 
             result = nodeService.createNode(rootNode, DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION, properties);
         } catch (Exception e) {
@@ -131,6 +132,28 @@ public class DistributionService extends AbstractService implements IDistributio
         assert currentDistributionNode != null;
 
         nodeService.updateProperty(rootNode, distributionNodeProperties.getCurrentDistributionProperty(), currentDistributionNode.getId());
+    }
+
+    @Override
+    public Node createDistributionBarNode(final Node rootNode, final String name, final int[] color) throws ServiceException {
+        assert rootNode != null;
+        assert name != null;
+
+        if (findDistributionBarNode(rootNode, name) != null) {
+            throw new DuplicatedNodeException(getGeneralNodeProperties().getNodeNameProperty(), name);
+        }
+
+        Map<String, Object> properties = new HashMap<String, Object>();
+        if (color != null) {
+            properties.put(distributionNodeProperties.getBarColor(), color);
+        }
+        Node result = nodeService.createNodeInChain(rootNode, DistributionNodeType.DISTRIBUTION_BAR, name, properties);
+
+        return result;
+    }
+
+    protected Node findDistributionBarNode(final Node rootNode, final String name) throws ServiceException {
+        return nodeService.getChildInChainByName(rootNode, name, DistributionNodeType.DISTRIBUTION_BAR);
     }
 
 }

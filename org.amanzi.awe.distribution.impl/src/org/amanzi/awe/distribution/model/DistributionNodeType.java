@@ -25,7 +25,8 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @since 1.0.0
  */
 public enum DistributionNodeType implements INodeType {
-    DISTRIBUTION_ROOT;
+    DISTRIBUTION_ROOT,
+    DISTRIBUTION_BAR;
 
     @Override
     public String getId() {

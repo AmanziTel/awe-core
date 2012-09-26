@@ -36,4 +36,6 @@ public interface IDistributionService extends IService {
 
     void setCurrentDistribution(Node rootNode, Node currentDistributionNode) throws ServiceException;
 
+    Node createDistributionBarNode(Node rootNode, String name, int[] color) throws ServiceException;
+
 }

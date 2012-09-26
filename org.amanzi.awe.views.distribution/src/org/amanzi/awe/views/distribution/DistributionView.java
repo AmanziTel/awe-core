@@ -63,7 +63,9 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         protected IStatus run(final IProgressMonitor monitor) {
             try {
                 currentManager.build(monitor);
-
+            } catch (ModelException e) {
+                return new Status(Status.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
+            } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
@@ -74,8 +76,6 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
                     }
 
                 }, true);
-            } catch (ModelException e) {
-                return new Status(Status.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
             }
 
             return Status.OK_STATUS;

@@ -25,6 +25,7 @@ import org.amanzi.awe.distribution.service.IDistributionService;
 import org.amanzi.awe.distribution.service.impl.DistributionService.DistributionRelationshipType;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.dto.SourcedElement.ICollectFunction;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
@@ -45,6 +46,15 @@ import org.neo4j.graphdb.Node;
 public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatisticalModel> implements IDistributionModel {
 
     private static final Logger LOGGER = Logger.getLogger(DistributionModel.class);
+
+    private final ICollectFunction collectBarSources = new ICollectFunction() {
+
+        @Override
+        public Iterable<IDataElement> collectSourceElements(final IDataElement parent) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+    };
 
     private List<IDistributionBar> distributionBars;
 
@@ -119,8 +129,22 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public IDistributionBar createDistributionBar(final IRange range) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+        DistributionBar result = null;
+        try {
+            Node barNode = distributionService.createDistributionBarNode(getRootNode(), range.getName(), range.getColor() == null ? null : convertColorToArray(range.getColor()));
+
+            result = new DistributionBar(barNode, collectBarSources);
+
+            if (range.getColor() != null) {
+                result.setColor(range.getColor());
+            }
+            result.setName(range.getName());
+
+        } catch (ServiceException e) {
+            processException("Exception on creating Distribution Bar", e);
+        }
+
+        return result;
     }
 
     @Override

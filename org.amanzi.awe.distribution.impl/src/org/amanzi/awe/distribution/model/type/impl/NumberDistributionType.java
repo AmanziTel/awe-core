@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.distribution.model.type.impl;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.amanzi.awe.distribution.model.type.impl.internal.AbstractDistributionType;
@@ -59,14 +60,15 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
         return numberDistributionRange.toString();
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Set<SimpleRange> getRanges() {
         if (ranges == null) {
 
+            ranges = new LinkedHashSet<SimpleRange>();
+
             double min = Double.MAX_VALUE;
             double max = -Double.MAX_VALUE;
-
-
 
             for (Object value : getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName())) {
                 double currentValue = ((Number)value).doubleValue();
@@ -77,8 +79,8 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
 
             double step = getStep(min, max, numberDistributionRange.getDelta());
 
-            while (!Precision.equals(max, min, PRECISION_DELTA)) {
-                boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
+            while (Precision.compareTo(max, min, PRECISION_DELTA) > 0) {
+                boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) < 0;
 
                 double curMax = includeMax ? min + step : max;
                 RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END : RangeFilterType.INCLUDE_START_EXCLUDE_END;
