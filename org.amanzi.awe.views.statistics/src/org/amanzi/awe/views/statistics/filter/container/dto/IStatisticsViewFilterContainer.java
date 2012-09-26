@@ -23,7 +23,7 @@ import org.amanzi.neo.core.period.Period;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IStatisticsFilterContainer {
+public interface IStatisticsViewFilterContainer {
 
     Period getPeriod();
 

@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.neo.core.period.PeriodManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -52,7 +52,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
 
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
 
-    private IStatisticsFilterContainer filter;
+    private IStatisticsViewFilterContainer filter;
 
     @Override
     public void addListener(final ILabelProviderListener listener) {
@@ -142,7 +142,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider {
     /**
      * @param filterContainer
      */
-    public void setFilter(IStatisticsFilterContainer filterContainer) {
+    public void setFilter(IStatisticsViewFilterContainer filterContainer) {
         this.filter = filterContainer;
 
     }

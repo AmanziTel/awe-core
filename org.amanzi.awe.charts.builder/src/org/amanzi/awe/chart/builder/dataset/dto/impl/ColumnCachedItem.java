@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.chart.builder.dataset.dto.impl;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,12 +59,12 @@ public class ColumnCachedItem implements IColumnItem {
     }
 
     @Override
-    public Iterable<String> getGroupsNames() {
+    public Collection<String> getGroupsNames() {
         return groups;
     }
 
     @Override
-    public IStatisticsRow getRows() {
+    public IStatisticsRow getRow() {
         return row;
     }
 

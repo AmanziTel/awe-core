@@ -133,7 +133,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
                 break;
             }
             column.increase(cellValue);
-            column.addGroup(row.getStatisticsGroup().getName());
+            column.addGroup(row.getStatisticsGroup().getPropertyValue());
         }
     }
 

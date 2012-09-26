@@ -62,7 +62,7 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
      */
     private TimeSeries updateTimeSeries(TimeSeries ts, ColumnCachedItem container) {
 
-        Date date = new Date(container.getRows().getStartDate());
+        Date date = new Date(container.getRow().getStartDate());
         switch (getModel().getPeriod()) {
         case HOURLY:
         case ALL:

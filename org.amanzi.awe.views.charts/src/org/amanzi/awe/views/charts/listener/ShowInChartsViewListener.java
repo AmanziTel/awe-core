@@ -19,7 +19,7 @@ import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.charts.ChartsView;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
@@ -39,12 +39,12 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
             ShowInViewEvent showInViewEvent = (ShowInViewEvent)event;
 
             if (showInViewEvent.getParent() instanceof IStatisticsModel
-                    && showInViewEvent.getElement() instanceof IStatisticsFilterContainer) {
+                    && showInViewEvent.getElement() instanceof IStatisticsViewFilterContainer) {
                 ChartsView view = showStatisticsView();
 
                 if (view != null) {
                     showInView(view, (IStatisticsModel)showInViewEvent.getParent(),
-                            (IStatisticsFilterContainer)showInViewEvent.getElement());
+                            (IStatisticsViewFilterContainer)showInViewEvent.getElement());
                 }
             }
         }
@@ -63,7 +63,7 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
         }
     }
 
-    private void showInView(final ChartsView chartsView, final IStatisticsModel model, final IStatisticsFilterContainer filter) {
+    private void showInView(final ChartsView chartsView, final IStatisticsModel model, final IStatisticsViewFilterContainer filter) {
         chartsView.fireStatisticsChanged(model, filter);
     }
 

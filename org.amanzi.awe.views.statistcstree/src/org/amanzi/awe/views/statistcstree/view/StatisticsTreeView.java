@@ -16,8 +16,10 @@ package org.amanzi.awe.views.statistcstree.view;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeContentProvider;
+import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeFilteredContentProvider;
 import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeLabelProvider;
 import org.amanzi.awe.views.statistcstree.view.actions.ChangeDimensionAction;
+import org.amanzi.awe.views.statistcstree.view.filter.container.IStatisticsTreeFilterContainer;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
@@ -70,4 +72,14 @@ public class StatisticsTreeView extends AbstractTreeView {
         return new TreeViewItem<IStatisticsModel, IDataElement>((IStatisticsModel)model, element);
     }
 
+    /**
+     * @param parent
+     * @param filter
+     */
+    public void filterTree(IModel parent, IStatisticsTreeFilterContainer filter) {
+        getTreeViewer().setContentProvider(
+                new StatisticsTreeFilteredContentProvider(DimensionType.TIME, (IStatisticsModel)parent, filter));
+        getTreeViewer().expandToLevel(5);
+
+    }
 }
