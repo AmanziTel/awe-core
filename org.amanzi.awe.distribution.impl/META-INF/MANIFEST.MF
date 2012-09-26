@@ -9,4 +9,5 @@ Require-Bundle: org.amanzi.neo.models.impl;bundle-version="1.0.0",
 Export-Package: org.amanzi.awe.distribution.model,
  org.amanzi.awe.distribution.model.bar,
  org.amanzi.awe.distribution.model.type,
+ org.amanzi.awe.distribution.model.type.impl,
  org.amanzi.awe.distribution.provider

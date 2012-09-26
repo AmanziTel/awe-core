@@ -114,4 +114,14 @@ public class StatisticsVault {
         nodeTypeVaults.put(nodeTypeVault.getNodeType(), nodeTypeVault);
     }
 
+    public Class<?> getPropertyClass(final INodeType nodeType, final String propertyName) {
+        NodeTypeVault nodeTypeVault = getNodeTypeVaule(nodeType);
+
+        if (nodeTypeVault != null) {
+            return nodeTypeVault.getPropertyClass(propertyName);
+        }
+
+        return null;
+    }
+
 }

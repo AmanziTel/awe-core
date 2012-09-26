@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.distribution.model.type;
 
-import java.util.List;
+import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
 
@@ -109,21 +109,6 @@ public interface IDistributionType<T extends IRange> {
     }
 
     /**
-     * Type of Distribution Selection
-     * 
-     * @author gerzog
-     * @since 1.0.0
-     */
-    public static enum Select {
-        MIN,
-        MAX,
-        AVERAGE,
-        EXISTS,
-        UNIQUE,
-        FIRST;
-    }
-
-    /**
      * Returns name of this Distribution
      *
      * @return
@@ -135,7 +120,7 @@ public interface IDistributionType<T extends IRange> {
      *
      * @return
      */
-    public List<T> getRanges();
+    public Set<T> getRanges();
 
     /**
      * Type of Node to Analyze
@@ -143,32 +128,6 @@ public interface IDistributionType<T extends IRange> {
      * @return
      */
     public INodeType getNodeType();
-
-    /**
-     * Returns total number of nodes to analyse
-     *
-     * @return
-     */
-    public int getCount();
-
-    /**
-     * Initializes current distribution
-     */
-    public void init();
-
-    /**
-     * Returns possible Selects
-     *
-     * @return
-     */
-    public Select[] getPossibleSelects();
-
-    /**
-     * Sets type of Selection
-     *
-     * @param select
-     */
-    public void setSelect(Select select);
 
     /**
      * Returns name of Analyzed Property
@@ -183,12 +142,5 @@ public interface IDistributionType<T extends IRange> {
      * @return
      */
     public boolean canChangeColors();
-
-    /**
-     * Set possibility to change colors of this Distribution
-     *
-     * @param canChangeColor
-     */
-    public void setCanChangeColors(boolean canChangeColor);
 
 }
