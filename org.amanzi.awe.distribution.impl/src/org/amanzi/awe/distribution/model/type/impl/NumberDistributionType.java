@@ -80,7 +80,7 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
             double step = getStep(min, max, numberDistributionRange.getDelta());
 
             while (Precision.compareTo(max, min, PRECISION_DELTA) > 0) {
-                boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) < 0;
+                boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
 
                 double curMax = includeMax ? min + step : max;
                 RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END : RangeFilterType.INCLUDE_START_EXCLUDE_END;
