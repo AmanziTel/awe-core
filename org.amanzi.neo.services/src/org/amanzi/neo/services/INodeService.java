@@ -118,6 +118,8 @@ public interface INodeService extends IService {
     Iterator<Node> getChildren(Node parentNode) throws ServiceException;
 
     Iterator<Node> getChildrenChain(Node parentNode) throws ServiceException;
+    
+    Iterator<Node> getChildrenChain(Node parentNode, INodeType nodeType) throws ServiceException;
 
     void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
 

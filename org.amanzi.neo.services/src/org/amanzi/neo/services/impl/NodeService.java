@@ -637,4 +637,16 @@ public class NodeService extends AbstractService implements INodeService {
 
         return getGraphDb().getNodeById(parentId);
     }
+
+    @Override
+    public Iterator<Node> getChildrenChain(final Node parentNode, final INodeType nodeType) throws ServiceException {
+        assert parentNode != null;
+        assert nodeType != null;
+
+        try {
+            return getChildrenChainTraversal(parentNode).evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId())).traverse(parentNode).nodes().iterator();
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
 }

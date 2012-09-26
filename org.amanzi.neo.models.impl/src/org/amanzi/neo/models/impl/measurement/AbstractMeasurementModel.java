@@ -515,7 +515,22 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
     @Override
     public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getAllElementsByType", nodeType));
+        }
+
+        Iterable<IDataElement> result = null;
+
+        try {
+            result = new MeasurementIterator(getNodeService().getChildrenChain(getRootNode(), nodeType)).toIterable();
+        } catch (ServiceException e) {
+            processException("An error occured on search child for parent Element", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getAllElementsByType"));
+        }
+
+        return result;
     }
 }
