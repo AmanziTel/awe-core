@@ -644,7 +644,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert nodeType != null;
 
         try {
-            return getChildrenChainTraversal(parentNode).evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId())).traverse(parentNode).nodes().iterator();
+            return CHAIN_TRAVERSAL.evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId())).traverse(parentNode).nodes().iterator();
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
