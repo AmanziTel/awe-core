@@ -20,7 +20,6 @@ import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -91,11 +90,5 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
             processException("Service exception found", e);
         }
         return new DataElementIterator(childs).toIterable();
-    }
-
-    @Override
-    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

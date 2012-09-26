@@ -450,4 +450,19 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
         return new ElementLocationIterator(dataElements).toIterable();
     }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getAllElementsByType", nodeType));
+        }
+
+        Iterable<IDataElement> result = new DataElementIterator(getIndexModel().getAllNodes(nodeType)).toIterable();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getAllElementsByType"));
+        }
+
+        return result;
+    }
 }

@@ -512,4 +512,10 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
         return new ElementLocationIterable(dataElements).toIterable();
     }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

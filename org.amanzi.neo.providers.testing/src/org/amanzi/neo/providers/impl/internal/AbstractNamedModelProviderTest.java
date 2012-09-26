@@ -81,6 +81,12 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
             return null;
         }
 
+        @Override
+        public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
     }
 
     public static class TestDataModelProvider extends AbstractNamedModelProvider<IModel, IModel, TestModel> {
@@ -241,7 +247,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     @Test
     public void testCheckActiviyOnFindByNotExistingName() throws Exception {
         when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD))
-                .thenReturn(null);
+        .thenReturn(null);
 
         IModel result = provider.findByName(parent, MODEL_NAME);
 

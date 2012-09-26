@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
@@ -54,6 +55,12 @@ public class AbstractNamedModelTest extends AbstractMockitoTest {
 
         @Override
         protected INodeType getModelType() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
             // TODO Auto-generated method stub
             return null;
         }

@@ -239,4 +239,27 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         return "IndexModel <" + getParentNode() + ">";
     }
 
+    @Override
+    public Iterator<Node> getAllNodes(final INodeType type) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getAllNodes", type));
+        }
+
+        Iterator<Node> result = null;
+
+        try {
+            Index<Node> index = indexService.getIndex(getRootNode(), type);
+
+            result = index.query(getGeneralNodeProperties().getNodeTypeProperty() + ":*").iterator();
+        } catch (ServiceException e) {
+            processException("Exception on searching for a Node in Index", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getAllNodes"));
+        }
+
+        return result;
+    }
+
 }

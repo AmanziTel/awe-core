@@ -40,4 +40,6 @@ public interface IIndexModel extends IModel {
 
     <T extends Object> Iterator<Node> getNodes(final INodeType nodeType, final Class<T> clazz, final T[] min, final T[] max,
             final String... properties) throws ModelException;
+
+    Iterator<Node> getAllNodes(INodeType type) throws ModelException;
 }

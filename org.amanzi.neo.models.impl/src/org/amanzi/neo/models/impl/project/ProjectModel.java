@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl.project;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
 import org.amanzi.neo.models.project.IProjectModel;
@@ -103,5 +104,11 @@ public class ProjectModel extends AbstractNamedModel implements IProjectModel {
     @Override
     protected INodeType getModelType() {
         return ProjectModelNodeType.PROJECT;
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -19,6 +19,7 @@ import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
@@ -49,6 +50,12 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
 
         @Override
         public void finishUp() throws ModelException {
+        }
+
+        @Override
+        public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+            // TODO Auto-generated method stub
+            return null;
         }
 
     }

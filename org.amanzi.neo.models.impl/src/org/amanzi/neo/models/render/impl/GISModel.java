@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.render.impl;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
 import org.amanzi.neo.models.impl.internal.util.CRSWrapper;
@@ -238,5 +239,13 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     @Override
     public boolean canRender() {
         return sourceModel.getRenderableElementCount() > 0;
+    }
+
+
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
