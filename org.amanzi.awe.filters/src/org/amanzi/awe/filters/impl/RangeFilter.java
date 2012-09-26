@@ -27,19 +27,43 @@ import org.apache.commons.lang3.Range;
  */
 public class RangeFilter<T extends Comparable<T>> extends AbstractFilter<T> {
 
+    public enum RangeFilterType {
+        INCLUDE_START_AND_END,
+        INCLUDE_START_EXCLUDE_END,
+        EXCLUDE_START_INCLUDE_END,
+        EXCLUDE_START_AND_END;
+    }
+
     private final Range<T> range;
+
+    private final RangeFilterType filterType;
 
     /**
      * @param propertyName
      */
-    protected RangeFilter(final String propertyName, final Range<T> range) {
+    public RangeFilter(final String propertyName, final Range<T> range, final RangeFilterType filterType) {
         super(propertyName);
         this.range = range;
+        this.filterType = filterType;
     }
 
     @Override
     public boolean matches(final IDataElement element) {
-        return range.contains(getElementValue(element));
+        T value = getElementValue(element);
+        boolean contains = range.contains(value);
+
+        switch (filterType) {
+        case EXCLUDE_START_AND_END:
+            return contains && !range.isStartedBy(value) && !range.isStartedBy(value);
+        case EXCLUDE_START_INCLUDE_END:
+            return contains && !range.isStartedBy(value);
+        case INCLUDE_START_AND_END:
+            return contains;
+        case INCLUDE_START_EXCLUDE_END:
+            return contains && !range.isStartedBy(value);
+        }
+
+        return false;
     }
 
 }

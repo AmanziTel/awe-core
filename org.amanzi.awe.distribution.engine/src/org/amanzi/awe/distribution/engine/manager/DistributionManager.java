@@ -24,6 +24,7 @@ import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.distribution.model.type.impl.EnumeratedDistributionType;
 import org.amanzi.awe.distribution.model.type.impl.NumberDistributionRange;
+import org.amanzi.awe.distribution.model.type.impl.NumberDistributionType;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -162,9 +163,11 @@ public class DistributionManager {
                 }
             } else if (Number.class.isAssignableFrom(clazz)) {
                 for (NumberDistributionRange numberDistributionType : NumberDistributionRange.values()) {
-
+                    result.add(getNumberDistributionType(numberDistributionType));
                 }
             }
+
+            return result;
         }
         return null;
     }
@@ -204,7 +207,7 @@ public class DistributionManager {
         if (result == null) {
             LOGGER.info("Creating DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ">.");
 
-            result = new EnumeratedDistributionType(model, nodeType, propertyName);
+            result = new NumberDistributionType(model, nodeType, propertyName, numberDistributionType);
             distributionTypeCache.put(key, result);
         }
 

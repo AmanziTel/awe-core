@@ -17,8 +17,11 @@ import java.util.Set;
 
 import org.amanzi.awe.distribution.model.type.impl.internal.AbstractDistributionType;
 import org.amanzi.awe.distribution.model.type.impl.internal.SimpleRange;
+import org.amanzi.awe.filters.impl.RangeFilter;
+import org.amanzi.awe.filters.impl.RangeFilter.RangeFilterType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.math3.util.Precision;
 
 /**
@@ -45,7 +48,7 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
      * @param propertyName
      * @param canChangeColors
      */
-    protected NumberDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
+    public NumberDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
             final NumberDistributionRange numberDistributionRange) {
         super(model, nodeType, propertyName, true);
         this.numberDistributionRange = numberDistributionRange;
@@ -63,6 +66,8 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
             double min = Double.MAX_VALUE;
             double max = -Double.MAX_VALUE;
 
+
+
             for (Object value : getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName())) {
                 double currentValue = ((Number)value).doubleValue();
 
@@ -73,7 +78,17 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
             double step = getStep(min, max, numberDistributionRange.getDelta());
 
             while (!Precision.equals(max, min, PRECISION_DELTA)) {
+                boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
 
+                double curMax = includeMax ? min + step : max;
+                RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END : RangeFilterType.INCLUDE_START_EXCLUDE_END;
+
+                Range range = Range.between(min, curMax);
+
+                RangeFilter filter = new RangeFilter(getPropertyName(), range, filterType);
+                ranges.add(new SimpleRange(getNumberDistributionRangeName(min, curMax), filter));
+
+                min+= step;
             }
         }
 
@@ -85,6 +100,12 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
         double scaleNum = Math.pow(10, DOUBLE_SCALE);
         res = Math.round(res * scaleNum) / scaleNum;
         return res;
+    }
+
+    private String getNumberDistributionRangeName(final double min, final double max) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(min).append(" - ").append(max);
+        return sb.toString();
     }
 
 }
