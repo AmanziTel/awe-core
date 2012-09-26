@@ -24,9 +24,18 @@ import org.amanzi.neo.core.period.Period;
  * @since 1.0.0
  */
 public interface IStatisticsViewFilterContainer {
-
+    /**
+     * get period
+     * 
+     * @return
+     */
     Period getPeriod();
 
+    /**
+     * getStartTime
+     * 
+     * @return
+     */
     Long getStartTime();
 
     Long getEndTime();
