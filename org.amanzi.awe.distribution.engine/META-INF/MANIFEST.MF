@@ -9,4 +9,5 @@ Require-Bundle: org.amanzi.awe.distribution.impl;bundle-version="1.0.0";visibili
  org.amanzi.awe.libs;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.distribution.engine.internal
+Export-Package: org.amanzi.awe.distribution.engine.internal,
+ org.amanzi.awe.distribution.engine.manager

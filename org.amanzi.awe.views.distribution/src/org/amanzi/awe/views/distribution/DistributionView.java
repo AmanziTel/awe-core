@@ -14,12 +14,23 @@
 package org.amanzi.awe.views.distribution;
 
 import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
+import org.amanzi.awe.distribution.engine.manager.DistributionManager;
+import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
+import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
+import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -34,7 +45,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener {
+public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener {
 
     private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
@@ -42,21 +53,57 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
 
-    private DistributionDatasetWidget distributionDatasetCombo;
+    private class DistributionJob extends Job {
+
+        public DistributionJob() {
+            super("Create Distribuiton model <" + currentManager.getCurrentDistributionType() + ">");
+        }
+
+        @Override
+        protected IStatus run(final IProgressMonitor monitor) {
+            try {
+                currentManager.build(monitor);
+
+                ActionUtil.getInstance().runTask(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        parentComposite.setEnabled(true);
+
+                        updateCharts();
+                    }
+
+                }, true);
+            } catch (ModelException e) {
+                return new Status(Status.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
+            }
+
+            return Status.OK_STATUS;
+        }
+
+    }
 
     private PropertyComboWidget propertyCombo;
 
     private boolean isInitialized = false;
 
+    private DistributionManager currentManager;
+
+    private DistributionTypeWidget distributionTypeCombo;
+
+    private Composite parentComposite;
+
     /**
      * 
      */
     public DistributionView() {
-        // TODO Auto-generated constructor stub
+
     }
 
     @Override
     public void createPartControl(final Composite parent) {
+        parentComposite = parent;
+
         Composite mainComposite = new Composite(parent, SWT.NONE);
         mainComposite.setLayout(new GridLayout(3, false));
         mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -67,8 +114,9 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
     }
 
     private void addDistributionTypeComposite(final Composite parent) {
-        distributionDatasetCombo = addDistributionDatasetWidget(parent, this, FIRST_ROW_LABEL_WIDTH);
+        addDistributionDatasetWidget(parent, this, FIRST_ROW_LABEL_WIDTH);
         propertyCombo = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Property:", parent, SECOND_ROW_LABEL_WIDTH);
+        distributionTypeCombo = addDistributionTypeWidget(parent, this, THIRD_ROW_LABEL_WIDTH);
     }
 
     @Override
@@ -87,16 +135,50 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         return result;
     }
 
+    private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener, final int minWidth) {
+        DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
+        result.initializeWidget();
+
+        return result;
+    }
+
     @Override
     public void onDistributionDatasetSelected(final DistributionDataset distributionDataset) {
         if (isInitialized) {
+            currentManager = DistributionManager.getManager(distributionDataset.getModel());
+            currentManager.setNodeType(distributionDataset.getNodeType());
+
             propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
         }
     }
 
     @Override
     public void onPropertySelected(final String property) {
-        // TODO Auto-generated method stub
+        if (isInitialized && (currentManager != null)) {
+            currentManager.setProperty(property);
+
+            distributionTypeCombo.setDistributionManager(currentManager);
+        }
+    }
+
+    @Override
+    public void onDistributionTypeSelected(final IDistributionType< ? > distributionType) {
+        if (isInitialized && (currentManager != null)) {
+            currentManager.setDistributionType(distributionType);
+
+            runDistribution();
+        }
+    }
+
+    private void runDistribution() {
+        if (currentManager.canBuild()) {
+            parentComposite.setEnabled(false);
+
+            new DistributionJob().schedule();
+        }
+    }
+
+    private void updateCharts() {
 
     }
 

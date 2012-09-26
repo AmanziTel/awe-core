@@ -172,13 +172,9 @@ public class DistributionManager {
         return null;
     }
 
-    public IDistributionModel build(final IProgressMonitor progressMonitor) {
+    public IDistributionModel build(final IProgressMonitor progressMonitor) throws ModelException{
         if (canBuild()) {
-            try {
-                return DistributionEngine.getEngine().build(model, distributionType, progressMonitor);
-            } catch (ModelException e) {
-                LOGGER.error("Error on calculating distribution", e);
-            }
+            return DistributionEngine.getEngine().build(model, distributionType, progressMonitor);
         }
 
         return null;
@@ -212,6 +208,14 @@ public class DistributionManager {
         }
 
         return result;
+    }
+
+    public void setDistributionType(final IDistributionType<?> distributionType) {
+        this.distributionType = distributionType;
+    }
+
+    public IDistributionType<?> getCurrentDistributionType() {
+        return distributionType;
     }
 
 }
