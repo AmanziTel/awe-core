@@ -51,7 +51,6 @@ import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.experimental.chart.swt.ChartComposite;
-import org.jfree.ui.RectangleInsets;
 
 /**
  * TODO Purpose of
