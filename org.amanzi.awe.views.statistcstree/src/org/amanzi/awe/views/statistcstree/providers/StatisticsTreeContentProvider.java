@@ -261,7 +261,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     protected Iterable<Object> getRowsForGroup(final Iterable<IStatisticsRow> rows, final IDataElement group) {
         Set<Object> groups = new HashSet<Object>();
         for (IStatisticsRow row : rows) {
-            if (row.getStatisticsGroup().equals(group)) {
+            if (row.getStatisticsGroup().equals(group) && !row.isSummury()) {
                 groups.add(row);
             }
         }

@@ -69,6 +69,9 @@ public class StatisticsTreeView extends AbstractTreeView {
 
     @Override
     protected ITreeItem< ? , ? > getTreeItem(final IModel model, final IDataElement element) {
+        if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
+            getTreeViewer().setContentProvider(new StatisticsTreeContentProvider(DimensionType.TIME));
+        }
         return new TreeViewItem<IStatisticsModel, IDataElement>((IStatisticsModel)model, element);
     }
 

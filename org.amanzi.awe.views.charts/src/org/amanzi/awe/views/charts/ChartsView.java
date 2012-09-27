@@ -51,6 +51,7 @@ import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.experimental.chart.swt.ChartComposite;
+import org.jfree.ui.RectangleInsets;
 
 /**
  * TODO Purpose of
@@ -95,7 +96,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         this.main = parent;
         parent.setLayout(new GridLayout(1, false));
 
-        controlsComposite = new Composite(parent, SWT.BORDER);
+        controlsComposite = new Composite(parent, SWT.NONE);
         controlsComposite.setLayout(new GridLayout(1, false));
         controlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -206,6 +207,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         }
         chartComposite.setChart(chart);
         chartComposite.setHorizontalAxisTrace(true);
+
         main.redraw();
         chartComposite.setVisible(true);
     }
