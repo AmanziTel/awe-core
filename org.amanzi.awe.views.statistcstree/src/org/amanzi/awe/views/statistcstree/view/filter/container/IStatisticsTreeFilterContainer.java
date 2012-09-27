@@ -27,11 +27,14 @@ import org.amanzi.neo.core.period.Period;
  */
 public interface IStatisticsTreeFilterContainer {
 
-    long getRowStartTime();
+    long getStartTime();
+
+    long getEndTime();
 
     Collection<String> getGroupNames();
 
     String getCellName();
 
     Period getPeriod();
+
 }

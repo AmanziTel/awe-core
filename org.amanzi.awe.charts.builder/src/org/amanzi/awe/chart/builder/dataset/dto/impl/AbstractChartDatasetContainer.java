@@ -35,15 +35,17 @@ import org.jfree.data.general.Dataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractChartDatasetContainer<T extends Dataset> implements IChartDatasetContainer {
+public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends ColumnCachedItem>
+        implements
+            IChartDatasetContainer {
 
     private Map<IRangeAxis, T> datasets;
 
     private IChartModel model;
 
-    private static final String CACHE_KEY_FORMAT = "%s _ %s";
+    private static final String CACHE_KEY_FORMAT = "%s_%s";
 
-    private Map<String, ColumnCachedItem> columnCache = new HashMap<String, ColumnCachedItem>();
+    private Map<String, C> columnCache = new HashMap<String, C>();
 
     public AbstractChartDatasetContainer(IChartModel model) {
         datasets = new HashMap<IRangeAxis, T>();
@@ -84,7 +86,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
         columnCache.clear();
     }
 
-    protected Iterable<ColumnCachedItem> getCachedColumns() {
+    protected Iterable<C> getCachedColumns() {
         return columnCache.values();
     }
 
@@ -123,7 +125,6 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
      * @param requiredCell
      */
     protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
-        ColumnCachedItem column = getColumnFromCache(row, requiredCell);
         for (IStatisticsCell cell : row.getStatisticsCells()) {
             if (!cell.getName().equals(requiredCell)) {
                 continue;
@@ -132,8 +133,10 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
             if (cellValue == null) {
                 break;
             }
+            C column = getColumnFromCache(row, requiredCell);
             column.increase(cellValue);
             column.addGroup(row.getStatisticsGroup().getPropertyValue());
+            break;
         }
     }
 
@@ -164,15 +167,21 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
      * @param requiredCell
      * @return
      */
-    protected ColumnCachedItem getColumnFromCache(IStatisticsRow row, String requiredCell) {
-        String key = String.format(CACHE_KEY_FORMAT, row.getStartDate(), requiredCell);
-        ColumnCachedItem container;
+    protected C getColumnFromCache(IStatisticsRow row, String requiredCell) {
+        String key = getCacheKey(row, requiredCell);
+        C container;
         if (!columnCache.containsKey(key)) {
-            container = new ColumnCachedItem(row, requiredCell);
+            container = createColumn(row, requiredCell);
             columnCache.put(key, container);
         } else {
             container = columnCache.get(key);
         }
         return container;
     }
+
+    protected String getCacheKey(IStatisticsRow row, String requiredCell) {
+        return String.format(CACHE_KEY_FORMAT, row.getStartDate(), requiredCell);
+    }
+
+    protected abstract C createColumn(IStatisticsRow row, String requiredCell);
 }

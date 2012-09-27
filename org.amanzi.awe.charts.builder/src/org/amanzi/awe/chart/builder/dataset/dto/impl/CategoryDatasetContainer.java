@@ -14,6 +14,7 @@
 package org.amanzi.awe.chart.builder.dataset.dto.impl;
 
 import org.amanzi.awe.charts.model.IChartModel;
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
@@ -24,7 +25,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CategoryDatasetContainer extends AbstractChartDatasetContainer<DefaultCategoryDataset> {
+public class CategoryDatasetContainer extends AbstractChartDatasetContainer<DefaultCategoryDataset, ColumnCachedItem> {
 
     /**
      * @param model
@@ -37,6 +38,9 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
     protected void finishup(DefaultCategoryDataset dataset) {
         Iterable<ColumnCachedItem> columns = getCachedColumns();
         for (ColumnCachedItem column : columns) {
+            if (column.getValue() == 0d) {
+                continue;
+            }
             dataset.setValue(column.getValue(), column.getCellName(), column);
         }
     }
@@ -45,4 +49,10 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
     protected DefaultCategoryDataset createDataset() {
         return new DefaultCategoryDataset();
     }
+
+    @Override
+    protected ColumnCachedItem createColumn(IStatisticsRow row, String cellName) {
+        return new ColumnCachedItem(row, cellName);
+    }
+
 }

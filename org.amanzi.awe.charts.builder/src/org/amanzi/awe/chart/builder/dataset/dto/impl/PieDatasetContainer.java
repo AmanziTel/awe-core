@@ -30,7 +30,7 @@ import org.jfree.data.general.DefaultPieDataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset> {
+public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset, ColumnCachedItem> {
 
     /**
      * @param model
@@ -89,4 +89,10 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
     protected DefaultPieDataset createDataset() {
         return new DefaultPieDataset();
     }
+
+    @Override
+    protected ColumnCachedItem createColumn(IStatisticsRow row, String cellName) {
+        return new ColumnCachedItem(row, cellName);
+    }
+
 }

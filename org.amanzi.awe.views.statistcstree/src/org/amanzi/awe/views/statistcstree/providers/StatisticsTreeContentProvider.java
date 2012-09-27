@@ -206,7 +206,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
             return new StatisticsElementIterable(getStatisticsGroups(model, type, child.getName()));
         } else if (nodeType.equals(StatisticsNodeType.GROUP)) {
             IStatisticsGroup group = (IStatisticsGroup)child;
-            Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
+            Iterable<IStatisticsRow> rows = getRows(model, group.getPeriod());
             return getRowsForGroup(rows, child);
         } else if (nodeType.equals(StatisticsNodeType.S_ROW)) {
             return getRowsChildren((IStatisticsRow)child);
@@ -216,6 +216,10 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
 
         }
         return null;
+    }
+
+    protected Iterable<IStatisticsRow> getRows(IStatisticsModel model, String period) throws ModelException {
+        return model.getStatisticsRows(period);
     }
 
     protected Iterable< ? extends IDataElement> getStatisticsGroups(IStatisticsModel model, DimensionType type, String levelName)

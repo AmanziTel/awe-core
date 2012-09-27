@@ -16,6 +16,7 @@ package org.amanzi.awe.chart.builder.dataset.dto.impl;
 import java.util.Date;
 
 import org.amanzi.awe.charts.model.IChartModel;
+import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Month;
@@ -31,7 +32,7 @@ import org.jfree.data.time.Week;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer<TimeSeriesCollection> {
+public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer<TimeSeriesCollection, ColumnCachedItem> {
 
     public TimeSeriesCollectionContainer(IChartModel model) {
         super(model);
@@ -41,13 +42,13 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
      * get existed timeseries from dataset or create new one if not exists
      * 
      * @param dataset
-     * @param cellName
+     * @param column
      * @return
      */
-    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, String cellName) {
-        TimeSeries ts = dataset.getSeries(cellName);
+    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, ColumnCachedItem column) {
+        TimeSeries ts = dataset.getSeries(column.getCellName());
         if (ts == null) {
-            ts = new TimeSeries(cellName);
+            ts = new TimeSeries(column.getCellName());
             dataset.addSeries(ts);
         }
         return ts;
@@ -93,7 +94,7 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
             default:
                 break;
             }
-            TimeSeries ts = getTimeSeries(dataset, column.getCellName());
+            TimeSeries ts = getTimeSeries(dataset, column);
             updateTimeSeries(ts, column);
         }
     }
@@ -101,6 +102,17 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
     @Override
     protected TimeSeriesCollection createDataset() {
         return new TimeSeriesCollection();
+    }
+
+    @Override
+    protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
+        getColumnFromCache(row, requiredCell);
+        super.handleAxisCell(row, requiredCell);
+    }
+
+    @Override
+    protected ColumnCachedItem createColumn(IStatisticsRow row, String requiredCell) {
+        return new ColumnCachedItem(row, requiredCell);
     }
 
 }

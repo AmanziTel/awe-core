@@ -14,9 +14,7 @@
 package org.amanzi.awe.views.statistcstree.providers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
@@ -50,9 +48,9 @@ public class StatisticsTreeFilteredContentProvider extends StatisticsTreeContent
     protected Iterable< ? extends IDataElement> getStatisticsGroups(IStatisticsModel model, DimensionType type, String levelName)
             throws ModelException {
         List<IStatisticsGroup> groups = new ArrayList<IStatisticsGroup>();
-        for (IStatisticsGroup group : model.getAllStatisticsGroups(type, levelName)) {
-            if (filter.getGroupNames().contains(group.getPropertyValue())) {
-                groups.add(group);
+        for (IStatisticsRow row : getRows(model, levelName)) {
+            if (filter.getGroupNames().contains(row.getStatisticsGroup().getPropertyValue())) {
+                groups.add(row.getStatisticsGroup());
             }
         }
         return groups;
@@ -76,14 +74,9 @@ public class StatisticsTreeFilteredContentProvider extends StatisticsTreeContent
         return statisticsModels;
     }
 
-    protected Iterable<Object> getRowsForGroup(final Iterable<IStatisticsRow> rows, final IDataElement group) {
-        Set<Object> groups = new HashSet<Object>();
-        for (IStatisticsRow row : rows) {
-            if (row.getStatisticsGroup().equals(group) && row.getStartDate() == filter.getRowStartTime() && !row.isSummury()) {
-                groups.add(row);
-            }
-        }
-        return groups;
+    @Override
+    protected Iterable<IStatisticsRow> getRows(IStatisticsModel model, String period) throws ModelException {
+        return model.getStatisticsRowsInTimeRange(period, filter.getStartTime(), filter.getEndTime());
     }
 
     @Override

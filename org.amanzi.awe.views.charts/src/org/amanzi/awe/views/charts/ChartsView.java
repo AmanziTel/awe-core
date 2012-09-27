@@ -88,11 +88,16 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
     private IStatisticsViewFilterContainer container;
 
+    private Composite main;
+
     @Override
     public void createPartControl(Composite parent) {
+        this.main = parent;
+        parent.setLayout(new GridLayout(1, false));
 
         controlsComposite = new Composite(parent, SWT.BORDER);
         controlsComposite.setLayout(new GridLayout(1, false));
+        controlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite buttonsContainer = new Composite(controlsComposite, SWT.NONE);
         buttonsContainer.setLayout(new GridLayout(4, true));
@@ -112,8 +117,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
         groupSelectorWidget.initializeWidget();
         columnsSelectorWidget.initializeWidget();
-
-        chartComposite = new ChartComposite(controlsComposite, SWT.NONE);
+        chartComposite = new ChartComposite(parent, SWT.FILL);
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         chartComposite.setVisible(false);
         chartComposite.addChartMouseListener(this);
@@ -194,14 +198,16 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
      */
     private void updateChart(IChartModel chartModel) {
         ChartsCahceId ID = new ChartsCahceId(chartModel, container);
+
         JFreeChart chart = chartsCache.get(ID);
         if (chart == null) {
             chart = ChartsManager.getInstance().buildChart(chartModel);
             chartsCache.put(ID, chart);
         }
-        chartComposite.setVisible(true);
         chartComposite.setChart(chart);
-        chartComposite.forceRedraw();
+        chartComposite.setHorizontalAxisTrace(true);
+        main.redraw();
+        chartComposite.setVisible(true);
     }
 
     /**
@@ -288,8 +294,8 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
             CategoryItemEntity entity = (CategoryItemEntity)event.getEntity();
             IColumnItem column = (IColumnItem)entity.getColumnKey();
             EventChain chain = new EventChain(true);
-            chain.addEvent(new ShowInViewEvent(model, new ShowInStatisticsTreeFilter(column.getGroupsNames(), column.getRow(),
-                    column.getCellName(), container.getPeriod()), this));
+            chain.addEvent(new ShowInViewEvent(model, new ShowInStatisticsTreeFilter(column.getGroupsNames(), column.getRow()
+                    .getStartDate(), column.getRow().getEndDate(), (String)entity.getRowKey(), container.getPeriod()), this));
             AWEEventManager.getManager().fireEventChain(chain);
         }
 

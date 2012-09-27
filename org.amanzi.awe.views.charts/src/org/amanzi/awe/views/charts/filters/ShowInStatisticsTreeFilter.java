@@ -15,7 +15,6 @@ package org.amanzi.awe.views.charts.filters;
 
 import java.util.Collection;
 
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.views.statistcstree.view.filter.container.IStatisticsTreeFilterContainer;
 import org.amanzi.neo.core.period.Period;
 
@@ -30,9 +29,10 @@ import org.amanzi.neo.core.period.Period;
 public class ShowInStatisticsTreeFilter implements IStatisticsTreeFilterContainer {
 
     private Collection<String> groups;
-    private IStatisticsRow row;
     private String cellName;
     private Period period;
+    private long startDate;
+    private long endDate;
 
     /**
      * @param groups
@@ -40,17 +40,13 @@ public class ShowInStatisticsTreeFilter implements IStatisticsTreeFilterContaine
      * @param cellName
      * @param model
      */
-    public ShowInStatisticsTreeFilter(Collection<String> groups, IStatisticsRow row, String cellName, Period period) {
+    public ShowInStatisticsTreeFilter(Collection<String> groups, long startDate, long endDate, String cellName, Period period) {
         super();
         this.groups = groups;
-        this.row = row;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.cellName = cellName;
         this.period = period;
-    }
-
-    @Override
-    public long getRowStartTime() {
-        return row.getStartDate();
     }
 
     @Override
@@ -63,10 +59,19 @@ public class ShowInStatisticsTreeFilter implements IStatisticsTreeFilterContaine
         return cellName;
     }
 
-
     @Override
     public Period getPeriod() {
         return period;
+    }
+
+    @Override
+    public long getStartTime() {
+        return startDate;
+    }
+
+    @Override
+    public long getEndTime() {
+        return endDate;
     }
 
 }

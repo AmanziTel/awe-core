@@ -43,6 +43,10 @@ public class ColumnCachedItem implements IColumnItem {
 
     private int count = 0;
 
+    protected ColumnCachedItem() {
+
+    }
+
     /**
      * @param row
      * @param cellName
@@ -73,7 +77,7 @@ public class ColumnCachedItem implements IColumnItem {
         return name.compareTo(o.getName());
     }
 
-    protected void increase(Number value) {
+    public void increase(Number value) {
         this.value += value.doubleValue();
         this.count++;
     }
@@ -128,6 +132,27 @@ public class ColumnCachedItem implements IColumnItem {
         } else if (!name.equals(other.name))
             return false;
         return true;
+    }
+
+    /**
+     * @param row The row to set.
+     */
+    protected void setRow(IStatisticsRow row) {
+        this.row = row;
+    }
+
+    /**
+     * @param name The name to set.
+     */
+    protected void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @param cellName The cellName to set.
+     */
+    protected void setCellName(String cellName) {
+        this.cellName = cellName;
     }
 
 }
