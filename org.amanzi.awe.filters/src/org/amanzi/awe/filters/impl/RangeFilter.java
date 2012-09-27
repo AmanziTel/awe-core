@@ -25,7 +25,7 @@ import org.apache.commons.lang3.Range;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class RangeFilter<T extends Comparable<T>> extends AbstractFilter<T> {
+public class RangeFilter extends AbstractFilter<Number> {
 
     public enum RangeFilterType {
         INCLUDE_START_AND_END,
@@ -34,14 +34,14 @@ public class RangeFilter<T extends Comparable<T>> extends AbstractFilter<T> {
         EXCLUDE_START_AND_END;
     }
 
-    private final Range<T> range;
+    private final Range<Number> range;
 
     private final RangeFilterType filterType;
 
     /**
      * @param propertyName
      */
-    public RangeFilter(final String propertyName, final Range<T> range, final RangeFilterType filterType) {
+    public RangeFilter(final String propertyName, final Range<Number> range, final RangeFilterType filterType) {
         super(propertyName);
         this.range = range;
         this.filterType = filterType;
@@ -49,18 +49,20 @@ public class RangeFilter<T extends Comparable<T>> extends AbstractFilter<T> {
 
     @Override
     public boolean matches(final IDataElement element) {
-        T value = getElementValue(element);
-        boolean contains = range.contains(value);
+        Number value = getElementValue(element);
+        boolean contains = value == null ? false : range.contains(value.doubleValue());
 
-        switch (filterType) {
-        case EXCLUDE_START_AND_END:
-            return contains && !range.isStartedBy(value) && !range.isStartedBy(value);
-        case EXCLUDE_START_INCLUDE_END:
-            return contains && !range.isStartedBy(value);
-        case INCLUDE_START_AND_END:
-            return contains;
-        case INCLUDE_START_EXCLUDE_END:
-            return contains && !range.isStartedBy(value);
+        if (contains) {
+            switch (filterType) {
+            case EXCLUDE_START_AND_END:
+                return contains && !range.isStartedBy(value) && !range.isStartedBy(value);
+            case EXCLUDE_START_INCLUDE_END:
+                return contains && !range.isStartedBy(value);
+            case INCLUDE_START_AND_END:
+                return contains;
+            case INCLUDE_START_EXCLUDE_END:
+                return contains && !range.isStartedBy(value);
+            }
         }
 
         return false;
