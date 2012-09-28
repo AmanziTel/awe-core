@@ -34,6 +34,7 @@ import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -171,5 +172,10 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     private static int[] convertColorToArray(final Color color) {
         return new int[] {color.getRed(), color.getGreen(), color.getBlue()};
+    }
+
+    @Override
+    protected RelationshipType getRelationToParent() {
+        return DistributionRelationshipType.DISTRIBUTION;
     }
 }

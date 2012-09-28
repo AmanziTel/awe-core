@@ -93,6 +93,7 @@ public class DistributionEngine extends AbstractTransactional {
 
             result.setCurrent(true);
 
+            result.finishUp();
             isSuccess = true;
         } catch (Exception e) {
             LOGGER.error("An error occured on Distribution calculation", e);
