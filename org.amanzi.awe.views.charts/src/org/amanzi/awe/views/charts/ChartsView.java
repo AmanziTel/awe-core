@@ -116,8 +116,13 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         columnsSelectorWidget = new ItemsSelectorWidget(filteringContainer, this, CELLS_LABEL);
 
         groupSelectorWidget.initializeWidget();
+        int width = parent.getShell().getSize().x;
+
+        chartComposite = new ChartComposite(parent, SWT.FILL, null, ChartComposite.DEFAULT_WIDTH, ChartComposite.DEFAULT_HEIGHT,
+                ChartComposite.DEFAULT_MINIMUM_DRAW_WIDTH, ChartComposite.DEFAULT_MINIMUM_DRAW_HEIGHT, width,
+                ChartComposite.DEFAULT_MAXIMUM_DRAW_HEIGHT, true, true, true, true, true, true);
+
         columnsSelectorWidget.initializeWidget();
-        chartComposite = new ChartComposite(parent, SWT.FILL);
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         chartComposite.setVisible(false);
         chartComposite.addChartMouseListener(this);
