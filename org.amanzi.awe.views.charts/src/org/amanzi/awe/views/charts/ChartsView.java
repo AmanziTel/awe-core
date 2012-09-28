@@ -82,9 +82,11 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     @Override
     public void createPartControl(Composite parent) {
+        parent.setLayout(new GridLayout(1, false));
 
-        controlsComposite = new Composite(parent, SWT.BORDER);
+        controlsComposite = new Composite(parent, SWT.NONE);
         controlsComposite.setLayout(new GridLayout(1, false));
+        controlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite buttonsContainer = new Composite(controlsComposite, SWT.NONE);
         buttonsContainer.setLayout(new GridLayout(4, true));
@@ -103,9 +105,13 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
         columnsSelectorWidget = new ItemsSelectorWidget(filteringContainer, this, CELLS_LABEL);
 
         groupSelectorWidget.initializeWidget();
-        columnsSelectorWidget.initializeWidget();
+        int width = parent.getShell().getSize().x;
 
-        chartComposite = new ChartComposite(controlsComposite, SWT.NONE);
+        chartComposite = new ChartComposite(parent, SWT.FILL, null, ChartComposite.DEFAULT_WIDTH, ChartComposite.DEFAULT_HEIGHT,
+                ChartComposite.DEFAULT_MINIMUM_DRAW_WIDTH, ChartComposite.DEFAULT_MINIMUM_DRAW_HEIGHT, width,
+                ChartComposite.DEFAULT_MAXIMUM_DRAW_HEIGHT, true, true, true, true, true, true);
+
+        columnsSelectorWidget.initializeWidget();
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         chartComposite.setVisible(false);
     }
@@ -190,9 +196,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
             chart = ChartsManager.getInstance().buildChart(chartModel);
             chartsCache.put(ID, chart);
         }
-        chartComposite.setVisible(true);
         chartComposite.setChart(chart);
         chartComposite.forceRedraw();
+        chartComposite.setVisible(true);
     }
 
     /**
