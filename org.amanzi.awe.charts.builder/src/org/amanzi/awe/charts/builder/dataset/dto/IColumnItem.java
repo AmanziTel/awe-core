@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto;
+package org.amanzi.awe.charts.builder.dataset.dto;
 
 import java.util.Collection;
 

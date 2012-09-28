@@ -41,11 +41,14 @@ public class StatisticsTreeView extends AbstractTreeView {
 
     public static final String VIEW_ID = "org.amanzi.awe.views.statistcstree.StatisticsTreeView";
 
+    private static final StatisticsTreeContentProvider DEFAULT_CONTENT_PROVIDER = new StatisticsTreeContentProvider(
+            DimensionType.TIME);
+
     /**
      * @param provider
      */
     public StatisticsTreeView() {
-        super(new StatisticsTreeContentProvider(DimensionType.TIME));
+        super(DEFAULT_CONTENT_PROVIDER);
     }
 
     /**
@@ -69,9 +72,6 @@ public class StatisticsTreeView extends AbstractTreeView {
 
     @Override
     protected ITreeItem< ? , ? > getTreeItem(final IModel model, final IDataElement element) {
-        if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
-            getTreeViewer().setContentProvider(new StatisticsTreeContentProvider(DimensionType.TIME));
-        }
         return new TreeViewItem<IStatisticsModel, IDataElement>((IStatisticsModel)model, element);
     }
 
@@ -80,9 +80,25 @@ public class StatisticsTreeView extends AbstractTreeView {
      * @param filter
      */
     public void filterTree(IModel parent, IStatisticsTreeFilterContainer filter) {
+        if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
+            StatisticsTreeFilteredContentProvider contentProvider = (StatisticsTreeFilteredContentProvider)getTreeViewer()
+                    .getContentProvider();
+            if (contentProvider.getFilter().equals(filter)) {
+                showElement(parent, null);
+                return;
+            }
+        }
         getTreeViewer().setContentProvider(
                 new StatisticsTreeFilteredContentProvider(DimensionType.TIME, (IStatisticsModel)parent, filter));
         getTreeViewer().expandToLevel(5);
 
+    }
+
+    @Override
+    public void showElement(IModel model, IDataElement element) {
+        if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
+            getTreeViewer().setContentProvider(DEFAULT_CONTENT_PROVIDER);
+        }
+        super.showElement(model, element);
     }
 }

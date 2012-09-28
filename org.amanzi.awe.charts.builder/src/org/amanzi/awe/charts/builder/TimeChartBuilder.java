@@ -11,12 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder;
 
 import java.text.NumberFormat;
 
-import org.amanzi.awe.chart.builder.dataset.dto.impl.TimeSeriesCollectionContainer;
-import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.builder.dataset.dto.impl.TimeSeriesCollectionContainer;
+import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.jfree.chart.ChartFactory;
@@ -87,7 +87,6 @@ public class TimeChartBuilder
         // TODO KV: move to date format manager;
         dateAxis.setDateFormatOverride(ChartsManager.getInstance().getDefaultDateFormat());
         dateAxis.setAutoRange(true);
-        dateAxis.setTickLabelFont(getDefaultDomainAxisFont());
         return dateAxis;
     }
 

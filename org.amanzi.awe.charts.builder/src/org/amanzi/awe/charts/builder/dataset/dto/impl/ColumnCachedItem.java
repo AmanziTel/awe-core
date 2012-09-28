@@ -11,14 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.awe.chart.builder.dataset.dto.IColumnItem;
-import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.builder.dataset.dto.IColumnItem;
+import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 
 /**

@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.chart.builder.dataset.dto.IColumnItem;
-import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.builder.dataset.dto.IColumnItem;
 import org.amanzi.awe.charts.impl.ChartModelPlugin;
+import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.ChartType;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
@@ -169,6 +169,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
     @Override
     public void onItemSelected() {
+        if (container == null) {
+            return;
+        }
         IChartModel chartModel = createChartModel(model, container);
         updateChart(chartModel);
     }

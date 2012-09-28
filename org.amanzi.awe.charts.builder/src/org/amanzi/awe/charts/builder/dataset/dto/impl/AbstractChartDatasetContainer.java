@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.chart.builder.dataset.dto.IChartDatasetContainer;
-import org.amanzi.awe.chart.builder.dataset.dto.IColumnItem;
-import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.builder.dataset.dto.IChartDatasetContainer;
+import org.amanzi.awe.charts.builder.dataset.dto.IColumnItem;
+import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;

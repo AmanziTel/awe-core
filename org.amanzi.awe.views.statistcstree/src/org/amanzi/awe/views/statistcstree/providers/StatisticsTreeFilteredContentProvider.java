@@ -89,4 +89,8 @@ public class StatisticsTreeFilteredContentProvider extends StatisticsTreeContent
         }
         return cells;
     }
+
+    public IStatisticsTreeFilterContainer getFilter() {
+        return filter;
+    }
 }

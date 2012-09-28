@@ -11,11 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder;
 
 import java.awt.Font;
 
 import org.amanzi.awe.charts.model.IChartModel;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.chart.title.Title;
+import org.jfree.ui.RectangleEdge;
 
 /**
  * <p>
@@ -28,7 +31,19 @@ import org.amanzi.awe.charts.model.IChartModel;
 public abstract class AbstractChartBuilder implements IChartBuilder {
 
     private IChartModel model;
+
     private static final Font DEFAULT_DOMAIN_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+
+    private static final Font DEFAULT_SUBTITLE_FONT = new Font(Font.SANS_SERIF, Font.CENTER_BASELINE, 10);
+
+    private static final TextTitle SUB_TITLE = new TextTitle();
+
+    private static final Font DEFAULT_AXIS_FONT = new Font(Font.DIALOG, Font.BOLD, 14);
+
+    static {
+        SUB_TITLE.setFont(DEFAULT_SUBTITLE_FONT);
+        SUB_TITLE.setPosition(RectangleEdge.BOTTOM);
+    }
 
     protected AbstractChartBuilder(IChartModel model) {
         this.model = model;
@@ -38,7 +53,16 @@ public abstract class AbstractChartBuilder implements IChartBuilder {
         return model;
     }
 
-    protected Font getDefaultDomainAxisFont() {
+    protected Font getDefaulTickLabelFont() {
         return DEFAULT_DOMAIN_FONT;
+    }
+
+    protected Title getSubTitle(String text) {
+        SUB_TITLE.setText(text);;
+        return SUB_TITLE;
+    }
+
+    protected Font getDefaultAxisFont() {
+        return DEFAULT_AXIS_FONT;
     }
 }

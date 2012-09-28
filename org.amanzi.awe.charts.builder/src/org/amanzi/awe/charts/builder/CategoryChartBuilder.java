@@ -11,13 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Paint;
 
-import org.amanzi.awe.chart.builder.dataset.dto.impl.CategoryDatasetContainer;
+import org.amanzi.awe.charts.builder.dataset.dto.impl.CategoryDatasetContainer;
+import org.amanzi.awe.charts.builder.internal.Messages;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.jfree.chart.JFreeChart;
@@ -104,7 +105,9 @@ public class CategoryChartBuilder
         CategoryAxis domainAxis = new CategoryAxis(domainAxisName);
         domainAxis.setMaximumCategoryLabelWidthRatio(MAXIMUM_CATEGORY_LABEL_WIDTH);
         domainAxis.setMaximumCategoryLabelLines(MAXIMUM_CATEGORY_LABEL_LINES);
-        domainAxis.setTickLabelFont(getDefaultDomainAxisFont());
+        domainAxis.setLabel(domainAxisName);
+        domainAxis.setTickLabelFont(getDefaulTickLabelFont());
+        domainAxis.setLabelFont(getDefaultAxisFont());
         return domainAxis;
     }
 
@@ -132,6 +135,8 @@ public class CategoryChartBuilder
     protected JFreeChart finishUp(JFreeChart chart) {
         chart = new JFreeChart(getModel().getName(), getPlot());
         chart.setBackgroundPaint(Color.WHITE);
+
+        chart.addSubtitle(getSubTitle(Messages.clickItemToDrillDown));
         return chart;
     }
 }
