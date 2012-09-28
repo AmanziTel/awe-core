@@ -100,6 +100,8 @@ public class DistributionChartDataset extends AbstractDataset implements Categor
 
     public void setDistributionBars(final List<IDistributionBar> distributionBars) {
         this.distributionBars = distributionBars;
+
+        fireDatasetChanged();
     }
 
 }

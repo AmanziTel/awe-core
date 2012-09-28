@@ -115,7 +115,7 @@ public class DistributionEngine extends AbstractTransactional {
 
             List<Pair<IRange, IDistributionBar>> distributionConditions = createDistributionBars(distributionModel, distributionType);
 
-            NEXT_ELEMENT: for (IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
+            for (IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
                 for (Pair<IRange, IDistributionBar> condition : distributionConditions) {
                     IRange range = condition.getLeft();
 
@@ -123,7 +123,7 @@ public class DistributionEngine extends AbstractTransactional {
                         IDistributionBar bar = condition.getRight();
 
                         distributionModel.createAggregation(bar, element);
-                        break NEXT_ELEMENT;
+                        break;
                     }
                 }
                 monitor.worked(1);

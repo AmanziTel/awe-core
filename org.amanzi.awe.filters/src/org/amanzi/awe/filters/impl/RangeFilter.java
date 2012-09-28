@@ -50,18 +50,21 @@ public class RangeFilter extends AbstractFilter<Number> {
     @Override
     public boolean matches(final IDataElement element) {
         Number value = getElementValue(element);
-        boolean contains = value == null ? false : range.contains(value.doubleValue());
+        if (value != null) {
+            double dValue = value.doubleValue();
+            boolean contains = range.contains(dValue);
 
-        if (contains) {
-            switch (filterType) {
-            case EXCLUDE_START_AND_END:
-                return contains && !range.isStartedBy(value) && !range.isStartedBy(value);
-            case EXCLUDE_START_INCLUDE_END:
-                return contains && !range.isStartedBy(value);
-            case INCLUDE_START_AND_END:
-                return contains;
-            case INCLUDE_START_EXCLUDE_END:
-                return contains && !range.isStartedBy(value);
+            if (contains) {
+                switch (filterType) {
+                case EXCLUDE_START_AND_END:
+                    return contains && !range.isStartedBy(dValue) && !range.isStartedBy(dValue);
+                case EXCLUDE_START_INCLUDE_END:
+                    return contains && !range.isStartedBy(dValue);
+                case INCLUDE_START_AND_END:
+                    return contains;
+                case INCLUDE_START_EXCLUDE_END:
+                    return contains && !range.isStartedBy(dValue);
+                }
             }
         }
 

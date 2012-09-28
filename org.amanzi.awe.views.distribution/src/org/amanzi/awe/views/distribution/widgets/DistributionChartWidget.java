@@ -73,6 +73,8 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
         ChartComposite frame = new ChartComposite(parent, style, distributionChart, true);
         frame.pack();
 
+        frame.setEnabled(false);
+
         return frame;
     }
 
@@ -94,6 +96,7 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
         CategoryPlot plot = (CategoryPlot)chart.getPlot();
         NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        rangeAxis.setAutoRange(true);
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(PLOT_BACKGROUND);
