@@ -13,10 +13,15 @@
 
 package org.amanzi.awe.chart.builder.dataset.dto.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.chart.builder.dataset.dto.IChartDatasetContainer;
+import org.amanzi.awe.chart.builder.dataset.dto.IColumnItem;
 import org.amanzi.awe.chart.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
@@ -46,6 +51,17 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
     private static final String CACHE_KEY_FORMAT = "%s_%s";
 
     private Map<String, C> columnCache = new HashMap<String, C>();
+
+    private class ColumnsSorter implements Comparator<IColumnItem> {
+
+        @Override
+        public int compare(IColumnItem o1, IColumnItem o2) {
+            Long firstTime = o1.getRow().getStartDate();
+            Long secondTime = o2.getRow().getStartDate();
+            return firstTime.compareTo(secondTime);
+        }
+
+    }
 
     public AbstractChartDatasetContainer(IChartModel model) {
         datasets = new HashMap<IRangeAxis, T>();
@@ -87,7 +103,9 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
     }
 
     protected Iterable<C> getCachedColumns() {
-        return columnCache.values();
+        List<C> columns = new ArrayList<C>(columnCache.values());
+        Collections.sort(columns, new ColumnsSorter());
+        return columns;
     }
 
     /**
