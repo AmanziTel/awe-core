@@ -46,7 +46,7 @@ public class StackedChartBuilder extends AbstractChartBuilder {
                 // title
                 getModel().getDomainAxisName(), getModel().getMainRangeAxis().getName(),
                 (CategoryDataset)dataset.getDataset(getModel().getMainRangeAxis()), getModel().getPlotOrientation(), true, true,
-                false);
+                true);
         ((CategoryPlot)chart.getPlot()).setRenderer(new StackedBarRenderer3D());
         CategoryAxis axis = ((CategoryPlot)chart.getPlot()).getDomainAxis();
         axis.setTickLabelFont(getDefaultDomainAxisFont());
