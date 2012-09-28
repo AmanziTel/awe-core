@@ -209,9 +209,8 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
             chart = ChartsManager.getInstance().buildChart(chartModel);
             chartsCache.put(ID, chart);
         }
-        chartComposite.setChart(chart);
-        chartComposite.setHorizontalAxisTrace(true);
 
+        chartComposite.setChart(chart);
         main.redraw();
         chartComposite.setVisible(true);
     }
