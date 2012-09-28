@@ -88,11 +88,8 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
     private IStatisticsViewFilterContainer container;
 
-    private Composite main;
-
     @Override
     public void createPartControl(Composite parent) {
-        this.main = parent;
         parent.setLayout(new GridLayout(1, false));
 
         controlsComposite = new Composite(parent, SWT.NONE);
@@ -211,8 +208,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         }
 
         chartComposite.setChart(chart);
-        main.redraw();
+        chartComposite.forceRedraw();
         chartComposite.setVisible(true);
+
     }
 
     /**
