@@ -61,4 +61,9 @@ public class DistributionBar extends SourcedElement implements IDistributionBar 
         this.count = count;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
 }

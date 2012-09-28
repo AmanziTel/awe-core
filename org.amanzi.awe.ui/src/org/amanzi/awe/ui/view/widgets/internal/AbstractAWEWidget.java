@@ -75,4 +75,8 @@ public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetL
         widget.setEnabled(isEnabled);
     }
 
+    public void setVisible(final boolean isVisible) {
+        widget.setVisible(isVisible);
+    }
+
 }

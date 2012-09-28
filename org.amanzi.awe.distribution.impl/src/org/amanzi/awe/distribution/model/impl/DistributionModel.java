@@ -14,6 +14,7 @@
 package org.amanzi.awe.distribution.model.impl;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
@@ -141,6 +142,10 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
             }
             result.setName(range.getName());
 
+            if (distributionBars == null) {
+                distributionBars = new ArrayList<IDistributionBar>();
+            }
+            distributionBars.add(result);
         } catch (ServiceException e) {
             processException("Exception on creating Distribution Bar", e);
         }
