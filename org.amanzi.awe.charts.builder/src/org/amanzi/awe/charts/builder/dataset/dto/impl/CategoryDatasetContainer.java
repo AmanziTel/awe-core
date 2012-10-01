@@ -41,7 +41,7 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
             if (column.getValue() == 0d) {
                 continue;
             }
-            dataset.setValue(column.getValue(), column.getCellName(), column);
+            dataset.setValue(column.getValue(), column, column.getName());
         }
     }
 

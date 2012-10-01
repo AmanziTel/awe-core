@@ -43,8 +43,6 @@ public class ColumnCachedItem implements IColumnItem {
 
     private int count = 0;
 
-    private long startTime;
-
     protected ColumnCachedItem() {
 
     }
@@ -57,7 +55,6 @@ public class ColumnCachedItem implements IColumnItem {
         super();
         this.row = row;
         this.cellName = cellName;
-        this.startTime = row.getStartDate();
         this.name = ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
     }
 
@@ -109,7 +106,7 @@ public class ColumnCachedItem implements IColumnItem {
 
     @Override
     public String toString() {
-        return getName();
+        return getCellName();
     }
 
     /**
@@ -138,7 +135,6 @@ public class ColumnCachedItem implements IColumnItem {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((cellName == null) ? 0 : cellName.hashCode());
-        result = prime * result + (int)(startTime ^ (startTime >>> 32));
         return result;
     }
 
@@ -155,8 +151,6 @@ public class ColumnCachedItem implements IColumnItem {
             if (other.cellName != null)
                 return false;
         } else if (!cellName.equals(other.cellName))
-            return false;
-        if (startTime != other.startTime)
             return false;
         return true;
     }

@@ -298,10 +298,10 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         }
         if (event.getEntity() instanceof CategoryItemEntity) {
             CategoryItemEntity entity = (CategoryItemEntity)event.getEntity();
-            IColumnItem column = (IColumnItem)entity.getColumnKey();
+            IColumnItem column = (IColumnItem)entity.getRowKey();
             EventChain chain = new EventChain(true);
             chain.addEvent(new ShowInViewEvent(model, new ShowInStatisticsTreeFilter(column.getGroupsNames(), column.getRow()
-                    .getStartDate(), column.getRow().getEndDate(), (String)entity.getRowKey(), container.getPeriod()), this));
+                    .getStartDate(), column.getRow().getEndDate(), column.getCellName(), container.getPeriod()), this));
             AWEEventManager.getManager().fireEventChain(chain);
         }
 

@@ -142,7 +142,6 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
      * @param requiredCell
      */
     protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
-        C column = getColumnFromCache(row, requiredCell);
         for (IStatisticsCell cell : row.getStatisticsCells()) {
             if (!cell.getName().equals(requiredCell)) {
                 continue;
@@ -151,6 +150,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
             if (cellValue == null) {
                 break;
             }
+            C column = getColumnFromCache(row, requiredCell);
             column.increase(cellValue);
             column.addGroup(row.getStatisticsGroup().getPropertyValue());
             break;
