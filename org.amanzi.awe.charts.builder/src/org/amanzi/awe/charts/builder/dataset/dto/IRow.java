@@ -15,8 +15,6 @@ package org.amanzi.awe.charts.builder.dataset.dto;
 
 import java.util.Collection;
 
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
-
 /**
  * TODO Purpose of
  * <p>
@@ -25,14 +23,10 @@ import org.amanzi.awe.statistics.dto.IStatisticsRow;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IColumnItem extends Comparable<IColumnItem> {
+public interface IRow extends Comparable<IRow> {
 
     Collection<String> getGroupsNames();
 
-    IStatisticsRow getRow();
-
     String getCellName();
-
-    String getName();
 
 }

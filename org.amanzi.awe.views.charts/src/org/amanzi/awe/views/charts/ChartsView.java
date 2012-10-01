@@ -18,7 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.charts.builder.dataset.dto.IColumnItem;
+import org.amanzi.awe.charts.builder.dataset.dto.IRow;
+import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
 import org.amanzi.awe.charts.impl.ChartModelPlugin;
 import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.ChartType;
@@ -298,10 +299,11 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         }
         if (event.getEntity() instanceof CategoryItemEntity) {
             CategoryItemEntity entity = (CategoryItemEntity)event.getEntity();
-            IColumnItem column = (IColumnItem)entity.getRowKey();
             EventChain chain = new EventChain(true);
-            chain.addEvent(new ShowInViewEvent(model, new ShowInStatisticsTreeFilter(column.getGroupsNames(), column.getRow()
-                    .getStartDate(), column.getRow().getEndDate(), column.getCellName(), container.getPeriod()), this));
+            IColumn period = (IColumn)entity.getColumnKey();
+            IRow column = period.getItemByName((String)entity.getRowKey());
+            chain.addEvent(new ShowInViewEvent(model, new ShowInStatisticsTreeFilter(column.getGroupsNames(),
+                    period.getStartDate(), period.getEndDate(), column.getCellName(), container.getPeriod()), this));
             AWEEventManager.getManager().fireEventChain(chain);
         }
 

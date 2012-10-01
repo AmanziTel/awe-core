@@ -93,7 +93,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                 / (data_bounds.getHeight() * data_bounds.getWidth());
 
-        double countScaled = (dataScaled * count) / 2;
+        double countScaled = calculateCountScaled(dataScaled, count);
         setDrawLabel(countScaled);
         if (countScaled < commonStyle.getMaxElementsFull()) {
             commonStyle.setScale(Scale.LARGE);
@@ -109,6 +109,10 @@ public abstract class AbstractRenderer extends RendererImpl {
             commonStyle.setLargeElementSize(largeSectorsSize);
         }
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
+    }
+
+    protected double calculateCountScaled(double dataScaled, long count) {
+        return (dataScaled * count) / 2;
     }
 
     /**
@@ -444,8 +448,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         float radius = 60;
         float[] fractions = {0.01f, 1.0f};
         for (; elementSize > 0; elementSize *= 0.8) {
-            Color[] colors = {commonStyle.changeColor(Color.CYAN, 5),
-                    commonStyle.changeColor(Color.WHITE, 5)};
+            Color[] colors = {commonStyle.changeColor(Color.CYAN, 5), commonStyle.changeColor(Color.WHITE, 5)};
             destination.setPaint(new RadialGradientPaint((point.x - (elementSize / 3)), (point.y - (elementSize / 3)), radius,
                     fractions, colors));
             destination.fillOval((int)(point.x - (elementSize * 2.25)), (int)(point.y - (elementSize * 2.25)), 4 * elementSize,

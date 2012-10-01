@@ -15,8 +15,8 @@ package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import java.util.Date;
 
+import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
 import org.amanzi.awe.charts.model.IChartModel;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Month;
@@ -32,7 +32,7 @@ import org.jfree.data.time.Week;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer<TimeSeriesCollection, ColumnCachedItem> {
+public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer<TimeSeriesCollection> {
 
     public TimeSeriesCollectionContainer(IChartModel model) {
         super(model);
@@ -45,7 +45,7 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
      * @param column
      * @return
      */
-    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, ColumnCachedItem column) {
+    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, RowImpl column) {
         TimeSeries ts = dataset.getSeries(column.getCellName());
         if (ts == null) {
             ts = new TimeSeries(column.getCellName());
@@ -58,25 +58,26 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
      * update timeSeries
      * 
      * @param dataset
-     * @param container
+     * @param iColumnPeriod
+     * @param item
      * @return
      */
-    private TimeSeries updateTimeSeries(TimeSeries ts, ColumnCachedItem container) {
+    private TimeSeries updateTimeSeries(TimeSeries ts, IColumn period, RowImpl item) {
 
-        Date date = new Date(container.getRow().getStartDate());
+        Date date = new Date(period.getStartDate());
         switch (getModel().getPeriod()) {
         case HOURLY:
         case ALL:
-            ts.addOrUpdate(new Hour(date), container.getValue());
+            ts.addOrUpdate(new Hour(date), item.getValue());
             break;
         case DAILY:
-            ts.addOrUpdate(new Day(date), container.getValue());
+            ts.addOrUpdate(new Day(date), item.getValue());
             break;
         case WEEKLY:
-            ts.addOrUpdate(new Week(date), container.getValue());
+            ts.addOrUpdate(new Week(date), item.getValue());
             break;
         case MONTHLY:
-            ts.addOrUpdate(new Month(date), container.getValue());
+            ts.addOrUpdate(new Month(date), item.getValue());
             break;
         default:
             break;
@@ -86,27 +87,24 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
 
     @Override
     protected void finishup(TimeSeriesCollection dataset) {
-        for (ColumnCachedItem column : getCachedColumns()) {
-            switch (getModel().getChartAggregation()) {
-            case AVERAGE:
-                column.setValue(column.getValue() / column.getCount());
-                break;
-            default:
-                break;
+        for (ColumnImpl column : getCachedColumns()) {
+            for (RowImpl item : column.getRows()) {
+                switch (getModel().getChartAggregation()) {
+                case AVERAGE:
+                    item.setValue(item.getValue() / item.getCount());
+                    break;
+                default:
+                    break;
+                }
+                TimeSeries ts = getTimeSeries(dataset, item);
+                updateTimeSeries(ts, column, item);
             }
-            TimeSeries ts = getTimeSeries(dataset, column);
-            updateTimeSeries(ts, column);
         }
     }
 
     @Override
     protected TimeSeriesCollection createDataset() {
         return new TimeSeriesCollection();
-    }
-
-    @Override
-    protected ColumnCachedItem createColumn(IStatisticsRow row, String requiredCell) {
-        return new ColumnCachedItem(row, requiredCell);
     }
 
 }

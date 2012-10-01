@@ -13,13 +13,11 @@
 
 package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-import org.amanzi.awe.charts.builder.dataset.dto.IColumnItem;
-import org.amanzi.awe.charts.manger.ChartsManager;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.charts.builder.dataset.dto.IRow;
 
 /**
  * TODO Purpose of
@@ -29,33 +27,19 @@ import org.amanzi.awe.statistics.dto.IStatisticsRow;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ColumnCachedItem implements IColumnItem {
-
-    private IStatisticsRow row;
-
-    private String name;
+public class RowImpl implements IRow {
 
     private Double value = 0d;
 
-    private Set<String> groups = new HashSet<String>();
+    private List<String> groups = new ArrayList<String>();
 
     private String cellName;
 
     private int count = 0;
 
-    protected ColumnCachedItem() {
-
-    }
-
-    /**
-     * @param row
-     * @param cellName
-     */
-    public ColumnCachedItem(IStatisticsRow row, String cellName) {
+    public RowImpl(String cellName) {
         super();
-        this.row = row;
         this.cellName = cellName;
-        this.name = ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
     }
 
     public void addGroup(String groupName) {
@@ -68,13 +52,8 @@ public class ColumnCachedItem implements IColumnItem {
     }
 
     @Override
-    public IStatisticsRow getRow() {
-        return row;
-    }
-
-    @Override
-    public int compareTo(IColumnItem o) {
-        return name.compareTo(o.getName());
+    public int compareTo(IRow o) {
+        return cellName.compareTo(o.getCellName());
     }
 
     public void increase(Number value) {
@@ -85,11 +64,6 @@ public class ColumnCachedItem implements IColumnItem {
     @Override
     public String getCellName() {
         return cellName;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     protected int getCount() {
@@ -109,27 +83,6 @@ public class ColumnCachedItem implements IColumnItem {
         return getCellName();
     }
 
-    /**
-     * @param row The row to set.
-     */
-    protected void setRow(IStatisticsRow row) {
-        this.row = row;
-    }
-
-    /**
-     * @param name The name to set.
-     */
-    protected void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @param cellName The cellName to set.
-     */
-    protected void setCellName(String cellName) {
-        this.cellName = cellName;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -146,7 +99,7 @@ public class ColumnCachedItem implements IColumnItem {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ColumnCachedItem other = (ColumnCachedItem)obj;
+        RowImpl other = (RowImpl)obj;
         if (cellName == null) {
             if (other.cellName != null)
                 return false;

@@ -157,6 +157,11 @@ public class NetworkRenderer extends AbstractRenderer {
         destination.drawString(sector.toString(), (int)a.getEndPoint().getX() + 10, (int)a.getEndPoint().getY());
     }
 
+    @Override
+    protected double calculateCountScaled(double dataScaled, long count) {
+        return (dataScaled * count);
+    }
+
     /**
      * Create sector
      * 

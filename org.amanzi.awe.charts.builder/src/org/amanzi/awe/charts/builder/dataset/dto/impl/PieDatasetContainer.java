@@ -30,7 +30,7 @@ import org.jfree.data.general.DefaultPieDataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset, ColumnCachedItem> {
+public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset> {
 
     /**
      * @param model
@@ -70,7 +70,7 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
     }
 
     @Override
-    protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
+    protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, String requiredCell) {
         Number value = null;
         for (IStatisticsCell cell : row.getStatisticsCells()) {
             if (!cell.getName().equals(requiredCell)) {
@@ -82,17 +82,11 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
             }
             updateCache(kpiCache, cell.getValue(), cell.getName());
         }
-
     }
 
     @Override
     protected DefaultPieDataset createDataset() {
         return new DefaultPieDataset();
-    }
-
-    @Override
-    protected ColumnCachedItem createColumn(IStatisticsRow row, String cellName) {
-        return new ColumnCachedItem(row, cellName);
     }
 
 }
