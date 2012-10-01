@@ -105,12 +105,6 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
     }
 
     @Override
-    protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
-        getColumnFromCache(row, requiredCell);
-        super.handleAxisCell(row, requiredCell);
-    }
-
-    @Override
     protected ColumnCachedItem createColumn(IStatisticsRow row, String requiredCell) {
         return new ColumnCachedItem(row, requiredCell);
     }

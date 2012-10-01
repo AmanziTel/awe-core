@@ -95,11 +95,9 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
     @Override
     public void computeDatasets() throws ModelException {
         datasets.put(model.getMainRangeAxis(), buildAxis(model.getMainRangeAxis()));
-        columnCache.clear();
         if (model.getSecondRangeAxis() != null) {
             datasets.put(model.getSecondRangeAxis(), buildAxis(model.getSecondRangeAxis()));
         }
-        columnCache.clear();
     }
 
     protected Iterable<C> getCachedColumns() {
@@ -129,6 +127,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
             }
         }
         finishup(dataset);
+        columnCache.clear();
         return dataset;
 
     }
@@ -143,6 +142,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
      * @param requiredCell
      */
     protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
+        C column = getColumnFromCache(row, requiredCell);
         for (IStatisticsCell cell : row.getStatisticsCells()) {
             if (!cell.getName().equals(requiredCell)) {
                 continue;
@@ -151,7 +151,6 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
             if (cellValue == null) {
                 break;
             }
-            C column = getColumnFromCache(row, requiredCell);
             column.increase(cellValue);
             column.addGroup(row.getStatisticsGroup().getPropertyValue());
             break;
