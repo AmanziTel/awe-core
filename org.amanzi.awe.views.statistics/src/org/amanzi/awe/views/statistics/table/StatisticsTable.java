@@ -221,11 +221,11 @@ IFilterDialogListener {
         }
         table.setLayout(tableLayout);
     }
-    
-    private void addWorkaroundColumn(final Table table, TableLayout tableLayout) {
-    	new TableColumn(table, SWT.NONE);
-    	
-    	tableLayout.addColumnData(new ColumnPixelData(0));
+
+    private void addWorkaroundColumn(final Table table, final TableLayout tableLayout) {
+        new TableColumn(table, SWT.NONE);
+
+        tableLayout.addColumnData(new ColumnPixelData(0));
     }
 
     private void createTableColumn(final Table table, final TableLayout tableLayout, final String text, final int weight) {
@@ -279,9 +279,7 @@ IFilterDialogListener {
             drillDown(statisticsRow, column);
         }
 
-        if (column > 1) {
-            tableViewer.getTable().deselectAll();
-        }
+        tableViewer.getTable().deselectAll();
 
         labelProvider.setSelectedColumn(column);
         labelProvider.setSelectedRow(statisticsRow);
