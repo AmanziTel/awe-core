@@ -90,7 +90,13 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
     }
 
     @Override
-    public String getColumnText(final Object element, final int columnIndex) {
+    public String getColumnText(final Object element, int columnIndex) {
+    	if (columnIndex == 0) {
+    		return StringUtils.EMPTY;
+    	} else {
+    		columnIndex--;
+    	}
+    	
         if (element instanceof IStatisticsRow) {
             IStatisticsRow statisticsRow = (IStatisticsRow)element;
 

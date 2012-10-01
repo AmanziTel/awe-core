@@ -37,6 +37,7 @@ import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog.IFil
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
@@ -211,6 +212,7 @@ IFilterDialogListener {
 
         Set<String> columns = model.getColumns();
         int weight = (100 / columns.size()) + 2;
+        addWorkaroundColumn(table, tableLayout);
         createTableColumn(table, tableLayout, "Aggregation", weight);
         createTableColumn(table, tableLayout, "Total", weight);
 
@@ -218,6 +220,12 @@ IFilterDialogListener {
             createTableColumn(table, tableLayout, column, weight);
         }
         table.setLayout(tableLayout);
+    }
+    
+    private void addWorkaroundColumn(final Table table, TableLayout tableLayout) {
+    	new TableColumn(table, SWT.NONE);
+    	
+    	tableLayout.addColumnData(new ColumnPixelData(0));
     }
 
     private void createTableColumn(final Table table, final TableLayout tableLayout, final String text, final int weight) {
@@ -263,7 +271,7 @@ IFilterDialogListener {
     }
 
     private void drillDown() {
-        int column = cursor.getColumn();
+        int column = cursor.getColumn() - 1;
         IStatisticsRow statisticsRow = (IStatisticsRow)cursor.getRow().getData();
 
 
