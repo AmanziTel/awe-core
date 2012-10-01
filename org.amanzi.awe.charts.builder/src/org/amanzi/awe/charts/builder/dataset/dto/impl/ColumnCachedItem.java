@@ -43,6 +43,8 @@ public class ColumnCachedItem implements IColumnItem {
 
     private int count = 0;
 
+    private long startTime;
+
     protected ColumnCachedItem() {
 
     }
@@ -55,6 +57,7 @@ public class ColumnCachedItem implements IColumnItem {
         super();
         this.row = row;
         this.cellName = cellName;
+        this.startTime = row.getStartDate();
         this.name = ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
     }
 
@@ -109,28 +112,6 @@ public class ColumnCachedItem implements IColumnItem {
         return getName();
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (int)(prime * result + row.getStartDate());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ColumnCachedItem other = (ColumnCachedItem)obj;
-        if (row.getStartDate() != other.getRow().getStartDate())
-            return false;
-        return true;
-    }
-
     /**
      * @param row The row to set.
      */
@@ -150,6 +131,34 @@ public class ColumnCachedItem implements IColumnItem {
      */
     protected void setCellName(String cellName) {
         this.cellName = cellName;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((cellName == null) ? 0 : cellName.hashCode());
+        result = prime * result + (int)(startTime ^ (startTime >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ColumnCachedItem other = (ColumnCachedItem)obj;
+        if (cellName == null) {
+            if (other.cellName != null)
+                return false;
+        } else if (!cellName.equals(other.cellName))
+            return false;
+        if (startTime != other.startTime)
+            return false;
+        return true;
     }
 
 }

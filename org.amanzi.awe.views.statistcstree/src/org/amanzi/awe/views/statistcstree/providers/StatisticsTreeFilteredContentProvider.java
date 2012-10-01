@@ -48,9 +48,9 @@ public class StatisticsTreeFilteredContentProvider extends StatisticsTreeContent
     protected Iterable< ? extends IDataElement> getStatisticsGroups(IStatisticsModel model, DimensionType type, String levelName)
             throws ModelException {
         List<IStatisticsGroup> groups = new ArrayList<IStatisticsGroup>();
-        for (IStatisticsRow row : getRows(model, levelName)) {
-            if (filter.getGroupNames().contains(row.getStatisticsGroup().getPropertyValue())) {
-                groups.add(row.getStatisticsGroup());
+        for (IStatisticsGroup group : model.getAllStatisticsGroups(DimensionType.TIME, levelName)) {
+            if (filter.getGroupNames().contains(group.getPropertyValue())) {
+                groups.add(group);
             }
         }
         return groups;

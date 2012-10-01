@@ -76,7 +76,7 @@ public class CategoryChartBuilder
     protected BarRenderer configMainRenderer() {
         BarRenderer renderer = new BarRenderer();
         renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-        renderer.setShadowVisible(true);
+        renderer.setShadowVisible(false);
         renderer.setDrawBarOutline(false);
         renderer.setDrawBarOutline(true);
         renderer.setMaximumBarWidth(MAXIMUM_BAR_WIDTH);
