@@ -124,7 +124,6 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
         } else {
             switch (columnIndex) {
             case 0:
-                return CellType.PROPERTY;
             case 1:
                 return CellType.PERIOD;
             default:
