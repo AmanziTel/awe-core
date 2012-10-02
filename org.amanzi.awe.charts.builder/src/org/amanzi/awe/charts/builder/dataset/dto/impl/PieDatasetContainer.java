@@ -63,11 +63,11 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
     protected void finishup(DefaultPieDataset dataset) {
         Iterable<ColumnImpl> columns = getCachedColumns();
         for (ColumnImpl column : columns) {
-            for (RowImpl item : column.getRows()) {
-                if (item.getValue() == 0d) {
+            for (CategoryRowImpl row : column.getRows()) {
+                if (row.getValue() == 0d) {
                     continue;
                 }
-                updateCache(item.getValue(), item.getCellName());
+                updateCache(row.getValue(), row.getName());
             }
 
         }

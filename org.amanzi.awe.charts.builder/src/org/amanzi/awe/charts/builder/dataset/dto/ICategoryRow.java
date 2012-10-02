@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.charts.builder.dataset.dto;
 
+import java.util.Collection;
+
 /**
  * TODO Purpose of
  * <p>
@@ -21,12 +23,7 @@ package org.amanzi.awe.charts.builder.dataset.dto;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IColumn extends IDatasetItem<IColumn> {
+public interface ICategoryRow extends IDatasetItem<ICategoryRow> {
 
-    Long getStartDate();
-
-    Long getEndDate();
-
-    ICategoryRow getItemByName(String name);
-
+    Collection<String> getGroupsNames();
 }

@@ -29,9 +29,13 @@ import org.amanzi.neo.core.period.Period;
 public class ShowInStatisticsTreeFilter implements IStatisticsTreeFilterContainer {
 
     private Collection<String> groups;
+
     private String cellName;
+
     private Period period;
+
     private long startDate;
+
     private long endDate;
 
     /**

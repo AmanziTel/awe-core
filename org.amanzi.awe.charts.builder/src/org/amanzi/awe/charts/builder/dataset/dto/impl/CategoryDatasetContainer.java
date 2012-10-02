@@ -37,11 +37,11 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
     protected void finishup(DefaultCategoryDataset dataset) {
         Iterable<ColumnImpl> columns = getCachedColumns();
         for (ColumnImpl column : columns) {
-            for (RowImpl item : column.getRows()) {
+            for (CategoryRowImpl item : column.getRows()) {
                 if (item.getValue() == 0d) {
                     continue;
                 }
-                dataset.addValue(item.getValue(), item.getCellName(), column);
+                dataset.addValue(item.getValue(), item.getName(), column);
             }
 
         }

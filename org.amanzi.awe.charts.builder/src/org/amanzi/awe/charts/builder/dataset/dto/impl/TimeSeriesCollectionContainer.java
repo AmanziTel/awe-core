@@ -14,6 +14,8 @@
 package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
 import org.amanzi.awe.charts.model.IChartModel;
@@ -34,6 +36,8 @@ import org.jfree.data.time.Week;
  */
 public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer<TimeSeriesCollection> {
 
+    private Map<String, TimeRowImpl> cachedItem = new HashMap<String, TimeRowImpl>();
+
     public TimeSeriesCollectionContainer(IChartModel model) {
         super(model);
     }
@@ -42,13 +46,13 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
      * get existed timeseries from dataset or create new one if not exists
      * 
      * @param dataset
-     * @param column
+     * @param row
      * @return
      */
-    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, RowImpl column) {
-        TimeSeries ts = dataset.getSeries(column.getCellName());
+    private TimeSeries getTimeSeries(TimeSeriesCollection dataset, TimeRowImpl row) {
+        TimeSeries ts = dataset.getSeries(row);
         if (ts == null) {
-            ts = new TimeSeries(column.getCellName());
+            ts = new TimeSeries(row);
             dataset.addSeries(ts);
         }
         return ts;
@@ -62,7 +66,7 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
      * @param item
      * @return
      */
-    private TimeSeries updateTimeSeries(TimeSeries ts, IColumn period, RowImpl item) {
+    private TimeSeries updateTimeSeries(TimeSeries ts, IColumn period, CategoryRowImpl item) {
 
         Date date = new Date(period.getStartDate());
         switch (getModel().getPeriod()) {
@@ -88,18 +92,35 @@ public class TimeSeriesCollectionContainer extends AbstractChartDatasetContainer
     @Override
     protected void finishup(TimeSeriesCollection dataset) {
         for (ColumnImpl column : getCachedColumns()) {
-            for (RowImpl item : column.getRows()) {
+            for (CategoryRowImpl categoryRow : column.getRows()) {
                 switch (getModel().getChartAggregation()) {
                 case AVERAGE:
-                    item.setValue(item.getValue() / item.getCount());
+                    categoryRow.setValue(categoryRow.getValue() / categoryRow.getCount());
                     break;
                 default:
                     break;
                 }
-                TimeSeries ts = getTimeSeries(dataset, item);
-                updateTimeSeries(ts, column, item);
+                TimeRowImpl timeRow = getTimeRowImpl(column, categoryRow);
+                TimeSeries ts = getTimeSeries(dataset, timeRow);
+                updateTimeSeries(ts, column, categoryRow);
             }
         }
+    }
+
+    /**
+     * @param item
+     * @return
+     */
+    private TimeRowImpl getTimeRowImpl(ColumnImpl column, CategoryRowImpl item) {
+        TimeRowImpl row = cachedItem.get(item.getName());
+        if (row == null) {
+            row = new TimeRowImpl(item.getName());
+            row.addGroups(column.getStartDate(), item.getGroupsNames());
+            cachedItem.put(item.getName(), row);
+        } else {
+            row.addGroups(column.getStartDate(), item.getGroupsNames());
+        }
+        return row;
     }
 
     @Override

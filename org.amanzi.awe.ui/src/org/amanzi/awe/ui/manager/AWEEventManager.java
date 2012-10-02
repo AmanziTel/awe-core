@@ -28,10 +28,12 @@ import org.amanzi.awe.ui.events.impl.InitialiseEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
+import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.listener.IAWEEventListenter.Priority;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.log4j.Logger;
@@ -183,6 +185,10 @@ public final class AWEEventManager {
 
     public synchronized void fireShowOnMapEvent(final IGISModel model, Object source) {
         fireEvent(new ShowGISOnMap(model, source), true);
+    }
+
+    public synchronized void fireShowInViewEvent(IModel model, Object element, Object source) {
+        fireEvent(new ShowInViewEvent(model, element, source), true);
     }
 
     public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, Object source) {

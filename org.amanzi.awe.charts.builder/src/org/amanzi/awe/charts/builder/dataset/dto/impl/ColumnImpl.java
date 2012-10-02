@@ -13,11 +13,11 @@
 
 package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.amanzi.awe.charts.builder.dataset.dto.IRow;
 import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
+import org.amanzi.awe.charts.builder.dataset.dto.ICategoryRow;
 import org.amanzi.awe.charts.manger.ChartsManager;
 
 /**
@@ -35,7 +35,7 @@ public class ColumnImpl implements IColumn {
 
     private String name;
 
-    private List<RowImpl> items = new ArrayList<RowImpl>();
+    private Map<String, CategoryRowImpl> rows = new HashMap<String, CategoryRowImpl>();
 
     public ColumnImpl(Long startDate, Long endDate) {
         this.startDate = startDate;
@@ -48,22 +48,17 @@ public class ColumnImpl implements IColumn {
         return startDate.compareTo(o.getStartDate());
     }
 
-    protected void addItem(RowImpl cell) {
-        items.add(cell);
+    protected void addItem(CategoryRowImpl cell) {
+        rows.put(cell.getName(), cell);
     }
 
-    protected List<RowImpl> getRows() {
-        return items;
+    protected Iterable<CategoryRowImpl> getRows() {
+        return rows.values();
     }
 
     @Override
-    public IRow getItemByName(String name) {
-        for (IRow item : items) {
-            if (item.getCellName().equals(name)) {
-                return item;
-            }
-        }
-        return null;
+    public ICategoryRow getItemByName(String name) {
+        return rows.get(name);
     }
 
     @Override

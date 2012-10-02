@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.amanzi.awe.charts.builder.dataset.dto.IRow;
+import org.amanzi.awe.charts.builder.dataset.dto.ICategoryRow;
 
 /**
  * TODO Purpose of
@@ -27,7 +27,7 @@ import org.amanzi.awe.charts.builder.dataset.dto.IRow;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class RowImpl implements IRow {
+public class CategoryRowImpl implements ICategoryRow {
 
     private Double value = 0d;
 
@@ -37,7 +37,7 @@ public class RowImpl implements IRow {
 
     private int count = 0;
 
-    public RowImpl(String cellName) {
+    public CategoryRowImpl(String cellName) {
         super();
         this.cellName = cellName;
     }
@@ -52,8 +52,8 @@ public class RowImpl implements IRow {
     }
 
     @Override
-    public int compareTo(IRow o) {
-        return cellName.compareTo(o.getCellName());
+    public int compareTo(ICategoryRow o) {
+        return cellName.compareTo(o.getName());
     }
 
     public void increase(Number value) {
@@ -62,7 +62,7 @@ public class RowImpl implements IRow {
     }
 
     @Override
-    public String getCellName() {
+    public String getName() {
         return cellName;
     }
 
@@ -80,7 +80,7 @@ public class RowImpl implements IRow {
 
     @Override
     public String toString() {
-        return getCellName();
+        return getName();
     }
 
     @Override
@@ -99,7 +99,7 @@ public class RowImpl implements IRow {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        RowImpl other = (RowImpl)obj;
+        CategoryRowImpl other = (CategoryRowImpl)obj;
         if (cellName == null) {
             if (other.cellName != null)
                 return false;

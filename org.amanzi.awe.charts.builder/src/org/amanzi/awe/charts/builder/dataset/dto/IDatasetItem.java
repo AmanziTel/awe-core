@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.charts.builder.dataset.dto;
 
-import java.util.Collection;
-
 /**
  * TODO Purpose of
  * <p>
@@ -23,10 +21,8 @@ import java.util.Collection;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IRow extends Comparable<IRow> {
-
-    Collection<String> getGroupsNames();
-
-    String getCellName();
-
+public interface IDatasetItem<T extends IDatasetItem< ? >> extends Comparable<T> {
+    
+    String getName();
+    
 }

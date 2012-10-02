@@ -11,16 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.charts.model.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.amanzi.awe.charts.model.IRangeAxis;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Iterables;
+import org.amanzi.awe.charts.builder.dataset.dto.ITimeRow;
 
 /**
  * TODO Purpose of
@@ -30,38 +29,40 @@ import com.google.common.collect.Iterables;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class RangeAxisContainer implements IRangeAxis {
+public class TimeRowImpl implements ITimeRow {
 
-    private final static Logger LOGGER = Logger.getLogger(RangeAxisContainer.class);
-
-    private List<String> cells = new ArrayList<String>();
+    private Map<Long, List<String>> groupsCache = new HashMap<Long, List<String>>();
 
     private String name;
 
-    public RangeAxisContainer(String name, Iterable<String> cells) {
-        if (StringUtils.isEmpty(name)) {
-            LOGGER.error("name can't be null");
-        }
+    /**
+     * @param name
+     */
+    public TimeRowImpl(String name) {
+        super();
         this.name = name;
-        Iterables.addAll(this.cells, cells);
-
     }
 
     @Override
-    public String getName() {
-        return name;
+    public Collection<String> getGroupsForTime(long startTime) {
+        return groupsCache.get(startTime);
     }
 
-    @Override
-    public Iterable<String> getCellsNames() {
-        return cells;
+    public void addGroups(long startTime, Collection<String> groups) {
+        if (groups == null) {
+            return;
+        }
+        List<String> existedCache = groupsCache.get(startTime);
+        if (existedCache == null) {
+            existedCache = groupsCache.put(startTime, new ArrayList<String>());
+        }
+        groupsCache.get(startTime).addAll(groups);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((cells == null) ? 0 : cells.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         return result;
     }
@@ -74,12 +75,7 @@ public class RangeAxisContainer implements IRangeAxis {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        RangeAxisContainer other = (RangeAxisContainer)obj;
-        if (cells == null) {
-            if (other.cells != null)
-                return false;
-        } else if (!cells.containsAll(other.cells))
-            return false;
+        TimeRowImpl other = (TimeRowImpl)obj;
         if (name == null) {
             if (other.name != null)
                 return false;
@@ -90,7 +86,16 @@ public class RangeAxisContainer implements IRangeAxis {
 
     @Override
     public String toString() {
-        return "RangeAxisContainer [cells=" + cells.toArray() + ", name=" + name + "]";
+        return name;
     }
 
+    @Override
+    public int compareTo(ITimeRow o) {
+        return name.compareTo(o.getName());
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

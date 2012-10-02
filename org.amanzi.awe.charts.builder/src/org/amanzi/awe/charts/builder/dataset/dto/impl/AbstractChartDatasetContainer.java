@@ -129,9 +129,9 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
      * @param requiredCell
      */
     protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, String requiredCell) {
-        RowImpl container = (RowImpl)column.getItemByName(requiredCell);
+        CategoryRowImpl container = (CategoryRowImpl)column.getItemByName(requiredCell);
         if (container == null) {
-            container = new RowImpl(requiredCell);
+            container = new CategoryRowImpl(requiredCell);
             column.addItem(container);
         }
         for (IStatisticsCell cell : row.getStatisticsCells()) {

@@ -14,12 +14,14 @@
 package org.amanzi.awe.views.charts;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.charts.builder.dataset.dto.IRow;
+import org.amanzi.awe.charts.builder.dataset.dto.ICategoryRow;
 import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
+import org.amanzi.awe.charts.builder.dataset.dto.ITimeRow;
 import org.amanzi.awe.charts.impl.ChartModelPlugin;
 import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.ChartType;
@@ -30,14 +32,13 @@ import org.amanzi.awe.charts.model.provider.IChartModelProvider;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.views.charts.filters.ShowInStatisticsTreeFilter;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -51,6 +52,10 @@ import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.CategoryItemEntity;
+import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 /**
@@ -203,6 +208,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
      * @param chartModel
      */
     private void updateChart(IChartModel chartModel) {
+        LOGGER.info("Chart updating begin, for model " + chartModel);
+
+        Long startTime = System.currentTimeMillis();
         ChartsCahceId ID = new ChartsCahceId(chartModel, container);
 
         JFreeChart chart = chartsCache.get(ID);
@@ -210,6 +218,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
             chart = ChartsManager.getInstance().buildChart(chartModel);
             chartsCache.put(ID, chart);
         }
+        LOGGER.info("Chart updated in : " + (System.currentTimeMillis() - startTime) + " ms");
 
         chartComposite.setChart(chart);
         chartComposite.forceRedraw();
@@ -297,16 +306,37 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         if (event == null) {
             return;
         }
+        Collection<String> groups = null;
+        long startDate = Long.MIN_VALUE;
+        long endDate = Long.MAX_VALUE;
+        String cellName = StringUtils.EMPTY;
+
         if (event.getEntity() instanceof CategoryItemEntity) {
             CategoryItemEntity entity = (CategoryItemEntity)event.getEntity();
-            EventChain chain = new EventChain(true);
             IColumn period = (IColumn)entity.getColumnKey();
-            IRow column = period.getItemByName((String)entity.getRowKey());
-            chain.addEvent(new ShowInViewEvent(model, new ShowInStatisticsTreeFilter(column.getGroupsNames(),
-                    period.getStartDate(), period.getEndDate(), column.getCellName(), container.getPeriod()), this));
-            AWEEventManager.getManager().fireEventChain(chain);
+            ICategoryRow column = period.getItemByName((String)entity.getRowKey());
+
+            groups = column.getGroupsNames();
+            startDate = period.getStartDate();
+            endDate = period.getEndDate();
+            cellName = column.getName();
+        } else if (event.getEntity() instanceof XYItemEntity) {
+            XYItemEntity entity = (XYItemEntity)event.getEntity();
+            TimeSeriesCollection dataset = (TimeSeriesCollection)entity.getDataset();
+            TimeSeries ts = dataset.getSeries(entity.getSeriesIndex());
+            ITimeRow row = (ITimeRow)ts.getKey();
+            RegularTimePeriod period = ts.getTimePeriod(entity.getItem());
+
+            startDate = period.getStart().getTime();
+            endDate = container.getPeriod().addPeriod(startDate);
+            groups = row.getGroupsForTime(startDate);
+            cellName = row.getName();
+        } else {
+            return;
         }
 
+        AWEEventManager.getManager().fireShowInViewEvent(model,
+                new ShowInStatisticsTreeFilter(groups, startDate, endDate, cellName, container.getPeriod()), this);
     }
 
     @Override

@@ -16,6 +16,7 @@ package org.amanzi.awe.charts.builder;
 import java.text.NumberFormat;
 
 import org.amanzi.awe.charts.builder.dataset.dto.impl.TimeSeriesCollectionContainer;
+import org.amanzi.awe.charts.builder.internal.Messages;
 import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
@@ -128,4 +129,9 @@ public class TimeChartBuilder
         return renderer;
     }
 
+    @Override
+    protected JFreeChart finishUp(JFreeChart chart) {
+        chart.addSubtitle(getSubTitle(Messages.clickItemToDrillDown));
+        return chart;
+    }
 }
