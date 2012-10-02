@@ -21,7 +21,6 @@ import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
 import org.amanzi.awe.charts.manger.ChartsManager;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
@@ -49,10 +48,15 @@ public class ColumnImpl implements IColumn {
         return startDate.compareTo(o.getStartDate());
     }
 
-    public void addItem(RowImpl cell) {
+    protected void addItem(RowImpl cell) {
         items.add(cell);
     }
 
+    protected List<RowImpl> getRows() {
+        return items;
+    }
+
+    @Override
     public IRow getItemByName(String name) {
         for (IRow item : items) {
             if (item.getCellName().equals(name)) {
@@ -105,10 +109,6 @@ public class ColumnImpl implements IColumn {
         } else if (!startDate.equals(other.startDate))
             return false;
         return true;
-    }
-
-    public List<RowImpl> getRows() {
-        return items;
     }
 
 }

@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.charts.model.IChartModel;
-import org.amanzi.awe.statistics.dto.IStatisticsCell;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.jfree.data.general.DefaultPieDataset;
 
 /**
@@ -48,7 +46,7 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
      * @param value
      * @param cellName
      */
-    private void updateCache(Map<String, Double> kpiCache, Number value, String cellName) {
+    private void updateCache(Number value, String cellName) {
         if (value == null) {
             value = 0d;
         }
@@ -63,24 +61,18 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
 
     @Override
     protected void finishup(DefaultPieDataset dataset) {
-        for (Entry<String, Double> entry : kpiCache.entrySet()) {
-            dataset.setValue(entry.getKey(), entry.getValue());
+        Iterable<ColumnImpl> columns = getCachedColumns();
+        for (ColumnImpl column : columns) {
+            for (RowImpl item : column.getRows()) {
+                if (item.getValue() == 0d) {
+                    continue;
+                }
+                updateCache(item.getValue(), item.getCellName());
+            }
+
         }
-
-    }
-
-    @Override
-    protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, String requiredCell) {
-        Number value = null;
-        for (IStatisticsCell cell : row.getStatisticsCells()) {
-            if (!cell.getName().equals(requiredCell)) {
-                continue;
-            }
-            value = cell.getValue();
-            if (value == null) {
-                break;
-            }
-            updateCache(kpiCache, cell.getValue(), cell.getName());
+        for (Entry<String, Double> piePart : kpiCache.entrySet()) {
+            dataset.setValue(piePart.getKey(), piePart.getValue());
         }
     }
 

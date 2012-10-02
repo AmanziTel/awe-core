@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.amanzi.awe.charts.builder.dataset.dto.IChartDatasetContainer;
-import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
@@ -81,6 +80,11 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
         }
     }
 
+    /**
+     * get cached columns
+     * 
+     * @return
+     */
     protected Iterable<ColumnImpl> getCachedColumns() {
         return columnCache.values();
     }
@@ -117,11 +121,19 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
     protected abstract void finishup(T dataset);
 
     /**
+     * handle single axis try to find required cells in current row, calculate sunn and cache
+     * results
+     * 
      * @param column
      * @param row
      * @param requiredCell
      */
     protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, String requiredCell) {
+        RowImpl container = (RowImpl)column.getItemByName(requiredCell);
+        if (container == null) {
+            container = new RowImpl(requiredCell);
+            column.addItem(container);
+        }
         for (IStatisticsCell cell : row.getStatisticsCells()) {
             if (!cell.getName().equals(requiredCell)) {
                 continue;
@@ -129,11 +141,6 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
             Number cellValue = cell.getValue();
             if (cellValue == null) {
                 break;
-            }
-            RowImpl container = (RowImpl)column.getItemByName(requiredCell);
-            if (container == null) {
-                container = new RowImpl(requiredCell);
-                column.addItem(container);
             }
             container.increase(cellValue);
             container.addGroup(row.getStatisticsGroup().getPropertyValue());
@@ -145,16 +152,6 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
      * @return
      */
     protected abstract T createDataset();
-
-    /**
-     * get row name in according to its date format and period
-     * 
-     * @param row
-     * @return
-     */
-    protected String getName(IStatisticsRow row) {
-        return ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
-    }
 
     @Override
     public boolean isMultyAxis() {
@@ -171,13 +168,13 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
     protected ColumnImpl getColumnFromCache(IStatisticsRow row) {
         ColumnImpl column = columnCache.get(row.getStartDate());
         if (column == null) {
-            column = createPeriodColumn(row);
+            column = createColumn(row);
             columnCache.put(row.getStartDate(), column);
         }
         return column;
     }
 
-    protected ColumnImpl createPeriodColumn(IStatisticsRow row) {
+    protected ColumnImpl createColumn(IStatisticsRow row) {
         return new ColumnImpl(row.getStartDate(), row.getEndDate());
     }
 
