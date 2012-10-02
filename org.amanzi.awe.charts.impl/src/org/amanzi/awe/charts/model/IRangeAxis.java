@@ -26,4 +26,6 @@ public interface IRangeAxis {
 
     Iterable<String> getCellsNames();
 
+    boolean isInCellList(String cell);
+
 }

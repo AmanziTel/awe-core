@@ -93,4 +93,9 @@ public class RangeAxisContainer implements IRangeAxis {
         return "RangeAxisContainer [cells=" + cells.toArray() + ", name=" + name + "]";
     }
 
+    @Override
+    public boolean isInCellList(String cell) {
+        return cells.contains(cell);
+    }
+
 }

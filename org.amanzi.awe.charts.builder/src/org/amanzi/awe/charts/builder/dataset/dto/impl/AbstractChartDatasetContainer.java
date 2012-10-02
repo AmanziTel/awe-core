@@ -104,9 +104,7 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
         for (IStatisticsRow row : rows) {
             if (filter.check(row, false)) {
                 ColumnImpl column = getColumnFromCache(row);
-                for (String requiredCell : axis.getCellsNames()) {
-                    handleAxisCell(column, row, requiredCell);
-                }
+                handleAxisCell(column, row, axis);
             }
         }
         finishup(dataset);
@@ -126,25 +124,24 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset> implement
      * 
      * @param column
      * @param row
-     * @param requiredCell
+     * @param axis
      */
-    protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, String requiredCell) {
-        CategoryRowImpl container = (CategoryRowImpl)column.getItemByName(requiredCell);
-        if (container == null) {
-            container = new CategoryRowImpl(requiredCell);
-            column.addItem(container);
-        }
+    protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, IRangeAxis axis) {
         for (IStatisticsCell cell : row.getStatisticsCells()) {
-            if (!cell.getName().equals(requiredCell)) {
+            if (!axis.isInCellList(cell.getName())) {
                 continue;
+            }
+            CategoryRowImpl container = (CategoryRowImpl)column.getItemByName(cell.getName());
+            if (container == null) {
+                container = new CategoryRowImpl(cell.getName());
+                column.addItem(container);
             }
             Number cellValue = cell.getValue();
             if (cellValue == null) {
-                break;
+                continue;
             }
             container.increase(cellValue);
             container.addGroup(row.getStatisticsGroup().getPropertyValue());
-            break;
         }
     }
 
