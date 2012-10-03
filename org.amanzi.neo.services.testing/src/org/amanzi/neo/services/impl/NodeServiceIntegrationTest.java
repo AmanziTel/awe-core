@@ -30,6 +30,7 @@ import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -37,6 +38,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
@@ -423,6 +425,61 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node node = createNode();
 
         nodeService.removeNodeProperty(node, TEST_PROPERTY, true);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void testDeleteOneElement() throws ServiceException {
+        Node parent = createNode();
+        Long id = parent.getId();
+
+        nodeService.delete(parent);
+
+        assertNull("Unexpected node found", getGraphDatabaseService().getNodeById(id));
+
+    }
+
+    @Test
+    public void testDeleteOneUnderlinedLeveElements() throws ServiceException {
+        Node parent = createNode();
+        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
+        children.add(parent);
+
+        nodeService.delete(parent);
+        for (Node node : children) {
+            Node found = null;
+            try {
+                found = getGraphDatabaseService().getNodeById(node.getId());
+            } catch (NotFoundException e) {
+                // do nothing
+            }
+            assertNull("Expected null ", found);
+
+        }
+
+    }
+
+    @Test
+    public void testDeleteMultyUnderlinedLeveElements() throws ServiceException {
+        Node parent = createNode();
+        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
+        List<Node> totalNodes = new ArrayList<Node>();
+        totalNodes.addAll(children);
+        totalNodes.add(parent);
+        totalNodes.addAll(createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1,
+                children.toArray(new Node[children.size()])));
+
+        nodeService.delete(parent);
+        for (Node node : totalNodes) {
+            Node found = null;
+            try {
+                found = getGraphDatabaseService().getNodeById(node.getId());
+            } catch (NotFoundException e) {
+                // do nothing
+            }
+            assertNull("Expected null ", found);
+
+        }
+
     }
 
     private Map<String, Object> getNodeProperties() {

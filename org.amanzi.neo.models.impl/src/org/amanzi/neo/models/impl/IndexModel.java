@@ -262,4 +262,25 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         return result;
     }
 
+    @Override
+    public void deleteIndex(Node node, INodeType type) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("deleteIndex", type));
+        }
+        assert node != null;
+        assert type != null;
+
+        indexService.deleteFromIndexes(node, type);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("deleteIndex"));
+        }
+    }
+
+    @Override
+    public void delete() throws ModelException {
+        indexMap.clear();
+        indexService.deleteAll();
+        super.delete();
+    }
+
 }

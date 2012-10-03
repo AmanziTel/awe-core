@@ -49,4 +49,6 @@ public interface IModel {
     boolean isRenderable();
 
     void flush() throws ModelException;
+
+    void delete() throws ModelException;
 }
