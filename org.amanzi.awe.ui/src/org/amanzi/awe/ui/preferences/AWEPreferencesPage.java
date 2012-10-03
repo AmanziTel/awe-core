@@ -23,6 +23,7 @@ import org.eclipse.ui.internal.dialogs.EmptyPreferencePage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+@SuppressWarnings("restriction")
 public class AWEPreferencesPage extends EmptyPreferencePage {
 
 }

@@ -31,7 +31,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 
 /**
  * TODO Purpose of
@@ -42,10 +41,10 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.0.0
  */
 public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
-        implements
-            ISelectLoaderListener,
-            ISelectDriveListener,
-            ISelectDriveResourceListener {
+implements
+ISelectLoaderListener,
+ISelectDriveListener,
+ISelectDriveResourceListener {
 
     private SelectDriveNameWidget driveNameCombo;
 

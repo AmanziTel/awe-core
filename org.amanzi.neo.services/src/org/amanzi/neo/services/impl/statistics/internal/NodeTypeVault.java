@@ -21,7 +21,6 @@ import java.util.TreeMap;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.internal.PropertyVault.ClassType;
 
 /**
  * TODO Purpose of
