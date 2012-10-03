@@ -218,4 +218,23 @@ public class DistributionManager {
         return distributionType;
     }
 
+    public Set<ChartType> getPossibleDistributionTypes() {
+        if ((nodeType == null) || (propertyName == null)) {
+            return null;
+        }
+
+        Set<ChartType> chartTypes = new HashSet<IDistributionType.ChartType>();
+
+        chartTypes.add(ChartType.COUNTS);
+        chartTypes.add(ChartType.LOGARITHMIC);
+        chartTypes.add(ChartType.PERCENTS);
+
+        Class<?> clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
+        if (!clazz.equals(String.class) && !clazz.equals(Boolean.class)) {
+            chartTypes.add(ChartType.CDF);
+        }
+
+        return chartTypes;
+    }
+
 }

@@ -17,11 +17,14 @@ import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
+import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget;
+import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget.IColoringPropertiesListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistributionChartListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
@@ -48,7 +51,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener, IDistributionChartListener {
+public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener, IDistributionChartListener, IColoringPropertiesListener {
 
     private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
@@ -102,6 +105,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private Composite parentComposite;
 
+    private ColoringPropertiesWidget coloringPropertiesWidget;
+
     /**
      * 
      */
@@ -119,6 +124,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
         addDistributionTypeComposite(mainComposite);
         addDistributionChartComposite(mainComposite);
+
+        coloringPropertiesWidget = addColoringPropertiesWidget(mainComposite, this);
 
         isInitialized = true;
     }
@@ -170,6 +177,13 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         return result;
     }
 
+    private ColoringPropertiesWidget addColoringPropertiesWidget(final Composite parent, final IColoringPropertiesListener listener) {
+        ColoringPropertiesWidget result = new ColoringPropertiesWidget(parent, listener);
+        result.initializeWidget();
+
+        return result;
+    }
+
     @Override
     public void onDistributionDatasetSelected(final DistributionDataset distributionDataset) {
         if (isInitialized) {
@@ -177,6 +191,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
             currentManager.setNodeType(distributionDataset.getNodeType());
 
             propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
+            coloringPropertiesWidget.setDistributionManager(currentManager);
         }
     }
 
@@ -208,6 +223,11 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private void updateCharts(final IDistributionModel model) {
         distributionChart.updateDistribution(model);
+    }
+
+    @Override
+    public void onChartTypeChanged(final ChartType chartType) {
+        //TODO: 3.10.2012, not implemented yet
     }
 
 }
