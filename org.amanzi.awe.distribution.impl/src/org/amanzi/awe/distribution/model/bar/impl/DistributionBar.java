@@ -29,6 +29,10 @@ import org.neo4j.graphdb.Node;
  */
 public class DistributionBar extends SourcedElement implements IDistributionBar {
 
+    private static final Color DEFAULT_COLOR = new Color(0.75f, 0.7f, 0.4f);
+
+    private Color color = DEFAULT_COLOR;
+
     private int count;
 
     /**
@@ -42,14 +46,15 @@ public class DistributionBar extends SourcedElement implements IDistributionBar 
 
     @Override
     public Color getColor() {
-        // TODO Auto-generated method stub
-        return null;
+        return color;
     }
 
     @Override
-    public void setColor(final Color color) {
-        // TODO Auto-generated method stub
-
+    public void setColor(Color color) {
+        if (color == null) {
+            color = DEFAULT_COLOR;
+        }
+        this.color = color;
     }
 
     @Override
