@@ -237,7 +237,7 @@ IFilterDialogListener {
 
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                if (table.getColumn(0).equals(column)) {
+                if (table.getColumn(1).equals(column)) {
                     FilteringDialog filterDialog = new FilteringDialog(tableViewer, column, groups);
                     filterDialog.open();
                 } else {
