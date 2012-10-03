@@ -114,7 +114,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         parentComposite = parent;
 
         Composite mainComposite = new Composite(parent, SWT.NONE);
-        mainComposite.setLayout(new GridLayout(3, false));
+        mainComposite.setLayout(new GridLayout(1, false));
         mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         addDistributionTypeComposite(mainComposite);
@@ -131,9 +131,13 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
     }
 
     private void addDistributionTypeComposite(final Composite parent) {
-        addDistributionDatasetWidget(parent, this, FIRST_ROW_LABEL_WIDTH);
-        propertyCombo = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Property:", parent, SECOND_ROW_LABEL_WIDTH);
-        distributionTypeCombo = addDistributionTypeWidget(parent, this, THIRD_ROW_LABEL_WIDTH);
+        Composite distributionTypeComposite = new Composite(parent, SWT.NONE);
+        distributionTypeComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        distributionTypeComposite.setLayout(new GridLayout(3, false));
+
+        addDistributionDatasetWidget(distributionTypeComposite, this, FIRST_ROW_LABEL_WIDTH);
+        propertyCombo = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Property:", distributionTypeComposite, SECOND_ROW_LABEL_WIDTH);
+        distributionTypeCombo = addDistributionTypeWidget(distributionTypeComposite, this, THIRD_ROW_LABEL_WIDTH);
     }
 
     @Override

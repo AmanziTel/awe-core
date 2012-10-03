@@ -102,14 +102,14 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
 
             if (activeProject != null) {
                 result = new ArrayList<DistributionDatasetWidget.DistributionDataset>();
-            }
 
-            for (IDriveModel driveModel : driveModelProvider.findAll(activeProject)) {
-                addDistributionDatasetsForModel(driveModel, result);
-            }
+                for (IDriveModel driveModel : driveModelProvider.findAll(activeProject)) {
+                    addDistributionDatasetsForModel(driveModel, result);
+                }
 
-            for (INetworkModel networkModel : networkModelProvider.findAll(activeProject)) {
-                addDistributionDatasetsForModel(networkModel, result);
+                for (INetworkModel networkModel : networkModelProvider.findAll(activeProject)) {
+                    addDistributionDatasetsForModel(networkModel, result);
+                }
             }
         } catch (ModelException e) {
             LOGGER.error("An error occured on getting all Distribution Datasets", e);

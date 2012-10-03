@@ -66,9 +66,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         if (transactionMap.get() != null) {
             LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> already exists");
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Creating Transaction for Thread <" + Thread.currentThread() + ">");
-            }
+            //            if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Creating Transaction for Thread <" + Thread.currentThread() + ">");
+            //            }
             transactionMap.set(getDatabaseService().beginTx());
         }
         transactionStack.set(++stack);
@@ -186,7 +186,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     /**
      * @param isAlreadyUsed The isAlreadyUsed to set.
      */
-    protected void setAlreadyUsed(boolean isAlreadyUsed) {
+    protected void setAlreadyUsed(final boolean isAlreadyUsed) {
         this.isAlreadyUsed = isAlreadyUsed;
     }
 
