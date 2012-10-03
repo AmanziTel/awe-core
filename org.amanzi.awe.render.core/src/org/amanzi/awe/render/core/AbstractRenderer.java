@@ -66,9 +66,14 @@ public abstract class AbstractRenderer extends RendererImpl {
     private MathTransform transform_w2d;
 
     private final AbstractRendererStyles commonStyle = initDefaultRendererStyle();
+
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
+
     public static final String SPACE_SEPARATOR = " ";
+
     public static final String EQUAL_SEPARATOR = "=";
+
+    private static final int DEFAULT_DRAW_SIZE = 15;
 
     private ISelection selection;
 
@@ -103,10 +108,10 @@ public abstract class AbstractRenderer extends RendererImpl {
             commonStyle.setScale(Scale.MEDIUM);
         }
         if (commonStyle.getScale().equals(Scale.LARGE) && commonStyle.isScaleSymbols()) {
-            int largeSectorsSize = commonStyle.getLargeElementSize();
-            largeSectorsSize *= Math.round(0.5 + (Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled))));
-            largeSectorsSize = Math.min(largeSectorsSize, commonStyle.getMaxSymbolSize());
-            commonStyle.setLargeElementSize(largeSectorsSize);
+            int size = DEFAULT_DRAW_SIZE;
+            size *= (Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled)));
+            size = Math.min(size, commonStyle.getMaxSymbolSize());
+            commonStyle.setLargeElementSize(size);
         }
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
