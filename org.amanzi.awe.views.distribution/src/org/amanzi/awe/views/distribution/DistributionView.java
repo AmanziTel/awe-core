@@ -223,11 +223,22 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private void updateCharts(final IDistributionModel model) {
         distributionChart.updateDistribution(model);
+
+        updateChartColors();
     }
 
     @Override
     public void onChartTypeChanged(final ChartType chartType) {
         //TODO: 3.10.2012, not implemented yet
+    }
+
+    @Override
+    public void update() {
+        updateChartColors();
+    }
+
+    private void updateChartColors() {
+
     }
 
 }

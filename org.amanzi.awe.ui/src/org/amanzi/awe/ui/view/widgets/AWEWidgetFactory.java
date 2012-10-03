@@ -14,6 +14,7 @@
 package org.amanzi.awe.ui.view.widgets;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
 import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
@@ -63,6 +64,10 @@ public final class AWEWidgetFactory {
     public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent,
             final int minimalLabelWidth) {
         return initializeWidget(new DateTimeWidget(parent, listener, label, minimalLabelWidth));
+    }
+
+    public CheckBoxWidget addCheckBoxWidget(final ICheckBoxSelected listener, final String label, final Composite parent) {
+        return initializeWidget(new CheckBoxWidget(parent, listener, label));
     }
 
     public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {

@@ -15,6 +15,9 @@ package org.amanzi.awe.views.distribution.widgets;
 
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.CheckBoxWidget;
+import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.distribution.widgets.ChartTypeWidget.IChartTypeListener;
 import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget.IColoringPropertiesListener;
@@ -30,15 +33,19 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColoringPropertiesListener> implements IChartTypeListener {
+public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColoringPropertiesListener> implements IChartTypeListener, ICheckBoxSelected {
 
     public interface IColoringPropertiesListener extends AbstractAWEWidget.IAWEWidgetListener {
 
         public void onChartTypeChanged(ChartType chartType);
 
+        public void update();
+
     }
 
     private ChartTypeWidget chartTypeCombo;
+
+    private CheckBoxWidget colorProperties;
 
     /**
      * @param parent
@@ -52,9 +59,10 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
         Composite mainComposite = new Composite(parent, style);
-        mainComposite.setLayout(new GridLayout(1, false));
+        mainComposite.setLayout(new GridLayout(2, false));
 
-        addChartTypeWidget(mainComposite, "Chart Type:");
+        colorProperties = AWEWidgetFactory.getFactory().addCheckBoxWidget(this, "Color properties", mainComposite);
+        chartTypeCombo = addChartTypeWidget(mainComposite, "Chart Type:");
 
         return mainComposite;
     }
@@ -77,6 +85,24 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
     private <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {
         widget.initializeWidget();
         return widget;
+    }
+
+    @Override
+    public void onCheckBoxSelected(final CheckBoxWidget source) {
+        boolean state = source.isChecked();
+
+        if (source.equals(colorProperties)) {
+            setStandardStatusPanelVisible(!state);
+            setBlendPanelVisible(state);
+        }
+    }
+
+    private void setStandardStatusPanelVisible(final boolean isVisible) {
+
+    }
+
+    private void setBlendPanelVisible(final boolean isVisible) {
+
     }
 
 }
