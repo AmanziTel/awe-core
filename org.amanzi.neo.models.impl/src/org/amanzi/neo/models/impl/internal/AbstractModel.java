@@ -265,4 +265,13 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     public void flush() throws ModelException {
         // do nothing
     }
+
+    @Override
+    public void delete() throws ModelException {
+        try {
+            nodeService.delete(rootNode);
+        } catch (ServiceException e) {
+            processException("Can't delete node" + rootNode, e);
+        }
+    }
 }

@@ -34,6 +34,10 @@ public interface IIndexService extends IService {
 
     void addToIndex(Node rootNode, INodeType nodeType, Node node, String propertyName, Object value) throws ServiceException;
 
-    <T extends Object> MultiPropertyIndex<T> createMultiPropertyIndex(INodeType nodeType, Node node, Class<T> clazz, String... properties) throws ServiceException;
+    <T extends Object> MultiPropertyIndex<T> createMultiPropertyIndex(INodeType nodeType, Node node, Class<T> clazz,
+            String... properties) throws ServiceException;
 
+    void deleteFromIndexes(Node node, INodeType nodeType);
+
+    void deleteAll();
 }

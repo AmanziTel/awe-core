@@ -40,4 +40,6 @@ public interface IDataModel extends IModel {
 
     Iterable<IDataElement> getAllElementsByType(INodeType nodeType) throws ModelException;
 
+    void deleteElement(IDataElement element) throws ModelException;
+
 }

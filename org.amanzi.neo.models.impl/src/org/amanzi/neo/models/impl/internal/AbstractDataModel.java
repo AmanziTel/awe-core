@@ -91,4 +91,23 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         }
         return new DataElementIterator(childs).toIterable();
     }
+
+    @Override
+    public void deleteElement(IDataElement element) throws ModelException {
+        assert element != null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("deleteElement", element));
+        }
+
+        Node parentNode = ((DataElement)element).getNode();
+        try {
+            getNodeService().delete(parentNode);
+        } catch (ServiceException e) {
+            processException("Can't delete element" + e, e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("deleteElement"));
+        }
+    }
 }

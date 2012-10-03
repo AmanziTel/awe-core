@@ -79,6 +79,12 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
             return null;
         }
 
+        @Override
+        public void deleteElement(IDataElement element) throws ModelException {
+            // TODO Auto-generated method stub
+
+        }
+
     }
 
     private PropertyStatisticsModel model;

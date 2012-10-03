@@ -86,7 +86,6 @@ public class IndexService extends AbstractService implements IIndexService {
         Transaction tx = getGraphDb().beginTx();
         try {
             result = getGraphDb().index().forNodes(key);
-
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -163,5 +162,20 @@ public class IndexService extends AbstractService implements IIndexService {
         }
 
         return result;
+    }
+
+    @Override
+    public void deleteFromIndexes(Node node, INodeType nodeType) {
+        String key = getIndexKey(node, nodeType);
+        Index<Node> result = nodeIndexMap.get(key);
+        result.remove(node);
+    }
+
+    @Override
+    public void deleteAll() {
+        for (Index<Node> index : nodeIndexMap.values()) {
+            index.delete();
+        }
+
     }
 }

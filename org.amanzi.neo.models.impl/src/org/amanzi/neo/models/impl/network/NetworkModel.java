@@ -58,7 +58,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private static final Logger LOGGER = Logger.getLogger(NetworkModel.class);
 
-    //TODO: LN: 12.09.2012, duplicates AbstractMeasurementModel.ElementLocationIterator
+    // TODO: LN: 12.09.2012, duplicates AbstractMeasurementModel.ElementLocationIterator
     private final class ElementLocationIterator implements IDataElementIterator<ILocationElement> {
 
         private final Iterator<IDataElement> dataElements;
@@ -465,4 +465,5 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         return result;
     }
+
 }

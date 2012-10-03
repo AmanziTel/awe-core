@@ -102,6 +102,8 @@ public class NodeService extends AbstractService implements INodeService {
     private static final TraversalDescription OUTGOING_LEVEL_1_TRAVERSAL = Traversal.description().breadthFirst()
             .evaluator(Evaluators.atDepth(1));
 
+    private static final TraversalDescription OUTGOUIN_NODES_TRAVERSAL = Traversal.description().breadthFirst();
+
     private static final TraversalDescription CHAIN_TRAVERSAL = Traversal.description().depthFirst()
             .evaluator(Evaluators.excludeStartPosition()).relationships(NodeServiceRelationshipType.CHILD, Direction.OUTGOING)
             .relationships(NodeServiceRelationshipType.NEXT, Direction.OUTGOING);
@@ -213,6 +215,10 @@ public class NodeService extends AbstractService implements INodeService {
 
     protected TraversalDescription getDownlinkTraversal() {
         return OUTGOING_LEVEL_1_TRAVERSAL;
+    }
+
+    protected TraversalDescription getAllDownlinkTraversal() {
+        return OUTGOUIN_NODES_TRAVERSAL;
     }
 
     /**
@@ -644,9 +650,36 @@ public class NodeService extends AbstractService implements INodeService {
         assert nodeType != null;
 
         try {
-            return CHAIN_TRAVERSAL.evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId())).traverse(parentNode).nodes().iterator();
+            return CHAIN_TRAVERSAL
+                    .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId()))
+                    .traverse(parentNode).nodes().iterator();
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
+    }
+
+    @Override
+    public void delete(Node root) throws DatabaseException {
+        assert root != null;
+        Transaction tx = getGraphDb().beginTx();
+        try {
+            for (Node node : getAllDownlinkTraversal().traverse(root).nodes()) {
+                for (Relationship relationship : node.getRelationships(Direction.INCOMING)) {
+                    relationship.delete();
+                }
+                node.delete();
+            }
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    @Override
+    public Iterator<Node> getAllChildren(Node node) throws ServiceException {
+        return getAllDownlinkTraversal().traverse(node).nodes().iterator();
     }
 }
