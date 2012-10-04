@@ -258,6 +258,9 @@ IFilterDialogListener {
             column.dispose();
         }
         tableViewer.setInput(null);
+
+        tableViewer.resetFilters();
+        columns.clear();
     }
 
     @Override
