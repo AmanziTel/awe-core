@@ -1,4 +1,4 @@
-city.name@String = City,Town,Ort,SIT_City
+city.name@String = City,Town,(?i)Ort,SIT_City
 
 msc.name@String = MSC,MSC_NAME,MSC Name
 
