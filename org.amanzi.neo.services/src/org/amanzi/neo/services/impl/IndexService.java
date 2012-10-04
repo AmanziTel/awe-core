@@ -168,7 +168,9 @@ public class IndexService extends AbstractService implements IIndexService {
     public void deleteFromIndexes(Node node, INodeType nodeType) {
         String key = getIndexKey(node, nodeType);
         Index<Node> result = nodeIndexMap.get(key);
-        result.remove(node);
+        if (result != null) {
+            result.remove(node);
+        }
     }
 
     @Override
@@ -178,6 +180,7 @@ public class IndexService extends AbstractService implements IIndexService {
             for (Index<Node> index : nodeIndexMap.values()) {
                 index.delete();
             }
+            nodeIndexMap.clear();
             tx.success();
         } catch (Exception e) {
             tx.failure();

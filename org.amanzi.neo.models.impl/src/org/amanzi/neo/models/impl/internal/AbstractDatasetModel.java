@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -29,7 +28,6 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.neo4j.graphdb.Node;
 
@@ -162,18 +160,8 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
     public void deleteElement(IDataElement element) throws ModelException {
         assert element != null;
 
-        Node parentNode = ((DataElement)element).getNode();
-        try {
-            Iterator<Node> nodes = getNodeService().getAllChildren(parentNode);
-            while (nodes.hasNext()) {
-                Node node = nodes.next();
-                INodeType type = getNodeService().getNodeType(node);
-                indexModel.deleteIndex(node, type);
+        // TODO KV: implement index removing
 
-            }
-        } catch (Exception e) {
-            processException("can't remove element " + element, e);
-        }
         super.deleteElement(element);
     }
 

@@ -40,20 +40,20 @@ public class NetworkElementManager {
     private NetworkElementManager() {
     }
 
-    public void removeModel(INetworkModel model) throws ModelException {
-        LOGGER.info("Start model removing" + model);
+    public void removeModel(final INetworkModel model) throws ModelException {
+        LOGGER.info("Start removing model " + model);
         try {
             model.delete();
         } catch (ModelException e) {
-            LOGGER.error("Can't remove model" + model, e);
+            LOGGER.error("Can't model " + model, e);
             throw e;
         }
     }
 
-    public void removeElement(INetworkModel model, IDataElement element) throws ModelException {
+    public void removeElement(final INetworkModel model, final IDataElement element) throws ModelException {
         LOGGER.info("Start  removing element " + element + " from model " + model);
         try {
-            model.delete();
+            model.deleteElement(element);
         } catch (ModelException e) {
             LOGGER.error("Can't remove element " + element + " from model " + model, e);
             throw e;
