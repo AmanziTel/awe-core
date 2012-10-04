@@ -39,7 +39,7 @@ public class EqualsFilter<T extends Object> extends AbstractFilter<T> {
 
     @Override
     public boolean matches(final IDataElement element) {
-        return ObjectUtils.equals(getElementValue(element), equals(value));
+        return ObjectUtils.equals(getElementValue(element), value);
     }
 
 }

@@ -43,6 +43,7 @@ public class DistributionPropertyWidget extends PropertyComboWidget {
 
     @Override
     protected Set<String> getPropertyNames(final INodeType nodeType) {
+        //TODO: LN: 04.10.2012, move this to DistributionManager
         Set<String> result = new HashSet<String>();
         for (String propertyName : getModel().getPropertyNames(nodeType)) {
             if (!getModel().getValues(nodeType, propertyName).isEmpty()) {
