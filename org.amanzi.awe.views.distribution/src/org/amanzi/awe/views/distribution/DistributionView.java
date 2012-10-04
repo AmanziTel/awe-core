@@ -19,7 +19,6 @@ import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.util.ActionUtil;
-import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
@@ -30,6 +29,7 @@ import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistri
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertyWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -144,7 +144,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         distributionTypeComposite.setLayout(new GridLayout(3, false));
 
         addDistributionDatasetWidget(distributionTypeComposite, this, FIRST_ROW_LABEL_WIDTH);
-        propertyCombo = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Property:", distributionTypeComposite, SECOND_ROW_LABEL_WIDTH);
+        propertyCombo = addDistributionPropertyWidget(distributionTypeComposite, "Property:", this, SECOND_ROW_LABEL_WIDTH);
         distributionTypeCombo = addDistributionTypeWidget(distributionTypeComposite, this, THIRD_ROW_LABEL_WIDTH);
     }
 
@@ -185,6 +185,13 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         return result;
     }
 
+    private DistributionPropertyWidget addDistributionPropertyWidget(final Composite parent, final String label, final IPropertySelectionListener listener, final int minimalWidth) {
+        DistributionPropertyWidget result = new DistributionPropertyWidget(parent, listener, label, minimalWidth);
+        result.initializeWidget();
+
+        return result;
+    }
+
     @Override
     public void onDistributionDatasetSelected(final DistributionDataset distributionDataset) {
         if (isInitialized) {
@@ -205,6 +212,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
             currentManager.setProperty(property);
 
             distributionTypeCombo.setDistributionManager(currentManager);
+            distributionTypeCombo.skipSelection();
         }
     }
 

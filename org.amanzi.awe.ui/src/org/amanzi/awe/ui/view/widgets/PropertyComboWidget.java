@@ -66,14 +66,22 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
             if (!defaultProperties.isEmpty()) {
                 properties.add(SEPARATOR);
             }
-            if (nodeType == null) {
-                properties.addAll(propertyModel.getPropertyNames());
-            } else {
-                properties.addAll(propertyModel.getPropertyNames(nodeType));
-            }
+            properties.addAll(getPropertyNames(nodeType));
             return properties;
         }
         return null;
+    }
+
+    protected Set<String> getPropertyNames(final INodeType nodeType) {
+        if (nodeType == null) {
+            return propertyModel.getPropertyNames();
+        } else {
+            return propertyModel.getPropertyNames(nodeType);
+        }
+    }
+
+    protected IPropertyStatisticsModel getModel() {
+        return propertyModel;
     }
 
     public void setDefaultProperties(final Iterable<String> properties) {
