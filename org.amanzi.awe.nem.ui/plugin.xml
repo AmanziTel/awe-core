@@ -47,7 +47,7 @@
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
-            class="org.amanzi.awe.nem.ui.testers.DeletableTester"
+            class="org.amanzi.awe.nem.ui.testers.NemTester"
             id="org.amanzi.awe.nem.ui.deletabletester"
             namespace="org.amanzi.awe.nem.ui"
             properties="isDeletable"

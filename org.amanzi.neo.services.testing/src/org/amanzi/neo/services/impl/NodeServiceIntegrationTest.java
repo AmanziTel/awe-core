@@ -432,7 +432,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         Long id = parent.getId();
 
-        nodeService.delete(parent);
+        nodeService.deleteChain(parent);
 
         assertNull("Unexpected node found", getGraphDatabaseService().getNodeById(id));
 
@@ -444,7 +444,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
         children.add(parent);
 
-        nodeService.delete(parent);
+        nodeService.deleteChain(parent);
         for (Node node : children) {
             Node found = null;
             try {
@@ -468,7 +468,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         totalNodes.addAll(createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1,
                 children.toArray(new Node[children.size()])));
 
-        nodeService.delete(parent);
+        nodeService.deleteChain(parent);
         for (Node node : totalNodes) {
             Node found = null;
             try {

@@ -129,7 +129,9 @@ public interface INodeService extends IService {
 
     TraversalDescription getChildrenChainTraversal(final Node node);
 
-    void delete(Node node) throws ServiceException;
+    void deleteChain(Node node) throws ServiceException;
+
+    void deleteSingleNode(Node node) throws ServiceException;
 
     Iterator<Node> getAllChildren(Node node) throws ServiceException;
 }

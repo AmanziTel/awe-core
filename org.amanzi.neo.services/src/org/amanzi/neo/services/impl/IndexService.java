@@ -173,8 +173,16 @@ public class IndexService extends AbstractService implements IIndexService {
 
     @Override
     public void deleteAll() {
-        for (Index<Node> index : nodeIndexMap.values()) {
-            index.delete();
+        Transaction tx = getGraphDb().beginTx();
+        try {
+            for (Index<Node> index : nodeIndexMap.values()) {
+                index.delete();
+            }
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+        } finally {
+            tx.finish();
         }
 
     }

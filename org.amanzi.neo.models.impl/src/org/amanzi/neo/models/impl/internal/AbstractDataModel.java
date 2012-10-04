@@ -101,7 +101,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
 
         Node parentNode = ((DataElement)element).getNode();
         try {
-            getNodeService().delete(parentNode);
+            getNodeService().deleteChain(parentNode);
         } catch (ServiceException e) {
             processException("Can't delete element" + e, e);
         }

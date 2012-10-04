@@ -280,7 +280,6 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     public void delete() throws ModelException {
         indexMap.clear();
         indexService.deleteAll();
-        super.delete();
     }
 
 }
