@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.TableColumn;
 
@@ -33,9 +32,9 @@ public class FilterDialogEvent extends Event {
 
     private List<ViewerFilter> filters = new ArrayList<ViewerFilter>();
 
-    private int direction = SWT.UP;
+    private int direction;
 
-    private TableColumn column;
+    private final TableColumn column;
 
     /**
      * @param column
@@ -45,7 +44,7 @@ public class FilterDialogEvent extends Event {
      * @param selection
      * @param filters
      */
-    public FilterDialogEvent(TableColumn column) {
+    public FilterDialogEvent(final TableColumn column) {
         super();
         this.column = column;
     }
@@ -67,14 +66,14 @@ public class FilterDialogEvent extends Event {
     /**
      * @param direction The direction to set.
      */
-    public void setDirection(int direction) {
+    public void setDirection(final int direction) {
         this.direction = direction;
     }
 
     /**
      * @param filters The filters to set.
      */
-    public void setFilters(List<ViewerFilter> filters) {
+    public void setFilters(final List<ViewerFilter> filters) {
         this.filters = filters;
     }
 

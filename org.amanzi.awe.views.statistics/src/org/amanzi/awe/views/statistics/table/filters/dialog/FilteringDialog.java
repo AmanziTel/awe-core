@@ -88,7 +88,9 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
 
     private Button bSortZA;
 
-    private TableColumn column;
+    private Button bSortAZ;
+
+    private final TableColumn column;
 
     private Button bClearFilters;
 
@@ -96,20 +98,22 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
 
     private Button bClear;
 
-    private Shell shell;
+    private final Shell shell;
 
-    private Set<String> groups;
+    private final Set<String> groups;
     private KpiComboViewerWidget treeViewer;
 
     private Button bOk;
 
     private Button bCancel;
 
-    private TableViewer tableViewer;
+    private final TableViewer tableViewer;
 
     private List<ViewerFilter> filters = new ArrayList<ViewerFilter>();
 
-    public FilteringDialog(TableViewer tableViewer, TableColumn column, Set<String> groups) {
+    private int currentDirection = SWT.UP;
+
+    public FilteringDialog(final TableViewer tableViewer, final TableColumn column, final Set<String> groups) {
         Table table = tableViewer.getTable();
         shell = new Shell(table.getShell(), SWT.SHELL_TRIM & (~SWT.RESIZE));
         shell.setText("Aggregation filters setting");
@@ -135,7 +139,7 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
      */
     private void createWidgets() {
         Composite composite = createComposite(shell, TWO_COLUMN_LAYOUT);
-        createButton(composite, sortAscImage, SORT_FROM_A_TO_Z_LABEL);
+        bSortAZ = createButton(composite, sortAscImage, SORT_FROM_A_TO_Z_LABEL);
         bSortZA = createButton(composite, sortDescImage, SORT_FROM_Z_TO_A_LABEL);
 
         composite = createComposite(shell, ONE_COLUMN_LAYOUT);
@@ -186,7 +190,7 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
      * @param filteringDialog
      * @param layout
      */
-    private Composite createComposite(Composite filteringDialog, GridLayout layout) {
+    private Composite createComposite(final Composite filteringDialog, final GridLayout layout) {
         Composite composite = new Composite(filteringDialog, SWT.NONE);
         composite.setLayout(layout);
         composite.setLayoutData(getGridData());
@@ -205,7 +209,7 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
      * @param label
      * @return
      */
-    private Button createButton(Composite composite, Image image, String label) {
+    private Button createButton(final Composite composite, final Image image, final String label) {
         Button button = new Button(composite, SWT.NONE);
         if (image != null) {
             button.setImage(image);
@@ -217,7 +221,7 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
     }
 
     @Override
-    public void modifyText(ModifyEvent e) {
+    public void modifyText(final ModifyEvent e) {
         if (e.getSource().equals(textField)) {
             setFilter();
         }
@@ -234,24 +238,26 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
     }
 
     @Override
-    public void mouseDoubleClick(MouseEvent e) {
+    public void mouseDoubleClick(final MouseEvent e) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void mouseDown(MouseEvent e) {
+    public void mouseDown(final MouseEvent e) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void mouseUp(MouseEvent e) {
+    public void mouseUp(final MouseEvent e) {
         Object source = e.getSource();
         FilterDialogEvent event = new FilterDialogEvent(column);
         boolean isNeedToClose = false;
         if (bSortZA.equals(source)) {
-            event.setDirection(SWT.DOWN);
+            currentDirection = SWT.DOWN;
+        } else if (bSortAZ.equals(source)) {
+            currentDirection = SWT.UP;
         } else if (bClear.equals(source)) {
             textField.setText(StringUtils.EMPTY);
         } else if (bOk.equals(source)) {
@@ -266,7 +272,11 @@ public class FilteringDialog implements IKpiTreeListener, ModifyListener, MouseL
             bClearFilters.setEnabled(false);
         }
         event.setFilters(filters);
-        tableViewer.getTable().notifyListeners(IFilterDialogListener.UPDATE_SORTING_LISTENER, event);
+        event.setDirection(currentDirection);
+
+        if (e.getSource().equals(bOk)) {
+            tableViewer.getTable().notifyListeners(IFilterDialogListener.UPDATE_SORTING_LISTENER, event);
+        }
         if (isNeedToClose) {
             shell.close();
         }
