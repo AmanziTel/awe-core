@@ -659,7 +659,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public void delete(Node root) throws DatabaseException {
+    public void deleteChain(Node root) throws DatabaseException {
         assert root != null;
         Transaction tx = getGraphDb().beginTx();
         try {
@@ -681,5 +681,23 @@ public class NodeService extends AbstractService implements INodeService {
     @Override
     public Iterator<Node> getAllChildren(Node node) throws ServiceException {
         return getAllDownlinkTraversal().traverse(node).nodes().iterator();
+    }
+
+    @Override
+    public void deleteSingleNode(Node node) throws ServiceException {
+        Transaction tx = getGraphDb().beginTx();
+        try {
+            for (Relationship relationship : node.getRelationships(Direction.INCOMING)) {
+                relationship.delete();
+            }
+            node.delete();
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
     }
 }
