@@ -41,6 +41,8 @@ AbstractAWEWidget<Composite, L> {
 
     private C control;
 
+    private Label controlLabel;
+
     private int minialLabelWidth;
 
     /**
@@ -63,9 +65,9 @@ AbstractAWEWidget<Composite, L> {
         composite.setLayout(DEFAULT_LABELED_COMBO_LAYOUT);
         composite.setLayoutData(getControlLayoutData());
 
-        Label comboLabel = new Label(composite, SWT.NONE);
-        comboLabel.setText(label);
-        comboLabel.setLayoutData(getLabelLayoutData());
+        controlLabel = new Label(composite, SWT.NONE);
+        controlLabel.setText(label);
+        controlLabel.setLayoutData(getLabelLayoutData());
 
         control = createControl(composite);
         control.setLayoutData(getElementLayoutData());
@@ -96,6 +98,22 @@ AbstractAWEWidget<Composite, L> {
 
     protected C getControl() {
         return control;
+    }
+
+    @Override
+    public void setEnabled(final boolean isEnabled) {
+        super.setEnabled(isEnabled);
+
+        control.setEnabled(isEnabled);
+        controlLabel.setEnabled(isEnabled);
+    }
+
+    @Override
+    public void setVisible(final boolean isVisible) {
+        super.setVisible(isVisible);
+
+        control.setVisible(isVisible);
+        controlLabel.setVisible(isVisible);
     }
 
 }

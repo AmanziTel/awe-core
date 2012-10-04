@@ -116,7 +116,7 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
             result = null;
         }
 
-        return result;
+        return result == null ? null : result.isEmpty() ? null : result;
     }
 
     private void addDistributionDatasetsForModel(final IPropertyStatisticalModel propertyStatisticalModel, final Collection<DistributionDataset> distributionDatasets) {
@@ -134,6 +134,11 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
     protected void fireListener(final IDistributionDatasetSelectionListener listener, final DistributionDataset selectedItem) {
         listener.onDistributionDatasetSelected(selectedItem);
 
+    }
+
+    @Override
+    protected int getDefaultSelectedItem() {
+        return -1;
     }
 
 }

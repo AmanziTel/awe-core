@@ -126,6 +126,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         addDistributionChartComposite(mainComposite);
 
         coloringPropertiesWidget = addColoringPropertiesWidget(mainComposite, this);
+        coloringPropertiesWidget.setVisible(false);
 
         isInitialized = true;
     }
@@ -192,6 +193,9 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
             propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
             coloringPropertiesWidget.setDistributionManager(currentManager);
+
+            propertyCombo.skipSelection();
+            distributionTypeCombo.skipSelection();
         }
     }
 
@@ -223,6 +227,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private void updateCharts(final IDistributionModel model) {
         distributionChart.updateDistribution(model);
+
+        coloringPropertiesWidget.setVisible(true);
 
         updateChartColors();
     }

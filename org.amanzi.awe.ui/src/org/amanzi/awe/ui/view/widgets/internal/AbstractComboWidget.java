@@ -130,7 +130,16 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
                 itemsMap.put(name, item);
                 getControl().add(name);
             }
+
+            setEnabled(true);
+            updateSelection();
+        } else {
+            setEnabled(false);
         }
+    }
+
+    public void skipSelection() {
+        selectedItem = null;
 
         updateSelection();
     }
@@ -146,16 +155,23 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
             }
         }
 
+        boolean fireEvent = false;
         if (text == null) {
-            if (getControl().getItemCount() > 0) {
-                text = getControl().getItem(0);
-            } else {
-                text = StringUtils.EMPTY;
+            text = StringUtils.EMPTY;
+            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItem() > 0) && (getDefaultSelectedItem() < getControl().getItemCount())) {
+                text = getControl().getItem(getDefaultSelectedItem());
+                fireEvent = true;
             }
         }
 
         getControl().setText(text);
-        fireEvent();
+        if (fireEvent) {
+            fireEvent();
+        }
+    }
+
+    protected int getDefaultSelectedItem() {
+        return 0;
     }
 
     protected abstract Collection<D> getItems();
