@@ -11,7 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.charts.model;
+package org.amanzi.awe.charts.builder.dataset.dto;
+
+import java.util.Collection;
 
 /**
  * TODO Purpose of
@@ -21,11 +23,7 @@ package org.amanzi.awe.charts.model;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IRangeAxis {
-    String getName();
+public interface ICategoryRow extends IDatasetItem<ICategoryRow> {
 
-    Iterable<String> getCellsNames();
-
-    boolean isInCellList(String cell);
-
+    Collection<String> getGroupsNames();
 }

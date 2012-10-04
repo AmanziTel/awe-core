@@ -11,11 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto;
+package org.amanzi.awe.views.statistcstree.view.filter.container;
 
 import java.util.Collection;
 
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.neo.core.period.Period;
 
 /**
  * TODO Purpose of
@@ -25,14 +25,16 @@ import org.amanzi.awe.statistics.dto.IStatisticsRow;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IColumnItem extends Comparable<IColumnItem> {
+public interface IStatisticsTreeFilterContainer {
 
-    Collection<String> getGroupsNames();
+    long getStartTime();
 
-    IStatisticsRow getRow();
+    long getEndTime();
+
+    Collection<String> getGroupNames();
 
     String getCellName();
 
-    String getName();
+    Period getPeriod();
 
 }

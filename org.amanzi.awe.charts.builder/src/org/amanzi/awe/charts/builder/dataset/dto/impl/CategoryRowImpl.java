@@ -11,15 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-import org.amanzi.awe.chart.builder.dataset.dto.IColumnItem;
-import org.amanzi.awe.chart.manger.ChartsManager;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.charts.builder.dataset.dto.ICategoryRow;
 
 /**
  * TODO Purpose of
@@ -29,33 +27,19 @@ import org.amanzi.awe.statistics.dto.IStatisticsRow;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ColumnCachedItem implements IColumnItem {
-
-    private IStatisticsRow row;
-
-    private String name;
+public class CategoryRowImpl implements ICategoryRow {
 
     private Double value = 0d;
 
-    private Set<String> groups = new HashSet<String>();
+    private List<String> groups = new ArrayList<String>();
 
     private String cellName;
 
     private int count = 0;
 
-    protected ColumnCachedItem() {
-
-    }
-
-    /**
-     * @param row
-     * @param cellName
-     */
-    public ColumnCachedItem(IStatisticsRow row, String cellName) {
+    public CategoryRowImpl(String cellName) {
         super();
-        this.row = row;
         this.cellName = cellName;
-        this.name = ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
     }
 
     public void addGroup(String groupName) {
@@ -68,13 +52,8 @@ public class ColumnCachedItem implements IColumnItem {
     }
 
     @Override
-    public IStatisticsRow getRow() {
-        return row;
-    }
-
-    @Override
-    public int compareTo(IColumnItem o) {
-        return name.compareTo(o.getName());
+    public int compareTo(ICategoryRow o) {
+        return cellName.compareTo(o.getName());
     }
 
     public void increase(Number value) {
@@ -83,13 +62,8 @@ public class ColumnCachedItem implements IColumnItem {
     }
 
     @Override
-    public String getCellName() {
-        return cellName;
-    }
-
-    @Override
     public String getName() {
-        return name;
+        return cellName;
     }
 
     protected int getCount() {
@@ -113,7 +87,7 @@ public class ColumnCachedItem implements IColumnItem {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((cellName == null) ? 0 : cellName.hashCode());
         return result;
     }
 
@@ -125,34 +99,13 @@ public class ColumnCachedItem implements IColumnItem {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ColumnCachedItem other = (ColumnCachedItem)obj;
-        if (name == null) {
-            if (other.name != null)
+        CategoryRowImpl other = (CategoryRowImpl)obj;
+        if (cellName == null) {
+            if (other.cellName != null)
                 return false;
-        } else if (!name.equals(other.name))
+        } else if (!cellName.equals(other.cellName))
             return false;
         return true;
-    }
-
-    /**
-     * @param row The row to set.
-     */
-    protected void setRow(IStatisticsRow row) {
-        this.row = row;
-    }
-
-    /**
-     * @param name The name to set.
-     */
-    protected void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @param cellName The cellName to set.
-     */
-    protected void setCellName(String cellName) {
-        this.cellName = cellName;
     }
 
 }

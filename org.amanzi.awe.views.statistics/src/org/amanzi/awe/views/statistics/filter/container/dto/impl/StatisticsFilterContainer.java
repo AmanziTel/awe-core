@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.views.statistics.filter.container.dto.impl;
 
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.neo.core.period.Period;
 
 /**
@@ -24,7 +24,7 @@ import org.amanzi.neo.core.period.Period;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsFilterContainer implements IStatisticsFilterContainer {
+public class StatisticsFilterContainer implements IStatisticsViewFilterContainer {
 
     private Period period;
 

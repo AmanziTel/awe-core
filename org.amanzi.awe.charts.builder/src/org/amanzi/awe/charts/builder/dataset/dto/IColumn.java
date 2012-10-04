@@ -11,9 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.statistics.filter.container.dto;
-
-import org.amanzi.neo.core.period.Period;
+package org.amanzi.awe.charts.builder.dataset.dto;
 
 /**
  * TODO Purpose of
@@ -23,11 +21,12 @@ import org.amanzi.neo.core.period.Period;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IStatisticsFilterContainer {
+public interface IColumn extends IDatasetItem<IColumn> {
 
-    Period getPeriod();
+    Long getStartDate();
 
-    Long getStartTime();
+    Long getEndDate();
 
-    Long getEndTime();
+    ICategoryRow getItemByName(String name);
+
 }

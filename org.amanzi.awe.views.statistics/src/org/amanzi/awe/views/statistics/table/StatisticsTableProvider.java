@@ -14,7 +14,7 @@
 package org.amanzi.awe.views.statistics.table;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,7 +34,7 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsTableProvider.class);
 
-    private IStatisticsFilterContainer filter;
+    private IStatisticsViewFilterContainer filter;
 
     /**
      * 
@@ -68,7 +68,7 @@ public class StatisticsTableProvider implements IStructuredContentProvider {
     /**
      * @param filterContainer
      */
-    public void setFilter(IStatisticsFilterContainer filterContainer) {
+    public void setFilter(IStatisticsViewFilterContainer filterContainer) {
         this.filter = filterContainer;
 
     }

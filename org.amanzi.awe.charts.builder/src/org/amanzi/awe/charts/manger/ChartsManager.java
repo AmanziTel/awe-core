@@ -11,17 +11,17 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.manger;
+package org.amanzi.awe.charts.manger;
 
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 
-import org.amanzi.awe.chart.builder.CategoryChartBuilder;
-import org.amanzi.awe.chart.builder.IChartBuilder;
-import org.amanzi.awe.chart.builder.PieChartBuilder;
-import org.amanzi.awe.chart.builder.StackedChartBuilder;
-import org.amanzi.awe.chart.builder.TimeChartBuilder;
+import org.amanzi.awe.charts.builder.CategoryChartBuilder;
+import org.amanzi.awe.charts.builder.IChartBuilder;
+import org.amanzi.awe.charts.builder.PieChartBuilder;
+import org.amanzi.awe.charts.builder.StackedChartBuilder;
+import org.amanzi.awe.charts.builder.TimeChartBuilder;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.chart.JFreeChart;

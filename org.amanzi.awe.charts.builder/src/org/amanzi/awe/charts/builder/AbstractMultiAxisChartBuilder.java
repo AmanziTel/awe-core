@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder;
 
-import org.amanzi.awe.chart.builder.dataset.dto.IChartDatasetContainer;
+import org.amanzi.awe.charts.builder.dataset.dto.IChartDatasetContainer;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -73,7 +73,8 @@ public abstract class AbstractMultiAxisChartBuilder<P extends Plot, D extends IC
             secondAxis = configRangeAxis(getModel().getSecondRangeAxis());
             setSecondAxisForPlot(plot, datasets.getDataset(getModel().getSecondRangeAxis()), subRenderer, secondAxis);
         }
-
+        domainAxis.setTickLabelFont(getDefaulTickLabelFont());
+        domainAxis.setLabelFont(getDefaultAxisFont());
         chart = finishUp(chart);
         return chart;
     }

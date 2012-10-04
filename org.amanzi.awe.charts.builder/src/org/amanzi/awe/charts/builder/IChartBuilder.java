@@ -11,7 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.charts.model;
+package org.amanzi.awe.charts.builder;
+
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.jfree.chart.JFreeChart;
 
 /**
  * TODO Purpose of
@@ -21,11 +24,6 @@ package org.amanzi.awe.charts.model;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IRangeAxis {
-    String getName();
-
-    Iterable<String> getCellsNames();
-
-    boolean isInCellList(String cell);
-
+public interface IChartBuilder {
+    JFreeChart createChart() throws ModelException;
 }

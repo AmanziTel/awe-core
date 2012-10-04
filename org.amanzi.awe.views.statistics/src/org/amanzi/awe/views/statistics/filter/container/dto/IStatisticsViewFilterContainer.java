@@ -11,7 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.charts.model;
+package org.amanzi.awe.views.statistics.filter.container.dto;
+
+import org.amanzi.neo.core.period.Period;
 
 /**
  * TODO Purpose of
@@ -21,11 +23,20 @@ package org.amanzi.awe.charts.model;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IRangeAxis {
-    String getName();
+public interface IStatisticsViewFilterContainer {
+    /**
+     * get period
+     * 
+     * @return
+     */
+    Period getPeriod();
 
-    Iterable<String> getCellsNames();
+    /**
+     * getStartTime
+     * 
+     * @return
+     */
+    Long getStartTime();
 
-    boolean isInCellList(String cell);
-
+    Long getEndTime();
 }

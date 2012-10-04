@@ -11,18 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
-import org.amanzi.awe.chart.builder.dataset.dto.IChartDatasetContainer;
-import org.amanzi.awe.chart.builder.dataset.dto.IColumnItem;
-import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.builder.dataset.dto.IChartDatasetContainer;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
@@ -40,28 +35,13 @@ import org.jfree.data.general.Dataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends ColumnCachedItem>
-        implements
-            IChartDatasetContainer {
+public abstract class AbstractChartDatasetContainer<T extends Dataset> implements IChartDatasetContainer {
 
     private Map<IRangeAxis, T> datasets;
 
     private IChartModel model;
 
-    private static final String CACHE_KEY_FORMAT = "%s_%s";
-
-    private Map<String, C> columnCache = new HashMap<String, C>();
-
-    private class ColumnsSorter implements Comparator<IColumnItem> {
-
-        @Override
-        public int compare(IColumnItem o1, IColumnItem o2) {
-            Long firstTime = o1.getRow().getStartDate();
-            Long secondTime = o2.getRow().getStartDate();
-            return firstTime.compareTo(secondTime);
-        }
-
-    }
+    private Map<Long, ColumnImpl> columnCache = new TreeMap<Long, ColumnImpl>();
 
     public AbstractChartDatasetContainer(IChartModel model) {
         datasets = new HashMap<IRangeAxis, T>();
@@ -95,17 +75,18 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
     @Override
     public void computeDatasets() throws ModelException {
         datasets.put(model.getMainRangeAxis(), buildAxis(model.getMainRangeAxis()));
-        columnCache.clear();
         if (model.getSecondRangeAxis() != null) {
             datasets.put(model.getSecondRangeAxis(), buildAxis(model.getSecondRangeAxis()));
         }
-        columnCache.clear();
     }
 
-    protected Iterable<C> getCachedColumns() {
-        List<C> columns = new ArrayList<C>(columnCache.values());
-        Collections.sort(columns, new ColumnsSorter());
-        return columns;
+    /**
+     * get cached columns
+     * 
+     * @return
+     */
+    protected Iterable<ColumnImpl> getCachedColumns() {
+        return columnCache.values();
     }
 
     /**
@@ -119,16 +100,15 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
         T dataset = createDataset();
         IChartDataFilter filter = getModel().getChartDataFilter();
         IStatisticsModel statisticsModel = getModel().getStatisticsModel();
-        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRowsInTimeRange(getModel().getPeriod().getId(),
-                filter.getMinRowPeriod(), filter.getMaxRowPeriod());
+        Iterable<IStatisticsRow> rows = statisticsModel.getStatisticsRows(getModel().getPeriod().getId());
         for (IStatisticsRow row : rows) {
             if (filter.check(row, false)) {
-                for (String requiredCell : axis.getCellsNames()) {
-                    handleAxisCell(row, requiredCell);
-                }
+                ColumnImpl column = getColumnFromCache(row);
+                handleAxisCell(column, row, axis);
             }
         }
         finishup(dataset);
+        columnCache.clear();
         return dataset;
 
     }
@@ -139,22 +119,29 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
     protected abstract void finishup(T dataset);
 
     /**
+     * handle single axis try to find required cells in current row, calculate sunn and cache
+     * results
+     * 
+     * @param column
      * @param row
-     * @param requiredCell
+     * @param axis
      */
-    protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
+    protected void handleAxisCell(ColumnImpl column, IStatisticsRow row, IRangeAxis axis) {
         for (IStatisticsCell cell : row.getStatisticsCells()) {
-            if (!cell.getName().equals(requiredCell)) {
+            if (!axis.isInCellList(cell.getName())) {
                 continue;
+            }
+            CategoryRowImpl container = (CategoryRowImpl)column.getItemByName(cell.getName());
+            if (container == null) {
+                container = new CategoryRowImpl(cell.getName());
+                column.addItem(container);
             }
             Number cellValue = cell.getValue();
             if (cellValue == null) {
-                break;
+                continue;
             }
-            C column = getColumnFromCache(row, requiredCell);
-            column.increase(cellValue);
-            column.addGroup(row.getStatisticsGroup().getPropertyValue());
-            break;
+            container.increase(cellValue);
+            container.addGroup(row.getStatisticsGroup().getPropertyValue());
         }
     }
 
@@ -162,16 +149,6 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
      * @return
      */
     protected abstract T createDataset();
-
-    /**
-     * get row name in according to its date format and period
-     * 
-     * @param row
-     * @return
-     */
-    protected String getName(IStatisticsRow row) {
-        return ChartsManager.getInstance().getDefaultDateFormat().format(row.getStartDate());
-    }
 
     @Override
     public boolean isMultyAxis() {
@@ -185,21 +162,17 @@ public abstract class AbstractChartDatasetContainer<T extends Dataset, C extends
      * @param requiredCell
      * @return
      */
-    protected C getColumnFromCache(IStatisticsRow row, String requiredCell) {
-        String key = getCacheKey(row, requiredCell);
-        C container;
-        if (!columnCache.containsKey(key)) {
-            container = createColumn(row, requiredCell);
-            columnCache.put(key, container);
-        } else {
-            container = columnCache.get(key);
+    protected ColumnImpl getColumnFromCache(IStatisticsRow row) {
+        ColumnImpl column = columnCache.get(row.getStartDate());
+        if (column == null) {
+            column = createColumn(row);
+            columnCache.put(row.getStartDate(), column);
         }
-        return container;
+        return column;
     }
 
-    protected String getCacheKey(IStatisticsRow row, String requiredCell) {
-        return String.format(CACHE_KEY_FORMAT, row.getStartDate(), requiredCell);
+    protected ColumnImpl createColumn(IStatisticsRow row) {
+        return new ColumnImpl(row.getStartDate(), row.getEndDate());
     }
 
-    protected abstract C createColumn(IStatisticsRow row, String requiredCell);
 }

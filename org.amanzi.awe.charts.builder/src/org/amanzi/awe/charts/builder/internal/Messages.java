@@ -11,19 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder.internal;
 
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.jfree.chart.JFreeChart;
+import org.eclipse.osgi.util.NLS;
 
 /**
- * TODO Purpose of
- * <p>
- * </p>
- * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IChartBuilder {
-    JFreeChart createChart() throws ModelException;
+public class Messages extends NLS {
+    private static final String BUNDLE_NAME = "org.amanzi.awe.charts.builder.internal.messages"; //$NON-NLS-1$
+
+    public static String clickItemToDrillDown;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+    }
+
+    private Messages() {
+    }
 }

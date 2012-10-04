@@ -11,9 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder;
 
-import org.amanzi.awe.chart.builder.dataset.dto.impl.CategoryDatasetContainer;
+import org.amanzi.awe.charts.builder.dataset.dto.impl.CategoryDatasetContainer;
+import org.amanzi.awe.charts.builder.internal.Messages;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.chart.ChartFactory;
@@ -46,11 +47,13 @@ public class StackedChartBuilder extends AbstractChartBuilder {
                 // title
                 getModel().getDomainAxisName(), getModel().getMainRangeAxis().getName(),
                 (CategoryDataset)dataset.getDataset(getModel().getMainRangeAxis()), getModel().getPlotOrientation(), true, true,
-                true);
-        ((CategoryPlot)chart.getPlot()).setRenderer(new StackedBarRenderer3D());
-        CategoryAxis axis = ((CategoryPlot)chart.getPlot()).getDomainAxis();
-        axis.setTickLabelFont(getDefaultDomainAxisFont());
+                false);
+        CategoryPlot plot = ((CategoryPlot)chart.getPlot());
+        plot.setRenderer(new StackedBarRenderer3D());
+        CategoryAxis axis = plot.getDomainAxis();
+        axis.setTickLabelFont(getDefaulTickLabelFont());
+        axis.setLabelFont(getDefaultAxisFont());
+        chart.addSubtitle(getSubTitle(Messages.clickItemToDrillDown));
         return chart;
     }
-
 }

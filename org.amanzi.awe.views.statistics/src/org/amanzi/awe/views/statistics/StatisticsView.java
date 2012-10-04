@@ -28,7 +28,7 @@ import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
 import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.awe.views.statistics.filter.container.dto.impl.StatisticsFilterContainer;
 import org.amanzi.awe.views.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.views.statistics.table.StatisticsTable;
@@ -308,7 +308,7 @@ public class StatisticsView extends ViewPart
         widgetSelected(e);
     }
 
-    private void updateTable(final IStatisticsModel statisticsModel, IStatisticsFilterContainer filterContainer) {
+    private void updateTable(final IStatisticsModel statisticsModel, IStatisticsViewFilterContainer filterContainer) {
         statisticsTable.updateStatistics(statisticsModel, filterContainer);
     }
 

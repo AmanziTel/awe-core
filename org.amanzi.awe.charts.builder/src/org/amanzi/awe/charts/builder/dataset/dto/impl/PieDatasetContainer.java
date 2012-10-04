@@ -11,15 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.charts.model.IChartModel;
-import org.amanzi.awe.statistics.dto.IStatisticsCell;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.jfree.data.general.DefaultPieDataset;
 
 /**
@@ -30,7 +28,7 @@ import org.jfree.data.general.DefaultPieDataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset, ColumnCachedItem> {
+public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPieDataset> {
 
     /**
      * @param model
@@ -48,7 +46,7 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
      * @param value
      * @param cellName
      */
-    private void updateCache(Map<String, Double> kpiCache, Number value, String cellName) {
+    private void updateCache(Number value, String cellName) {
         if (value == null) {
             value = 0d;
         }
@@ -63,36 +61,24 @@ public class PieDatasetContainer extends AbstractChartDatasetContainer<DefaultPi
 
     @Override
     protected void finishup(DefaultPieDataset dataset) {
-        for (Entry<String, Double> entry : kpiCache.entrySet()) {
-            dataset.setValue(entry.getKey(), entry.getValue());
-        }
-
-    }
-
-    @Override
-    protected void handleAxisCell(IStatisticsRow row, String requiredCell) {
-        Number value = null;
-        for (IStatisticsCell cell : row.getStatisticsCells()) {
-            if (!cell.getName().equals(requiredCell)) {
-                continue;
+        Iterable<ColumnImpl> columns = getCachedColumns();
+        for (ColumnImpl column : columns) {
+            for (CategoryRowImpl row : column.getRows()) {
+                if (row.getValue() == 0d) {
+                    continue;
+                }
+                updateCache(row.getValue(), row.getName());
             }
-            value = cell.getValue();
-            if (value == null) {
-                break;
-            }
-            updateCache(kpiCache, cell.getValue(), cell.getName());
-        }
 
+        }
+        for (Entry<String, Double> piePart : kpiCache.entrySet()) {
+            dataset.setValue(piePart.getKey(), piePart.getValue());
+        }
     }
 
     @Override
     protected DefaultPieDataset createDataset() {
         return new DefaultPieDataset();
-    }
-
-    @Override
-    protected ColumnCachedItem createColumn(IStatisticsRow row, String cellName) {
-        return new ColumnCachedItem(row, cellName);
     }
 
 }

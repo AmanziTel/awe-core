@@ -14,12 +14,16 @@
 package org.amanzi.awe.views.charts;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.chart.manger.ChartsManager;
+import org.amanzi.awe.charts.builder.dataset.dto.ICategoryRow;
+import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
+import org.amanzi.awe.charts.builder.dataset.dto.ITimeRow;
 import org.amanzi.awe.charts.impl.ChartModelPlugin;
+import org.amanzi.awe.charts.manger.ChartsManager;
 import org.amanzi.awe.charts.model.ChartType;
 import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
@@ -28,10 +32,13 @@ import org.amanzi.awe.charts.model.provider.IChartModelProvider;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.views.charts.filters.ShowInStatisticsTreeFilter;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,7 +48,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.entity.CategoryItemEntity;
+import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 /**
@@ -52,7 +66,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ChartsView extends ViewPart implements ItemSelectedListener {
+public class ChartsView extends ViewPart implements ItemSelectedListener, ChartMouseListener {
 
     private static final Logger LOGGER = Logger.getLogger(ChartsView.class);
 
@@ -74,14 +88,14 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     private ChartType type = ChartType.TIME_CHART;
 
-    private Map<ChartsCahceId, JFreeChart> chartsCache = new HashMap<ChartsCahceId, JFreeChart>();
+    private final Map<ChartsCahceId, JFreeChart> chartsCache = new HashMap<ChartsCahceId, JFreeChart>();
 
     private IStatisticsModel model;
 
-    private IStatisticsFilterContainer container;
+    private IStatisticsViewFilterContainer container;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(final Composite parent) {
         parent.setLayout(new GridLayout(1, false));
 
         controlsComposite = new Composite(parent, SWT.NONE);
@@ -114,13 +128,14 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
         columnsSelectorWidget.initializeWidget();
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         chartComposite.setVisible(false);
+        chartComposite.addChartMouseListener(this);
     }
 
     /**
      * @param allStatisticsGroups
      * @return
      */
-    private List<String> getStatisticsGroups(Iterable<IStatisticsGroup> allStatisticsGroups) {
+    private List<String> getStatisticsGroups(final Iterable<IStatisticsGroup> allStatisticsGroups) {
         List<String> groups = new ArrayList<String>();
         for (IStatisticsGroup group : allStatisticsGroups) {
             groups.add(group.getPropertyValue());
@@ -134,7 +149,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
      * @param parent parent composite
      * @param chartType TODO
      */
-    private Button createRadioButton(Composite parent, String text, boolean selected, final ChartType chartType) {
+    private Button createRadioButton(final Composite parent, final String text, final boolean selected, final ChartType chartType) {
         Button radioButton = new Button(parent, SWT.RADIO);
         radioButton.setText(text);
         radioButton.setSelection(selected);
@@ -144,7 +159,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
         radioButton.addSelectionListener(new SelectionAdapter() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(final SelectionEvent e) {
                 type = chartType;
                 onItemSelected();
             }
@@ -160,6 +175,9 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     @Override
     public void onItemSelected() {
+        if (container == null) {
+            return;
+        }
         IChartModel chartModel = createChartModel(model, container);
         updateChart(chartModel);
     }
@@ -168,7 +186,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
      * @param model
      * @param container
      */
-    public void fireStatisticsChanged(IStatisticsModel model, IStatisticsFilterContainer container) {
+    public void fireStatisticsChanged(final IStatisticsModel model, final IStatisticsViewFilterContainer container) {
         this.model = model;
         this.container = container;
         List<String> groups;
@@ -189,13 +207,19 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
      * 
      * @param chartModel
      */
-    private void updateChart(IChartModel chartModel) {
+    private void updateChart(final IChartModel chartModel) {
+        LOGGER.info("Chart updating begin, for model " + chartModel);
+
+        Long startTime = System.currentTimeMillis();
         ChartsCahceId ID = new ChartsCahceId(chartModel, container);
+
         JFreeChart chart = chartsCache.get(ID);
         if (chart == null) {
             chart = ChartsManager.getInstance().buildChart(chartModel);
             chartsCache.put(ID, chart);
         }
+        LOGGER.info("Chart updated in : " + (System.currentTimeMillis() - startTime) + " ms");
+
         chartComposite.setChart(chart);
         chartComposite.forceRedraw();
         chartComposite.setVisible(true);
@@ -205,7 +229,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
      * @param model
      * @param container
      */
-    private IChartModel createChartModel(IStatisticsModel model, IStatisticsFilterContainer container) {
+    private IChartModel createChartModel(final IStatisticsModel model, final IStatisticsViewFilterContainer container) {
         IChartModelProvider chartProvider = ChartModelPlugin.getDefault().getChartModelProvider();
         IChartDataFilter filter = chartProvider.getChartDataFilter(container.getStartTime(), container.getEndTime(),
                 groupSelectorWidget.getSelected());
@@ -215,15 +239,23 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
 
     }
 
+    /**
+     * <p>
+     * ID of charts in cache
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
     private static class ChartsCahceId {
-        private IChartModel model;
-        private IStatisticsFilterContainer container;
+        private final IChartModel model;
+        private final IStatisticsViewFilterContainer container;
 
         /**
          * @param model
          * @param container
          */
-        public ChartsCahceId(IChartModel model, IStatisticsFilterContainer container) {
+        public ChartsCahceId(final IChartModel model, final IStatisticsViewFilterContainer container) {
             super();
             this.model = model;
             this.container = container;
@@ -233,33 +265,89 @@ public class ChartsView extends ViewPart implements ItemSelectedListener {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((container == null) ? 0 : container.hashCode());
-            result = prime * result + ((model == null) ? 0 : model.hashCode());
+            result = (prime * result) + ((container == null) ? 0 : container.hashCode());
+            result = (prime * result) + ((model == null) ? 0 : model.hashCode());
             return result;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
+        public boolean equals(final Object obj) {
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
+            }
             ChartsCahceId other = (ChartsCahceId)obj;
             if (container == null) {
-                if (other.container != null)
+                if (other.container != null) {
                     return false;
-            } else if (!container.equals(other.container))
+                }
+            } else if (!container.equals(other.container)) {
                 return false;
+            }
             if (model == null) {
-                if (other.model != null)
+                if (other.model != null) {
                     return false;
-            } else if (!model.equals(other.model))
+                }
+            } else if (!model.equals(other.model)) {
                 return false;
+            }
             return true;
         }
 
     }
 
+    @Override
+    public void dispose() {
+        chartsCache.clear();
+        super.dispose();
+    }
+
+    @Override
+    public void chartMouseClicked(final ChartMouseEvent event) {
+        if (event == null) {
+            return;
+        }
+        Collection<String> groups = null;
+        long startDate = Long.MIN_VALUE;
+        long endDate = Long.MAX_VALUE;
+        String cellName = StringUtils.EMPTY;
+
+        if (event.getEntity() instanceof CategoryItemEntity) {
+            CategoryItemEntity entity = (CategoryItemEntity)event.getEntity();
+            IColumn period = (IColumn)entity.getColumnKey();
+            ICategoryRow column = period.getItemByName((String)entity.getRowKey());
+
+            groups = column.getGroupsNames();
+            startDate = period.getStartDate();
+            endDate = period.getEndDate();
+            cellName = column.getName();
+        } else if (event.getEntity() instanceof XYItemEntity) {
+            XYItemEntity entity = (XYItemEntity)event.getEntity();
+            TimeSeriesCollection dataset = (TimeSeriesCollection)entity.getDataset();
+            TimeSeries ts = dataset.getSeries(entity.getSeriesIndex());
+            ITimeRow row = (ITimeRow)ts.getKey();
+            RegularTimePeriod period = ts.getTimePeriod(entity.getItem());
+
+            startDate = period.getStart().getTime();
+            endDate = container.getPeriod().addPeriod(startDate);
+            groups = row.getGroupsForTime(startDate);
+            cellName = row.getName();
+        } else {
+            return;
+        }
+
+        AWEEventManager.getManager().fireShowInViewEvent(model,
+                new ShowInStatisticsTreeFilter(groups, startDate, endDate, cellName, container.getPeriod()), this);
+    }
+
+    @Override
+    public void chartMouseMoved(final ChartMouseEvent arg0) {
+        // TODO Auto-generated method stub
+
+    }
 }

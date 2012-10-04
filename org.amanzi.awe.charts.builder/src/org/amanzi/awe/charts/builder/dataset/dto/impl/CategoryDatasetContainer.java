@@ -11,10 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto.impl;
+package org.amanzi.awe.charts.builder.dataset.dto.impl;
 
 import org.amanzi.awe.charts.model.IChartModel;
-import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
@@ -25,7 +24,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CategoryDatasetContainer extends AbstractChartDatasetContainer<DefaultCategoryDataset, ColumnCachedItem> {
+public class CategoryDatasetContainer extends AbstractChartDatasetContainer<DefaultCategoryDataset> {
 
     /**
      * @param model
@@ -36,23 +35,21 @@ public class CategoryDatasetContainer extends AbstractChartDatasetContainer<Defa
 
     @Override
     protected void finishup(DefaultCategoryDataset dataset) {
-        Iterable<ColumnCachedItem> columns = getCachedColumns();
-        for (ColumnCachedItem column : columns) {
-            if (column.getValue() == 0d) {
-                continue;
+        Iterable<ColumnImpl> columns = getCachedColumns();
+        for (ColumnImpl column : columns) {
+            for (CategoryRowImpl item : column.getRows()) {
+                if (item.getValue() == 0d) {
+                    continue;
+                }
+                dataset.addValue(item.getValue(), item.getName(), column);
             }
-            dataset.setValue(column.getValue(), column.getCellName(), column);
+
         }
     }
 
     @Override
     protected DefaultCategoryDataset createDataset() {
         return new DefaultCategoryDataset();
-    }
-
-    @Override
-    protected ColumnCachedItem createColumn(IStatisticsRow row, String cellName) {
-        return new ColumnCachedItem(row, cellName);
     }
 
 }

@@ -11,21 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.charts.model;
+package org.amanzi.awe.charts.builder.dataset.dto;
+
+import java.util.Collection;
 
 /**
- * TODO Purpose of
- * <p>
- * </p>
- * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IRangeAxis {
-    String getName();
+public interface ITimeRow extends IDatasetItem<ITimeRow> {
 
-    Iterable<String> getCellsNames();
-
-    boolean isInCellList(String cell);
+    Collection<String> getGroupsForTime(long startTime);
 
 }

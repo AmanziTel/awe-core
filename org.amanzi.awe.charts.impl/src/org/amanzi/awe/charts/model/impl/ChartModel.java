@@ -188,4 +188,11 @@ public class ChartModel implements IChartModel {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "ChartModel [name=" + name + ", domainAxisName=" + domainAxisName + ", model=" + model + ", orientation="
+                + orientation + ", mainRangeAxis=" + mainRangeAxis + ", chartType=" + chartType + ", chartAggregation="
+                + chartAggregation + ", filter=" + filter + ", period=" + period + ", secondAxis=" + secondAxis + "]";
+    }
+
 }

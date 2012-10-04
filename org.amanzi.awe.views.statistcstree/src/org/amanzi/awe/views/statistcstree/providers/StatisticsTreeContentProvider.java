@@ -162,7 +162,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     protected void getChildren(final ITreeItem<IStatisticsModel, Object> parentElement) throws ModelException {
         IStatisticsModel model = getRoot(parentElement);
         if (isRoot(parentElement)) {
-            setChildren(new StatisticsElementIterable(model.findAllStatisticsLevels(type)));
+            setChildren(getStatisticsLevels(model));
         } else {
             Object inner = parentElement.getChild();
             if (inner instanceof IDataElement) {
@@ -175,6 +175,10 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
             }
         }
 
+    }
+
+    protected Iterable<Object> getStatisticsLevels(IStatisticsModel model) throws ModelException {
+        return new StatisticsElementIterable(model.findAllStatisticsLevels(type));
     }
 
     private boolean checkInner(final IDataElement child, final IStatisticsModel model) throws ModelException {
@@ -199,20 +203,28 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
     private Iterable<Object> handleDataElement(final IDataElement child, final IStatisticsModel model) throws ModelException {
         INodeType nodeType = child.getNodeType();
         if (nodeType.equals(StatisticsNodeType.LEVEL)) {
-            return new StatisticsElementIterable(model.getAllStatisticsGroups(type, child.getName()));
+            return new StatisticsElementIterable(getStatisticsGroups(model, type, child.getName()));
         } else if (nodeType.equals(StatisticsNodeType.GROUP)) {
             IStatisticsGroup group = (IStatisticsGroup)child;
-            Iterable<IStatisticsRow> rows = model.getStatisticsRows(group.getPeriod());
+            Iterable<IStatisticsRow> rows = getRows(model, group.getPeriod());
             return getRowsForGroup(rows, child);
         } else if (nodeType.equals(StatisticsNodeType.S_ROW)) {
-            IStatisticsRow row = (IStatisticsRow)child;
-            return getRowsChildren(row, model);
+            return getRowsChildren((IStatisticsRow)child);
         } else if (nodeType.equals(StatisticsNodeType.S_CELL)) {
             IStatisticsCell cell = (IStatisticsCell)child;
             return getCellsChildren(cell, model);
 
         }
         return null;
+    }
+
+    protected Iterable<IStatisticsRow> getRows(IStatisticsModel model, String period) throws ModelException {
+        return model.getStatisticsRows(period);
+    }
+
+    protected Iterable< ? extends IDataElement> getStatisticsGroups(IStatisticsModel model, DimensionType type, String levelName)
+            throws ModelException {
+        return model.getAllStatisticsGroups(type, levelName);
     }
 
     /**
@@ -237,7 +249,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @return
      * @throws ModelException
      */
-    private Iterable<Object> getRowsChildren(final IStatisticsRow row, final IStatisticsModel model) throws ModelException {
+    protected Iterable<Object> getRowsChildren(final IStatisticsRow row) throws ModelException {
         return new StatisticsElementIterable(row.getStatisticsCells());
     }
 
@@ -246,10 +258,10 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
      * @param groupd
      * @return
      */
-    private Iterable<Object> getRowsForGroup(final Iterable<IStatisticsRow> rows, final IDataElement group) {
+    protected Iterable<Object> getRowsForGroup(final Iterable<IStatisticsRow> rows, final IDataElement group) {
         Set<Object> groups = new HashSet<Object>();
         for (IStatisticsRow row : rows) {
-            if (row.getStatisticsGroup().equals(group)) {
+            if (row.getStatisticsGroup().equals(group) && !row.isSummury()) {
                 groups.add(row);
             }
         }
@@ -271,4 +283,7 @@ public class StatisticsTreeContentProvider extends AbstractContentProvider<IStat
         return statisticsModels;
     }
 
+    protected DimensionType getType() {
+        return type;
+    }
 }

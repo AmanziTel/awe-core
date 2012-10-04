@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder;
+package org.amanzi.awe.charts.builder;
 
-import org.amanzi.awe.chart.builder.dataset.dto.impl.PieDatasetContainer;
+import org.amanzi.awe.charts.builder.dataset.dto.impl.PieDatasetContainer;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.jfree.chart.ChartFactory;

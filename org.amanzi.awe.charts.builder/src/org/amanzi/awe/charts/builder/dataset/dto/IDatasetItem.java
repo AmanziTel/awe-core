@@ -11,11 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.chart.builder.dataset.dto;
-
-import org.amanzi.awe.charts.model.IRangeAxis;
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.jfree.data.general.Dataset;
+package org.amanzi.awe.charts.builder.dataset.dto;
 
 /**
  * TODO Purpose of
@@ -25,23 +21,8 @@ import org.jfree.data.general.Dataset;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IChartDatasetContainer {
-    /**
-     * compute dataset
-     * 
-     * @throws ModelException
-     */
-    void computeDatasets() throws ModelException;
-
-    /**
-     * get dataset for axis
-     */
-    Dataset getDataset(IRangeAxis rangeAxis);
-
-    /**
-     * check if currrent container is has more than one axis
-     * 
-     * @return
-     */
-    boolean isMultyAxis();
+public interface IDatasetItem<T extends IDatasetItem< ? >> extends Comparable<T> {
+    
+    String getName();
+    
 }
