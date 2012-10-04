@@ -45,6 +45,8 @@ AbstractAWEWidget<Composite, L> {
 
     private int minialLabelWidth;
 
+    private boolean labelFirst;
+
     /**
      * @param parent
      * @param style
@@ -53,10 +55,23 @@ AbstractAWEWidget<Composite, L> {
         this(parent, listener, label, NO_MINIMAL_LABEL_WIDTH);
     }
 
+    /**
+     * @param parent
+     * @param style
+     */
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final boolean labelFirst) {
+        this(parent, listener, label, NO_MINIMAL_LABEL_WIDTH, labelFirst);
+    }
+
     protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth) {
+        this(parent, listener, label, minimalLabelWidth, true);
+    }
+
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth, final boolean labelFirst) {
         super(parent, SWT.NONE, listener);
         this.label = label;
         this.minialLabelWidth = minimalLabelWidth;
+        this.labelFirst = labelFirst;
     }
 
     @Override
@@ -65,25 +80,35 @@ AbstractAWEWidget<Composite, L> {
         composite.setLayout(DEFAULT_LABELED_COMBO_LAYOUT);
         composite.setLayoutData(getControlLayoutData());
 
-        controlLabel = new Label(composite, SWT.NONE);
-        controlLabel.setText(label);
-        controlLabel.setLayoutData(getLabelLayoutData());
+        if (labelFirst) {
+            createLabel(composite);
+        }
 
         control = createControl(composite);
         control.setLayoutData(getElementLayoutData());
 
+        if (!labelFirst) {
+            createLabel(composite);
+        }
+
         return composite;
     }
 
+    private void createLabel(final Composite parent) {
+        controlLabel = new Label(parent, SWT.NONE);
+        controlLabel.setText(label);
+        controlLabel.setLayoutData(getLabelLayoutData());
+    }
+
     private GridData getControlLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, false, false);
+        return new GridData(SWT.LEFT, SWT.CENTER, false, false);
     }
 
 
     protected abstract C createControl(Composite parent);
 
     private GridData getElementLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        return new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
     }
 
     private GridData getLabelLayoutData() {

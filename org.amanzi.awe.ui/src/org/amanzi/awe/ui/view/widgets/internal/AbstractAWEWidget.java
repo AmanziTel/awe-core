@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
@@ -78,5 +79,21 @@ public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetL
     public void setVisible(final boolean isVisible) {
         widget.setVisible(isVisible);
     }
+
+    public C getWidget() {
+        return widget;
+    }
+
+    public void setHidden(final boolean isHidden) {
+        setVisible(!isHidden);
+
+        Object gridData = widget.getLayoutData();
+
+        if (gridData instanceof GridData) {
+            ((GridData)gridData).exclude = isHidden;
+        }
+    }
+
+
 
 }

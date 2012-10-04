@@ -15,6 +15,7 @@ package org.amanzi.awe.filters.impl;
 
 import org.amanzi.awe.filters.impl.internal.AbstractFilter;
 import org.amanzi.neo.dto.IDataElement;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * TODO Purpose of
@@ -38,7 +39,7 @@ public class EqualsFilter<T extends Object> extends AbstractFilter<T> {
 
     @Override
     public boolean matches(final IDataElement element) {
-        return getElementValue(element).equals(value);
+        return ObjectUtils.equals(getElementValue(element), equals(value));
     }
 
 }

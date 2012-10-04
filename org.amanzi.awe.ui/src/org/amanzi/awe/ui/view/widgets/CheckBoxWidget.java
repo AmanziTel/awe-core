@@ -44,7 +44,7 @@ public class CheckBoxWidget extends AbstractLabeledWidget<Button, ICheckBoxSelec
      * @param label
      */
     protected CheckBoxWidget(final Composite parent, final ICheckBoxSelected listener, final String label) {
-        super(parent, listener, label);
+        super(parent, listener, label, false);
     }
 
     @Override

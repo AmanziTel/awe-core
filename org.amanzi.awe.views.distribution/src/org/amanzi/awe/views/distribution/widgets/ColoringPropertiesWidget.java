@@ -18,6 +18,14 @@ import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
+import org.amanzi.awe.ui.view.widgets.ColorWidget;
+import org.amanzi.awe.ui.view.widgets.ColorWidget.IColorChangedListener;
+import org.amanzi.awe.ui.view.widgets.PaletteComboWidget;
+import org.amanzi.awe.ui.view.widgets.PaletteComboWidget.IPaletteChanged;
+import org.amanzi.awe.ui.view.widgets.SpinnerWidget;
+import org.amanzi.awe.ui.view.widgets.SpinnerWidget.ISpinnerListener;
+import org.amanzi.awe.ui.view.widgets.TextWidget;
+import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.distribution.widgets.ChartTypeWidget.IChartTypeListener;
 import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget.IColoringPropertiesListener;
@@ -33,7 +41,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColoringPropertiesListener> implements IChartTypeListener, ICheckBoxSelected {
+public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColoringPropertiesListener> implements IChartTypeListener, ICheckBoxSelected, ITextChandedListener, ISpinnerListener, IColorChangedListener, IPaletteChanged {
 
     public interface IColoringPropertiesListener extends AbstractAWEWidget.IAWEWidgetListener {
 
@@ -47,6 +55,28 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
 
     private CheckBoxWidget colorProperties;
 
+    private TextWidget selectedValues;
+
+    private SpinnerWidget spinner;
+
+    private CheckBoxWidget blendProperties;
+
+    private ColorWidget leftColor;
+
+    private ColorWidget rightColor;
+
+    private CheckBoxWidget thirdColorProperties;
+
+    private ColorWidget thirdColor;
+
+    private PaletteComboWidget paletteCombo;
+
+    private boolean isBlendPanelHidden = true;
+
+    private boolean isThirdColorPropertiesHidden = true;
+
+    private Composite mainComposite;
+
     /**
      * @param parent
      * @param style
@@ -58,11 +88,26 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
 
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
-        Composite mainComposite = new Composite(parent, style);
-        mainComposite.setLayout(new GridLayout(2, false));
+        mainComposite = new Composite(parent, style);
+        mainComposite.setLayout(new GridLayout(7, false));
 
         colorProperties = AWEWidgetFactory.getFactory().addCheckBoxWidget(this, "Color properties", mainComposite);
         chartTypeCombo = addChartTypeWidget(mainComposite, "Chart Type:");
+
+        selectedValues = AWEWidgetFactory.getFactory().addTextWidget(this, "Selected values:", mainComposite);
+        spinner = AWEWidgetFactory.getFactory().addSpinnerWidget(this, "Selection adjency:", mainComposite);
+
+        blendProperties = AWEWidgetFactory.getFactory().addCheckBoxWidget(this, "Blend", mainComposite);
+
+        rightColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite);
+        leftColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite);
+        thirdColorProperties = AWEWidgetFactory.getFactory().addCheckBoxWidget(this, "Third color:", mainComposite);
+        thirdColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite);
+
+        paletteCombo = AWEWidgetFactory.getFactory().addPaletteComboWidget(this, "Palette:", mainComposite);
+
+        setBlendPanelHidden(true);
+        setStandardStatusPanelHidden(false);
 
         return mainComposite;
     }
@@ -89,20 +134,45 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
 
     @Override
     public void onCheckBoxSelected(final CheckBoxWidget source) {
-        boolean state = source.isChecked();
+        boolean isHidden = !source.isChecked();
 
         if (source.equals(colorProperties)) {
-            setStandardStatusPanelVisible(!state);
-            setBlendPanelVisible(state);
+            setStandardStatusPanelHidden(!isHidden);
+            setBlendPanelHidden(isHidden);
+        } else if (source.equals(blendProperties)) {
+            isBlendPanelHidden = isHidden;
+            setBlendPanelHidden(false);
+
+        } else if (source.equals(thirdColorProperties)) {
+            isThirdColorPropertiesHidden = isHidden;
+            setColorsPanelHidden(false);
         }
+
+        mainComposite.layout(true, true);
     }
 
-    private void setStandardStatusPanelVisible(final boolean isVisible) {
+    private void setColorsPanelHidden(final boolean isHidden) {
+        rightColor.setHidden(isHidden);
+        leftColor.setHidden(isHidden);
 
+        thirdColorProperties.setHidden(isHidden);
+        thirdColor.setHidden(isHidden || isThirdColorPropertiesHidden);
     }
 
-    private void setBlendPanelVisible(final boolean isVisible) {
+    private void setPalettePanelHidden(final boolean isHidden) {
+        paletteCombo.setHidden(isHidden);
+    }
 
+    private void setStandardStatusPanelHidden(final boolean isHidden) {
+        selectedValues.setHidden(isHidden);
+        spinner.setHidden(isHidden);
+    }
+
+    private void setBlendPanelHidden(final boolean isHidden) {
+        blendProperties.setHidden(isHidden);
+
+        setColorsPanelHidden(isHidden || isBlendPanelHidden);
+        setPalettePanelHidden(isHidden || !isBlendPanelHidden);
     }
 
 }

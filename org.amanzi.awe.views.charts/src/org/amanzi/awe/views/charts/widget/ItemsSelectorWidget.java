@@ -116,7 +116,7 @@ IDialogSelectorListener {
     @Override
     public void widgetSelected(final SelectionEvent e) {
         if (e.getSource().equals(editButton)) {
-            FilteringDialog dialog = new FilteringDialog(getControl(), SWT.NONE, this);
+            FilteringDialog dialog = new FilteringDialog(getWidget(), SWT.NONE, this);
             dialog.initializeWidget();
         }
     }
