@@ -33,6 +33,7 @@ import org.amanzi.awe.views.distribution.widgets.DistributionPropertyWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -64,6 +65,32 @@ public class DistributionView extends ViewPart
     private static final int SECOND_ROW_LABEL_WIDTH = 60;
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
+
+    private class UpdateDistributionJob extends Job {
+
+        private final IDistributionModel model;
+
+        public UpdateDistributionJob(final IDistributionModel model) {
+            super(StringUtils.EMPTY);
+            this.model = model;
+
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(final IProgressMonitor monitor) {
+            try {
+                model.finishUp();
+            } catch (final ModelException e) {
+                return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on updating Distribution", e);
+            } finally {
+                // TODO: LN: 05.10.2012, run refresh action on a map
+            }
+
+            return Status.OK_STATUS;
+        }
+
+    }
 
     private class DistributionJob extends Job {
 
@@ -261,8 +288,7 @@ public class DistributionView extends ViewPart
 
     @Override
     public void update(final IDistributionModel model) {
-        // TODO Auto-generated method stub
-
+        new UpdateDistributionJob(model).schedule();
     }
 
 }
