@@ -77,7 +77,7 @@ public class DistributionView extends ViewPart
         protected IStatus run(final IProgressMonitor monitor) {
             try {
                 model = currentManager.build(monitor);
-            } catch (ModelException e) {
+            } catch (final ModelException e) {
                 return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
             } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
@@ -124,7 +124,7 @@ public class DistributionView extends ViewPart
     public void createPartControl(final Composite parent) {
         parentComposite = parent;
 
-        Composite mainComposite = new Composite(parent, SWT.NONE);
+        final Composite mainComposite = new Composite(parent, SWT.NONE);
         mainComposite.setLayout(new GridLayout(1, false));
         mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -145,7 +145,7 @@ public class DistributionView extends ViewPart
     }
 
     private void addDistributionTypeComposite(final Composite parent) {
-        Composite distributionTypeComposite = new Composite(parent, SWT.NONE);
+        final Composite distributionTypeComposite = new Composite(parent, SWT.NONE);
         distributionTypeComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         distributionTypeComposite.setLayout(new GridLayout(3, false));
 
@@ -162,7 +162,7 @@ public class DistributionView extends ViewPart
 
     private DistributionDatasetWidget addDistributionDatasetWidget(final Composite parent,
             final IDistributionDatasetSelectionListener listener, final int minWidth) {
-        DistributionDatasetWidget result = new DistributionDatasetWidget(parent, listener, "Dataset:", minWidth,
+        final DistributionDatasetWidget result = new DistributionDatasetWidget(parent, listener, "Dataset:", minWidth,
                 DistributionEnginePlugin.getDefault().getProjectModelProvider(), DistributionEnginePlugin.getDefault()
                         .getNetworkModelProvider(), DistributionEnginePlugin.getDefault().getDriveModelProvider());
         result.initializeWidget();
@@ -171,7 +171,7 @@ public class DistributionView extends ViewPart
     }
 
     private DistributionChartWidget addDistributionChartWidget(final Composite parent, final IDistributionChartListener listener) {
-        DistributionChartWidget result = new DistributionChartWidget(parent, listener);
+        final DistributionChartWidget result = new DistributionChartWidget(parent, listener);
         result.initializeWidget();
 
         return result;
@@ -179,7 +179,7 @@ public class DistributionView extends ViewPart
 
     private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener,
             final int minWidth) {
-        DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
+        final DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
         result.initializeWidget();
 
         return result;
@@ -187,7 +187,7 @@ public class DistributionView extends ViewPart
 
     private DistributionPropertiesWidget addDistributionPropertiesWidget(final Composite parent,
             final IDistributionPropertiesListener listener) {
-        DistributionPropertiesWidget result = new DistributionPropertiesWidget(parent, listener);
+        final DistributionPropertiesWidget result = new DistributionPropertiesWidget(parent, listener);
         result.initializeWidget();
 
         return result;
@@ -195,7 +195,7 @@ public class DistributionView extends ViewPart
 
     private DistributionPropertyWidget addDistributionPropertyWidget(final Composite parent, final String label,
             final IPropertySelectionListener listener, final int minimalWidth) {
-        DistributionPropertyWidget result = new DistributionPropertyWidget(parent, listener, label, minimalWidth);
+        final DistributionPropertyWidget result = new DistributionPropertyWidget(parent, listener, label, minimalWidth);
         result.initializeWidget();
 
         return result;
@@ -256,6 +256,12 @@ public class DistributionView extends ViewPart
     }
 
     private void updateChartColors() {
+
+    }
+
+    @Override
+    public void update(final IDistributionModel model) {
+        // TODO Auto-generated method stub
 
     }
 

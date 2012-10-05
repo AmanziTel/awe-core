@@ -238,4 +238,7 @@ public class DistributionManager {
         return chartTypes;
     }
 
+    public Color getRightColor() {
+        return 
+    }
 }

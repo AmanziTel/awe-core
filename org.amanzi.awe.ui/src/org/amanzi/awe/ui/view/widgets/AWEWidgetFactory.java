@@ -86,8 +86,8 @@ public final class AWEWidgetFactory {
         return initializeWidget(new PaletteComboWidget(parent, listener, label));
     }
 
-    public ColorWidget addColorWidget(final IColorChangedListener listener, final Composite parent) {
-        return initializeWidget(new ColorWidget(parent, listener));
+    public ColorWidget addColorWidget(final IColorChangedListener listener, final Composite parent, final String tooltip) {
+        return initializeWidget(new ColorWidget(parent, listener, tooltip));
     }
 
     public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {

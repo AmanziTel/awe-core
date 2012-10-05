@@ -33,4 +33,9 @@ public interface IDistributionNodeProperties extends INodeProperties {
 
     String getBarColor();
 
+    String getLeftColor();
+
+    String getRightColor();
+
+    String getMiddleColor();
 }

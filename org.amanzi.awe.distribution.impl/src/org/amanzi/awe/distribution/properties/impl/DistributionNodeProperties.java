@@ -33,6 +33,12 @@ public class DistributionNodeProperties implements IDistributionNodeProperties {
 
     private static final String BAR_COLOR = "bar_color";
 
+    private static final String LEFT_COLOR = "left_color";
+
+    private static final String RIGHT_COLOR = "right_color";
+
+    private static final String MIDDLE_COLOR = "middle_color";
+
     @Override
     public String getCurrentDistributionProperty() {
         return CURRENT_DISTRIBUTION_ID;
@@ -51,6 +57,21 @@ public class DistributionNodeProperties implements IDistributionNodeProperties {
     @Override
     public String getBarColor() {
         return BAR_COLOR;
+    }
+
+    @Override
+    public String getLeftColor() {
+        return LEFT_COLOR;
+    }
+
+    @Override
+    public String getRightColor() {
+        return RIGHT_COLOR;
+    }
+
+    @Override
+    public String getMiddleColor() {
+        return MIDDLE_COLOR;
     }
 
 }

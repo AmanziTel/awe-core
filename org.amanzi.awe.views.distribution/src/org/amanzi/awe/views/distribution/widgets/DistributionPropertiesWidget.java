@@ -13,7 +13,10 @@
 
 package org.amanzi.awe.views.distribution.widgets;
 
+import java.awt.Color;
+
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
+import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget;
@@ -54,6 +57,8 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
         public void onChartTypeChanged(ChartType chartType);
 
+        public void update(IDistributionModel model);
+
     }
 
     private ChartTypeWidget chartTypeCombo;
@@ -82,6 +87,8 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     private Composite mainComposite;
 
+    private IDistributionModel model;
+
     /**
      * @param parent
      * @param style
@@ -104,10 +111,10 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
         blendProperties = AWEWidgetFactory.getFactory().addCheckBoxWidget(this, "Blend", mainComposite);
 
-        rightColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite);
-        leftColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite);
+        leftColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite, "Left color");
+        rightColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite, "Right color");
         thirdColorProperties = AWEWidgetFactory.getFactory().addCheckBoxWidget(this, "Third color:", mainComposite);
-        thirdColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite);
+        thirdColor = AWEWidgetFactory.getFactory().addColorWidget(this, mainComposite, "Middle color");
 
         paletteCombo = AWEWidgetFactory.getFactory().addPaletteComboWidget(this, "Palette:", mainComposite);
 
@@ -119,11 +126,24 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     public void setDistributionManager(final DistributionManager distributionManager) {
         chartTypeCombo.setDistributionManager(distributionManager);
+
+    }
+
+    public void updateWidget(final IDistributionModel distributionModel) {
+        this.model = distributionModel;
+
+        updateColors();
+    }
+
+    private void updateColors() {
+        rightColor.setColor(model.getRightColor());
+        leftColor.setColor(model.getLeftColor());
+        thirdColor.setColor(model.getMiddleColor());
     }
 
     @Override
     public void onChartTypeSelected(final ChartType chartType) {
-        for (IDistributionPropertiesListener listener : getListeners()) {
+        for (final IDistributionPropertiesListener listener : getListeners()) {
             listener.onChartTypeChanged(chartType);
         }
     }
@@ -139,7 +159,7 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     @Override
     public void onCheckBoxSelected(final CheckBoxWidget source) {
-        boolean isHidden = !source.isChecked();
+        final boolean isHidden = !source.isChecked();
 
         if (source.equals(colorProperties)) {
             setStandardStatusPanelHidden(!isHidden);
@@ -181,10 +201,24 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
     }
 
     @Override
-    public void setVisible(boolean isVisible) {
+    public void setVisible(final boolean isVisible) {
         chartTypeCombo.setVisible(isVisible);
 
         super.setVisible(isVisible);
     }
 
+    @Override
+    public void onColorChanged(final Color color, final ColorWidget source) {
+        if (source.equals(leftColor)) {
+            model.setLeftColor(color);
+        } else if (source.equals(rightColor)) {
+            model.setRightColor(color);
+        } else if (source.equals(thirdColor)) {
+            model.setMiddleColor(color);
+        }
+
+        for (final IDistributionPropertiesListener listener : getListeners()) {
+            listener.update(model);
+        }
+    }
 }
