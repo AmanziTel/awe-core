@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Label;
  * @since 1.0.0
  */
 public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWidgetListener>
-extends
-AbstractAWEWidget<Composite, L> {
+        extends
+            AbstractAWEWidget<Composite, L> {
 
     private static final int NO_MINIMAL_LABEL_WIDTH = -1;
 
@@ -67,7 +67,8 @@ AbstractAWEWidget<Composite, L> {
         this(parent, listener, label, minimalLabelWidth, true);
     }
 
-    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth, final boolean labelFirst) {
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
+            final boolean labelFirst) {
         super(parent, SWT.NONE, listener);
         this.label = label;
         this.minialLabelWidth = minimalLabelWidth;
@@ -103,7 +104,6 @@ AbstractAWEWidget<Composite, L> {
     private GridData getControlLayoutData() {
         return new GridData(SWT.LEFT, SWT.CENTER, false, false);
     }
-
 
     protected abstract C createControl(Composite parent);
 

@@ -82,39 +82,49 @@ public class ShowInStatisticsTreeFilter implements IStatisticsTreeFilterContaine
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((cellName == null) ? 0 : cellName.hashCode());
-        result = prime * result + (int)(endDate ^ (endDate >>> 32));
-        result = prime * result + ((groups == null) ? 0 : groups.hashCode());
-        result = prime * result + ((period == null) ? 0 : period.hashCode());
-        result = prime * result + (int)(startDate ^ (startDate >>> 32));
+        result = (prime * result) + ((cellName == null) ? 0 : cellName.hashCode());
+        result = (prime * result) + (int)(endDate ^ (endDate >>> 32));
+        result = (prime * result) + ((groups == null) ? 0 : groups.hashCode());
+        result = (prime * result) + ((period == null) ? 0 : period.hashCode());
+        result = (prime * result) + (int)(startDate ^ (startDate >>> 32));
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ShowInStatisticsTreeFilter other = (ShowInStatisticsTreeFilter)obj;
         if (cellName == null) {
-            if (other.cellName != null)
+            if (other.cellName != null) {
                 return false;
-        } else if (!cellName.equals(other.cellName))
+            }
+        } else if (!cellName.equals(other.cellName)) {
             return false;
-        if (endDate != other.endDate)
+        }
+        if (endDate != other.endDate) {
             return false;
+        }
         if (groups == null) {
-            if (other.groups != null)
+            if (other.groups != null) {
                 return false;
-        } else if (!groups.equals(other.groups))
+            }
+        } else if (!groups.equals(other.groups)) {
             return false;
-        if (period != other.period)
+        }
+        if (period != other.period) {
             return false;
-        if (startDate != other.startDate)
+        }
+        if (startDate != other.startDate) {
             return false;
+        }
         return true;
     }
 

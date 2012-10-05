@@ -41,10 +41,10 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
-implements
-ISelectLoaderListener,
-ISelectDriveListener,
-ISelectDriveResourceListener {
+        implements
+            ISelectLoaderListener,
+            ISelectDriveListener,
+            ISelectDriveResourceListener {
 
     private SelectDriveNameWidget driveNameCombo;
 

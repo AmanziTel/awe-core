@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Spinner;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */

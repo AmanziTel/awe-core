@@ -66,9 +66,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         if (transactionMap.get() != null) {
             LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> already exists");
         } else {
-            //            if (LOGGER.isDebugEnabled()) {
+            // if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Creating Transaction for Thread <" + Thread.currentThread() + ">");
-            //            }
+            // }
             transactionMap.set(getDatabaseService().beginTx());
         }
         transactionStack.set(++stack);

@@ -37,7 +37,7 @@ public class RegexViewerFilter extends ViewerFilter {
 
     @Override
     public boolean select(Viewer viewer, Object parentElement, Object element) {
-        if (filter == null || filter.isEmpty()) {
+        if ((filter == null) || filter.isEmpty()) {
             return true;
         }
         String elem = ((String)element);

@@ -73,7 +73,8 @@ public final class WizardFactory {
         return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
     }
 
-    public SelectDriveResourcesWidget addDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener, final IOFileFilter filter) {
+    public SelectDriveResourcesWidget addDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener,
+            final IOFileFilter filter) {
         return initializeWidget(new SelectDriveResourcesWidget(parent, listener, filter));
     }
 
@@ -83,8 +84,10 @@ public final class WizardFactory {
         return initializeWidget(new SelectLoaderWidget(true, parent, listener, loaders, projectModelProvider));
     }
 
-    public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener, final String... fileExtensions) {
-        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider, fileExtensions));
+    public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener,
+            final String... fileExtensions) {
+        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
+                fileExtensions));
     }
 
     public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener) {

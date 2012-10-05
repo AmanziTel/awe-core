@@ -18,38 +18,36 @@ import java.util.List;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 @SuppressWarnings("rawtypes")
 public interface IDistributionChartDatasetDelegate {
-    
+
     int getColumnIndex(final Comparable arg0);
-    
+
     void setDistributionBars(final List<IDistributionBar> distributionBars);
-    
+
     Comparable getColumnKey(final int arg0);
 
     List getColumnKeys();
-    
+
     int getRowIndex(final Comparable arg0);
-    
+
     Comparable getRowKey(final int arg0);
-    
+
     List getRowKeys();
-    
+
     Number getValue(final Comparable arg0, final Comparable arg1);
-    
+
     int getColumnCount();
-    
+
     int getRowCount();
-    
+
     Number getValue(final int arg0, final int arg1);
-    
-    
-    
+
 }

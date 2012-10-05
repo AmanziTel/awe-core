@@ -46,8 +46,8 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class StatisticsModelProvider extends AbstractModelProvider<StatisticsModel, IStatisticsModel>
-implements
-IStatisticsModelProvider {
+        implements
+            IStatisticsModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsModelProvider.class);
 

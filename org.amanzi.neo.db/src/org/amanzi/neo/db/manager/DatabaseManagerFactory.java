@@ -41,7 +41,7 @@ public final class DatabaseManagerFactory {
     }
 
     public static synchronized IDatabaseManager getDatabaseManager(String path, boolean isNeedToReset) {
-        if (dbManager == null || isNeedToReset) {
+        if ((dbManager == null) || isNeedToReset) {
             try {
                 dbManager = (IDatabaseManager)Class.forName(NEOCLIPSE_MANAGER_CLASS_NAME).newInstance();
             } catch (ClassNotFoundException e) {

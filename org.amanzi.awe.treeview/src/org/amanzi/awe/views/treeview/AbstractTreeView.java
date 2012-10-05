@@ -211,10 +211,10 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     public void showElement(final IModel model, final IDataElement element) {
-        ITreeItem<?, ?> item = getTreeItem(model, element);
+        ITreeItem< ? , ? > item = getTreeItem(model, element);
 
         getTreeViewer().setSelection(new StructuredSelection(item), true);
     }
 
-    protected abstract ITreeItem<?, ?> getTreeItem(IModel model, IDataElement element);
+    protected abstract ITreeItem< ? , ? > getTreeItem(IModel model, IDataElement element);
 }

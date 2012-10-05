@@ -20,45 +20,49 @@ import org.osgi.framework.BundleContext;
  */
 public class NetworkRendererPlugin extends AweConsolePlugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.amanzi.awe.render.network";
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.amanzi.awe.render.network";
 
-	// The shared instance
-	private static NetworkRendererPlugin plugin;
+    // The shared instance
+    private static NetworkRendererPlugin plugin;
 
     // private Transaction currentTransaction;
-	
-	/**
-	 * The constructor
-	 */
-	public NetworkRendererPlugin() {
-	}
 
-	/**
-	 * We hard coded a test load of this for the purpose of getting screenshots done.
-	 * @see org.eclipse.core.runtime.Plugins#start(org.osgi.framework.BundleContext)
-	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
+    /**
+     * The constructor
+     */
+    public NetworkRendererPlugin() {
+    }
+
+    /**
+     * We hard coded a test load of this for the purpose of getting screenshots done.
+     * 
+     * @see org.eclipse.core.runtime.Plugins#start(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
         // currentTransaction = NeoServiceProvider.getProvider().getService().beginTx();
-	}
+    }
 
-	/**
-	 * Stop this plugin (free resources)
-	 * @see org.eclipse.core.runtime.Plugin#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
+    /**
+     * Stop this plugin (free resources)
+     * 
+     * @see org.eclipse.core.runtime.Plugin#stop(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
         // currentTransaction.finish();
-		super.stop(context);
-	}
+        super.stop(context);
+    }
 
-	/**
-	 * @return the shared instance
-	 */
-	public static NetworkRendererPlugin getDefault() {
-		return plugin;
-	}
+    /**
+     * @return the shared instance
+     */
+    public static NetworkRendererPlugin getDefault() {
+        return plugin;
+    }
 
 }

@@ -20,42 +20,45 @@ import org.osgi.framework.BundleContext;
  */
 public class NeoStylePlugin extends AbstractUIPlugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "org.amanzi.awe.neostyle";
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.amanzi.awe.neostyle";
 
-	// The shared instance
-	private static NeoStylePlugin plugin;
-	/**
-	 * The constructor
-	 */
-	public NeoStylePlugin() {
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+    // The shared instance
+    private static NeoStylePlugin plugin;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+    /**
+     * The constructor
+     */
+    public NeoStylePlugin() {
+    }
 
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static NeoStylePlugin getDefault() {
-		return plugin;
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
+
+    /**
+     * Returns the shared instance
+     * 
+     * @return the shared instance
+     */
+    public static NeoStylePlugin getDefault() {
+        return plugin;
+    }
 
 }

@@ -87,24 +87,29 @@ public class CategoryRowImpl implements ICategoryRow {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((cellName == null) ? 0 : cellName.hashCode());
+        result = (prime * result) + ((cellName == null) ? 0 : cellName.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         CategoryRowImpl other = (CategoryRowImpl)obj;
         if (cellName == null) {
-            if (other.cellName != null)
+            if (other.cellName != null) {
                 return false;
-        } else if (!cellName.equals(other.cellName))
+            }
+        } else if (!cellName.equals(other.cellName)) {
             return false;
+        }
         return true;
     }
 

@@ -66,8 +66,8 @@ import com.google.common.collect.Iterables;
  * @since 1.0.0
  */
 public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStatisticsTableListener>
-implements
-IFilterDialogListener {
+        implements
+            IFilterDialogListener {
 
     public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
@@ -276,7 +276,6 @@ IFilterDialogListener {
     private void drillDown() {
         int column = cursor.getColumn() - 1;
         IStatisticsRow statisticsRow = (IStatisticsRow)cursor.getRow().getData();
-
 
         if ((cursor.getRow() != null) && (cursor.getRow().getData() instanceof IStatisticsRow)) {
             drillDown(statisticsRow, column);

@@ -22,7 +22,7 @@ package org.amanzi.awe.charts.builder.dataset.dto;
  * @since 1.0.0
  */
 public interface IDatasetItem<T extends IDatasetItem< ? >> extends Comparable<T> {
-    
+
     String getName();
-    
+
 }

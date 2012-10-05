@@ -106,7 +106,7 @@ public class NodeTypeVault {
         propertyVaults.put(propertyVault.getPropertyName(), propertyVault);
     }
 
-    public Class<?> getPropertyClass(final String propertyName) {
+    public Class< ? > getPropertyClass(final String propertyName) {
         PropertyVault propertyVault = propertyVaults.get(propertyName);
 
         if (propertyVault != null) {

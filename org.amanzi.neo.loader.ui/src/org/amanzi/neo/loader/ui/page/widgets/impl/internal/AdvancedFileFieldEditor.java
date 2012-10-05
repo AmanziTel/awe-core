@@ -30,33 +30,33 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class AdvancedFileFieldEditor extends FileFieldEditor {
 
-	/**
-	 * @param name
-	 * @param labelText
-	 * @param parent
-	 */
-	public AdvancedFileFieldEditor(final String name, final String labelText, final Composite parent) {
-		super(name, labelText, parent);
-		setFilterPath(new File(LoaderUIPlugin.getDefault().getDefaultLoadPath()));
-	}
+    /**
+     * @param name
+     * @param labelText
+     * @param parent
+     */
+    public AdvancedFileFieldEditor(final String name, final String labelText, final Composite parent) {
+        super(name, labelText, parent);
+        setFilterPath(new File(LoaderUIPlugin.getDefault().getDefaultLoadPath()));
+    }
 
-	@Override
-	protected boolean checkState() {
-		boolean state = super.checkState();
+    @Override
+    protected boolean checkState() {
+        boolean state = super.checkState();
 
-		if (state) {
-			File file = new File(getStringValue());
+        if (state) {
+            File file = new File(getStringValue());
 
-			if (file.getParentFile() != null) {
-				LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
-			}
-		}
+            if (file.getParentFile() != null) {
+                LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
+            }
+        }
 
-		return state;
-	}
+        return state;
+    }
 
-	@Override
-	public int getNumberOfControls() {
-		return AbstractLoaderPage.NUMBER_OF_COLUMNS;
-	}
+    @Override
+    public int getNumberOfControls() {
+        return AbstractLoaderPage.NUMBER_OF_COLUMNS;
+    }
 }

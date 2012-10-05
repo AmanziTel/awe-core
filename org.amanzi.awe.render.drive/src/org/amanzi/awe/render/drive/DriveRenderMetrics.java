@@ -43,6 +43,7 @@ public class DriveRenderMetrics extends AbstractRenderMetrics {
      * 
      * @return false
      */
+    @Override
     public boolean canAddLayer(ILayer layer) {
         return false;
     }
@@ -50,6 +51,7 @@ public class DriveRenderMetrics extends AbstractRenderMetrics {
     /**
      * We cannot use styles, this is a raw Java2D renderer
      */
+    @Override
     public boolean canStyle(String styleID, Object value) {
         return false;
     }
@@ -57,6 +59,7 @@ public class DriveRenderMetrics extends AbstractRenderMetrics {
     /**
      * @return a new SitesRenderer
      */
+    @Override
     public Renderer createRenderer() {
         return new DriveRenderer();
     }

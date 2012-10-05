@@ -46,8 +46,8 @@ import org.neo4j.graphdb.RelationshipType;
  * data. For example, if the property is a timestamp, you might want the cluster to represent one
  * second of time, if it is common to look at the data in one second intervals.</dd>
  * <dt>Step</dt>
- * <dd>All clusters are themselves grouped into higher level clusters, and this time the grouping
- * is based on the 'step' parameter, which must be an Integer > 1. The choice of this parameter is
+ * <dd>All clusters are themselves grouped into higher level clusters, and this time the grouping is
+ * based on the 'step' parameter, which must be an Integer > 1. The choice of this parameter is
  * usually specific to the density and diversity of the data. The goal is to achieve a high
  * performance index, by making sure that the number of child nodes in the level below any parent
  * node is not too different to the total number of levels in the index. For example, we found that
@@ -116,485 +116,484 @@ import org.neo4j.graphdb.RelationshipType;
  */
 public class PropertyIndex<E extends Comparable<E>> {
 
-	private final String property;
-	private final GraphDatabaseService neo;
-	private E origin;
-	private final ValueConverter<E> converter;
-	private Node root;
-	private final int step;
-	private final List<IndexLevel> levels = new ArrayList<IndexLevel>();
+    private final String property;
+    private final GraphDatabaseService neo;
+    private E origin;
+    private final ValueConverter<E> converter;
+    private Node root;
+    private final int step;
+    private final List<IndexLevel> levels = new ArrayList<IndexLevel>();
 
-	/**
-	 * Generic interface for calculating an index value from a data value. This is used for stepping
-	 * up the resolution scale during indexing. The reason this interface requires so many methods
-	 * is because in Java we do not have operator overloading and so require specifying all
-	 * necessary arithmetic formulae as methods.
-	 */
-	public interface ValueConverter<E> {
-		/**
-		 * Convert an original data value into an index at level 0.
-		 */
-		int indexOf(E value, E origin, E stepSize);
+    /**
+     * Generic interface for calculating an index value from a data value. This is used for stepping
+     * up the resolution scale during indexing. The reason this interface requires so many methods
+     * is because in Java we do not have operator overloading and so require specifying all
+     * necessary arithmetic formulae as methods.
+     */
+    public interface ValueConverter<E> {
+        /**
+         * Convert an original data value into an index at level 0.
+         */
+        int indexOf(E value, E origin, E stepSize);
 
-		/**
-		 * Convert an index at level 0 to an original data value.
-		 */
-		E valueOf(Integer index, E origin, E stepSize);
+        /**
+         * Convert an index at level 0 to an original data value.
+         */
+        E valueOf(Integer index, E origin, E stepSize);
 
-		/**
-		 * Return the size of the step for the specified level. The results of this are passed into
-		 * the functions above. We have separated out this component to allow for a small numerical
-		 * optimization.
-		 */
-		E stepSize(int level, int step);
+        /**
+         * Return the size of the step for the specified level. The results of this are passed into
+         * the functions above. We have separated out this component to allow for a small numerical
+         * optimization.
+         */
+        E stepSize(int level, int step);
 
-		/**
-		 * Compare two values
-		 *
-		 * @param a
-		 * @param b
-		 * @return a.compareTo(b)
-		 */
-		int compare(E a, E b);
-	}
+        /**
+         * Compare two values
+         * 
+         * @param a
+         * @param b
+         * @return a.compareTo(b)
+         */
+        int compare(E a, E b);
+    }
 
-	/**
-	 * This specific converter works on values of type Long. The cluster size is passed to the
-	 * constructor.
-	 */
-	public static class LongConverter implements ValueConverter<Long> {
-		private final long cluster;
+    /**
+     * This specific converter works on values of type Long. The cluster size is passed to the
+     * constructor.
+     */
+    public static class LongConverter implements ValueConverter<Long> {
+        private final long cluster;
 
-		public LongConverter(final long cluster) {
-			this.cluster = cluster;
-		}
+        public LongConverter(final long cluster) {
+            this.cluster = cluster;
+        }
 
-		@Override
-		public int indexOf(final Long value, final Long origin, final Long stepSize) {
-			return (int)((value - (origin-(stepSize/2))) / stepSize);
-		}
+        @Override
+        public int indexOf(final Long value, final Long origin, final Long stepSize) {
+            return (int)((value - (origin - (stepSize / 2))) / stepSize);
+        }
 
-		@Override
-		public Long valueOf(final Integer index, final Long origin, final Long stepSize) {
-			return (origin-(stepSize/2)) + ((long)index * stepSize);
-		}
+        @Override
+        public Long valueOf(final Integer index, final Long origin, final Long stepSize) {
+            return (origin - (stepSize / 2)) + ((long)index * stepSize);
+        }
 
-		@Override
-		public Long stepSize(final int level, final int step) {
-			return (long)(cluster * Math.pow(step, level));
-		}
+        @Override
+        public Long stepSize(final int level, final int step) {
+            return (long)(cluster * Math.pow(step, level));
+        }
 
-		@Override
-		public int compare(final Long a, final Long b) {
-			return a.compareTo(b);
-		}
-	}
+        @Override
+        public int compare(final Long a, final Long b) {
+            return a.compareTo(b);
+        }
+    }
 
-	/**
-	 * This specific converter works on values of type Integer. The cluster size is passed to the
-	 * constructor.
-	 */
-	public static class IntegerConverter implements ValueConverter<Integer> {
-		private final int cluster;
+    /**
+     * This specific converter works on values of type Integer. The cluster size is passed to the
+     * constructor.
+     */
+    public static class IntegerConverter implements ValueConverter<Integer> {
+        private final int cluster;
 
-		public IntegerConverter(final int cluster) {
-			this.cluster = cluster;
-		}
+        public IntegerConverter(final int cluster) {
+            this.cluster = cluster;
+        }
 
-		@Override
-		public int indexOf(final Integer value, final Integer origin, final Integer stepSize) {
-			return (value - (origin-(stepSize/2))) / stepSize;
-		}
+        @Override
+        public int indexOf(final Integer value, final Integer origin, final Integer stepSize) {
+            return (value - (origin - (stepSize / 2))) / stepSize;
+        }
 
-		@Override
-		public Integer valueOf(final Integer index, final Integer origin, final Integer stepSize) {
-			return (origin-(stepSize/2)) + (index * stepSize);
-		}
+        @Override
+        public Integer valueOf(final Integer index, final Integer origin, final Integer stepSize) {
+            return (origin - (stepSize / 2)) + (index * stepSize);
+        }
 
-		@Override
-		public Integer stepSize(final int level, final int step) {
-			return (int)(cluster * Math.pow(step, level));
-		}
+        @Override
+        public Integer stepSize(final int level, final int step) {
+            return (int)(cluster * Math.pow(step, level));
+        }
 
-		@Override
-		public int compare(final Integer a, final Integer b) {
-			return a.compareTo(b);
-		}
-	}
+        @Override
+        public int compare(final Integer a, final Integer b) {
+            return a.compareTo(b);
+        }
+    }
 
-	/**
-	 * This specific converter works on values of type Float. The cluster size is passed to the
-	 * constructor.
-	 */
-	public static class FloatConverter implements ValueConverter<Float> {
-		private final float cluster;
+    /**
+     * This specific converter works on values of type Float. The cluster size is passed to the
+     * constructor.
+     */
+    public static class FloatConverter implements ValueConverter<Float> {
+        private final float cluster;
 
-		public FloatConverter(final float cluster) {
-			this.cluster = cluster;
-		}
+        public FloatConverter(final float cluster) {
+            this.cluster = cluster;
+        }
 
-		@Override
-		public int indexOf(final Float value, final Float origin, final Float stepSize) {
-			// We found Math.floor() performed as well as 'if+cast+floor', so use it only
-			return (int)(Math.floor((value - (origin-(stepSize/2))) / stepSize));
-		}
+        @Override
+        public int indexOf(final Float value, final Float origin, final Float stepSize) {
+            // We found Math.floor() performed as well as 'if+cast+floor', so use it only
+            return (int)(Math.floor((value - (origin - (stepSize / 2))) / stepSize));
+        }
 
-		@Override
-		public Float valueOf(final Integer index, final Float origin, final Float stepSize) {
-			return (origin-(stepSize/2)) + ((float)index * stepSize);
-		}
+        @Override
+        public Float valueOf(final Integer index, final Float origin, final Float stepSize) {
+            return (origin - (stepSize / 2)) + ((float)index * stepSize);
+        }
 
-		@Override
-		public Float stepSize(final int level, final int step) {
-			return (float)(cluster * Math.pow(step, level));
-		}
+        @Override
+        public Float stepSize(final int level, final int step) {
+            return (float)(cluster * Math.pow(step, level));
+        }
 
-		@Override
-		public int compare(final Float a, final Float b) {
-			return a.compareTo(b);
-		}
-	}
+        @Override
+        public int compare(final Float a, final Float b) {
+            return a.compareTo(b);
+        }
+    }
 
-	/**
-	 * This specific converter works on values of type Double. The cluster size is passed to the
-	 * constructor.
-	 */
-	public static class DoubleConverter implements ValueConverter<Double> {
-		private final double cluster;
+    /**
+     * This specific converter works on values of type Double. The cluster size is passed to the
+     * constructor.
+     */
+    public static class DoubleConverter implements ValueConverter<Double> {
+        private final double cluster;
 
-		public DoubleConverter(final double cluster) {
-			this.cluster = cluster;
-		}
+        public DoubleConverter(final double cluster) {
+            this.cluster = cluster;
+        }
 
-		@Override
-		public int indexOf(final Double value, final Double origin, final Double stepSize) {
-			// We found Math.floor() performed as well as 'if+cast+floor', so use it only
-			return (int)(Math.floor((value - (origin-(stepSize/2))) / stepSize));
-		}
+        @Override
+        public int indexOf(final Double value, final Double origin, final Double stepSize) {
+            // We found Math.floor() performed as well as 'if+cast+floor', so use it only
+            return (int)(Math.floor((value - (origin - (stepSize / 2))) / stepSize));
+        }
 
-		@Override
-		public Double valueOf(final Integer index, final Double origin, final Double stepSize) {
-			return (origin-(stepSize/2)) + ((double)index * stepSize);
-		}
+        @Override
+        public Double valueOf(final Integer index, final Double origin, final Double stepSize) {
+            return (origin - (stepSize / 2)) + ((double)index * stepSize);
+        }
 
-		@Override
-		public Double stepSize(final int level, final int step) {
-			return cluster * Math.pow(step, level);
-		}
+        @Override
+        public Double stepSize(final int level, final int step) {
+            return cluster * Math.pow(step, level);
+        }
 
-		@Override
-		public int compare(final Double a, final Double b) {
-			return a.compareTo(b);
-		}
-	}
+        @Override
+        public int compare(final Double a, final Double b) {
+            return a.compareTo(b);
+        }
+    }
 
-	/**
-	 * This specific converter can take time values as longs and convert them to the first index
-	 * level, by dividing by 1000L to get from milliseconds to seconds.
-	 */
-	public static class TimeIndexConverter extends LongConverter {
-		private static final long DEFAULT_TIMELINE_CLUSTER = 1000L;
+    /**
+     * This specific converter can take time values as longs and convert them to the first index
+     * level, by dividing by 1000L to get from milliseconds to seconds.
+     */
+    public static class TimeIndexConverter extends LongConverter {
+        private static final long DEFAULT_TIMELINE_CLUSTER = 1000L;
 
-		public TimeIndexConverter() {
-			super(DEFAULT_TIMELINE_CLUSTER);
-		}
-	}
+        public TimeIndexConverter() {
+            super(DEFAULT_TIMELINE_CLUSTER);
+        }
+    }
 
-	public enum NeoIndexRelationshipTypes implements RelationshipType {
-		IND_CHILD,
-		IND_NEXT,
-		INDEX;
-	}
+    public enum NeoIndexRelationshipTypes implements RelationshipType {
+        IND_CHILD, IND_NEXT, INDEX;
+    }
 
-	/**
-	 * The IndexLevel class holds information about a specific level or depth of the index. At each
-	 * level, a data value can be converted into an index, and vice versa. Internally this class
-	 * wraps the specified converter for doing most of the work, but is slightly optimized in that
-	 * the stepsize need only be calculated only() per level. It also makes use of the PropertyIndex
-	 * internal values for origin, step and converter.
-	 * 
-	 * @author craig
-	 * @since 1.0.0
-	 */
-	private final class IndexLevel {
-		private static final String INEX_PROPERTY = "index";
-		private int level = 0;
-		private E stepSize = null;
-		private E currentValue = null;
-		private int index = -1;
-		private E min;
-		private E max;
-		private Node indexNode = null;
+    /**
+     * The IndexLevel class holds information about a specific level or depth of the index. At each
+     * level, a data value can be converted into an index, and vice versa. Internally this class
+     * wraps the specified converter for doing most of the work, but is slightly optimized in that
+     * the stepsize need only be calculated only() per level. It also makes use of the PropertyIndex
+     * internal values for origin, step and converter.
+     * 
+     * @author craig
+     * @since 1.0.0
+     */
+    private final class IndexLevel {
+        private static final String INEX_PROPERTY = "index";
+        private int level = 0;
+        private E stepSize = null;
+        private E currentValue = null;
+        private int index = -1;
+        private E min;
+        private E max;
+        private Node indexNode = null;
 
-		/**
-		 * This constructor is used to build index levels dynamically as the data is being loaded
-		 * into the database.
-		 * 
-		 * @param level
-		 * @param value
-		 * @param lowerNode
-		 */
-		private IndexLevel(final int level, final E value, final Node lowerNode) {
-			this.level = level;
-			this.stepSize = converter.stepSize(level, step);
-			setValue(value);
-			makeIndexNode();
-			linkTo(lowerNode);
-		}
+        /**
+         * This constructor is used to build index levels dynamically as the data is being loaded
+         * into the database.
+         * 
+         * @param level
+         * @param value
+         * @param lowerNode
+         */
+        private IndexLevel(final int level, final E value, final Node lowerNode) {
+            this.level = level;
+            this.stepSize = converter.stepSize(level, step);
+            setValue(value);
+            makeIndexNode();
+            linkTo(lowerNode);
+        }
 
-		/**
-		 * This constructor is used to build the index levels based on existing index nodes in the
-		 * database.
-		 * 
-		 * @param level
-		 * @param indexNode
-		 */
-		@SuppressWarnings("unchecked")
-		private IndexLevel(final int level, final Node indexNode) {
-			this.level = level;
-			this.stepSize = converter.stepSize(level, step);
-			this.index = (Integer)indexNode.getProperty(INEX_PROPERTY);
-			this.min = (E)indexNode.getProperty("min");
-			this.max = (E)indexNode.getProperty("max");
-			this.currentValue = this.min;
-			this.indexNode = indexNode;
-			Integer indexLevel = (Integer)indexNode.getProperty("level", null);
-			if (this.level != indexLevel) {
-				throw new IllegalArgumentException("Invalid index node passed for level: " + this.level + " != " + indexLevel);
-			}
-		}
+        /**
+         * This constructor is used to build the index levels based on existing index nodes in the
+         * database.
+         * 
+         * @param level
+         * @param indexNode
+         */
+        @SuppressWarnings("unchecked")
+        private IndexLevel(final int level, final Node indexNode) {
+            this.level = level;
+            this.stepSize = converter.stepSize(level, step);
+            this.index = (Integer)indexNode.getProperty(INEX_PROPERTY);
+            this.min = (E)indexNode.getProperty("min");
+            this.max = (E)indexNode.getProperty("max");
+            this.currentValue = this.min;
+            this.indexNode = indexNode;
+            Integer indexLevel = (Integer)indexNode.getProperty("level", null);
+            if (this.level != indexLevel) {
+                throw new IllegalArgumentException("Invalid index node passed for level: " + this.level + " != " + indexLevel);
+            }
+        }
 
-		private IndexLevel setValue(final E value) {
-			if (!value.equals(currentValue)) {
-				this.currentValue = value;
-				int newIndex = converter.indexOf(value, origin, stepSize);
-				if (newIndex != this.index) {
-					this.index = newIndex;
-					this.min = converter.valueOf(index, origin, stepSize);
-					this.max = converter.valueOf(index + 1, origin, stepSize);
-					this.indexNode = null;
-				}
-			}
-			return this;
-		}
+        private IndexLevel setValue(final E value) {
+            if (!value.equals(currentValue)) {
+                this.currentValue = value;
+                int newIndex = converter.indexOf(value, origin, stepSize);
+                if (newIndex != this.index) {
+                    this.index = newIndex;
+                    this.min = converter.valueOf(index, origin, stepSize);
+                    this.max = converter.valueOf(index + 1, origin, stepSize);
+                    this.indexNode = null;
+                }
+            }
+            return this;
+        }
 
-		private boolean includes(final E value) {
-			int vindex = converter.indexOf(value, origin, stepSize);
-			return vindex == index;
-		}
+        private boolean includes(final E value) {
+            int vindex = converter.indexOf(value, origin, stepSize);
+            return vindex == index;
+        }
 
-		private Node makeIndexNode() {
-			if (indexNode == null) {
-				indexNode = neo.createNode();
-				indexNode.setProperty(INEX_PROPERTY, index);
-				indexNode.setProperty("level", level);
-				indexNode.setProperty("min", min);
-				indexNode.setProperty("max", max);
-			}
-			return indexNode;
-		}
+        private Node makeIndexNode() {
+            if (indexNode == null) {
+                indexNode = neo.createNode();
+                indexNode.setProperty(INEX_PROPERTY, index);
+                indexNode.setProperty("level", level);
+                indexNode.setProperty("min", min);
+                indexNode.setProperty("max", max);
+            }
+            return indexNode;
+        }
 
-		private void linkTo(final Node lowerNode) {
-			if ((indexNode != null) && (lowerNode != null)) {
-				indexNode.createRelationshipTo(lowerNode, NeoIndexRelationshipTypes.IND_CHILD);
-			}
-		}
+        private void linkTo(final Node lowerNode) {
+            if ((indexNode != null) && (lowerNode != null)) {
+                indexNode.createRelationshipTo(lowerNode, NeoIndexRelationshipTypes.IND_CHILD);
+            }
+        }
 
-		private void searchChildrenOf(final Node parentIndex) {
-			for (Relationship rel : parentIndex.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-				Node child = rel.getEndNode();
-				int testIndex = (Integer)child.getProperty(INEX_PROPERTY);
-				if (testIndex == index) {
-					indexNode = child;
-					break;
-				}
-			}
-		}
+        private void searchChildrenOf(final Node parentIndex) {
+            for (Relationship rel : parentIndex.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
+                Node child = rel.getEndNode();
+                int testIndex = (Integer)child.getProperty(INEX_PROPERTY);
+                if (testIndex == index) {
+                    indexNode = child;
+                    break;
+                }
+            }
+        }
 
-	}
+    }
 
-	public PropertyIndex(final GraphDatabaseService neo, Node reference, final String name, final String property, final ValueConverter<E> converter, final int step) {
-		if (neo == null) {
-			throw new IllegalArgumentException("Index NeoService must exist");
-		}
-		if ((property == null) || (property.length() < 1)) {
-			throw new IllegalArgumentException("Index property must be a non-empty string");
-		}
-		if (reference == null) {
-			reference = neo.getReferenceNode();
-		}
-		this.neo = neo;
-		this.property = property;
-		this.step = step;
-		this.converter = converter;
-		for (Relationship relation : reference.getRelationships(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)) {
-			Node node = relation.getEndNode();
-			if (node.getProperty("type", "").toString().equals("property_index")
-					&& node.getProperty("name", "").toString().equals(name)
-					&& node.getProperty("property", "").toString().equals(property)) {
-				this.root = node;
-			}
-		}
-		if (this.root == null) {
-			this.root = neo.createNode();
-			root.setProperty("name", name);
-			root.setProperty("property", property);
-			root.setProperty("type", "property_index");
-			reference.createRelationshipTo(root, NeoIndexRelationshipTypes.INDEX);
-		} else {
-			ArrayList<Node> existingLevelNodes = new ArrayList<Node>();
-			Node indexNode = getIndexChildOf(this.root);
-			while (indexNode != null) {
-				existingLevelNodes.add(0, indexNode);
-				indexNode = getIndexChildOf(indexNode);
-			}
-			for (int level = 0; level < existingLevelNodes.size(); level++) {
-				levels.add(new IndexLevel(level, existingLevelNodes.get(level)));
-			}
-			if (levels.size() > 0) {
-				//TODO check correct set
-				this.origin = levels.get(0).min;
-			}
-		}
-	}
+    public PropertyIndex(final GraphDatabaseService neo, Node reference, final String name, final String property,
+            final ValueConverter<E> converter, final int step) {
+        if (neo == null) {
+            throw new IllegalArgumentException("Index NeoService must exist");
+        }
+        if ((property == null) || (property.length() < 1)) {
+            throw new IllegalArgumentException("Index property must be a non-empty string");
+        }
+        if (reference == null) {
+            reference = neo.getReferenceNode();
+        }
+        this.neo = neo;
+        this.property = property;
+        this.step = step;
+        this.converter = converter;
+        for (Relationship relation : reference.getRelationships(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)) {
+            Node node = relation.getEndNode();
+            if (node.getProperty("type", "").toString().equals("property_index")
+                    && node.getProperty("name", "").toString().equals(name)
+                    && node.getProperty("property", "").toString().equals(property)) {
+                this.root = node;
+            }
+        }
+        if (this.root == null) {
+            this.root = neo.createNode();
+            root.setProperty("name", name);
+            root.setProperty("property", property);
+            root.setProperty("type", "property_index");
+            reference.createRelationshipTo(root, NeoIndexRelationshipTypes.INDEX);
+        } else {
+            ArrayList<Node> existingLevelNodes = new ArrayList<Node>();
+            Node indexNode = getIndexChildOf(this.root);
+            while (indexNode != null) {
+                existingLevelNodes.add(0, indexNode);
+                indexNode = getIndexChildOf(indexNode);
+            }
+            for (int level = 0; level < existingLevelNodes.size(); level++) {
+                levels.add(new IndexLevel(level, existingLevelNodes.get(level)));
+            }
+            if (levels.size() > 0) {
+                // TODO check correct set
+                this.origin = levels.get(0).min;
+            }
+        }
+    }
 
-	private Node getIndexChildOf(final Node parent) {
-		for (Relationship rel : parent.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-			Node child = rel.getEndNode();
-			Integer index = (Integer)child.getProperty("index", null);
-			Integer level = (Integer)child.getProperty("level", null);
-			if ((index != null) && (level != null) && (index == 0)) {
-				return child;
+    private Node getIndexChildOf(final Node parent) {
+        for (Relationship rel : parent.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
+            Node child = rel.getEndNode();
+            Integer index = (Integer)child.getProperty("index", null);
+            Integer level = (Integer)child.getProperty("level", null);
+            if ((index != null) && (level != null) && (index == 0)) {
+                return child;
 
-			}
-		}
-		return null;
-	}
+            }
+        }
+        return null;
+    }
 
-	public void finishUp() {
-		if (root != null) {
-			Node highestIndex = null;
-			for (IndexLevel level : levels) {
-				if (level.indexNode != null) {
-					highestIndex = level.indexNode;
-				}
-			}
-			if (highestIndex != null) {
-				// Deleting any previous starting relationships
-				for (Relationship rel : root.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-					rel.delete();
-				}
-				// Make a new one to the top node (might be same as before or higher level node
-				root.createRelationshipTo(highestIndex, NeoIndexRelationshipTypes.IND_CHILD);
-			}
-		}
-	}
+    public void finishUp() {
+        if (root != null) {
+            Node highestIndex = null;
+            for (IndexLevel level : levels) {
+                if (level.indexNode != null) {
+                    highestIndex = level.indexNode;
+                }
+            }
+            if (highestIndex != null) {
+                // Deleting any previous starting relationships
+                for (Relationship rel : root.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
+                    rel.delete();
+                }
+                // Make a new one to the top node (might be same as before or higher level node
+                root.createRelationshipTo(highestIndex, NeoIndexRelationshipTypes.IND_CHILD);
+            }
+        }
+    }
 
-	/**
-	 * This is the main API entry point to the index. Each node added has the value of the index
-	 * property extracted and compared to the current index tree. The index node that is found or
-	 * created is returned. The tree is index nodes is automatically updated as necessary to contain
-	 * nodes of sufficient depth to cover all data passed to this method.
-	 * 
-	 * @param node to index
-	 * @return index node at level 0
-	 */
-	public Node add(final Node node) {
-		E value = getProperty(node);
-		if (value != null) {
-			if (origin == null) {
-				origin = value;
-			}
-			Node indexNode = getIndexNode(value);
-			indexNode.createRelationshipTo(node, NeoIndexRelationshipTypes.IND_CHILD);
-			return indexNode;
-		} else {
-			return null;
-		}
-	}
+    /**
+     * This is the main API entry point to the index. Each node added has the value of the index
+     * property extracted and compared to the current index tree. The index node that is found or
+     * created is returned. The tree is index nodes is automatically updated as necessary to contain
+     * nodes of sufficient depth to cover all data passed to this method.
+     * 
+     * @param node to index
+     * @return index node at level 0
+     */
+    public Node add(final Node node) {
+        E value = getProperty(node);
+        if (value != null) {
+            if (origin == null) {
+                origin = value;
+            }
+            Node indexNode = getIndexNode(value);
+            indexNode.createRelationshipTo(node, NeoIndexRelationshipTypes.IND_CHILD);
+            return indexNode;
+        } else {
+            return null;
+        }
+    }
 
-	/**
-	 * This is the main indexing method of the class. Here we first search up the cached index stack
-	 * until we find an index that covers the required value. Then we step back down creating
-	 * sub-index nodes as we go until we hit the lowest level. With data where nodes coming in are
-	 * usually near the previous nodes, the cache stack will usually contain the right nodes and it
-	 * will not often be required to search high of the stack. This should give very good
-	 * performance for that kind of data.
-	 * 
-	 * @param value of the specific type being indexed
-	 * @return the level 0 index node for this value (created and linked into the index if required)
-	 */
-	private Node getIndexNode(final E value) {
-		// search as high as necessary to find a node that covers this value
-		IndexLevel indexLevel = getLevelIncluding(value);
-		// now step down building index all the way to the bottom
-		while (indexLevel.level > 0) {
-			IndexLevel lowerLevel = levels.get(indexLevel.level - 1);
-			// Set the value in the lower level to the desired value to index, this removes internal
-			// node cash, so we much recreate that by finding or creating a new index node
-			lowerLevel.setValue(value);
-			// First search the node tree for existing child index nodes that match
-			if (lowerLevel.indexNode == null) {
-				lowerLevel.searchChildrenOf(indexLevel.indexNode);
-			}
-			// If no child node was found, create one and link it into the tree
-			if (lowerLevel.indexNode == null) {
-				lowerLevel.makeIndexNode();
-				indexLevel.linkTo(lowerLevel.indexNode);
-			}
-			// Finally step down one level and repeat until we're at the bottom
-			indexLevel = lowerLevel;
-		}
-		return indexLevel.indexNode;
-	}
+    /**
+     * This is the main indexing method of the class. Here we first search up the cached index stack
+     * until we find an index that covers the required value. Then we step back down creating
+     * sub-index nodes as we go until we hit the lowest level. With data where nodes coming in are
+     * usually near the previous nodes, the cache stack will usually contain the right nodes and it
+     * will not often be required to search high of the stack. This should give very good
+     * performance for that kind of data.
+     * 
+     * @param value of the specific type being indexed
+     * @return the level 0 index node for this value (created and linked into the index if required)
+     */
+    private Node getIndexNode(final E value) {
+        // search as high as necessary to find a node that covers this value
+        IndexLevel indexLevel = getLevelIncluding(value);
+        // now step down building index all the way to the bottom
+        while (indexLevel.level > 0) {
+            IndexLevel lowerLevel = levels.get(indexLevel.level - 1);
+            // Set the value in the lower level to the desired value to index, this removes internal
+            // node cash, so we much recreate that by finding or creating a new index node
+            lowerLevel.setValue(value);
+            // First search the node tree for existing child index nodes that match
+            if (lowerLevel.indexNode == null) {
+                lowerLevel.searchChildrenOf(indexLevel.indexNode);
+            }
+            // If no child node was found, create one and link it into the tree
+            if (lowerLevel.indexNode == null) {
+                lowerLevel.makeIndexNode();
+                indexLevel.linkTo(lowerLevel.indexNode);
+            }
+            // Finally step down one level and repeat until we're at the bottom
+            indexLevel = lowerLevel;
+        }
+        return indexLevel.indexNode;
+    }
 
-	/**
-	 * Search up the cached index stack for an index that includes the specified value. The higher
-	 * we go, the wider the range covered, so at some point the specified value will match. If the
-	 * value is similar to the previous value, the search is likely to exit at level 0 or 1. The
-	 * more different, the higher it needs to go. This mean our dynamic index is fastest for data
-	 * that comes in a stream of related values. Note that each level is created on demand, based on
-	 * the contents of the lower level index, not the passed in value. This in effect means the
-	 * index is forced to be related to the previous data, ensuring no disconnected graphs in the
-	 * index tree.
-	 * 
-	 * @param value to index
-	 * @return lowest cached index value matching the data.
-	 */
-	private IndexLevel getLevelIncluding(final E value) {
-		int level = 0;
-		IndexLevel indexLevel = null;
-		do {
-			indexLevel = getLevel(level++);
-		} while (!indexLevel.includes(value));
-		return indexLevel;
-	}
+    /**
+     * Search up the cached index stack for an index that includes the specified value. The higher
+     * we go, the wider the range covered, so at some point the specified value will match. If the
+     * value is similar to the previous value, the search is likely to exit at level 0 or 1. The
+     * more different, the higher it needs to go. This mean our dynamic index is fastest for data
+     * that comes in a stream of related values. Note that each level is created on demand, based on
+     * the contents of the lower level index, not the passed in value. This in effect means the
+     * index is forced to be related to the previous data, ensuring no disconnected graphs in the
+     * index tree.
+     * 
+     * @param value to index
+     * @return lowest cached index value matching the data.
+     */
+    private IndexLevel getLevelIncluding(final E value) {
+        int level = 0;
+        IndexLevel indexLevel = null;
+        do {
+            indexLevel = getLevel(level++);
+        } while (!indexLevel.includes(value));
+        return indexLevel;
+    }
 
-	/**
-	 * Return or create the specified index level in the index cache. Each level created is based on
-	 * the values in the level below, so that we maintain a connected graph. When a new level is
-	 * created, its index Node is also created in the graph and connected to the index node of the
-	 * level below it.
-	 */
-	private IndexLevel getLevel(final int level) {
-		while (levels.size() <= level) {
-			int iLev = levels.size();
-			if (iLev == 0) {
-				// When creating the very first level, use the origin point, and no child index node
-				levels.add(new IndexLevel(iLev, origin, null));
-			} else {
-				// All higher levels are build on top of the lower levels (using the same current
-				// value as the level below, and linking the index nodes together into the index
-				// tree)
-				IndexLevel lowerLevel = levels.get(iLev - 1);
-				levels.add(new IndexLevel(iLev, lowerLevel.currentValue, lowerLevel.indexNode));
-			}
-		}
-		return levels.get(level);
-	}
+    /**
+     * Return or create the specified index level in the index cache. Each level created is based on
+     * the values in the level below, so that we maintain a connected graph. When a new level is
+     * created, its index Node is also created in the graph and connected to the index node of the
+     * level below it.
+     */
+    private IndexLevel getLevel(final int level) {
+        while (levels.size() <= level) {
+            int iLev = levels.size();
+            if (iLev == 0) {
+                // When creating the very first level, use the origin point, and no child index node
+                levels.add(new IndexLevel(iLev, origin, null));
+            } else {
+                // All higher levels are build on top of the lower levels (using the same current
+                // value as the level below, and linking the index nodes together into the index
+                // tree)
+                IndexLevel lowerLevel = levels.get(iLev - 1);
+                levels.add(new IndexLevel(iLev, lowerLevel.currentValue, lowerLevel.indexNode));
+            }
+        }
+        return levels.get(level);
+    }
 
-	@SuppressWarnings("unchecked")
-	private E getProperty(final Node node) {
-		return (E)(node == null ? null : node.getProperty(property, null));
-	}
+    @SuppressWarnings("unchecked")
+    private E getProperty(final Node node) {
+        return (E)(node == null ? null : node.getProperty(property, null));
+    }
 }

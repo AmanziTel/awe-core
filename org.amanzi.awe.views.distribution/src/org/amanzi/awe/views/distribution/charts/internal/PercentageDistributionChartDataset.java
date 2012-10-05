@@ -84,7 +84,7 @@ public class PercentageDistributionChartDataset implements IDistributionChartDat
         if (arg1 instanceof IDistributionBar) {
             final IDistributionBar bar = (IDistributionBar)arg1;
 
-            return (float)bar.getCount() / totalCount * 100;
+            return ((float)bar.getCount() / totalCount) * 100;
         }
 
         return 0;

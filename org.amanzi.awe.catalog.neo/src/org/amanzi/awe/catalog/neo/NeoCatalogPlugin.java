@@ -23,6 +23,7 @@ import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
@@ -112,7 +113,7 @@ public class NeoCatalogPlugin extends AbstractProviderPlugin {
         try {
             url = new URL(FILE_PREFIX + databaseLocation);
         } catch (MalformedURLException e) {
-            getLog().log(new Status(Status.ERROR, PLUGIN_ID, "Error while set url", e));
+            getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, "Error while set url", e));
         }
         List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
         for (IService service : services) {

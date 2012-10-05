@@ -30,8 +30,8 @@ import org.amanzi.neo.loader.core.parser.impl.internal.MultiStreamParser;
  * @since 1.0.0
  */
 public class MultiCSVParser
-extends
-MultiStreamParser<ISingleFileConfiguration, CSVParser, IMultiFileConfiguration, IMappedStringData> {
+        extends
+            MultiStreamParser<ISingleFileConfiguration, CSVParser, IMultiFileConfiguration, IMappedStringData> {
 
     @Override
     protected CSVParser createParserInstance() {

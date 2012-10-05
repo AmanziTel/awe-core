@@ -94,6 +94,4 @@ public abstract class AbstractAWEWidget<C extends Control, L extends IAWEWidgetL
         }
     }
 
-
-
 }

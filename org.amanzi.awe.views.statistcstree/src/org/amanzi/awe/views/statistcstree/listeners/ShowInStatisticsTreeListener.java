@@ -40,8 +40,8 @@ public class ShowInStatisticsTreeListener implements IAWEEventListenter {
         if (event.getStatus().equals(EventStatus.SHOW_IN_VIEW)) {
             ShowInViewEvent showInViewEvent = (ShowInViewEvent)event;
 
-            if (showInViewEvent.getParent() instanceof IStatisticsModel
-                    && (showInViewEvent.getElement() instanceof IDataElement || showInViewEvent.getElement() instanceof IStatisticsTreeFilterContainer)) {
+            if ((showInViewEvent.getParent() instanceof IStatisticsModel)
+                    && ((showInViewEvent.getElement() instanceof IDataElement) || (showInViewEvent.getElement() instanceof IStatisticsTreeFilterContainer))) {
                 StatisticsTreeView view = showStatisticsView();
 
                 if (view != null) {

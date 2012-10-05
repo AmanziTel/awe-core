@@ -59,9 +59,10 @@ public class TreeViewItem<T extends IModel, E extends Object> implements ITreeIt
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof ITreeItem) {
-            ITreeItem<?, ?> anotherItem = (ITreeItem<?, ?>)obj;
+            ITreeItem< ? , ? > anotherItem = (ITreeItem< ? , ? >)obj;
 
-            return ObjectUtils.equals(getParent(), anotherItem.getParent()) && ObjectUtils.equals(getChild(), anotherItem.getChild());
+            return ObjectUtils.equals(getParent(), anotherItem.getParent())
+                    && ObjectUtils.equals(getChild(), anotherItem.getChild());
         }
         return false;
     }

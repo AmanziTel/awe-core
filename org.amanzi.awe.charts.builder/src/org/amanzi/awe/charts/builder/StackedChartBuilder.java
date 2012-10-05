@@ -22,7 +22,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.StackedBarRenderer3D;
-import org.jfree.data.category.CategoryDataset;
 
 /**
  * TODO Purpose of
@@ -46,8 +45,7 @@ public class StackedChartBuilder extends AbstractChartBuilder {
                 getModel().getName(), // chart
                 // title
                 getModel().getDomainAxisName(), getModel().getMainRangeAxis().getName(),
-                (CategoryDataset)dataset.getDataset(getModel().getMainRangeAxis()), getModel().getPlotOrientation(), true, true,
-                false);
+                dataset.getDataset(getModel().getMainRangeAxis()), getModel().getPlotOrientation(), true, true, false);
         CategoryPlot plot = ((CategoryPlot)chart.getPlot());
         plot.setRenderer(new StackedBarRenderer3D());
         CategoryAxis axis = plot.getDomainAxis();

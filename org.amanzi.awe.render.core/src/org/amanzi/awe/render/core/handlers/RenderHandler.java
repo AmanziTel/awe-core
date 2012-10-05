@@ -74,7 +74,8 @@ public class RenderHandler extends AbstractHandler {
 
                         if (parentModel != null) {
                             try {
-                                Iterables.addAll(elements, parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
+                                Iterables.addAll(elements,
+                                        parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()));
                             } catch (ModelException e) {
                                 // TODO: handle
                             }
@@ -134,12 +135,12 @@ public class RenderHandler extends AbstractHandler {
         AWEEventManager.getManager().fireEventChain(eventChain);
     }
 
-    private <T extends IModel> T getParentModel(final ITreeItem<?, ?> treeItem, final Class<T> clazz) {
+    private <T extends IModel> T getParentModel(final ITreeItem< ? , ? > treeItem, final Class<T> clazz) {
         IModel model = treeItem.getParent();
 
         if (model != null) {
             if (model instanceof IAnalyzisModel) {
-                model = ((IAnalyzisModel<?>)model).getSourceModel();
+                model = ((IAnalyzisModel< ? >)model).getSourceModel();
             }
 
             if (model != null) {

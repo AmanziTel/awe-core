@@ -22,12 +22,14 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetComboWidget<D extends IModel, L extends IComboSelectionListener> extends AbstractComboWidget<D, L> {
+public abstract class AbstractDatasetComboWidget<D extends IModel, L extends IComboSelectionListener>
+        extends
+            AbstractComboWidget<D, L> {
 
     private final IProjectModelProvider projectModelProvider;
 
@@ -35,7 +37,8 @@ public abstract class AbstractDatasetComboWidget<D extends IModel, L extends ICo
      * @param parent
      * @param label
      */
-    protected AbstractDatasetComboWidget(final Composite parent, final L listener, final String label, final IProjectModelProvider projectModelProvider, final int minimalLabelWidth) {
+    protected AbstractDatasetComboWidget(final Composite parent, final L listener, final String label,
+            final IProjectModelProvider projectModelProvider, final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
         this.projectModelProvider = projectModelProvider;
     }

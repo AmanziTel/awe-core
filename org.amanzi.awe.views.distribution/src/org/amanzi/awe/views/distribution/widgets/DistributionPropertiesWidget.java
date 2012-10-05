@@ -36,12 +36,19 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, IDistributionPropertiesListener> implements IChartTypeListener, ICheckBoxSelected, ITextChandedListener, ISpinnerListener, IColorChangedListener, IPaletteChanged {
+public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, IDistributionPropertiesListener>
+        implements
+            IChartTypeListener,
+            ICheckBoxSelected,
+            ITextChandedListener,
+            ISpinnerListener,
+            IColorChangedListener,
+            IPaletteChanged {
 
     public interface IDistributionPropertiesListener extends AbstractAWEWidget.IAWEWidgetListener {
 
@@ -172,10 +179,11 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
         setColorsPanelHidden(isHidden || isBlendPanelHidden);
         setPalettePanelHidden(isHidden || !isBlendPanelHidden);
     }
-    
+
+    @Override
     public void setVisible(boolean isVisible) {
         chartTypeCombo.setVisible(isVisible);
-        
+
         super.setVisible(isVisible);
     }
 

@@ -21,8 +21,8 @@ import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -93,6 +93,7 @@ public class CountDistributionChartDataset implements IDistributionChartDatasetD
         return getValue(getRowKey(arg0), getColumnKey(arg1));
     }
 
+    @Override
     public void setDistributionBars(final List<IDistributionBar> distributionBars) {
         this.distributionBars = distributionBars;
     }

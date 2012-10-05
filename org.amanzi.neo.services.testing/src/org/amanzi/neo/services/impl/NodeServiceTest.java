@@ -41,572 +41,572 @@ import org.neo4j.graphdb.Relationship;
  */
 public class NodeServiceTest extends AbstractServiceTest {
 
-	/** long TEST_LONG_PROPERTY field */
-	private static final long TEST_LONG_PROPERTY = 123l;
+    /** long TEST_LONG_PROPERTY field */
+    private static final long TEST_LONG_PROPERTY = 123l;
 
-	/** String NEW_TEST_NODE_PROPERTY field */
-	private static final String NEW_TEST_NODE_PROPERTY = "new property";
+    /** String NEW_TEST_NODE_PROPERTY field */
+    private static final String NEW_TEST_NODE_PROPERTY = "new property";
 
-	/** String TEST_NODE_VALUE field */
-	private static final String TEST_NODE_VALUE = "some value";
+    /** String TEST_NODE_VALUE field */
+    private static final String TEST_NODE_VALUE = "some value";
 
-	private static final String NODE_NAME = "node_name";
+    private static final String NODE_NAME = "node_name";
 
-	private static final String NODE_TYPE_ID = TestNodeType.TEST1.getId();
+    private static final String NODE_TYPE_ID = TestNodeType.TEST1.getId();
 
-	private static final String TEST_NODE_PROPERTY = "property";
+    private static final String TEST_NODE_PROPERTY = "property";
 
-	private final IGeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
+    private final IGeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
 
-	private NodeService nodeService = null;
+    private NodeService nodeService = null;
 
-	@Override
-	@Before
-	public void setUp() {
-		super.setUp();
+    @Override
+    @Before
+    public void setUp() {
+        super.setUp();
 
-		nodeService = new NodeService(getService(), generalNodeProperties);
+        nodeService = new NodeService(getService(), generalNodeProperties);
 
-		setReadOnly(true);
-	}
+        setReadOnly(true);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckDatabaseExceptionOnGetNodeName() throws Exception {
-		setMethodFailure();
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptionOnGetNodeName() throws Exception {
+        setMethodFailure();
 
-		Node node = getNodeMock();
-		when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
+        Node node = getNodeMock();
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
 
-		nodeService.getNodeName(node);
-	}
+        nodeService.getNodeName(node);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckDatabaseExceptionOnGetNodeType() throws Exception {
-		setMethodFailure();
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptionOnGetNodeType() throws Exception {
+        setMethodFailure();
 
-		Node node = getNodeMock();
-		when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
+        Node node = getNodeMock();
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
 
-		nodeService.getNodeType(node);
-	}
+        nodeService.getNodeType(node);
+    }
 
-	@Test
-	public void testCheckGetNodeNameActivity() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodeNameActivity() throws Exception {
+        Node node = getNodeMock();
 
-		// property exists
-		when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
-		// return this property
-		when(node.getProperty(generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
+        // property exists
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
+        // return this property
+        when(node.getProperty(generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
 
-		nodeService.getNodeName(node);
+        nodeService.getNodeName(node);
 
-		verify(node).hasProperty(generalNodeProperties.getNodeNameProperty());
-		verify(node).getProperty(generalNodeProperties.getNodeNameProperty());
-		verifyNoMoreInteractions(node);
-	}
+        verify(node).hasProperty(generalNodeProperties.getNodeNameProperty());
+        verify(node).getProperty(generalNodeProperties.getNodeNameProperty());
+        verifyNoMoreInteractions(node);
+    }
 
-	@Test
-	public void testCheckGetNodeNameResult() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodeNameResult() throws Exception {
+        Node node = getNodeMock();
 
-		// property exists
-		when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
-		// return this property
-		when(node.getProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(NODE_NAME);
+        // property exists
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
+        // return this property
+        when(node.getProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(NODE_NAME);
 
-		String result = nodeService.getNodeName(node);
+        String result = nodeService.getNodeName(node);
 
-		assertEquals("Unexpected Name of Node", NODE_NAME, result);
-	}
+        assertEquals("Unexpected Name of Node", NODE_NAME, result);
+    }
 
-	@Test
-	public void testCheckGetNodeTypeActivity() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodeTypeActivity() throws Exception {
+        Node node = getNodeMock();
 
-		// property exists
-		when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
-		// return this property
-		when(node.getProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
+        // property exists
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
+        // return this property
+        when(node.getProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
 
-		nodeService.getNodeType(node);
+        nodeService.getNodeType(node);
 
-		verify(node).hasProperty(generalNodeProperties.getNodeTypeProperty());
-		verify(node).getProperty(generalNodeProperties.getNodeTypeProperty());
-		verifyNoMoreInteractions(node);
-	}
+        verify(node).hasProperty(generalNodeProperties.getNodeTypeProperty());
+        verify(node).getProperty(generalNodeProperties.getNodeTypeProperty());
+        verifyNoMoreInteractions(node);
+    }
 
-	@Test
-	public void testCheckGetNodeTypeResult() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodeTypeResult() throws Exception {
+        Node node = getNodeMock();
 
-		// property exists
-		when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
-		// return this property
-		when(node.getProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
+        // property exists
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
+        // return this property
+        when(node.getProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
 
-		INodeType result = nodeService.getNodeType(node);
+        INodeType result = nodeService.getNodeType(node);
 
-		assertEquals("Unepected Type of Node", TestNodeType.TEST1, result);
-	}
+        assertEquals("Unepected Type of Node", TestNodeType.TEST1, result);
+    }
 
-	@Test(expected = PropertyNotFoundException.class)
-	public void testCheckPropertyNotFoundExceptionOnGetNodeName() throws Exception {
-		Node node = getNodeMock();
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckPropertyNotFoundExceptionOnGetNodeName() throws Exception {
+        Node node = getNodeMock();
 
-		// property exists
-		when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(false);
+        // property exists
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(false);
 
-		nodeService.getNodeName(node);
-	}
+        nodeService.getNodeName(node);
+    }
 
-	@Test(expected = PropertyNotFoundException.class)
-	public void testCheckPropertyNotFoundExceptionOnGetNodeType() throws Exception {
-		Node node = getNodeMock();
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckPropertyNotFoundExceptionOnGetNodeType() throws Exception {
+        Node node = getNodeMock();
 
-		// property exists
-		when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(false);
+        // property exists
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(false);
 
-		nodeService.getNodeType(node);
-	}
+        nodeService.getNodeType(node);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testGetAllChildrentOfNode() throws Exception {
-		setChildTraversalToNull();
+    @Test(expected = DatabaseException.class)
+    public void testGetAllChildrentOfNode() throws Exception {
+        setChildTraversalToNull();
 
-		nodeService.getChildren(getNodeMock(), TestNodeType.TEST1);
-	}
+        nodeService.getChildren(getNodeMock(), TestNodeType.TEST1);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testGetAllChildByName() throws Exception {
-		setChildTraversalToNull();
+    @Test(expected = DatabaseException.class)
+    public void testGetAllChildByName() throws Exception {
+        setChildTraversalToNull();
 
-		nodeService.getChildByName(getNodeMock(), "some name", TestNodeType.TEST1);
-	}
+        nodeService.getChildByName(getNodeMock(), "some name", TestNodeType.TEST1);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckExceptionOnGetReferencedNode() throws Exception {
-		setReferencedNode(null);
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnGetReferencedNode() throws Exception {
+        setReferencedNode(null);
 
-		nodeService.getReferencedNode();
-	}
+        nodeService.getReferencedNode();
+    }
 
-	@Test
-	public void testCheckDbActivityOnGetReferencedNode() throws Exception {
-		Node node = getNodeMock();
-		setReferencedNode(node);
+    @Test
+    public void testCheckDbActivityOnGetReferencedNode() throws Exception {
+        Node node = getNodeMock();
+        setReferencedNode(node);
 
-		nodeService.getReferencedNode();
+        nodeService.getReferencedNode();
 
-		GraphDatabaseService service = getService();
-		verify(service).getReferenceNode();
-	}
+        GraphDatabaseService service = getService();
+        verify(service).getReferenceNode();
+    }
 
-	@Test
-	public void testCheckResultOfGetReferencedNode() throws Exception {
-		Node node = getNodeMock();
-		setReferencedNode(node);
+    @Test
+    public void testCheckResultOfGetReferencedNode() throws Exception {
+        Node node = getNodeMock();
+        setReferencedNode(node);
 
-		Node result = nodeService.getReferencedNode();
+        Node result = nodeService.getReferencedNode();
 
-		assertEquals("Unexpected referenced node", node, result);
-	}
+        assertEquals("Unexpected referenced node", node, result);
+    }
 
-	@Test
-	public void testCheckActivityOnGetParent() throws Exception {
-		Node node = getNodeMock();
-		Node parent = getNodeMock();
-		Relationship relToParent = mock(Relationship.class);
+    @Test
+    public void testCheckActivityOnGetParent() throws Exception {
+        Node node = getNodeMock();
+        Node parent = getNodeMock();
+        Relationship relToParent = mock(Relationship.class);
 
-		when(relToParent.getStartNode()).thenReturn(parent);
-		when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
+        when(relToParent.getStartNode()).thenReturn(parent);
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
 
-		nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
+        nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
 
-		verify(node).getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING);
-		verify(relToParent).getStartNode();
-	}
+        verify(node).getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING);
+        verify(relToParent).getStartNode();
+    }
 
-	@Test
-	public void testCheckResultOnGetParent() throws Exception {
-		Node node = getNodeMock();
-		Node parent = getNodeMock();
-		Relationship relToParent = mock(Relationship.class);
+    @Test
+    public void testCheckResultOnGetParent() throws Exception {
+        Node node = getNodeMock();
+        Node parent = getNodeMock();
+        Relationship relToParent = mock(Relationship.class);
 
-		when(relToParent.getStartNode()).thenReturn(parent);
-		when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
+        when(relToParent.getStartNode()).thenReturn(parent);
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
 
-		Node result = nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
+        Node result = nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
 
-		assertEquals("unexpected parent", parent, result);
-	}
+        assertEquals("unexpected parent", parent, result);
+    }
 
-	@Test
-	public void testCheckWithoutParent() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckWithoutParent() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(null);
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(null);
 
-		Node result = nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
+        Node result = nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
 
-		assertNull("there cannot be a parent", result);
-	}
+        assertNull("there cannot be a parent", result);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckDatabaseExceptiononGetParent() throws Exception {
-		Node node = getNodeMock();
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptiononGetParent() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenThrow(
-				new IllegalArgumentException());
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenThrow(
+                new IllegalArgumentException());
 
-		nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
-	}
+        nodeService.getParent(node, NodeService.NodeServiceRelationshipType.CHILD);
+    }
 
-	@Test
-	public void testCheckCreateNodeCalledByCreateNodeWithOnlyType() throws Exception {
-		nodeService = spy(nodeService);
-		Node parentNode = getNodeMock();
-		Map<String, Object> properties = new HashMap<String, Object>();
+    @Test
+    public void testCheckCreateNodeCalledByCreateNodeWithOnlyType() throws Exception {
+        nodeService = spy(nodeService);
+        Node parentNode = getNodeMock();
+        Map<String, Object> properties = new HashMap<String, Object>();
 
-		doReturn(null).when(nodeService)
-		.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+        doReturn(null).when(nodeService)
+                .createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
 
-		nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
 
-		verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
-	}
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+    }
 
-	@Test
-	public void testCheckCreateNodeCalledByCreateNodeWithTypeAndString() throws Exception {
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put(generalNodeProperties.getNodeNameProperty(), NODE_NAME);
+    @Test
+    public void testCheckCreateNodeCalledByCreateNodeWithTypeAndString() throws Exception {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(generalNodeProperties.getNodeNameProperty(), NODE_NAME);
 
-		nodeService = spy(nodeService);
-		Node parentNode = getNodeMock();
+        nodeService = spy(nodeService);
+        Node parentNode = getNodeMock();
 
-		doReturn(null).when(nodeService)
-		.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+        doReturn(null).when(nodeService)
+                .createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
 
-		nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME);
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME);
 
-		verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
-	}
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+    }
 
-	@Test
-	public void testCheckCreateNodeCalledByCreateNodeWithTypeAndStringAndMap() throws Exception {
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put("some property", NODE_NAME);
+    @Test
+    public void testCheckCreateNodeCalledByCreateNodeWithTypeAndStringAndMap() throws Exception {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("some property", NODE_NAME);
 
-		Map<String, Object> rawProperties = new HashMap<String, Object>(properties);
-		rawProperties.put(generalNodeProperties.getNodeNameProperty(), NODE_NAME);
+        Map<String, Object> rawProperties = new HashMap<String, Object>(properties);
+        rawProperties.put(generalNodeProperties.getNodeNameProperty(), NODE_NAME);
 
-		nodeService = spy(nodeService);
-		Node parentNode = getNodeMock();
+        nodeService = spy(nodeService);
+        Node parentNode = getNodeMock();
 
-		doReturn(null).when(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION,
-				rawProperties);
+        doReturn(null).when(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION,
+                rawProperties);
 
-		nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME, properties);
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME, properties);
 
-		verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, rawProperties);
-	}
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, rawProperties);
+    }
 
-	@Test
-	public void testCheckCreateNodeActivity() throws Exception {
-		setReadOnly(false);
-		Node parentNode = getNodeMock();
-		Node createdNode = getNodeMock();
+    @Test
+    public void testCheckCreateNodeActivity() throws Exception {
+        setReadOnly(false);
+        Node parentNode = getNodeMock();
+        Node createdNode = getNodeMock();
 
-		GraphDatabaseService service = getService();
+        GraphDatabaseService service = getService();
 
-		when(service.createNode()).thenReturn(createdNode);
+        when(service.createNode()).thenReturn(createdNode);
 
-		Map<String, Object> properties = getNodeProperties();
+        Map<String, Object> properties = getNodeProperties();
 
-		nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
 
-		verify(service).createNode();
-		verify(parentNode).createRelationshipTo(createdNode, TestRelationshipTypes.TEST_RELATION);
-		verify(createdNode).setProperty(generalNodeProperties.getNodeTypeProperty(), TestNodeType.TEST1.getId());
-		for (Entry<String, Object> entry : properties.entrySet()) {
-			verify(createdNode).setProperty(entry.getKey(), entry.getValue());
-		}
-	}
+        verify(service).createNode();
+        verify(parentNode).createRelationshipTo(createdNode, TestRelationshipTypes.TEST_RELATION);
+        verify(createdNode).setProperty(generalNodeProperties.getNodeTypeProperty(), TestNodeType.TEST1.getId());
+        for (Entry<String, Object> entry : properties.entrySet()) {
+            verify(createdNode).setProperty(entry.getKey(), entry.getValue());
+        }
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckDatabaseExceptionOnCreatingNewNode() throws Exception {
-		setReadOnly(false);
-		setMethodFailure();
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptionOnCreatingNewNode() throws Exception {
+        setReadOnly(false);
+        setMethodFailure();
 
-		Node parentNode = getNodeMock();
+        Node parentNode = getNodeMock();
 
-		GraphDatabaseService service = getService();
+        GraphDatabaseService service = getService();
 
-		doThrow(new IllegalArgumentException()).when(service).createNode();
+        doThrow(new IllegalArgumentException()).when(service).createNode();
 
-		Map<String, Object> properties = getNodeProperties();
+        Map<String, Object> properties = getNodeProperties();
 
-		nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
-	}
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+    }
 
-	@Test
-	public void testCheckUpdateNodePropertyWithoutProperty() throws Exception {
-		setReadOnly(false);
-		Node node = getNodeMock();
+    @Test
+    public void testCheckUpdateNodePropertyWithoutProperty() throws Exception {
+        setReadOnly(false);
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
 
-		nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false, false);
-	}
+        verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false, false);
+    }
 
-	@Test
-	public void testCheckUpdateNodePropertyWithEqualProperty() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckUpdateNodePropertyWithEqualProperty() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-		when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE);
 
-		nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true, true);
-	}
+        verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true, true);
+    }
 
-	@Test
-	public void testCheckUpdateNodePropertyWithNotEqualProperty() throws Exception {
-		setReadOnly(false);
-		Node node = getNodeMock();
+    @Test
+    public void testCheckUpdateNodePropertyWithNotEqualProperty() throws Exception {
+        setReadOnly(false);
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-		when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE + 1);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE + 1);
 
-		nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true, false);
-	}
+        verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true, false);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckExceptionOnUpdateProperty() throws Exception {
-		setReadOnly(false);
-		setMethodFailure();
-		Node node = getNodeMock();
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnUpdateProperty() throws Exception {
+        setReadOnly(false);
+        setMethodFailure();
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-		when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE + 1);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE + 1);
 
-		doThrow(new IllegalArgumentException()).when(node).setProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        doThrow(new IllegalArgumentException()).when(node).setProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
-	}
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckExceptionOnGetSingleChild() throws Exception {
-		NodeService nodeServiceImpl = spy(new NodeService(getService(), generalNodeProperties));
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnGetSingleChild() throws Exception {
+        NodeService nodeServiceImpl = spy(new NodeService(getService(), generalNodeProperties));
 
-		doThrow(new IllegalArgumentException()).when(nodeServiceImpl).getDownlinkTraversal();
+        doThrow(new IllegalArgumentException()).when(nodeServiceImpl).getDownlinkTraversal();
 
-		nodeServiceImpl.getSingleChild(getNodeMock(), TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
-	}
+        nodeServiceImpl.getSingleChild(getNodeMock(), TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
+    }
 
-	@Test
-	public void testCheckGetNodePropertiesWithDefaultValueAndExistingProperty() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodePropertiesWithDefaultValueAndExistingProperty() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn(TEST_NODE_VALUE);
+        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn(TEST_NODE_VALUE);
 
-		Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
 
-		verify(node).hasProperty(TEST_NODE_PROPERTY);
-		verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		assertEquals("unexpected property", TEST_NODE_VALUE, result);
-	}
+        assertEquals("unexpected property", TEST_NODE_VALUE, result);
+    }
 
-	@Test
-	public void testCheckGetNodePropertiesWithDefaultValueAndExistingPropertyThrowException() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodePropertiesWithDefaultValueAndExistingPropertyThrowException() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-		when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE);
 
-		Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
 
-		verify(node).hasProperty(TEST_NODE_PROPERTY);
-		verify(node).getProperty(TEST_NODE_PROPERTY);
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).getProperty(TEST_NODE_PROPERTY);
 
-		assertEquals("unexpected property", TEST_NODE_VALUE, result);
-	}
+        assertEquals("unexpected property", TEST_NODE_VALUE, result);
+    }
 
-	@Test
-	public void testCheckGetNodePropertiesWithDefaultValueAndNotExistingProperty() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckGetNodePropertiesWithDefaultValueAndNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn(TEST_NODE_VALUE);
+        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn(TEST_NODE_VALUE);
 
-		Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
 
-		verify(node).hasProperty(TEST_NODE_PROPERTY);
-		verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		assertEquals("unexpected property", TEST_NODE_VALUE, result);
-	}
+        assertEquals("unexpected property", TEST_NODE_VALUE, result);
+    }
 
-	@Test(expected = PropertyNotFoundException.class)
-	public void testCheckGetNodePropertiesWithDefaultValueAndNotExistingPropertyThrowException() throws Exception {
-		Node node = getNodeMock();
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckGetNodePropertiesWithDefaultValueAndNotExistingPropertyThrowException() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
 
-		nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
-	}
+        nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
+    }
 
-	@Test(expected = DatabaseException.class)
-	public void testCheckExceptionOnRemoveProperty() throws Exception {
-		setReadOnly(false);
-		setMethodFailure();
-		Node node = getNodeMock();
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnRemoveProperty() throws Exception {
+        setReadOnly(false);
+        setMethodFailure();
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-		when(node.removeProperty(TEST_NODE_PROPERTY)).thenThrow(new IllegalArgumentException());
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.removeProperty(TEST_NODE_PROPERTY)).thenThrow(new IllegalArgumentException());
 
-		nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, false);
-	}
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+    }
 
-	@Test(expected = PropertyNotFoundException.class)
-	public void testCheckExceptionOnRemoveNotExistingProperty() throws Exception {
-		Node node = getNodeMock();
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckExceptionOnRemoveNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
 
-		nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, true);
-	}
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, true);
+    }
 
-	@Test
-	public void testCheckActivityOnRemoveExistingProperty() throws Exception {
-		setReadOnly(false);
+    @Test
+    public void testCheckActivityOnRemoveExistingProperty() throws Exception {
+        setReadOnly(false);
 
-		Node node = getNodeMock();
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
 
-		nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, true);
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, true);
 
-		verify(node).hasProperty(TEST_NODE_PROPERTY);
-		verify(node).removeProperty(TEST_NODE_PROPERTY);
-	}
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).removeProperty(TEST_NODE_PROPERTY);
+    }
 
-	@Test
-	public void testCheckActivityOnRemoveNotExistingProperty() throws Exception {
-		Node node = getNodeMock();
+    @Test
+    public void testCheckActivityOnRemoveNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
 
-		when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
 
-		nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, false);
 
-		verify(node).hasProperty(TEST_NODE_PROPERTY);
-		verify(node, never()).removeProperty(TEST_NODE_PROPERTY);
-	}
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node, never()).removeProperty(TEST_NODE_PROPERTY);
+    }
 
-	@Test
-	public void testCheckActivityOnRenamePropertyWithThrow() throws Exception {
-		Node node = getNodeMock();
-		nodeService = spy(nodeService);
+    @Test
+    public void testCheckActivityOnRenamePropertyWithThrow() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
 
-		doReturn(TEST_NODE_VALUE).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
-		doNothing().when(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, true);
-		doNothing().when(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        doReturn(TEST_NODE_VALUE).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        doNothing().when(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, true);
+        doNothing().when(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
 
-		verify(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
-		verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
-		verify(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
-	}
+        verify(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        verify(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
 
-	@Test
-	public void testCheckActivityOnRenamePropertyWithoutThrow() throws Exception {
-		Node node = getNodeMock();
-		nodeService = spy(nodeService);
+    @Test
+    public void testCheckActivityOnRenamePropertyWithoutThrow() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
 
-		doReturn(TEST_NODE_VALUE).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
-		doNothing().when(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
-		doNothing().when(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        doReturn(TEST_NODE_VALUE).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        doNothing().when(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        doNothing().when(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-		nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, false);
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, false);
 
-		verify(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
-		verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
-		verify(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
-	}
+        verify(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        verify(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
 
-	@Test
-	public void testCheckActivityOnRenamePropertyWithNotExistingProperty() throws Exception {
-		Node node = getNodeMock();
-		nodeService = spy(nodeService);
+    @Test
+    public void testCheckActivityOnRenamePropertyWithNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
 
-		doReturn(null).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
+        doReturn(null).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
 
-		nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, false);
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, false);
 
-		verify(nodeService, never()).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
-		verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
-		verify(nodeService, never()).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
-	}
+        verify(nodeService, never()).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        verify(nodeService, never()).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
 
-	@Test(expected = PropertyNotFoundException.class)
-	public void testCheckActivityOnRenamePropertyWithNotExistingPropertyWithThrow() throws Exception {
-		Node node = getNodeMock();
-		nodeService = spy(nodeService);
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckActivityOnRenamePropertyWithNotExistingPropertyWithThrow() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
 
-		doReturn(null).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
+        doReturn(null).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
 
-		nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
-	}
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
+    }
 
-	private void verifyNodeProperty(final Node node, final String name, final Object value, final boolean exists,
-			final boolean equal) {
-		verify(node).hasProperty(name);
+    private void verifyNodeProperty(final Node node, final String name, final Object value, final boolean exists,
+            final boolean equal) {
+        verify(node).hasProperty(name);
 
-		if (exists) {
-			verify(node).getProperty(name);
-		} else {
-			verify(node, never()).getProperty(name);
-		}
+        if (exists) {
+            verify(node).getProperty(name);
+        } else {
+            verify(node, never()).getProperty(name);
+        }
 
-		if (exists && equal) {
-			verify(node, never()).setProperty(name, value);
-		} else {
-			verify(node).setProperty(name, value);
-		}
+        if (exists && equal) {
+            verify(node, never()).setProperty(name, value);
+        } else {
+            verify(node).setProperty(name, value);
+        }
 
-		verifyNoMoreInteractions(node);
-	}
+        verifyNoMoreInteractions(node);
+    }
 
-	private Map<String, Object> getNodeProperties() {
-		Map<String, Object> result = new HashMap<String, Object>();
+    private Map<String, Object> getNodeProperties() {
+        Map<String, Object> result = new HashMap<String, Object>();
 
-		result.put("string", "string");
-		result.put("long", TEST_LONG_PROPERTY);
+        result.put("string", "string");
+        result.put("long", TEST_LONG_PROPERTY);
 
-		return result;
-	}
+        return result;
+    }
 
-	private void setReferencedNode(final Node node) {
-		GraphDatabaseService service = getService();
+    private void setReferencedNode(final Node node) {
+        GraphDatabaseService service = getService();
 
-		if (node == null) {
-			when(service.getReferenceNode()).thenThrow(new IllegalArgumentException());
-		} else {
-			when(service.getReferenceNode()).thenReturn(node);
-		}
-	}
+        if (node == null) {
+            when(service.getReferenceNode()).thenThrow(new IllegalArgumentException());
+        } else {
+            when(service.getReferenceNode()).thenReturn(node);
+        }
+    }
 
-	private void setChildTraversalToNull() {
-		NodeService spyService = spy(new NodeService(getService(), generalNodeProperties));
+    private void setChildTraversalToNull() {
+        NodeService spyService = spy(new NodeService(getService(), generalNodeProperties));
 
-		when(spyService.getChildrenTraversal(TestNodeType.TEST1, NodeServiceRelationshipType.CHILD)).thenReturn(null);
+        when(spyService.getChildrenTraversal(TestNodeType.TEST1, NodeServiceRelationshipType.CHILD)).thenReturn(null);
 
-		nodeService = spyService;
-	}
+        nodeService = spyService;
+    }
 }

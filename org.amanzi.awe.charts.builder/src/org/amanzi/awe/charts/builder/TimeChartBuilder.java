@@ -30,7 +30,6 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.general.Dataset;
-import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 
 /**
@@ -108,7 +107,7 @@ public class TimeChartBuilder
         JFreeChart chart = ChartFactory.createTimeSeriesChart(getModel().getName(), // title
                 getModel().getDomainAxisName(), // x-axis label
                 getModel().getMainRangeAxis().getName(), // y-axis label
-                (TimeSeriesCollection)getDatasets().getDataset(getModel().getMainRangeAxis()), // data
+                getDatasets().getDataset(getModel().getMainRangeAxis()), // data
                 true, // create legend?
                 true, // generate tooltips?
                 false // generate URLs?

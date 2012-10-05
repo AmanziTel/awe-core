@@ -26,17 +26,11 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-        org.amanzi.awe.scripting.ScriptingTests.class,
-        org.amanzi.awe.ui.AWEUITests.class,
-        org.amanzi.neo.db.testing.DbTestSuite.class, 
-        org.amanzi.neo.CoreTestsSuite.class,
-        org.amanzi.neo.loader.core.LoaderCoreTestSuite.class,
-        org.amanzi.neo.loader.ui.LoaderUITestSuite.class,
-        org.amanzi.neo.models.ModelsTestSuite.class,
-        org.amanzi.neo.providers.ProvidersTestSuite.class,
-        org.amanzi.neo.services.ServicesTestSuite.class
-})
+@SuiteClasses({org.amanzi.awe.scripting.ScriptingTests.class, org.amanzi.awe.ui.AWEUITests.class,
+        org.amanzi.neo.db.testing.DbTestSuite.class, org.amanzi.neo.CoreTestsSuite.class,
+        org.amanzi.neo.loader.core.LoaderCoreTestSuite.class, org.amanzi.neo.loader.ui.LoaderUITestSuite.class,
+        org.amanzi.neo.models.ModelsTestSuite.class, org.amanzi.neo.providers.ProvidersTestSuite.class,
+        org.amanzi.neo.services.ServicesTestSuite.class})
 public class CoreTestSuite {
 
 }

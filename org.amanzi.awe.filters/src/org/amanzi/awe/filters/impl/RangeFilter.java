@@ -20,18 +20,15 @@ import org.apache.commons.lang3.Range;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public class RangeFilter extends AbstractFilter<Number> {
 
     public enum RangeFilterType {
-        INCLUDE_START_AND_END,
-        INCLUDE_START_EXCLUDE_END,
-        EXCLUDE_START_INCLUDE_END,
-        EXCLUDE_START_AND_END;
+        INCLUDE_START_AND_END, INCLUDE_START_EXCLUDE_END, EXCLUDE_START_INCLUDE_END, EXCLUDE_START_AND_END;
     }
 
     private final Range<Number> range;

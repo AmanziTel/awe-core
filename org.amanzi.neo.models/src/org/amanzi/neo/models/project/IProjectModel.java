@@ -15,7 +15,6 @@ package org.amanzi.neo.models.project;
 
 import org.amanzi.neo.models.IModel;
 
-
 /**
  * TODO Purpose of
  * <p>

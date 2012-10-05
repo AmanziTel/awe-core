@@ -41,9 +41,9 @@ import com.google.common.collect.Lists;
  * @since 1.0.0
  */
 public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSelectedListener>
-implements
-SelectionListener,
-IDialogSelectorListener {
+        implements
+            SelectionListener,
+            IDialogSelectorListener {
 
     private static final String ITEM_SEPARATOR = ";";
 

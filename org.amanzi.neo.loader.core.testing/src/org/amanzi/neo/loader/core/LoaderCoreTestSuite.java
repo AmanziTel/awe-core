@@ -18,25 +18,22 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-    org.amanzi.neo.loader.core.LoaderTest.class,
-    org.amanzi.neo.loader.core.integration.NetworkLoaderTest.class,
-    org.amanzi.neo.loader.core.parser.impl.CSVParserTest.class,
-    org.amanzi.neo.loader.core.parser.impl.internal.AbstractParserTest.class,
-    org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParserTest.class,
-    org.amanzi.neo.loader.core.saver.impl.NetworkSaverTest.class,
-    org.amanzi.neo.loader.core.saver.impl.internal.AbstractSaverTest.class,
-    org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaverTest.class,
-    org.amanzi.neo.loader.core.synonyms.SynonymsManagerTest.class
-    })
+@SuiteClasses({org.amanzi.neo.loader.core.LoaderTest.class, org.amanzi.neo.loader.core.integration.NetworkLoaderTest.class,
+        org.amanzi.neo.loader.core.parser.impl.CSVParserTest.class,
+        org.amanzi.neo.loader.core.parser.impl.internal.AbstractParserTest.class,
+        org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParserTest.class,
+        org.amanzi.neo.loader.core.saver.impl.NetworkSaverTest.class,
+        org.amanzi.neo.loader.core.saver.impl.internal.AbstractSaverTest.class,
+        org.amanzi.neo.loader.core.saver.impl.internal.AbstractSynonymsSaverTest.class,
+        org.amanzi.neo.loader.core.synonyms.SynonymsManagerTest.class})
 public class LoaderCoreTestSuite {
 
 }

@@ -35,8 +35,8 @@ import org.neo4j.graphdb.traversal.Evaluator;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -54,7 +54,8 @@ public class DistributionService extends AbstractService implements IDistributio
      * @param graphDb
      * @param generalNodeProperties
      */
-    public DistributionService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties, final IDistributionNodeProperties distributionNodeProperties, final INodeService nodeService) {
+    public DistributionService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties,
+            final IDistributionNodeProperties distributionNodeProperties, final INodeService nodeService) {
         super(graphDb, generalNodeProperties);
 
         this.nodeService = nodeService;
@@ -66,11 +67,17 @@ public class DistributionService extends AbstractService implements IDistributio
         assert rootNode != null;
         assert distributionType != null;
 
-        Evaluator nameEvaluator = new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), distributionType.getName());
-        Evaluator typeEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionNodeType(), distributionType.getNodeType().getId());
-        Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getCurrentDistributionProperty(), distributionType.getPropertyName());
+        Evaluator nameEvaluator = new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(),
+                distributionType.getName());
+        Evaluator typeEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionNodeType(), distributionType
+                .getNodeType().getId());
+        Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getCurrentDistributionProperty(),
+                distributionType.getPropertyName());
 
-        Iterator<Node> nodeIterator = nodeService.getChildrenTraversal(DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION).evaluator(nameEvaluator).evaluator(typeEvaluator).evaluator(propertyEvaluator).traverse(rootNode).nodes().iterator();
+        Iterator<Node> nodeIterator = nodeService
+                .getChildrenTraversal(DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION)
+                .evaluator(nameEvaluator).evaluator(typeEvaluator).evaluator(propertyEvaluator).traverse(rootNode).nodes()
+                .iterator();
 
         Node result = null;
 
@@ -99,7 +106,8 @@ public class DistributionService extends AbstractService implements IDistributio
             properties.put(distributionNodeProperties.getDistributionPropertyName(), distributionType.getPropertyName());
             properties.put(distributionNodeProperties.getDistributionNodeType(), distributionType.getNodeType().getId());
 
-            result = nodeService.createNode(rootNode, DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION, properties);
+            result = nodeService.createNode(rootNode, DistributionNodeType.DISTRIBUTION_ROOT,
+                    DistributionRelationshipType.DISTRIBUTION, properties);
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
@@ -111,7 +119,8 @@ public class DistributionService extends AbstractService implements IDistributio
     public Node getCurrentDistribution(final Node rootNode) throws ServiceException {
         assert rootNode != null;
 
-        Long currentDistributionNodeId = nodeService.getNodeProperty(rootNode, distributionNodeProperties.getCurrentDistributionProperty(), null, false);
+        Long currentDistributionNodeId = nodeService.getNodeProperty(rootNode,
+                distributionNodeProperties.getCurrentDistributionProperty(), null, false);
 
         Node result = null;
 
@@ -131,7 +140,8 @@ public class DistributionService extends AbstractService implements IDistributio
         assert rootNode != null;
         assert currentDistributionNode != null;
 
-        nodeService.updateProperty(rootNode, distributionNodeProperties.getCurrentDistributionProperty(), currentDistributionNode.getId());
+        nodeService.updateProperty(rootNode, distributionNodeProperties.getCurrentDistributionProperty(),
+                currentDistributionNode.getId());
     }
 
     @Override

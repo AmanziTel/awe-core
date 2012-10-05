@@ -48,7 +48,8 @@ public class DriveRenderer extends AbstractRenderer {
     }
 
     @Override
-    protected void renderElement(final Graphics2D destination, final Point point, final ILocationElement mpLocation, final IGISModel model) {
+    protected void renderElement(final Graphics2D destination, final Point point, final ILocationElement mpLocation,
+            final IGISModel model) {
         renderCoordinateElement(destination, point, mpLocation);
     }
 

@@ -139,7 +139,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    public Class<?> getPropertyClass(final INodeType nodeType, final String property) {
+    public Class< ? > getPropertyClass(final INodeType nodeType, final String property) {
         return statisticsVault.getPropertyClass(nodeType, property);
     }
 

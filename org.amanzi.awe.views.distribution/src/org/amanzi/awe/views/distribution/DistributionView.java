@@ -22,13 +22,13 @@ import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
-import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistributionChartListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionPropertyWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
@@ -46,12 +46,18 @@ import org.eclipse.ui.part.ViewPart;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener, IDistributionChartListener, IDistributionPropertiesListener {
+public class DistributionView extends ViewPart
+        implements
+            IDistributionDatasetSelectionListener,
+            IPropertySelectionListener,
+            IDistributionTypeListener,
+            IDistributionChartListener,
+            IDistributionPropertiesListener {
 
     private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
@@ -72,7 +78,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
             try {
                 model = currentManager.build(monitor);
             } catch (ModelException e) {
-                return new Status(Status.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
+                return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
             } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -154,11 +160,11 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     }
 
-    private DistributionDatasetWidget addDistributionDatasetWidget(final Composite parent, final IDistributionDatasetSelectionListener listener, final int minWidth) {
+    private DistributionDatasetWidget addDistributionDatasetWidget(final Composite parent,
+            final IDistributionDatasetSelectionListener listener, final int minWidth) {
         DistributionDatasetWidget result = new DistributionDatasetWidget(parent, listener, "Dataset:", minWidth,
-                DistributionEnginePlugin.getDefault().getProjectModelProvider(),
-                DistributionEnginePlugin.getDefault().getNetworkModelProvider(),
-                DistributionEnginePlugin.getDefault().getDriveModelProvider());
+                DistributionEnginePlugin.getDefault().getProjectModelProvider(), DistributionEnginePlugin.getDefault()
+                        .getNetworkModelProvider(), DistributionEnginePlugin.getDefault().getDriveModelProvider());
         result.initializeWidget();
 
         return result;
@@ -171,21 +177,24 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         return result;
     }
 
-    private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener, final int minWidth) {
+    private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener,
+            final int minWidth) {
         DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
         result.initializeWidget();
 
         return result;
     }
 
-    private DistributionPropertiesWidget addDistributionPropertiesWidget(final Composite parent, final IDistributionPropertiesListener listener) {
+    private DistributionPropertiesWidget addDistributionPropertiesWidget(final Composite parent,
+            final IDistributionPropertiesListener listener) {
         DistributionPropertiesWidget result = new DistributionPropertiesWidget(parent, listener);
         result.initializeWidget();
 
         return result;
     }
 
-    private DistributionPropertyWidget addDistributionPropertyWidget(final Composite parent, final String label, final IPropertySelectionListener listener, final int minimalWidth) {
+    private DistributionPropertyWidget addDistributionPropertyWidget(final Composite parent, final String label,
+            final IPropertySelectionListener listener, final int minimalWidth) {
         DistributionPropertyWidget result = new DistributionPropertyWidget(parent, listener, label, minimalWidth);
         result.initializeWidget();
 

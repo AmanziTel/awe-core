@@ -16,10 +16,10 @@ package org.amanzi.neo.providers.context.internal;
 import org.amanzi.neo.services.internal.IService;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */

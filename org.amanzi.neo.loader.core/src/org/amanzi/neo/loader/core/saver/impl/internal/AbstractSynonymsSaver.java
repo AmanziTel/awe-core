@@ -53,9 +53,9 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         }
 
         private String cleanPropertyName(final String header) {
-            //TODO: refactor this
-            return header == null ? header : header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
-                    .replaceAll("\\_$", "").toLowerCase();
+            // TODO: refactor this
+            return header == null ? header : header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_")
+                    .replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
         }
 
         protected String getValue(final IMappedStringData data) {
@@ -196,7 +196,7 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
                 return null;
             }
 
-            //convert to time
+            // convert to time
             try {
                 if (dateFormat == null) {
                     dateFormat = DateFormatManager.getInstance().autoParseStringToDate(value);
@@ -296,17 +296,17 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
                             throw new NumberFormatException();
                         }
                     } catch (NumberFormatException e3) {
-                        //try timestamp
+                        // try timestamp
                         currentProperty = new TimestampProperty(getPropertyName(), getHeaderName());
                         result = currentProperty.parse(data);
 
                         if (result == null) {
-                            //try boolean
+                            // try boolean
                             currentProperty = new BooleanProperty(getPropertyName(), getHeaderName());
 
                             result = currentProperty.parse(data);
                             if (result == null) {
-                                //to string
+                                // to string
                                 currentProperty = new StringProperty(getPropertyName(), getHeaderName());
                                 result = currentProperty.parse(data);
                             }

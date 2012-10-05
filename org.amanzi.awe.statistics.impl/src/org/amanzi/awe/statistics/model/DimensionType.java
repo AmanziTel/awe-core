@@ -19,14 +19,13 @@ import org.neo4j.graphdb.RelationshipType;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public enum DimensionType {
-    PROPERTY(StatisticsRelationshipType.PROPERTY_DIMENSION),
-    TIME(StatisticsRelationshipType.TIME_DIMENSION);
+    PROPERTY(StatisticsRelationshipType.PROPERTY_DIMENSION), TIME(StatisticsRelationshipType.TIME_DIMENSION);
     ;
 
     private RelationshipType relationshipType;

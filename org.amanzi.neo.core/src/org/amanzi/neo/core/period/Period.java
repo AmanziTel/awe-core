@@ -283,8 +283,9 @@ public enum Period {
      * @return
      */
     public static List<Period> getAvailablePeriods(final long startTime, final long endTime) {
-        //TODO: LN: 09.08.2012, remove magic numbers
-        //TODO: LN: 09.08.2012, algorithm of detecting available periods is in correct since it depends on numbers (at least in month we can have more or less than 30 days)
+        // TODO: LN: 09.08.2012, remove magic numbers
+        // TODO: LN: 09.08.2012, algorithm of detecting available periods is in correct since it
+        // depends on numbers (at least in month we can have more or less than 30 days)
 
         List<Period> periods = new ArrayList<Period>();
         long time = (endTime - startTime) / (1000 * 60);

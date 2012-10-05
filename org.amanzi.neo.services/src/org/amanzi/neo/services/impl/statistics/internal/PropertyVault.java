@@ -215,7 +215,7 @@ public class PropertyVault {
         values.put(value, count);
     }
 
-    public Class<?> getClassType() {
+    public Class< ? > getClassType() {
         return classType == null ? null : classType.getDataClass();
     }
 }

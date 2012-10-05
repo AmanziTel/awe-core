@@ -16,8 +16,8 @@ package org.amanzi.awe.charts.builder.dataset.dto.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
 import org.amanzi.awe.charts.builder.dataset.dto.ICategoryRow;
+import org.amanzi.awe.charts.builder.dataset.dto.IColumn;
 import org.amanzi.awe.charts.manger.ChartsManager;
 
 /**
@@ -85,24 +85,29 @@ public class ColumnImpl implements IColumn {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((startDate == null) ? 0 : startDate.hashCode());
+        result = (prime * result) + ((startDate == null) ? 0 : startDate.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ColumnImpl other = (ColumnImpl)obj;
         if (startDate == null) {
-            if (other.startDate != null)
+            if (other.startDate != null) {
                 return false;
-        } else if (!startDate.equals(other.startDate))
+            }
+        } else if (!startDate.equals(other.startDate)) {
             return false;
+        }
         return true;
     }
 

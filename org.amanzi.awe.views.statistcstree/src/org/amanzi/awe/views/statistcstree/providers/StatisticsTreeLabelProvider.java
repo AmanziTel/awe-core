@@ -52,6 +52,7 @@ public class StatisticsTreeLabelProvider extends CommonTreeViewLabelProvider {
      * @param element
      * @return
      */
+    @Override
     protected String getStringFromDataElement(IDataElement element) {
         if (element.getNodeType().equals(StatisticsNodeType.S_ROW)) {
             IStatisticsRow row = (IStatisticsRow)element;

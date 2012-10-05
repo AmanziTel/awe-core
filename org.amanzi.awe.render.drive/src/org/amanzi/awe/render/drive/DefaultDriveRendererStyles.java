@@ -24,148 +24,128 @@ import org.amanzi.awe.render.core.AbstractRendererStyles;
  */
 public class DefaultDriveRendererStyles extends AbstractRendererStyles {
 
-	/**
-	 * Default Drive Renderer Styles instance
-	 */
-	private static DefaultDriveRendererStyles renderStyle;
+    /**
+     * Default Drive Renderer Styles instance
+     */
+    private static DefaultDriveRendererStyles renderStyle;
 
-	/**
-	 * default colors
-	 */
-	private Color defaultLocationColor = Color.MAGENTA;
-	private Color defaultLabelColor = Color.GRAY;
-	private Color defaultLineColor = Color.GRAY;
+    /**
+     * default colors
+     */
+    private Color defaultLocationColor = Color.MAGENTA;
+    private Color defaultLabelColor = Color.GRAY;
+    private Color defaultLineColor = Color.GRAY;
 
-	/**
-	 * parameters
-	 */
-	private Integer defaultFontSize;
-	private String defaultLocationLabelType;
-	private String defaultMeasurementPropertyName;
+    /**
+     * parameters
+     */
+    private Integer defaultFontSize;
+    private String defaultLocationLabelType;
+    private String defaultMeasurementPropertyName;
 
-	public static DefaultDriveRendererStyles getInstance() {
-		if (renderStyle == null) {
-			renderStyle = new DefaultDriveRendererStyles();
-		}
-		return renderStyle;
-	}
+    public static DefaultDriveRendererStyles getInstance() {
+        if (renderStyle == null) {
+            renderStyle = new DefaultDriveRendererStyles();
+        }
+        return renderStyle;
+    }
 
-	/**
-	 * @return Returns the defaultLocationColor.
-	 */
-	public Color getLocationColor() {
-		return defaultLocationColor;
-	}
+    /**
+     * @return Returns the defaultLocationColor.
+     */
+    public Color getLocationColor() {
+        return defaultLocationColor;
+    }
 
-	/**
-	 * @param defaultLocationColor
-	 *            The defaultMeasurementColor to set.
-	 */
-	public void setLocationColor(Color defaultLocationColor) {
-		this.defaultLocationColor = defaultLocationColor;
-	}
+    /**
+     * @param defaultLocationColor The defaultMeasurementColor to set.
+     */
+    public void setLocationColor(Color defaultLocationColor) {
+        this.defaultLocationColor = defaultLocationColor;
+    }
 
-	/**
-	 * 
-	 * @return default location color
-	 */
-	public Color getDefaultLocationColor() {
-		return defaultLocationColor;
-	}
+    /**
+     * @return default location color
+     */
+    public Color getDefaultLocationColor() {
+        return defaultLocationColor;
+    }
 
-	/**
-	 * 
-	 * @param defaultLocationColor
-	 *            color
-	 */
-	public void setDefaultLocationColor(Color defaultLocationColor) {
-		this.defaultLocationColor = defaultLocationColor;
-	}
+    /**
+     * @param defaultLocationColor color
+     */
+    public void setDefaultLocationColor(Color defaultLocationColor) {
+        this.defaultLocationColor = defaultLocationColor;
+    }
 
-	/**
-	 * 
-	 * @return default label color
-	 */
-	public Color getDefaultLabelColor() {
-		return defaultLabelColor;
-	}
+    /**
+     * @return default label color
+     */
+    public Color getDefaultLabelColor() {
+        return defaultLabelColor;
+    }
 
-	/**
-	 * 
-	 * @param defaultFontColor
-	 *            color
-	 */
-	public void setDefaultLabelColor(Color defaultFontColor) {
-		this.defaultLabelColor = defaultFontColor;
-	}
+    /**
+     * @param defaultFontColor color
+     */
+    public void setDefaultLabelColor(Color defaultFontColor) {
+        this.defaultLabelColor = defaultFontColor;
+    }
 
-	/**
-	 * 
-	 * @return default line color
-	 */
-	public Color getDefaultLineColor() {
-		return defaultLineColor;
-	}
+    /**
+     * @return default line color
+     */
+    public Color getDefaultLineColor() {
+        return defaultLineColor;
+    }
 
-	/**
-	 * 
-	 * @param defaultLineColor
-	 *            color
-	 */
-	public void setDefaultLineColor(Color defaultLineColor) {
-		this.defaultLineColor = defaultLineColor;
-	}
+    /**
+     * @param defaultLineColor color
+     */
+    public void setDefaultLineColor(Color defaultLineColor) {
+        this.defaultLineColor = defaultLineColor;
+    }
 
-	/**
-	 * 
-	 * @return font size
-	 */
-	public Integer getDefaultFontSize() {
-		return defaultFontSize;
-	}
+    /**
+     * @return font size
+     */
+    public Integer getDefaultFontSize() {
+        return defaultFontSize;
+    }
 
-	/**
-	 * 
-	 * @param defaultFontSize
-	 *            font size
-	 */
-	public void setDefaultFontSize(Integer defaultFontSize) {
-		this.defaultFontSize = defaultFontSize;
-	}
+    /**
+     * @param defaultFontSize font size
+     */
+    public void setDefaultFontSize(Integer defaultFontSize) {
+        this.defaultFontSize = defaultFontSize;
+    }
 
-	/**
-	 * 
-	 * @return default location label type
-	 */
-	public String getDefaultLocationLabelType() {
-		return defaultLocationLabelType;
-	}
+    /**
+     * @return default location label type
+     */
+    public String getDefaultLocationLabelType() {
+        return defaultLocationLabelType;
+    }
 
-	/**
-	 * 
-	 * @param defaultLocationLabelType
-	 *            label type
-	 */
-	public void setDefaultLocationLabelType(String defaultLocationLabelType) {
-		this.defaultLocationLabelType = defaultLocationLabelType;
-	}
+    /**
+     * @param defaultLocationLabelType label type
+     */
+    public void setDefaultLocationLabelType(String defaultLocationLabelType) {
+        this.defaultLocationLabelType = defaultLocationLabelType;
+    }
 
-	/**
-	 * 
-	 * @return measurement property name
-	 */
-	public String getDefaultMeasurementPropertyName() {
-		return defaultMeasurementPropertyName;
-	}
+    /**
+     * @return measurement property name
+     */
+    public String getDefaultMeasurementPropertyName() {
+        return defaultMeasurementPropertyName;
+    }
 
-	/**
-	 * 
-	 * @param defaultMeasurementPropertyName
-	 *            measurement property name
-	 */
-	public void setDefaultMeasurementPropertyName(
-			String defaultMeasurementPropertyName) {
-		this.defaultMeasurementPropertyName = defaultMeasurementPropertyName;
-	}
+    /**
+     * @param defaultMeasurementPropertyName measurement property name
+     */
+    public void setDefaultMeasurementPropertyName(String defaultMeasurementPropertyName) {
+        this.defaultMeasurementPropertyName = defaultMeasurementPropertyName;
+    }
 
 }

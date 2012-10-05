@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, ISelectDriveResourceListener>
-implements
-IResourceSelectorListener {
+        implements
+            IResourceSelectorListener {
 
     public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
 
@@ -61,7 +61,8 @@ IResourceSelectorListener {
      * @param listener
      * @param projectModelProvider
      */
-    protected SelectDriveResourcesWidget(final Composite parent, final ISelectDriveResourceListener listener, final IOFileFilter filter) {
+    protected SelectDriveResourcesWidget(final Composite parent, final ISelectDriveResourceListener listener,
+            final IOFileFilter filter) {
         super(true, parent, listener, null);
         this.listener = listener;
         this.filter = filter;

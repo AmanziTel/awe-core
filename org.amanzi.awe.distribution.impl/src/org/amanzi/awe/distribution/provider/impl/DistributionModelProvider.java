@@ -35,19 +35,21 @@ import org.neo4j.graphdb.Node;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionModelProvider extends AbstractModelProvider<DistributionModel, IDistributionModel> implements IDistributionModelProvider {
+public class DistributionModelProvider extends AbstractModelProvider<DistributionModel, IDistributionModel>
+        implements
+            IDistributionModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(DistributionModelProvider.class);
 
     @SuppressWarnings("unused")
     private final static class DistributionCacheKey implements IKey {
 
-        private final IDistributionType<?> distributionType;
+        private final IDistributionType< ? > distributionType;
 
         private final IPropertyStatisticalModel sourceModel;
 
@@ -81,7 +83,8 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
     private final IDistributionNodeProperties distributionNodeProperties;
 
-    public DistributionModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties, final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
+    public DistributionModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
         super();
 
         this.nodeService = nodeService;
@@ -101,8 +104,8 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
     }
 
     @Override
-    public IDistributionModel findDistribution(final IPropertyStatisticalModel analyzedModel, final IDistributionType< ? > distributionType)
-            throws ModelException {
+    public IDistributionModel findDistribution(final IPropertyStatisticalModel analyzedModel,
+            final IDistributionType< ? > distributionType) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getDistribution", analyzedModel, distributionType));
         }
@@ -130,7 +133,6 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
                 processException("Error on searching for a Distribution Model <" + analyzedModel + ", " + distributionType + ">", e);
             }
         }
-
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getDistribution"));
@@ -173,8 +175,8 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
     }
 
     @Override
-    public IDistributionModel createDistribution(final IPropertyStatisticalModel analyzedModel, final IDistributionType< ? > distributionType)
-            throws ModelException {
+    public IDistributionModel createDistribution(final IPropertyStatisticalModel analyzedModel,
+            final IDistributionType< ? > distributionType) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("createDistribution", analyzedModel, distributionType));
         }
@@ -202,7 +204,6 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
         } catch (ServiceException e) {
             processException("Error on searching for a Distribution Model <" + analyzedModel + ", " + distributionType + ">", e);
         }
-
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("createDistribution"));

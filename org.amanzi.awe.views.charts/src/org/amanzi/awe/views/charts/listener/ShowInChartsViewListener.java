@@ -38,8 +38,8 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
         if (event.getStatus().equals(EventStatus.SHOW_IN_VIEW)) {
             ShowInViewEvent showInViewEvent = (ShowInViewEvent)event;
 
-            if (showInViewEvent.getParent() instanceof IStatisticsModel
-                    && showInViewEvent.getElement() instanceof IStatisticsViewFilterContainer) {
+            if ((showInViewEvent.getParent() instanceof IStatisticsModel)
+                    && (showInViewEvent.getElement() instanceof IStatisticsViewFilterContainer)) {
                 ChartsView view = showStatisticsView();
 
                 if (view != null) {

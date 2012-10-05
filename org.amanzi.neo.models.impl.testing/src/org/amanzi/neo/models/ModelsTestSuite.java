@@ -26,15 +26,12 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-    org.amanzi.neo.models.impl.internal.AbstractDataModelTest.class,
-    org.amanzi.neo.models.impl.internal.AbstractDatasetModelTest.class,
-    org.amanzi.neo.models.impl.internal.AbstractModelTest.class,    
-    org.amanzi.neo.models.impl.internal.AbstractNamedModelTest.class,
-    org.amanzi.neo.models.impl.network.NetworkModelTest.class,
-    org.amanzi.neo.models.impl.project.ProjectModelTest.class,
-    org.amanzi.neo.models.impl.statistics.PropertyStatisticsModelTest.class
-    })
+@SuiteClasses({org.amanzi.neo.models.impl.internal.AbstractDataModelTest.class,
+        org.amanzi.neo.models.impl.internal.AbstractDatasetModelTest.class,
+        org.amanzi.neo.models.impl.internal.AbstractModelTest.class,
+        org.amanzi.neo.models.impl.internal.AbstractNamedModelTest.class,
+        org.amanzi.neo.models.impl.network.NetworkModelTest.class, org.amanzi.neo.models.impl.project.ProjectModelTest.class,
+        org.amanzi.neo.models.impl.statistics.PropertyStatisticsModelTest.class})
 public class ModelsTestSuite {
 
 }

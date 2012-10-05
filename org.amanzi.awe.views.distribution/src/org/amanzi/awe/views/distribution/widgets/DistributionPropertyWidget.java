@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -36,14 +36,15 @@ public class DistributionPropertyWidget extends PropertyComboWidget {
      * @param label
      * @param minimalLabelWidth
      */
-    public DistributionPropertyWidget(final Composite parent, final IPropertySelectionListener listener, final String label, final int minimalLabelWidth) {
+    public DistributionPropertyWidget(final Composite parent, final IPropertySelectionListener listener, final String label,
+            final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
         // TODO Auto-generated constructor stub
     }
 
     @Override
     protected Set<String> getPropertyNames(final INodeType nodeType) {
-        //TODO: LN: 04.10.2012, move this to DistributionManager
+        // TODO: LN: 04.10.2012, move this to DistributionManager
         Set<String> result = new HashSet<String>();
         for (String propertyName : getModel().getPropertyNames(nodeType)) {
             if (!getModel().getValues(nodeType, propertyName).isEmpty()) {
@@ -53,6 +54,5 @@ public class DistributionPropertyWidget extends PropertyComboWidget {
 
         return result;
     }
-
 
 }

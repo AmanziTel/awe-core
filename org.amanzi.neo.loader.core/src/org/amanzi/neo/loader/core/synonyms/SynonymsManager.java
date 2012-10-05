@@ -218,7 +218,8 @@ public class SynonymsManager {
     }
 
     @SuppressWarnings("unchecked")
-    public void updateSynonyms(final String synonymsType, final INodeType nodeType, final String propertyName, final String[] updatedSynonyms) {
+    public void updateSynonyms(final String synonymsType, final INodeType nodeType, final String propertyName,
+            final String[] updatedSynonyms) {
         List<Synonyms> previousList = getSynonyms(synonymsType, nodeType);
 
         for (Synonyms singleSynonym : previousList) {

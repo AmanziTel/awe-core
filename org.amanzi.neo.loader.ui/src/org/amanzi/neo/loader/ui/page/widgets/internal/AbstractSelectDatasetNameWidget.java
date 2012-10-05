@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public abstract class AbstractSelectDatasetNameWidget<E extends IPageEventListener> extends AbstractComboWidget<E>
-implements
-IAWEEventListenter {
+        implements
+            IAWEEventListenter {
 
     /**
      * @param isEditable

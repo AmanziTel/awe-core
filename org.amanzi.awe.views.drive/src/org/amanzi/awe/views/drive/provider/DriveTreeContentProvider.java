@@ -97,8 +97,8 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
             long nextStartTime = PERIOD_MANAGER.getNextStartDate(period, model.getMaxTimestamp(), currentStartTime);
 
             do {
-                DriveTreeViewItem<IDriveModel, Object> checkForExistanceItem = new DriveTreeViewItem<IDriveModel, Object>(
-                        model, currentStartTime, nextStartTime, period);
+                DriveTreeViewItem<IDriveModel, Object> checkForExistanceItem = new DriveTreeViewItem<IDriveModel, Object>(model,
+                        currentStartTime, nextStartTime, period);
                 if (checkNext(checkForExistanceItem)) {
                     items.add(checkForExistanceItem);
                 }
@@ -129,7 +129,6 @@ public class DriveTreeContentProvider extends AbstractContentProvider<IDriveMode
     protected List<IDriveModel> getRootElements() throws ModelException {
         return driveModelProvider.findAll(getActiveProjectModel());
     }
-
 
     @Override
     protected boolean checkNext(ITreeItem<IDriveModel, Object> item) throws ModelException {

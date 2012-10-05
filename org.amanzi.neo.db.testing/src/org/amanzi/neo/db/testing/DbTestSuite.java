@@ -17,16 +17,15 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author gerzog
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.db.manager.impl.Neo4jDatabaseManagerTest.class, 
-    })
+@SuiteClasses({org.amanzi.neo.db.manager.impl.Neo4jDatabaseManagerTest.class,})
 public class DbTestSuite {
 
 }

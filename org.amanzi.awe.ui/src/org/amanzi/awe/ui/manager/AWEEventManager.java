@@ -146,7 +146,7 @@ public final class AWEEventManager {
      * @param inDisplay
      */
     private void run(IEvent event, IAWEEventListenter singleListener, boolean inDisplay) {
-        if (event.getSource() != null && event.getSource().equals(singleListener)) {
+        if ((event.getSource() != null) && event.getSource().equals(singleListener)) {
             return;
         }
 

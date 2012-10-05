@@ -170,7 +170,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public Color getForeground(final Object element, final int columnIndex) {
-        if (element.equals(selectedRow) && (selectedColumn < 2)){
+        if (element.equals(selectedRow) && (selectedColumn < 2)) {
             return Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
         }
 
@@ -179,7 +179,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public Color getBackground(final Object element, final int columnIndex) {
-        if (element.equals(selectedRow) && (selectedColumn < 2)){
+        if (element.equals(selectedRow) && (selectedColumn < 2)) {
             return Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION);
         }
 

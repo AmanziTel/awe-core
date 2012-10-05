@@ -241,8 +241,6 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         return sourceModel.getRenderableElementCount() > 0;
     }
 
-
-
     @Override
     public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
         // TODO Auto-generated method stub

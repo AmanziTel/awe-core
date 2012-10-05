@@ -27,21 +27,21 @@ public interface IRange {
 
     /**
      * Returns name of this Range
-     *
+     * 
      * @return
      */
     public String getName();
 
     /**
      * Returns Filter of this Range
-     *
+     * 
      * @return
      */
     public IFilter getFilter();
 
     /**
      * Returns Color of this Range
-     *
+     * 
      * @return
      */
     public Color getColor();

@@ -37,8 +37,8 @@ public class HashMapPersister extends IPersister<HashMap<Long, Point>> {
     /** String POINT_PARAM field */
     private static final String POINT_PARAM = "point";
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
     public Class getPersistee() {
         return HashMap.class;
     }
@@ -46,22 +46,22 @@ public class HashMapPersister extends IPersister<HashMap<Long, Point>> {
     @Override
     public HashMap<Long, Point> load(IMemento memento) {
         HashMap<Long, Point> result = new HashMap<Long, Point>();
-        
+
         for (IMemento pointMemento : memento.getChildren(POINT_PARAM)) {
             int x = pointMemento.getInteger(X_PARAM);
             int y = pointMemento.getInteger(Y_PARAM);
             long id = new Long(pointMemento.getInteger(ID_PARAM));
-            
+
             Point point = new Point(x, y);
             result.put(id, point);
         }
-        
+
         return result;
     }
 
     @Override
     public void save(HashMap<Long, Point> object, IMemento memento) {
-        if (object == null || memento == null) {
+        if ((object == null) || (memento == null)) {
             return;
         }
         for (Long key : object.keySet()) {
@@ -69,7 +69,7 @@ public class HashMapPersister extends IPersister<HashMap<Long, Point>> {
             IMemento pointChild = memento.createChild(POINT_PARAM);
             pointChild.putInteger(X_PARAM, point.x);
             pointChild.putInteger(Y_PARAM, point.y);
-            pointChild.putInteger(ID_PARAM, key.intValue());            
+            pointChild.putInteger(ID_PARAM, key.intValue());
         }
     }
 

@@ -22,17 +22,19 @@ import org.amanzi.neo.providers.internal.IModelProvider;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public interface IDistributionModelProvider extends IModelProvider<IDistributionModel> {
 
-    IDistributionModel findDistribution(IPropertyStatisticalModel analyzedModel, IDistributionType<?> distributionType) throws ModelException;
+    IDistributionModel findDistribution(IPropertyStatisticalModel analyzedModel, IDistributionType< ? > distributionType)
+            throws ModelException;
 
     IDistributionModel getCurrentDistribution(IPropertyStatisticalModel analyzedModel) throws ModelException;
 
-    IDistributionModel createDistribution(IPropertyStatisticalModel analyzedModel, IDistributionType<?> distributionType) throws ModelException;
+    IDistributionModel createDistribution(IPropertyStatisticalModel analyzedModel, IDistributionType< ? > distributionType)
+            throws ModelException;
 
 }

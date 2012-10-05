@@ -44,6 +44,6 @@ public interface IPropertyStatisticsModel extends IModel {
 
     Set<INodeType> getNodeTypes();
 
-    Class<?> getPropertyClass(INodeType nodeType, String property);
+    Class< ? > getPropertyClass(INodeType nodeType, String property);
 
 }

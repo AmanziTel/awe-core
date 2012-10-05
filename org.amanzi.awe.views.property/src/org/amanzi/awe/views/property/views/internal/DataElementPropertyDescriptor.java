@@ -18,8 +18,8 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -33,6 +33,5 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
         super(id, displayName);
         setCategory(category);
     }
-
 
 }

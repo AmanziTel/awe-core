@@ -29,8 +29,8 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -51,7 +51,9 @@ public class DriveComboWidget extends AbstractDatasetComboWidget<IDriveModel, ID
      * @param label
      * @param projectModelProvider
      */
-    protected DriveComboWidget(final Composite parent, final IDriveSelectionListener listener, final String label, final IProjectModelProvider projectModelProvider, final IDriveModelProvider driveModelProvider, final int minimalLabelWidth) {
+    protected DriveComboWidget(final Composite parent, final IDriveSelectionListener listener, final String label,
+            final IProjectModelProvider projectModelProvider, final IDriveModelProvider driveModelProvider,
+            final int minimalLabelWidth) {
         super(parent, listener, label, projectModelProvider, minimalLabelWidth);
         this.driveModelProvider = driveModelProvider;
     }

@@ -57,6 +57,7 @@ public class DriveTreeLabelProvider extends CommonTreeViewLabelProvider {
         return super.getText(element);
     }
 
+    @Override
     protected String getStringFromDataElement(IDataElement element) {
         for (String name : manager.getGeneralNames()) {
             if (element.contains(name)) {

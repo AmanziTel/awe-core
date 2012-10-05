@@ -40,8 +40,8 @@ import org.neo4j.graphdb.RelationshipType;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -68,7 +68,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
      * @param nodeService
      * @param generalNodeProperties
      */
-    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties, final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
+    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.distributionService = distributionService;
@@ -119,7 +120,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
         try {
             if (bar.getColor() != null) {
-                getNodeService().updateProperty(barNode, distributionNodeProperties.getBarColor(), convertColorToArray(bar.getColor()));
+                getNodeService().updateProperty(barNode, distributionNodeProperties.getBarColor(),
+                        convertColorToArray(bar.getColor()));
             }
 
             getNodeService().updateProperty(barNode, getGeneralNodeProperties().getSizeProperty(), bar.getCount());
@@ -133,7 +135,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     public IDistributionBar createDistributionBar(final IRange range) throws ModelException {
         DistributionBar result = null;
         try {
-            Node barNode = distributionService.createDistributionBarNode(getRootNode(), range.getName(), range.getColor() == null ? null : convertColorToArray(range.getColor()));
+            Node barNode = distributionService.createDistributionBarNode(getRootNode(), range.getName(), range.getColor() == null
+                    ? null : convertColorToArray(range.getColor()));
 
             result = new DistributionBar(barNode, collectBarSources);
 

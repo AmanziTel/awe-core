@@ -28,8 +28,8 @@ import org.apache.commons.math3.util.Precision;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -83,14 +83,15 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
                 boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
 
                 double curMax = includeMax ? min + step : max;
-                RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END : RangeFilterType.INCLUDE_START_EXCLUDE_END;
+                RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END
+                        : RangeFilterType.INCLUDE_START_EXCLUDE_END;
 
                 Range range = Range.between(min, curMax);
 
                 RangeFilter filter = new RangeFilter(getPropertyName(), range, filterType);
                 ranges.add(new SimpleRange(getNumberDistributionRangeName(min, curMax), filter));
 
-                min+= step;
+                min += step;
             }
         }
 

@@ -24,8 +24,8 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -74,12 +74,13 @@ public class ChartTypeWidget extends AbstractComboWidget<ChartType, IChartTypeLi
     @Override
     public void setVisible(boolean isVisible) {
         super.setVisible(isVisible);
-        
+
         if (isVisible) {
             fillCombo();
         }
     }
-    
+
+    @Override
     protected ChartType getDefaultSelectedItem() {
         return ChartType.COUNTS;
     }

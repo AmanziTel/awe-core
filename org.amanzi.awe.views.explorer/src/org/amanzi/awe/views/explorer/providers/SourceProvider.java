@@ -51,7 +51,7 @@ public class SourceProvider extends AbstractSourceProvider {
     }
 
     public void setShowInTreeMenuState(ITreeItem< ? extends IModel, Object> item) {
-        curState = item != null && !item.getParent().asDataElement().equals(item.getChild());
+        curState = (item != null) && !item.getParent().asDataElement().equals(item.getChild());
         fireSourceChanged(ISources.WORKBENCH, STATE, curState);
     }
 }

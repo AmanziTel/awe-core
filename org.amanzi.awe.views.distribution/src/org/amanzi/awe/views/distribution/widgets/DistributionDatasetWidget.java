@@ -35,8 +35,8 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -51,7 +51,7 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
         void onDistributionDatasetSelected(DistributionDataset distributionDataset);
 
     }
-    
+
     public class DistributionDataset {
 
         private final IPropertyStatisticalModel model;
@@ -85,8 +85,9 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
      * @param label
      * @param minimalLabelWidth
      */
-    public DistributionDatasetWidget(final Composite parent, final IDistributionDatasetSelectionListener listener, final String label,
-            final int minimalLabelWidth, final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider, final IDriveModelProvider driveModelProvider) {
+    public DistributionDatasetWidget(final Composite parent, final IDistributionDatasetSelectionListener listener,
+            final String label, final int minimalLabelWidth, final IProjectModelProvider projectModelProvider,
+            final INetworkModelProvider networkModelProvider, final IDriveModelProvider driveModelProvider) {
         super(parent, listener, label, minimalLabelWidth);
 
         this.driveModelProvider = driveModelProvider;
@@ -119,7 +120,8 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
         return result == null ? null : result.isEmpty() ? null : result;
     }
 
-    private void addDistributionDatasetsForModel(final IPropertyStatisticalModel propertyStatisticalModel, final Collection<DistributionDataset> distributionDatasets) {
+    private void addDistributionDatasetsForModel(final IPropertyStatisticalModel propertyStatisticalModel,
+            final Collection<DistributionDataset> distributionDatasets) {
         for (INodeType nodeType : propertyStatisticalModel.getPropertyStatistics().getNodeTypes()) {
             distributionDatasets.add(new DistributionDataset(propertyStatisticalModel, nodeType));
         }
