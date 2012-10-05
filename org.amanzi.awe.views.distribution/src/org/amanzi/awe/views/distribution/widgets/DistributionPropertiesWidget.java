@@ -28,7 +28,7 @@ import org.amanzi.awe.ui.view.widgets.TextWidget;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.distribution.widgets.ChartTypeWidget.IChartTypeListener;
-import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget.IColoringPropertiesListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -41,13 +41,11 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColoringPropertiesListener> implements IChartTypeListener, ICheckBoxSelected, ITextChandedListener, ISpinnerListener, IColorChangedListener, IPaletteChanged {
+public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, IDistributionPropertiesListener> implements IChartTypeListener, ICheckBoxSelected, ITextChandedListener, ISpinnerListener, IColorChangedListener, IPaletteChanged {
 
-    public interface IColoringPropertiesListener extends AbstractAWEWidget.IAWEWidgetListener {
+    public interface IDistributionPropertiesListener extends AbstractAWEWidget.IAWEWidgetListener {
 
         public void onChartTypeChanged(ChartType chartType);
-
-        public void update();
 
     }
 
@@ -82,7 +80,7 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
      * @param style
      * @param listener
      */
-    public ColoringPropertiesWidget(final Composite parent, final IColoringPropertiesListener listener) {
+    public DistributionPropertiesWidget(final Composite parent, final IDistributionPropertiesListener listener) {
         super(parent, SWT.NONE, listener);
     }
 
@@ -118,7 +116,7 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
 
     @Override
     public void onChartTypeSelected(final ChartType chartType) {
-        for (IColoringPropertiesListener listener : getListeners()) {
+        for (IDistributionPropertiesListener listener : getListeners()) {
             listener.onChartTypeChanged(chartType);
         }
     }
@@ -173,6 +171,12 @@ public class ColoringPropertiesWidget extends AbstractAWEWidget<Composite, IColo
 
         setColorsPanelHidden(isHidden || isBlendPanelHidden);
         setPalettePanelHidden(isHidden || !isBlendPanelHidden);
+    }
+    
+    public void setVisible(boolean isVisible) {
+        chartTypeCombo.setVisible(isVisible);
+        
+        super.setVisible(isVisible);
     }
 
 }

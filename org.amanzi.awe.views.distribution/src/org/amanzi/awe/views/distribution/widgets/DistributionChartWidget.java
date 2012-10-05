@@ -16,6 +16,7 @@ package org.amanzi.awe.views.distribution.widgets;
 import java.awt.Color;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.distribution.charts.DistributionBarRenderer;
 import org.amanzi.awe.views.distribution.charts.DistributionChartDataset;
@@ -25,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -35,20 +37,20 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, IDistributionChartListener> {
 
-    private static final Color PLOT_BACKGROUND = new Color(230, 230, 230);
-
-    private static final Color CHART_BACKGROUND = Color.WHITE;
-
     public interface IDistributionChartListener extends AbstractAWEWidget.IAWEWidgetListener {
 
     }
+
+    private static final Color PLOT_BACKGROUND = new Color(230, 230, 230);
+
+    private static final Color CHART_BACKGROUND = Color.WHITE;
 
     private JFreeChart distributionChart;
 
@@ -63,40 +65,11 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
         super(parent, SWT.NONE, listener);
     }
 
-    @Override
-    protected ChartComposite createWidget(final Composite parent, final int style) {
-        dataset = getDataset();
-        CategoryItemRenderer renderer = getRenderer(dataset);
-
-        distributionChart = createChart(dataset, renderer);
-
-        ChartComposite frame = new ChartComposite(parent, style, distributionChart, true);
-        frame.pack();
-
-        frame.setEnabled(false);
-
-        return frame;
-    }
-
-    private CategoryItemRenderer getRenderer(final DistributionChartDataset dataset) {
-        CategoryItemRenderer renderer = new DistributionBarRenderer(dataset);
-
-        renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
-
-        return renderer;
-    }
-
-    private DistributionChartDataset getDataset() {
-        return new DistributionChartDataset();
-    }
-
     private JFreeChart createChart(final DistributionChartDataset distributionDataset, final CategoryItemRenderer renderer) {
-        JFreeChart chart = ChartFactory.createBarChart("Distribution Chart", "Values", "Numbers", distributionDataset, PlotOrientation.VERTICAL, false, false, false);
+        final JFreeChart chart = ChartFactory.createBarChart("Distribution Chart", "Values", "Numbers", distributionDataset,
+                PlotOrientation.VERTICAL, false, false, false);
 
-        CategoryPlot plot = (CategoryPlot)chart.getPlot();
-        NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        rangeAxis.setAutoRange(true);
+        final CategoryPlot plot = (CategoryPlot)chart.getPlot();
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(PLOT_BACKGROUND);
@@ -106,14 +79,76 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
         return chart;
     }
 
+    @Override
+    protected ChartComposite createWidget(final Composite parent, final int style) {
+        dataset = getDataset();
+        final CategoryItemRenderer renderer = getRenderer(dataset);
+
+        distributionChart = createChart(dataset, renderer);
+        updateChartType(ChartType.COUNTS);
+
+        final ChartComposite frame = new ChartComposite(parent, style, distributionChart, true);
+        frame.pack();
+
+        frame.setEnabled(false);
+
+        return frame;
+    }
+
+    private DistributionChartDataset getDataset() {
+        return new DistributionChartDataset();
+    }
+
+    private CategoryItemRenderer getRenderer(final DistributionChartDataset dataset) {
+        final CategoryItemRenderer renderer = new DistributionBarRenderer(dataset);
+
+        renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+
+        return renderer;
+    }
+
+    public void updateChartType(final ChartType chartType) {
+        final CategoryPlot plot = (CategoryPlot)distributionChart.getPlot();
+
+        switch (chartType) {
+        case LOGARITHMIC:
+            final LogarithmicAxis logAxis = new LogarithmicAxis("Logarithmic");
+            logAxis.setAllowNegativesFlag(true);
+            plot.setRangeAxis(logAxis);
+
+            logAxis.setAutoRange(true);
+            break;
+        case COUNTS:
+            final NumberAxis countAxis = new NumberAxis("Counts");
+            countAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+
+            plot.setRangeAxis(countAxis);
+            countAxis.setAutoRange(true);
+            break;
+        case PERCENTS:
+            final NumberAxis percentageAxis = new NumberAxis("Percentage");
+            percentageAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+            percentageAxis.setRange(0, 100);
+
+            plot.setRangeAxis(percentageAxis);
+            break;
+        case CDF:
+            break;
+        }
+
+        dataset.updateDelegate(chartType);
+
+        distributionChart.fireChartChanged();
+    }
+
     public void updateDistribution(final IDistributionModel distributionModel) {
         try {
             distributionChart.setTitle(distributionModel.getName());
             dataset.setDistributionBars(distributionModel.getDistributionBars());
 
             distributionChart.fireChartChanged();
-        } catch (ModelException e) {
-            //TODO: handle error
+        } catch (final ModelException e) {
+            // TODO: handle error
         } finally {
             setVisible(true);
             setEnabled(true);

@@ -22,8 +22,8 @@ import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
-import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget;
-import org.amanzi.awe.views.distribution.widgets.ColoringPropertiesWidget.IColoringPropertiesListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistributionChartListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
@@ -51,7 +51,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener, IDistributionChartListener, IColoringPropertiesListener {
+public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener, IDistributionChartListener, IDistributionPropertiesListener {
 
     private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
@@ -105,7 +105,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private Composite parentComposite;
 
-    private ColoringPropertiesWidget coloringPropertiesWidget;
+    private DistributionPropertiesWidget distributionPropertiesWidget;
 
     /**
      * 
@@ -125,8 +125,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         addDistributionTypeComposite(mainComposite);
         addDistributionChartComposite(mainComposite);
 
-        coloringPropertiesWidget = addColoringPropertiesWidget(mainComposite, this);
-        coloringPropertiesWidget.setVisible(false);
+        distributionPropertiesWidget = addDistributionPropertiesWidget(mainComposite, this);
+        distributionPropertiesWidget.setVisible(false);
 
         isInitialized = true;
     }
@@ -178,8 +178,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         return result;
     }
 
-    private ColoringPropertiesWidget addColoringPropertiesWidget(final Composite parent, final IColoringPropertiesListener listener) {
-        ColoringPropertiesWidget result = new ColoringPropertiesWidget(parent, listener);
+    private DistributionPropertiesWidget addDistributionPropertiesWidget(final Composite parent, final IDistributionPropertiesListener listener) {
+        DistributionPropertiesWidget result = new DistributionPropertiesWidget(parent, listener);
         result.initializeWidget();
 
         return result;
@@ -199,7 +199,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
             currentManager.setNodeType(distributionDataset.getNodeType());
 
             propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
-            coloringPropertiesWidget.setDistributionManager(currentManager);
+            distributionPropertiesWidget.setDistributionManager(currentManager);
 
             propertyCombo.skipSelection();
             distributionTypeCombo.skipSelection();
@@ -236,19 +236,14 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
     private void updateCharts(final IDistributionModel model) {
         distributionChart.updateDistribution(model);
 
-        coloringPropertiesWidget.setVisible(true);
+        distributionPropertiesWidget.setVisible(true);
 
         updateChartColors();
     }
 
     @Override
     public void onChartTypeChanged(final ChartType chartType) {
-        //TODO: 3.10.2012, not implemented yet
-    }
-
-    @Override
-    public void update() {
-        updateChartColors();
+        distributionChart.updateChartType(chartType);
     }
 
     private void updateChartColors() {

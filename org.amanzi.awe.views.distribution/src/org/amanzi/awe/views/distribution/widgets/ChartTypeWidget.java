@@ -71,4 +71,16 @@ public class ChartTypeWidget extends AbstractComboWidget<ChartType, IChartTypeLi
         this.distributionManager = distributionManager;
     }
 
+    @Override
+    public void setVisible(boolean isVisible) {
+        super.setVisible(isVisible);
+        
+        if (isVisible) {
+            fillCombo();
+        }
+    }
+    
+    protected ChartType getDefaultSelectedItem() {
+        return ChartType.COUNTS;
+    }
 }

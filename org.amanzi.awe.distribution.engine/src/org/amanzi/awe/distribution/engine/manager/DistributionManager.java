@@ -36,8 +36,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -59,7 +59,8 @@ public class DistributionManager {
          * @param nodeType
          * @param propertyName
          */
-        public NumberDistributionCacheKey(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName, final NumberDistributionRange numberDistributionType) {
+        public NumberDistributionCacheKey(final IPropertyStatisticalModel model, final INodeType nodeType,
+                final String propertyName, final NumberDistributionRange numberDistributionType) {
             super(model, nodeType, propertyName);
             this.numberDistributionType = numberDistributionType;
         }
@@ -80,7 +81,8 @@ public class DistributionManager {
          * @param nodeType
          * @param propertyName
          */
-        public EnumeratedDistributionCacheKey(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName) {
+        public EnumeratedDistributionCacheKey(final IPropertyStatisticalModel model, final INodeType nodeType,
+                final String propertyName) {
             super();
             this.model = model;
             this.nodeType = nodeType;
@@ -97,12 +99,11 @@ public class DistributionManager {
             return EqualsBuilder.reflectionEquals(this, o, true);
         }
 
-
     }
 
     private static Map<IPropertyStatisticalModel, DistributionManager> managerCache = new HashMap<IPropertyStatisticalModel, DistributionManager>();
 
-    private static final Map<IDistributionCacheKey, IDistributionType<?>> distributionTypeCache = new HashMap<DistributionManager.IDistributionCacheKey, IDistributionType<?>>();
+    private static final Map<IDistributionCacheKey, IDistributionType< ? >> distributionTypeCache = new HashMap<DistributionManager.IDistributionCacheKey, IDistributionType< ? >>();
 
     private final IPropertyStatisticalModel model;
 
@@ -112,7 +113,7 @@ public class DistributionManager {
 
     private ChartType chartType = ChartType.getDefault();
 
-    private IDistributionType<?> distributionType;
+    private IDistributionType< ? > distributionType;
 
     private DistributionManager(final IPropertyStatisticalModel model) {
         this.model = model;
@@ -145,11 +146,11 @@ public class DistributionManager {
         this.chartType = chartType;
     }
 
-    public Set<IDistributionType<?>> getAvailableDistirbutions() {
+    public Set<IDistributionType< ? >> getAvailableDistirbutions() {
         if ((nodeType != null) && (propertyName != null)) {
-            Class<?> clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
+            final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
 
-            Set<IDistributionType<?>> result = new HashSet<IDistributionType<?>>();
+            final Set<IDistributionType< ? >> result = new HashSet<IDistributionType< ? >>();
 
             if (clazz.equals(String.class) || clazz.equals(Boolean.class)) {
                 switch (chartType) {
@@ -159,10 +160,10 @@ public class DistributionManager {
                     result.add(getEnumeratedDistributionType());
                     break;
                 default:
-                    //TODO: LN: 26.09.2012, throw exception
+                    // TODO: LN: 26.09.2012, throw exception
                 }
             } else if (Number.class.isAssignableFrom(clazz)) {
-                for (NumberDistributionRange numberDistributionType : NumberDistributionRange.values()) {
+                for (final NumberDistributionRange numberDistributionType : NumberDistributionRange.values()) {
                     result.add(getNumberDistributionType(numberDistributionType));
                 }
             }
@@ -172,7 +173,7 @@ public class DistributionManager {
         return null;
     }
 
-    public IDistributionModel build(final IProgressMonitor progressMonitor) throws ModelException{
+    public IDistributionModel build(final IProgressMonitor progressMonitor) throws ModelException {
         if (canBuild()) {
             return DistributionEngine.getEngine().build(model, distributionType, progressMonitor);
         }
@@ -180,10 +181,10 @@ public class DistributionManager {
         return null;
     }
 
-    private IDistributionType<?> getEnumeratedDistributionType() {
-        IDistributionCacheKey key = new EnumeratedDistributionCacheKey(model, nodeType, propertyName);
+    private IDistributionType< ? > getEnumeratedDistributionType() {
+        final IDistributionCacheKey key = new EnumeratedDistributionCacheKey(model, nodeType, propertyName);
 
-        IDistributionType<?> result = distributionTypeCache.get(key);
+        IDistributionType< ? > result = distributionTypeCache.get(key);
 
         if (result == null) {
             LOGGER.info("Creating DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ">.");
@@ -195,10 +196,10 @@ public class DistributionManager {
         return result;
     }
 
-    private IDistributionType<?> getNumberDistributionType(final NumberDistributionRange numberDistributionType) {
-        IDistributionCacheKey key = new NumberDistributionCacheKey(model, nodeType, propertyName, numberDistributionType);
+    private IDistributionType< ? > getNumberDistributionType(final NumberDistributionRange numberDistributionType) {
+        final IDistributionCacheKey key = new NumberDistributionCacheKey(model, nodeType, propertyName, numberDistributionType);
 
-        IDistributionType<?> result = distributionTypeCache.get(key);
+        IDistributionType< ? > result = distributionTypeCache.get(key);
 
         if (result == null) {
             LOGGER.info("Creating DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ">.");
@@ -210,11 +211,11 @@ public class DistributionManager {
         return result;
     }
 
-    public void setDistributionType(final IDistributionType<?> distributionType) {
+    public void setDistributionType(final IDistributionType< ? > distributionType) {
         this.distributionType = distributionType;
     }
 
-    public IDistributionType<?> getCurrentDistributionType() {
+    public IDistributionType< ? > getCurrentDistributionType() {
         return distributionType;
     }
 
@@ -223,13 +224,13 @@ public class DistributionManager {
             return null;
         }
 
-        Set<ChartType> chartTypes = new HashSet<IDistributionType.ChartType>();
+        final Set<ChartType> chartTypes = new HashSet<IDistributionType.ChartType>();
 
         chartTypes.add(ChartType.COUNTS);
         chartTypes.add(ChartType.LOGARITHMIC);
         chartTypes.add(ChartType.PERCENTS);
 
-        Class<?> clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
+        final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
         if (!clazz.equals(String.class) && !clazz.equals(Boolean.class)) {
             chartTypes.add(ChartType.CDF);
         }

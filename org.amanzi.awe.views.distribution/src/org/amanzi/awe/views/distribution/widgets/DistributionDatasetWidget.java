@@ -51,7 +51,7 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
         void onDistributionDatasetSelected(DistributionDataset distributionDataset);
 
     }
-
+    
     public class DistributionDataset {
 
         private final IPropertyStatisticalModel model;
@@ -137,7 +137,7 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
     }
 
     @Override
-    protected int getDefaultSelectedItem() {
+    protected int getDefaultSelectedItemIndex() {
         return -1;
     }
 

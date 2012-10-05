@@ -13,8 +13,12 @@
 
 package org.amanzi.awe.ui.view.widgets.internal;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.ui.events.EventStatus;
@@ -39,14 +43,23 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public abstract class AbstractComboWidget<D extends Object, L extends IComboSelectionListener>
-extends
-AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
+        extends
+            AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener {
 
     public interface IComboSelectionListener extends AbstractAWEWidget.IAWEWidgetListener {
 
     }
 
     private static final EventStatus[] SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
+
+    private final Comparator<D> itemComparator = new Comparator<D>() {
+
+        @Override
+        public int compare(final D o1, final D o2) {
+            return getItemName(o1).compareTo(getItemName(o2));
+        }
+
+    };
 
     private final Map<String, D> itemsMap = new HashMap<String, D>();
 
@@ -101,7 +114,7 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
 
     @Override
     protected Combo createControl(final Composite parent) {
-        Combo combo = new Combo(parent, SWT.NONE);
+        final Combo combo = new Combo(parent, SWT.NONE);
 
         combo.addSelectionListener(this);
 
@@ -109,7 +122,7 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
     }
 
     protected D getSelectedItem() {
-        String itemText = getControl().getText();
+        final String itemText = getControl().getText();
 
         if (!StringUtils.isEmpty(itemText)) {
             selectedItem = itemsMap.get(itemText);
@@ -122,10 +135,12 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
         getControl().removeAll();
         itemsMap.clear();
 
-        Collection<D> items = getItems();
+        final Collection<D> items = getItems();
         if (items != null) {
-            for (D item : items) {
-                String name = getItemName(item);
+            final List<D> itemList = new ArrayList<D>(items);
+            Collections.sort(itemList, itemComparator);
+            for (final D item : itemList) {
+                final String name = getItemName(item);
 
                 itemsMap.put(name, item);
                 getControl().add(name);
@@ -148,18 +163,23 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
         String text = null;
 
         if (selectedItem != null) {
-            String selectedItemName = getItemName(selectedItem);
+            final String selectedItemName = getItemName(selectedItem);
 
             if (ArrayUtils.contains(getControl().getItems(), selectedItemName)) {
                 text = selectedItemName;
+            }
+        } else {
+            if (getDefaultSelectedItem() != null) {
+                text = getItemName(getDefaultSelectedItem());
             }
         }
 
         boolean fireEvent = false;
         if (text == null) {
             text = StringUtils.EMPTY;
-            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItem() > 0) && (getDefaultSelectedItem() < getControl().getItemCount())) {
-                text = getControl().getItem(getDefaultSelectedItem());
+            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItemIndex() > 0)
+                    && (getDefaultSelectedItemIndex() < getControl().getItemCount())) {
+                text = getControl().getItem(getDefaultSelectedItemIndex());
                 fireEvent = true;
             }
         }
@@ -170,7 +190,11 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
         }
     }
 
-    protected int getDefaultSelectedItem() {
+    protected D getDefaultSelectedItem() {
+        return null;
+    }
+
+    protected int getDefaultSelectedItemIndex() {
         return 0;
     }
 
@@ -194,7 +218,7 @@ AbstractLabeledWidget<Combo, L> implements IAWEEventListenter, SelectionListener
     }
 
     private void fireEvent() {
-        for (L listener : getListeners()) {
+        for (final L listener : getListeners()) {
             fireListener(listener, getSelectedItem());
         }
     }
