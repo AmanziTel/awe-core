@@ -19,6 +19,7 @@ import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
@@ -85,7 +86,7 @@ public class DistributionView extends ViewPart
             } catch (final ModelException e) {
                 return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on updating Distribution", e);
             } finally {
-                // TODO: LN: 05.10.2012, run refresh action on a map
+                AWEEventManager.getManager().fireRefreshMapEvent();
             }
 
             return Status.OK_STATUS;

@@ -91,6 +91,8 @@
                   </enumeration>
                   <enumeration value="SHOW_ELEMENTS">
                   </enumeration>
+                  <enumeration value="REFRESH_MAP">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>

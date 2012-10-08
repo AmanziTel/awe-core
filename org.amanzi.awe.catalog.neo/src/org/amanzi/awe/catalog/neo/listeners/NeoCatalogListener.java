@@ -67,12 +67,15 @@ public class NeoCatalogListener implements IAWEEventListenter {
             updateCatalog();
             break;
         case SHOW_GIS:
-            ShowGISOnMap showEvent = (ShowGISOnMap)event;
+            final ShowGISOnMap showEvent = (ShowGISOnMap)event;
             showOnMap(showEvent.getModel());
             break;
         case SHOW_ELEMENTS:
-            ShowElementsOnMap showElementsEvent = (ShowElementsOnMap)event;
+            final ShowElementsOnMap showElementsEvent = (ShowElementsOnMap)event;
             showOnMap(showElementsEvent.getModel(), showElementsEvent.getElements(), showElementsEvent.getBounds());
+            break;
+        case REFRESH_MAP:
+            refreshMap();
             break;
         default:
             break;
@@ -84,10 +87,10 @@ public class NeoCatalogListener implements IAWEEventListenter {
     }
 
     protected void showOnMap(final IRenderableModel model, final Set<IDataElement> elements, ReferencedEnvelope bounds) {
-        boolean computeBounds = bounds == null;
+        final boolean computeBounds = bounds == null;
 
-        Iterable<ILocationElement> selectedElements = model.getElementsLocations(elements);
-        Set<ILocationElement> selectedLocations = new HashSet<ILocationElement>();
+        final Iterable<ILocationElement> selectedElements = model.getElementsLocations(elements);
+        final Set<ILocationElement> selectedLocations = new HashSet<ILocationElement>();
 
         if (computeBounds) {
             double minLat = Double.MAX_VALUE;
@@ -95,7 +98,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
             double maxLat = -Double.MAX_VALUE;
             double maxLon = -Double.MAX_VALUE;
 
-            for (ILocationElement element : selectedElements) {
+            for (final ILocationElement element : selectedElements) {
                 minLat = Math.min(minLat, element.getLatitude());
                 maxLat = Math.max(maxLat, element.getLatitude());
 
@@ -109,14 +112,14 @@ public class NeoCatalogListener implements IAWEEventListenter {
         }
 
         try {
-            IMap map = ApplicationGIS.getActiveMap();
+            final IMap map = ApplicationGIS.getActiveMap();
 
-            List<ILayer> layerList = new ArrayList<ILayer>();
+            final List<ILayer> layerList = new ArrayList<ILayer>();
 
-            for (IGISModel gis : model.getAllGIS()) {
-                Pair<IGISModel, ILayer> pair = getLayerModelPair(map, gis);
+            for (final IGISModel gis : model.getAllGIS()) {
+                final Pair<IGISModel, ILayer> pair = getLayerModelPair(map, gis);
 
-                ILayer layer = pair.getRight();
+                final ILayer layer = pair.getRight();
 
                 if (layer != null) {
                     layer.refresh(null);
@@ -124,13 +127,13 @@ public class NeoCatalogListener implements IAWEEventListenter {
                 }
             }
 
-            Selection selection = new Selection(model, elements, selectedLocations);
+            final Selection selection = new Selection(model, elements, selectedLocations);
             map.getBlackboard().put(ISelection.SELECTION_BLACKBOARD_PROPERTY, selection);
 
             if (!selectedLocations.isEmpty()) {
                 executeCommands(layerList, bounds);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on putting model <" + model + "> on a Map", e);
         }
 
@@ -138,22 +141,22 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
     protected void showOnMap(final IGISModel model) {
         try {
-            IService curService = NeoCatalogPlugin.getDefault().getMapService();
-            IMap map = ApplicationGIS.getActiveMap();
-            List<ILayer> layerList = new ArrayList<ILayer>();
-            List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+            final IService curService = NeoCatalogPlugin.getDefault().getMapService();
+            final IMap map = ApplicationGIS.getActiveMap();
+            final List<ILayer> layerList = new ArrayList<ILayer>();
+            final List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
 
             if (!model.canRender()) {
                 LOGGER.info("Can't add layer to map because model: " + model.getName() + " doesn't contain locations");
                 return;
             }
 
-            IGeoResource iGeoResource = getResourceForGis(curService, map, model);
+            final IGeoResource iGeoResource = getResourceForGis(curService, map, model);
             if (iGeoResource != null) {
                 listGeoRes.add(iGeoResource);
             } else {
-                Pair<IGISModel, ILayer> pair = getLayerModelPair(map, model);
-                ILayer layer = pair.getRight();
+                final Pair<IGISModel, ILayer> pair = getLayerModelPair(map, model);
+                final ILayer layer = pair.getRight();
 
                 if (layer != null) {
                     layer.refresh(null);
@@ -164,7 +167,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
             layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
 
             executeCommands(layerList, model);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on putting model <" + model + "> on a Map", e);
         }
     }
@@ -180,10 +183,10 @@ public class NeoCatalogListener implements IAWEEventListenter {
      */
     private IGeoResource getResourceForGis(final IService service, final IMap map, final IGISModel gis) throws IOException {
         if ((service != null) && (getLayerModelPair(map, gis).getRight() == null)) {
-            for (IGeoResource iGeoResource : service.resources(new NullProgressMonitor())) {
+            for (final IGeoResource iGeoResource : service.resources(new NullProgressMonitor())) {
                 if (iGeoResource.canResolve(IGISModel.class)) {
 
-                    IGISModel resolvedElement = iGeoResource.resolve(IGISModel.class, null);
+                    final IGISModel resolvedElement = iGeoResource.resolve(IGISModel.class, null);
 
                     if (resolvedElement.getName().equals(gis.getName())) {
                         return iGeoResource;
@@ -202,14 +205,14 @@ public class NeoCatalogListener implements IAWEEventListenter {
      * @return layer or null
      */
     private Pair<IGISModel, ILayer> getLayerModelPair(final IMap map, final IGISModel gis) {
-        Pair<IGISModel, ILayer> resultPair = new MutablePair<IGISModel, ILayer>(gis, null);
+        final Pair<IGISModel, ILayer> resultPair = new MutablePair<IGISModel, ILayer>(gis, null);
         try {
-            for (ILayer layer : map.getMapLayers()) {
-                IGeoResource resource = layer.findGeoResource(IGISModel.class);
+            for (final ILayer layer : map.getMapLayers()) {
+                final IGeoResource resource = layer.findGeoResource(IGISModel.class);
                 if (resource == null) {
                     continue;
                 }
-                IGISModel resolvedElement = resource.resolve(IGISModel.class, null);
+                final IGISModel resolvedElement = resource.resolve(IGISModel.class, null);
                 if (resolvedElement.getName().equals(gis.getName())) {
                     // clear previous selected elements
                     resultPair.setValue(layer);
@@ -217,7 +220,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
                 }
             }
             return resultPair;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Error on computing Model->Layer pair", e);
             return resultPair;
         }
@@ -231,7 +234,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
      * @param data showOnMapEvent
      */
     private void executeCommands(final List<ILayer> layerList, final IGISModel selectedModel) {
-        List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
+        final List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 
         commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
         commands.add(new ZoomCommand(selectedModel.getBounds()));
@@ -240,7 +243,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
     }
 
     private void executeCommands(final List<ILayer> layerList, final ReferencedEnvelope bounds) {
-        List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
+        final List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 
         commands.add(new SetViewportBBoxCommand(bounds));
         commands.add(new ZoomCommand(bounds));
@@ -259,11 +262,15 @@ public class NeoCatalogListener implements IAWEEventListenter {
         if (layers.isEmpty()) {
             return;
         }
-        CompositeCommand compositeCommand = new CompositeCommand(commands);
-        for (ILayer layer : layers) {
+        final CompositeCommand compositeCommand = new CompositeCommand(commands);
+        for (final ILayer layer : layers) {
             layer.getMap().executeSyncWithoutUndo(compositeCommand);
         }
 
+    }
+
+    private void refreshMap() {
+        ApplicationGIS.getActiveMap().getRenderManager().refresh(null);
     }
 
     @Override

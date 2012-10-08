@@ -30,6 +30,9 @@
          <eventStatus
                status="SHOW_ELEMENTS">
          </eventStatus>
+         <eventStatus
+               status="REFRESH_MAP">
+         </eventStatus>
       </listener>
    </extension>
 </plugin>

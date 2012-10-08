@@ -26,6 +26,7 @@ import org.amanzi.awe.ui.events.impl.AWEStoppedEvent;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.InitialiseEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
+import org.amanzi.awe.ui.events.impl.RefreshMapEvent;
 import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
@@ -102,7 +103,7 @@ public final class AWEEventManager {
             listeners.put(listener.getPriority(), prioritizedListeners);
         }
 
-        for (EventStatus eventStatus : statuses) {
+        for (final EventStatus eventStatus : statuses) {
             Set<IAWEEventListenter> eventListeners = prioritizedListeners.get(eventStatus);
 
             if (eventListeners == null) {
@@ -115,24 +116,24 @@ public final class AWEEventManager {
     }
 
     public synchronized void removeListener(final IAWEEventListenter listener) {
-        Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(listener.getPriority());
+        final Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(listener.getPriority());
 
         if (prioritizedListeners != null) {
-            for (Entry<EventStatus, Set<IAWEEventListenter>> listenerEntry : prioritizedListeners.entrySet()) {
+            for (final Entry<EventStatus, Set<IAWEEventListenter>> listenerEntry : prioritizedListeners.entrySet()) {
                 listenerEntry.getValue().remove(listener);
             }
         }
     }
 
     private void fireEvent(final IEvent event, final boolean inDisplay) {
-        for (Priority priority : Priority.getSortedPriorities()) {
-            Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(priority);
+        for (final Priority priority : Priority.getSortedPriorities()) {
+            final Map<EventStatus, Set<IAWEEventListenter>> prioritizedListeners = listeners.get(priority);
 
             if (prioritizedListeners != null) {
-                Set<IAWEEventListenter> eventListeners = prioritizedListeners.get(event.getStatus());
+                final Set<IAWEEventListenter> eventListeners = prioritizedListeners.get(event.getStatus());
 
                 if (eventListeners != null) {
-                    for (IAWEEventListenter singleListener : eventListeners) {
+                    for (final IAWEEventListenter singleListener : eventListeners) {
                         run(event, singleListener, inDisplay);
                     }
                 }
@@ -145,7 +146,7 @@ public final class AWEEventManager {
      * @param singleListener
      * @param inDisplay
      */
-    private void run(IEvent event, IAWEEventListenter singleListener, boolean inDisplay) {
+    private void run(final IEvent event, final IAWEEventListenter singleListener, final boolean inDisplay) {
         if ((event.getSource() != null) && event.getSource().equals(singleListener)) {
             return;
         }
@@ -175,29 +176,33 @@ public final class AWEEventManager {
         fireEvent(AWE_STOPPED_EVENT, true);
     }
 
-    public synchronized void fireProjectNameChangedEvent(final String newProjectName, Object source) {
+    public synchronized void fireProjectNameChangedEvent(final String newProjectName, final Object source) {
         fireEvent(new ProjectNameChangedEvent(newProjectName, source), true);
     }
 
-    public synchronized void fireDataUpdatedEvent(Object source) {
+    public synchronized void fireDataUpdatedEvent(final Object source) {
         fireEvent(new DataUpdatedEvent(source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IGISModel model, Object source) {
+    public synchronized void fireShowOnMapEvent(final IGISModel model, final Object source) {
         fireEvent(new ShowGISOnMap(model, source), true);
     }
 
-    public synchronized void fireShowInViewEvent(IModel model, Object element, Object source) {
+    public synchronized void fireShowInViewEvent(final IModel model, final Object element, final Object source) {
         fireEvent(new ShowInViewEvent(model, element, source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, Object source) {
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, final Object source) {
         fireEvent(new ShowElementsOnMap(model, elements, source), true);
     }
 
     public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements,
-            final ReferencedEnvelope bounds, Object source) {
+            final ReferencedEnvelope bounds, final Object source) {
         fireEvent(new ShowElementsOnMap(model, elements, bounds, source), true);
+    }
+
+    public synchronized void fireRefreshMapEvent() {
+        fireEvent(new RefreshMapEvent(), false);
     }
 
     public synchronized void fireInitialiseEvent() {
@@ -209,7 +214,7 @@ public final class AWEEventManager {
 
             @Override
             public void run() {
-                for (IEvent event : eventChain.getEvents()) {
+                for (final IEvent event : eventChain.getEvents()) {
                     fireEvent(event, false);
                 }
             }
@@ -217,24 +222,24 @@ public final class AWEEventManager {
     }
 
     private void initializeExtensionPointListeners() {
-        for (IConfigurationElement listenerElement : registry.getConfigurationElementsFor(AWE_LISTENER_EXTENSION_POINT_ID)) {
+        for (final IConfigurationElement listenerElement : registry.getConfigurationElementsFor(AWE_LISTENER_EXTENSION_POINT_ID)) {
             try {
                 initializeListenerFromElement(listenerElement);
-            } catch (CoreException e) {
+            } catch (final CoreException e) {
                 LOGGER.error("Error on initialization Listener <" + listenerElement.getAttribute(CLASS_ATTRIBUTE) + ">", e);
-            } catch (ClassCastException e) {
+            } catch (final ClassCastException e) {
                 LOGGER.error("Class <" + listenerElement.getAttribute(CLASS_ATTRIBUTE) + "> is not a Listener class", e);
             }
         }
     }
 
     private void initializeListenerFromElement(final IConfigurationElement element) throws CoreException {
-        IAWEEventListenter listener = (IAWEEventListenter)element.createExecutableExtension(CLASS_ATTRIBUTE);
+        final IAWEEventListenter listener = (IAWEEventListenter)element.createExecutableExtension(CLASS_ATTRIBUTE);
 
-        IConfigurationElement[] eventStatusElement = element.getChildren(EVENT_STATUS_CHILD);
+        final IConfigurationElement[] eventStatusElement = element.getChildren(EVENT_STATUS_CHILD);
 
-        for (IConfigurationElement singleEventStatus : eventStatusElement) {
-            EventStatus status = getEventStatusFromElement(singleEventStatus);
+        for (final IConfigurationElement singleEventStatus : eventStatusElement) {
+            final EventStatus status = getEventStatusFromElement(singleEventStatus);
 
             if (status != null) {
                 addListener(listener, status);
@@ -243,7 +248,7 @@ public final class AWEEventManager {
     }
 
     private EventStatus getEventStatusFromElement(final IConfigurationElement element) {
-        String statusName = element.getAttribute(STATUS_ATTRIBUTE);
+        final String statusName = element.getAttribute(STATUS_ATTRIBUTE);
 
         return EventStatus.valueOf(statusName);
     }
