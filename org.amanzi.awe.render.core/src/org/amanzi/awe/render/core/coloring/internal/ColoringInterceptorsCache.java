@@ -61,6 +61,9 @@ public class ColoringInterceptorsCache {
     private IColoringInterceptorFactory getPrioritized(final List<IColoringInterceptorFactory> factories) {
         Collections.sort(factories);
 
+        if (factories.isEmpty()) {
+            return null;
+        }
         return factories.get(factories.size() - 1);
     }
 
