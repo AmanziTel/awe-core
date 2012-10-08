@@ -15,9 +15,7 @@ package org.amanzi.awe.render.core.coloring.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.amanzi.awe.render.core.coloring.IColoringInterceptorFactory;
 import org.amanzi.neo.models.render.IGISModel;
@@ -44,8 +42,6 @@ public class ColoringInterceptorsCache {
         private static volatile ColoringInterceptorsCache instance = new ColoringInterceptorsCache();
     }
 
-    private final Map<IGISModel, List<IColoringInterceptorFactory>> coloringInterceptorFactories = new HashMap<IGISModel, List<IColoringInterceptorFactory>>();
-
     private final IExtensionRegistry registry;
 
     private ColoringInterceptorsCache() {
@@ -57,13 +53,7 @@ public class ColoringInterceptorsCache {
     }
 
     public synchronized IColoringInterceptorFactory getFactory(final IGISModel model) {
-        List<IColoringInterceptorFactory> factories = coloringInterceptorFactories.get(model);
-
-        if (factories == null) {
-            factories = loadFromRegistry(model);
-
-            coloringInterceptorFactories.put(model, factories);
-        }
+        final List<IColoringInterceptorFactory> factories = loadFromRegistry(model);
 
         return getPrioritized(factories);
     }
@@ -79,7 +69,8 @@ public class ColoringInterceptorsCache {
 
         for (final IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_POINT_NAME)) {
             try {
-                final IColoringInterceptorFactory inteceptor = (IColoringInterceptorFactory)element.createExecutableExtension(CLASS_PROPERTY);
+                final IColoringInterceptorFactory inteceptor = (IColoringInterceptorFactory)element
+                        .createExecutableExtension(CLASS_PROPERTY);
 
                 if (inteceptor.accept(model)) {
                     result.add(inteceptor);

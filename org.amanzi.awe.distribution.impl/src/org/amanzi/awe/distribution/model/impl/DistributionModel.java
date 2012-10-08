@@ -315,12 +315,14 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
             final Node distributionBarNode = distributionService.findDistributionBar(getRootNode(),
                     ((DataElement)dataElement).getNode());
 
-            result = distributionBarCache.get(distributionBarNode.getId());
+            if (distributionBarNode != null) {
+                result = distributionBarCache.get(distributionBarNode.getId());
 
-            if (result == null) {
-                result = createDistributionBar(distributionBarNode);
+                if (result == null) {
+                    result = createDistributionBar(distributionBarNode);
 
-                distributionBarCache.put(distributionBarNode.getId(), result);
+                    distributionBarCache.put(distributionBarNode.getId(), result);
+                }
             }
         } catch (final ServiceException e) {
             processException("Error on computing Distribution Bar from Source Element", e);

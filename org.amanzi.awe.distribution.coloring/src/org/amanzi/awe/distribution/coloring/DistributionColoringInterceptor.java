@@ -16,8 +16,10 @@ package org.amanzi.awe.distribution.coloring;
 import java.awt.Color;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
  * TODO Purpose of
@@ -37,8 +39,19 @@ public class DistributionColoringInterceptor implements IColoringInterceptor {
 
     @Override
     public Color getColor(final IDataElement dataElement) {
-        // TODO Auto-generated method stub
-        return null;
+        Color color = null;
+
+        try {
+            final IDistributionBar bar = distributionModel.findDistributionBar(dataElement);
+
+            if (bar != null) {
+                color = bar.getColor();
+            }
+        } catch (final ModelException e) {
+            // TODO: LN: 8.10.2012, handle exception
+        }
+
+        return color;
     }
 
 }
