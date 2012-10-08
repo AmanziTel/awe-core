@@ -87,7 +87,7 @@ public interface IDistributionType<T extends IRange> {
          * @return
          */
         public static ChartType findByTitle(final String title) {
-            for (ChartType singleType : values()) {
+            for (final ChartType singleType : values()) {
                 if (singleType.title.equals(title)) {
                     return singleType;
                 }
@@ -133,12 +133,5 @@ public interface IDistributionType<T extends IRange> {
      * @return
      */
     public String getPropertyName();
-
-    /**
-     * Is it possible to changes colors of this Distribution
-     * 
-     * @return
-     */
-    public boolean canChangeColors();
 
 }

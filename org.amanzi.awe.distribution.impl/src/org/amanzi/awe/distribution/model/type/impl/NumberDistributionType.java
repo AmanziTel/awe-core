@@ -51,7 +51,7 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
      */
     public NumberDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
             final NumberDistributionRange numberDistributionRange) {
-        super(model, nodeType, propertyName, true);
+        super(model, nodeType, propertyName);
         this.numberDistributionRange = numberDistributionRange;
     }
 
@@ -70,25 +70,25 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
             double min = Double.MAX_VALUE;
             double max = -Double.MAX_VALUE;
 
-            for (Object value : getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName())) {
-                double currentValue = ((Number)value).doubleValue();
+            for (final Object value : getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName())) {
+                final double currentValue = ((Number)value).doubleValue();
 
                 min = Math.min(min, currentValue);
                 max = Math.max(max, currentValue);
             }
 
-            double step = getStep(min, max, numberDistributionRange.getDelta());
+            final double step = getStep(min, max, numberDistributionRange.getDelta());
 
             while (Precision.compareTo(max, min, PRECISION_DELTA) > 0) {
-                boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
+                final boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
 
-                double curMax = includeMax ? min + step : max;
-                RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END
+                final double curMax = includeMax ? min + step : max;
+                final RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END
                         : RangeFilterType.INCLUDE_START_EXCLUDE_END;
 
-                Range range = Range.between(min, curMax);
+                final Range range = Range.between(min, curMax);
 
-                RangeFilter filter = new RangeFilter(getPropertyName(), range, filterType);
+                final RangeFilter filter = new RangeFilter(getPropertyName(), range, filterType);
                 ranges.add(new SimpleRange(getNumberDistributionRangeName(min, curMax), filter));
 
                 min += step;
@@ -100,13 +100,13 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
 
     private double getStep(final double min, final double max, final int delta) {
         double res = (max - min) / delta;
-        double scaleNum = Math.pow(10, DOUBLE_SCALE);
+        final double scaleNum = Math.pow(10, DOUBLE_SCALE);
         res = Math.round(res * scaleNum) / scaleNum;
         return res;
     }
 
     private String getNumberDistributionRangeName(final double min, final double max) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(min).append(" - ").append(max);
         return sb.toString();
     }

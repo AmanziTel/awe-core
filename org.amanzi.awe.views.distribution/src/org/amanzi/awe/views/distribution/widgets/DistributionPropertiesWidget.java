@@ -17,6 +17,7 @@ import java.awt.Color;
 
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget;
@@ -30,8 +31,10 @@ import org.amanzi.awe.ui.view.widgets.SpinnerWidget.ISpinnerListener;
 import org.amanzi.awe.ui.view.widgets.TextWidget;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
+import org.amanzi.awe.views.distribution.charts.coloring.DistributionColoringContainer;
 import org.amanzi.awe.views.distribution.widgets.ChartTypeWidget.IChartTypeListener;
 import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -89,6 +92,8 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     private IDistributionModel model;
 
+    private DistributionColoringContainer distributionColoringContainer;
+
     /**
      * @param parent
      * @param style
@@ -133,6 +138,24 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
         this.model = distributionModel;
 
         updateColors();
+
+        initializeColoringContainer();
+    }
+
+    private void initializeColoringContainer() {
+        if (model != null) {
+            try {
+                distributionColoringContainer = new DistributionColoringContainer(model.getDistributionBars());
+            } catch (final ModelException e) {
+                // TODO: LN: 08.10.2012, handle error
+            }
+
+            distributionColoringContainer.updateSelectionAdjency(1);
+            distributionColoringContainer.updateLeftColor(leftColor.getColor());
+            distributionColoringContainer.updateMiddleColor(thirdColor.getColor());
+            distributionColoringContainer.updateRightColor(rightColor.getColor());
+            distributionColoringContainer.updatePalette(paletteCombo.getCurrentPalette());
+        }
     }
 
     private void updateColors() {
@@ -217,8 +240,26 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
             model.setMiddleColor(color);
         }
 
+        fireUpdate();
+    }
+
+    private void fireUpdate() {
         for (final IDistributionPropertiesListener listener : getListeners()) {
             listener.update(model);
+        }
+    }
+
+    private void fireColorsUpdated() {
+        distributionColoringContainer.getCurrent().updateColors();
+
+        fireUpdate();
+    }
+
+    public void setSelection(final IDistributionBar bar, final int index) {
+        selectedValues.setText(bar.getName());
+
+        if (distributionColoringContainer.updateCurrentSelection(index)) {
+            fireColorsUpdated();
         }
     }
 }

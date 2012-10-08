@@ -34,14 +34,10 @@ public abstract class AbstractDistributionType<T extends IRange> implements IDis
 
     private final String propertyName;
 
-    private final boolean canChangeColors;
-
-    protected AbstractDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
-            final boolean canChangeColors) {
+    protected AbstractDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName) {
         this.model = model;
         this.nodeType = nodeType;
         this.propertyName = propertyName;
-        this.canChangeColors = canChangeColors;
     }
 
     @Override
@@ -52,11 +48,6 @@ public abstract class AbstractDistributionType<T extends IRange> implements IDis
     @Override
     public String getPropertyName() {
         return propertyName;
-    }
-
-    @Override
-    public boolean canChangeColors() {
-        return canChangeColors;
     }
 
     protected IPropertyStatisticalModel getModel() {

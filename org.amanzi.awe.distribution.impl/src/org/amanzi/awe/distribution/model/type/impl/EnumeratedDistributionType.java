@@ -49,7 +49,7 @@ public class EnumeratedDistributionType extends AbstractDistributionType<SimpleR
      * @param canChangeColors
      */
     public EnumeratedDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName) {
-        super(model, nodeType, propertyName, true);
+        super(model, nodeType, propertyName);
     }
 
     @Override
@@ -62,16 +62,16 @@ public class EnumeratedDistributionType extends AbstractDistributionType<SimpleR
         if (ranges == null) {
             ranges = new LinkedHashSet<SimpleRange>();
 
-            Set<Object> propertyValues = getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName());
+            final Set<Object> propertyValues = getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName());
 
             if (propertyValues.size() > MAX_PROPERTY_VALUE_COUNT) {
                 // TODO: LN: throw an error
             }
 
-            for (Object value : propertyValues) {
-                String sValue = value.toString();
+            for (final Object value : propertyValues) {
+                final String sValue = value.toString();
 
-                IFilter filter = new EqualsFilter<Object>(getPropertyName(), sValue);
+                final IFilter filter = new EqualsFilter<Object>(getPropertyName(), sValue);
                 ranges.add(new SimpleRange(sValue, filter));
             }
         }

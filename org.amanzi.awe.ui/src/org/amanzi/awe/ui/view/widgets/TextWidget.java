@@ -45,8 +45,12 @@ public class TextWidget extends AbstractLabeledWidget<Text, ITextChandedListener
 
     @Override
     protected Text createControl(final Composite parent) {
-        Text text = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+        final Text text = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
 
         return text;
+    }
+
+    public void setText(final String text) {
+        getControl().setText(text);
     }
 }

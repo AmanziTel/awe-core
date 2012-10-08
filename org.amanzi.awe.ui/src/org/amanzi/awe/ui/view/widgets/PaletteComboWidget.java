@@ -59,7 +59,10 @@ public class PaletteComboWidget extends AbstractComboWidget<BrewerPalette, IPale
     @Override
     protected void fireListener(final IPaletteChanged listener, final BrewerPalette selectedItem) {
         // TODO Auto-generated method stub
+    }
 
+    public BrewerPalette getCurrentPalette() {
+        return getSelectedItem();
     }
 
 }

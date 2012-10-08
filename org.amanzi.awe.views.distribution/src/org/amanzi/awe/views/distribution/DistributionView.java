@@ -16,6 +16,7 @@ package org.amanzi.awe.views.distribution;
 import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.util.ActionUtil;
@@ -272,6 +273,7 @@ public class DistributionView extends ViewPart
     private void updateCharts(final IDistributionModel model) {
         distributionChart.updateDistribution(model);
 
+        distributionPropertiesWidget.updateWidget(model);
         distributionPropertiesWidget.setVisible(true);
 
         updateChartColors();
@@ -288,7 +290,14 @@ public class DistributionView extends ViewPart
 
     @Override
     public void update(final IDistributionModel model) {
+        distributionChart.update();
+
         new UpdateDistributionJob(model).schedule();
+    }
+
+    @Override
+    public void onBarSelected(final IDistributionBar bar, final int index) {
+        distributionPropertiesWidget.setSelection(bar, index);
     }
 
 }

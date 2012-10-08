@@ -16,6 +16,7 @@ package org.amanzi.awe.views.distribution.widgets;
 import java.awt.Color;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.views.distribution.charts.DistributionBarRenderer;
@@ -25,9 +26,13 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.entity.CategoryItemEntity;
+import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -42,9 +47,13 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, IDistributionChartListener> {
+public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, IDistributionChartListener>
+        implements
+            ChartMouseListener {
 
     public interface IDistributionChartListener extends AbstractAWEWidget.IAWEWidgetListener {
+
+        void onBarSelected(IDistributionBar bar, int index);
 
     }
 
@@ -55,6 +64,8 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
     private JFreeChart distributionChart;
 
     private DistributionChartDataset dataset;
+
+    private IDistributionBar selectedBar;
 
     /**
      * @param parent
@@ -91,6 +102,8 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
         frame.pack();
 
         frame.setEnabled(false);
+
+        frame.addChartMouseListener(this);
 
         return frame;
     }
@@ -138,6 +151,10 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
 
         dataset.updateDelegate(chartType);
 
+        update();
+    }
+
+    public void update() {
         distributionChart.fireChartChanged();
     }
 
@@ -146,13 +163,35 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
             distributionChart.setTitle(distributionModel.getName());
             dataset.setDistributionBars(distributionModel.getDistributionBars());
 
-            distributionChart.fireChartChanged();
+            update();
         } catch (final ModelException e) {
             // TODO: handle error
         } finally {
             setVisible(true);
             setEnabled(true);
         }
+    }
+
+    @Override
+    public void chartMouseClicked(final ChartMouseEvent arg0) {
+        final ChartEntity entity = arg0.getEntity();
+        if (entity instanceof CategoryItemEntity) {
+            final IDistributionBar bar = (IDistributionBar)((CategoryItemEntity)entity).getColumnKey();
+            final int index = dataset.getColumnIndex(bar);
+
+            if (selectedBar == null || !selectedBar.equals(bar)) {
+                for (final IDistributionChartListener listener : getListeners()) {
+                    listener.onBarSelected(bar, index);
+                }
+
+                selectedBar = bar;
+            }
+        }
+    }
+
+    @Override
+    public void chartMouseMoved(final ChartMouseEvent arg0) {
+        // do nothing
     }
 
 }
