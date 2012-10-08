@@ -65,4 +65,6 @@ public interface IGISModel extends IModel {
     INodeType getSourceType();
 
     boolean canRender();
+
+    IRenderableModel getSourceModel();
 }

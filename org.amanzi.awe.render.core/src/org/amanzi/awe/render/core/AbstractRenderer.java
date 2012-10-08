@@ -29,6 +29,7 @@ import org.amanzi.awe.catalog.neo.selection.ISelection;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
+import org.amanzi.awe.render.core.coloring.IColoringInterceptorFactory;
 import org.amanzi.awe.render.core.coloring.internal.ColoringInterceptorsCache;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -169,7 +170,10 @@ public abstract class AbstractRenderer extends RendererImpl {
             // find a resource to render
             model = resource.resolve(IGISModel.class, monitor);
 
-            colorer = ColoringInterceptorsCache.getCache().getInterceptor(model);
+            final IColoringInterceptorFactory colorerFactory = ColoringInterceptorsCache.getCache().getFactory(model);
+            if (colorerFactory != null) {
+                colorer = colorerFactory.createInterceptor(model);
+            }
 
             if ((selection != null) && !selection.getModel().getAllGIS().contains(model)) {
                 selection = null;

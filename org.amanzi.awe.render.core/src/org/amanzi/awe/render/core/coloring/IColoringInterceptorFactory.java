@@ -13,9 +13,7 @@
 
 package org.amanzi.awe.render.core.coloring;
 
-import java.awt.Color;
-
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.render.IGISModel;
 
 /**
  * TODO Purpose of
@@ -25,8 +23,10 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IColoringInterceptor {
+public interface IColoringInterceptorFactory extends Comparable<IColoringInterceptorFactory> {
 
-    Color getColor(IDataElement dataElement);
+    boolean accept(IGISModel gisModel);
+
+    IColoringInterceptor createInterceptor(IGISModel gisModel);
 
 }

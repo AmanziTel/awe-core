@@ -11,10 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.render.core.coloring;
+package org.amanzi.awe.distribution.coloring;
 
 import java.awt.Color;
 
+import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
 import org.amanzi.neo.dto.IDataElement;
 
 /**
@@ -25,8 +27,18 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IColoringInterceptor {
+public class DistributionColoringInterceptor implements IColoringInterceptor {
 
-    Color getColor(IDataElement dataElement);
+    private final IDistributionModel distributionModel;
+
+    public DistributionColoringInterceptor(final IDistributionModel distributionModel) {
+        this.distributionModel = distributionModel;
+    }
+
+    @Override
+    public Color getColor(final IDataElement dataElement) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

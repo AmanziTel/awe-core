@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Coloring
+Bundle-SymbolicName: org.amanzi.awe.distribution.coloring;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.amanzi.awe.distribution.impl;bundle-version="1.0.0",
+ org.amanzi.awe.render.core;bundle-version="1.0.0",
+ org.amanzi.neo.providers;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.amanzi.awe.distribution.coloring.internal.DistributionColoringPlugin

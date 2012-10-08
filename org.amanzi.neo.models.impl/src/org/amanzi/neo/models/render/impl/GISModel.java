@@ -89,12 +89,12 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
             minLongitude = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getMinLongitudeProperty(),
                     Double.MAX_VALUE, false);
 
-            String crsCodeValue = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCRSProperty(), StringUtils.EMPTY,
-                    false);
+            final String crsCodeValue = getNodeService().getNodeProperty(rootNode, geoNodeProperties.getCRSProperty(),
+                    StringUtils.EMPTY, false);
             setCRS(crsCodeValue);
 
             updateCoordinates = false;
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Cannot get GIS-related properties from Node", e);
         }
     }
@@ -110,7 +110,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
                 getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
             }
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on updating GIS Model", e);
         }
     }
@@ -123,7 +123,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         maxLongitude = Math.max(longitude, maxLongitude);
 
         if (getCRS() == null) {
-            CRSWrapper wrapper = CRSWrapper.fromLocation(latitude, longitude, getName());
+            final CRSWrapper wrapper = CRSWrapper.fromLocation(latitude, longitude, getName());
             setCRS(wrapper.getEpsg());
         }
 
@@ -154,7 +154,7 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
             try {
                 this.crsCode = crsCode;
                 crs = CRS.decode(crsCode);
-            } catch (FactoryException e) {
+            } catch (final FactoryException e) {
                 LOGGER.error("Cannot determinate CRS", e);
             }
         }
@@ -194,10 +194,10 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
 
     @Override
     public ReferencedEnvelope getBounds() {
-        double updatedMinLongitude = minLongitude - ((maxLongitude - minLongitude) * 0.05);
-        double updatedMaxLongitude = maxLongitude + ((maxLongitude - minLongitude) * 0.05);
-        double updatedMinLatitude = minLatitude - ((maxLatitude - minLatitude) * 0.05);
-        double updatedMaxLatitude = maxLatitude + ((maxLatitude - minLatitude) * 0.05);
+        final double updatedMinLongitude = minLongitude - ((maxLongitude - minLongitude) * 0.05);
+        final double updatedMaxLongitude = maxLongitude + ((maxLongitude - minLongitude) * 0.05);
+        final double updatedMinLatitude = minLatitude - ((maxLatitude - minLatitude) * 0.05);
+        final double updatedMaxLatitude = maxLatitude + ((maxLatitude - minLatitude) * 0.05);
         return new ReferencedEnvelope(updatedMinLongitude, updatedMaxLongitude, updatedMinLatitude, updatedMaxLatitude, crs);
     }
 
@@ -245,5 +245,10 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public IRenderableModel getSourceModel() {
+        return sourceModel;
     }
 }

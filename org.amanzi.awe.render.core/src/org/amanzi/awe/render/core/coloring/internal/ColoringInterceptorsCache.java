@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
+import org.amanzi.awe.render.core.coloring.IColoringInterceptorFactory;
 import org.amanzi.neo.models.render.IGISModel;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -44,7 +44,7 @@ public class ColoringInterceptorsCache {
         private static volatile ColoringInterceptorsCache instance = new ColoringInterceptorsCache();
     }
 
-    private final Map<IGISModel, List<IColoringInterceptor>> coloringInterceptors = new HashMap<IGISModel, List<IColoringInterceptor>>();
+    private final Map<IGISModel, List<IColoringInterceptorFactory>> coloringInterceptorFactories = new HashMap<IGISModel, List<IColoringInterceptorFactory>>();
 
     private final IExtensionRegistry registry;
 
@@ -56,30 +56,30 @@ public class ColoringInterceptorsCache {
         return CacheHandler.instance;
     }
 
-    public synchronized IColoringInterceptor getInterceptor(final IGISModel model) {
-        List<IColoringInterceptor> interceptors = coloringInterceptors.get(model);
+    public synchronized IColoringInterceptorFactory getFactory(final IGISModel model) {
+        List<IColoringInterceptorFactory> factories = coloringInterceptorFactories.get(model);
 
-        if (interceptors == null) {
-            interceptors = loadFromRegistry(model);
+        if (factories == null) {
+            factories = loadFromRegistry(model);
 
-            coloringInterceptors.put(model, interceptors);
+            coloringInterceptorFactories.put(model, factories);
         }
 
-        return getPrioritized(interceptors);
+        return getPrioritized(factories);
     }
 
-    private IColoringInterceptor getPrioritized(final List<IColoringInterceptor> interceptors) {
-        Collections.sort(interceptors);
+    private IColoringInterceptorFactory getPrioritized(final List<IColoringInterceptorFactory> factories) {
+        Collections.sort(factories);
 
-        return interceptors.get(interceptors.size() - 1);
+        return factories.get(factories.size() - 1);
     }
 
-    private List<IColoringInterceptor> loadFromRegistry(final IGISModel model) {
-        final List<IColoringInterceptor> result = new ArrayList<IColoringInterceptor>();
+    private List<IColoringInterceptorFactory> loadFromRegistry(final IGISModel model) {
+        final List<IColoringInterceptorFactory> result = new ArrayList<IColoringInterceptorFactory>();
 
         for (final IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_POINT_NAME)) {
             try {
-                final IColoringInterceptor inteceptor = (IColoringInterceptor)element.createExecutableExtension(CLASS_PROPERTY);
+                final IColoringInterceptorFactory inteceptor = (IColoringInterceptorFactory)element.createExecutableExtension(CLASS_PROPERTY);
 
                 if (inteceptor.accept(model)) {
                     result.add(inteceptor);

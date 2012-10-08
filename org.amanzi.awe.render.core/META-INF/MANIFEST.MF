@@ -13,4 +13,5 @@ Require-Bundle: net.refractions.udig.project,
  org.amanzi.awe.treeview;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.render.core
+Export-Package: org.amanzi.awe.render.core,
+ org.amanzi.awe.render.core.coloring

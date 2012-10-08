@@ -83,6 +83,7 @@
         <module>org.amanzi.awe</module>
         <module>org.amanzi.awe.catalog.neo</module>
         <module>org.amanzi.awe.console</module>
+	<module>org.amanzi.awe.distribution.coloring</module>
 	<module>org.amanzi.awe.distribution.engine</module>
 	<module>org.amanzi.awe.distribution.feature</module>
 	<module>org.amanzi.awe.distribution.impl</module>
