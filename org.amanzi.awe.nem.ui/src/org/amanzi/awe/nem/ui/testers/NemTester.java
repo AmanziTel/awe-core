@@ -1,7 +1,10 @@
 package org.amanzi.awe.nem.ui.testers;
 
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
@@ -24,21 +27,57 @@ public class NemTester extends PropertyTester {
         } else {
             return false;
         }
-        if (property.equals("isDeletable")) {
-            return chechDeletable(item);
+        if (!checkForNetworkElement(item)) {
+            return false;
         }
+        INetworkModel model = getModel(item);
+        IDataElement elment = getElement(item);
+        if (property.equals("isAddetable")) {
+            return model != null;
+        }
+        CreatableParameters creatable = CreatableParameters.findByName(property);
+        if (creatable != null) {
+            return checkAddetable(model, elment, creatable.getType());
+        }
+
         return false;
     }
 
     /**
-     * @param item
+     * @param model
+     * @param element
+     * @return
      */
-    @SuppressWarnings("rawtypes")
-    private boolean chechDeletable(ITreeItem item) {
-        if (item.getChild() instanceof INetworkModel || item.getParent() instanceof INetworkModel) {
-            return true;
+    private boolean checkAddetable(INetworkModel model, IDataElement element, NetworkElementType expectedType) {
+        INodeType type;
+        if (element == null) {
+            type = model.getType();
+        } else {
+            type = element.getNodeType();
         }
+        return model.getNetworkStructure().isInUderline(type, expectedType);
+    }
 
-        return false;
+    @SuppressWarnings("rawtypes")
+    private boolean checkForNetworkElement(ITreeItem item) {
+        return getModel(item) != null ? true : false;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private INetworkModel getModel(ITreeItem item) {
+        if (item.getParent() == null && item.getChild() instanceof INetworkModel) {
+            return (INetworkModel)item.getChild();
+        } else if (item.getParent() instanceof INetworkModel && item.getChild() instanceof IDataElement) {
+            return (INetworkModel)item.getParent();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private IDataElement getElement(ITreeItem item) {
+        if (item.getParent() != null && item.getChild() != null) {
+            return (IDataElement)item.getChild();
+        }
+        return null;
     }
 }

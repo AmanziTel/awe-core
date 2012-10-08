@@ -687,6 +687,7 @@ public class NodeService extends AbstractService implements INodeService {
         for (Relationship rel : root.getRelationships()) {
             rel.delete();
         }
+        System.out.println(root.getPropertyValues());
         root.delete();
         for (Node node : nextNode) {
             deleteNode(node);
@@ -705,7 +706,6 @@ public class NodeService extends AbstractService implements INodeService {
             for (Relationship relationship : node.getRelationships()) {
                 relationship.delete();
             }
-            System.out.println(node.getRelationships());
             node.delete();
             tx.success();
         } catch (Exception e) {

@@ -30,6 +30,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.INetworkStructure;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -146,6 +147,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     private final INetworkNodeProperties networkNodeProperties;
+    private final NetworkStructure structure;
 
     /**
      * @param nodeService
@@ -155,11 +157,18 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties) {
         super(nodeService, generalNodeProperties, geoNodeProperties);
         this.networkNodeProperties = networkNodeProperties;
+        structure = new NetworkStructure();
     }
 
     @Override
     protected INodeType getModelType() {
         return NetworkElementType.NETWORK;
+    }
+
+    @Override
+    public void initialize(Node rootNode) throws ModelException {
+        structure.initiailizeFromArray((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()));
+        super.initialize(rootNode);
     }
 
     @Override
@@ -256,6 +265,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         try {
             Node parentNode = ((DataElement)parent).getNode();
             Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
+
+            structure.addItem(elementType);
 
             getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
 
@@ -443,6 +454,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     @Override
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
+        try {
+            getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
+                    structure.getStructuredArray());
+        } catch (ServiceException e) {
+            processException("can't set structure properties", e);
+        }
         super.finishUp();
     }
 
@@ -466,4 +483,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         return result;
     }
 
+    @Override
+    public INetworkStructure getNetworkStructure() {
+        return structure;
+    }
 }

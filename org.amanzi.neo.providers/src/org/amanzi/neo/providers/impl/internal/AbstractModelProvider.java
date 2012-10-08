@@ -154,6 +154,10 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
         return modelCache.get(key);
     }
 
+    protected void removeFromCache(final IKey key) {
+        modelCache.remove(key);
+    }
+
     protected void addToCache(final T model, final IKey key) {
         modelCache.put(key, model);
     }

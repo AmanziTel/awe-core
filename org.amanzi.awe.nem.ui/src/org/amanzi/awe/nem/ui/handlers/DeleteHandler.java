@@ -1,25 +1,18 @@
 package org.amanzi.awe.nem.ui.handlers;
 
-import java.util.Iterator;
-
 import org.amanzi.awe.nem.NetworkElementManager;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.network.INetworkModel;
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.handlers.HandlerUtil;
 
-public class DeleteHandler extends AbstractHandler {
+public class DeleteHandler extends AbstractNemHandler {
 
     private static class NemDeleteJob extends Job {
 
@@ -61,35 +54,20 @@ public class DeleteHandler extends AbstractHandler {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
-
-        if (selection instanceof IStructuredSelection) {
-            Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
-            try {
-                while (selectionIterator.hasNext()) {
-                    Object selectedObject = selectionIterator.next();
-                    if (selectedObject instanceof ITreeItem) {
-                        ITreeItem treeItem = (ITreeItem)selectedObject;
-                        if (treeItem.getParent() instanceof INetworkModel || treeItem.getChild() instanceof INetworkModel) {
-                            NemDeleteJob job = null;
-                            if (treeItem.getParent() == null) {
-                                job = new NemDeleteJob((INetworkModel)treeItem.getChild(), null);
-                            } else if (treeItem.getChild() instanceof IDataElement) {
-                                job = new NemDeleteJob((INetworkModel)treeItem.getParent(), (IDataElement)treeItem.getChild());
-                            }
-                            if (job != null) {
-                                job.schedule();
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                throw new ExecutionException("can't execute action ", e);
+    protected void handleItem(ITreeItem<IModel, Object> treeItem) {
+        if (treeItem.getParent() instanceof INetworkModel || treeItem.getChild() instanceof INetworkModel) {
+            NemDeleteJob job = null;
+            if (treeItem.getParent() == null) {
+                job = new NemDeleteJob((INetworkModel)treeItem.getChild(), null);
+            } else if (treeItem.getChild() instanceof IDataElement) {
+                job = new NemDeleteJob((INetworkModel)treeItem.getParent(), (IDataElement)treeItem.getChild());
+            }
+            if (job != null) {
+                job.schedule();
             }
         }
-        return null;
+
     }
+
 }

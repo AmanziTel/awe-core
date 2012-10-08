@@ -11,26 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties;
+package org.amanzi.neo.models.network;
+
+import java.util.Collection;
+
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface INetworkNodeProperties extends INodeProperties {
+public interface INetworkStructure {
 
-    String getCIProperty();
+    Collection<NetworkElementType> getUnderlineElements(INodeType root);
 
-    String getLACProperty();
-
-    String getAzimuthProperty();
-
-    String getBeamwidthProperty();
-
-    String getStuctureProperty();
+    boolean isInUderline(INodeType type, NetworkElementType expectedType);
 
 }

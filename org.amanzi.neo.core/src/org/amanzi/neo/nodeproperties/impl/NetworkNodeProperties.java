@@ -33,6 +33,8 @@ public class NetworkNodeProperties implements INetworkNodeProperties {
 
     private static final String AZIMUTH_PROPERTY = "azimuth";
 
+    private static final String STRUCTURE = "structure";
+
     @Override
     public String getCIProperty() {
         return CI_PROPERTY;
@@ -51,5 +53,10 @@ public class NetworkNodeProperties implements INetworkNodeProperties {
     @Override
     public String getBeamwidthProperty() {
         return BEAMWIDTH_PROPERTY;
+    }
+
+    @Override
+    public String getStuctureProperty() {
+        return STRUCTURE;
     }
 }

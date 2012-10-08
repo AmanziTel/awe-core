@@ -60,4 +60,6 @@ public interface INetworkModel extends IDatasetModel {
 
     IDataElement replaceChild(IDataElement child, IDataElement newParent) throws ModelException;
 
+    INetworkStructure getNetworkStructure();
+
 }

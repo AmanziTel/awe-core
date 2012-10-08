@@ -37,7 +37,11 @@ public class NetworkElementManager {
         return NEMInstanceHolder.NEM_MANAGER;
     }
 
-    private NetworkElementManager() {
+    /**
+     * 
+     */
+    public NetworkElementManager() {
+        // TODO Auto-generated constructor stub
     }
 
     public void removeModel(final INetworkModel model) throws ModelException {
