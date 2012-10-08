@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -663,18 +665,31 @@ public class NodeService extends AbstractService implements INodeService {
         assert root != null;
         Transaction tx = getGraphDb().beginTx();
         try {
-            for (Node node : getAllDownlinkTraversal().traverse(root).nodes()) {
-                for (Relationship relationship : node.getRelationships(Direction.INCOMING)) {
-                    relationship.delete();
-                }
-                node.delete();
-            }
+            deleteNode(root);
             tx.success();
         } catch (Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
             tx.finish();
+        }
+    }
+
+    /**
+     * @param root
+     */
+    private void deleteNode(Node root) {
+        List<Node> nextNode = new ArrayList<Node>();
+        for (Relationship rel : root.getRelationships(Direction.OUTGOING)) {
+            nextNode.add(rel.getOtherNode(root));
+            rel.delete();
+        }
+        for (Relationship rel : root.getRelationships()) {
+            rel.delete();
+        }
+        root.delete();
+        for (Node node : nextNode) {
+            deleteNode(node);
         }
     }
 
@@ -687,9 +702,10 @@ public class NodeService extends AbstractService implements INodeService {
     public void deleteSingleNode(Node node) throws ServiceException {
         Transaction tx = getGraphDb().beginTx();
         try {
-            for (Relationship relationship : node.getRelationships(Direction.INCOMING)) {
+            for (Relationship relationship : node.getRelationships()) {
                 relationship.delete();
             }
+            System.out.println(node.getRelationships());
             node.delete();
             tx.success();
         } catch (Exception e) {
