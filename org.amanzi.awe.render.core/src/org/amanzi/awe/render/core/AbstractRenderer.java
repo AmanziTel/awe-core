@@ -28,6 +28,8 @@ import net.refractions.udig.project.render.RenderException;
 import org.amanzi.awe.catalog.neo.selection.ISelection;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
+import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
+import org.amanzi.awe.render.core.coloring.internal.ColoringInterceptorsCache;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.render.IGISModel;
@@ -77,6 +79,8 @@ public abstract class AbstractRenderer extends RendererImpl {
 
     private ISelection selection;
 
+    private IColoringInterceptor colorer;
+
     /**
      * initialize default renderer styles;
      * 
@@ -95,10 +99,10 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     public void setScaling(final Envelope bounds_transformed, final Envelope data_bounds, final IProgressMonitor monitor,
             final long count) {
-        double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
+        final double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                 / (data_bounds.getHeight() * data_bounds.getWidth());
 
-        double countScaled = calculateCountScaled(dataScaled, count);
+        final double countScaled = calculateCountScaled(dataScaled, count);
         setDrawLabel(countScaled);
         if (countScaled < commonStyle.getMaxElementsFull()) {
             commonStyle.setScale(Scale.LARGE);
@@ -116,7 +120,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
 
-    protected double calculateCountScaled(double dataScaled, long count) {
+    protected double calculateCountScaled(final double dataScaled, final long count) {
         return (dataScaled * count) / 2;
     }
 
@@ -129,14 +133,15 @@ public abstract class AbstractRenderer extends RendererImpl {
 
     @Override
     public void render(final Graphics2D destination, final IProgressMonitor monitor) throws RenderException {
-        ILayer layer = getContext().getLayer();
-        IGeoResource resource = layer.findGeoResource(GeoResource.class);
+        final ILayer layer = getContext().getLayer();
+        final IGeoResource resource = layer.findGeoResource(GeoResource.class);
+
         // c+v
         selection = (ISelection)layer.getMap().getBlackboard().get(ISelection.SELECTION_BLACKBOARD_PROPERTY);
         if (resource != null) {
             try {
                 renderGeoResource(destination, resource, monitor);
-            } catch (ModelException e) {
+            } catch (final ModelException e) {
                 LOGGER.error("Could not render resource.", e);
             }
         }
@@ -164,14 +169,16 @@ public abstract class AbstractRenderer extends RendererImpl {
             // find a resource to render
             model = resource.resolve(IGISModel.class, monitor);
 
+            colorer = ColoringInterceptorsCache.getCache().getInterceptor(model);
+
             if ((selection != null) && !selection.getModel().getAllGIS().contains(model)) {
                 selection = null;
             }
 
             // get rendering bounds and zoom
             setCrsTransforms(resource.getInfo(null).getCRS());
-            Envelope bounds_transformed = getTransformedBounds();
-            Envelope data_bounds = model.getBounds();
+            final Envelope bounds_transformed = getTransformedBounds();
+            final Envelope data_bounds = model.getBounds();
             Long count;
             if (bounds_transformed == null) {
                 commonStyle.setScale(Scale.MEDIUM);
@@ -180,13 +187,13 @@ public abstract class AbstractRenderer extends RendererImpl {
                 setScaling(bounds_transformed, data_bounds, monitor, count);
             }
             renderElements(destination, bounds_transformed, data_bounds, monitor);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Could not relosve resource.", e);
             throw new RenderException(e);
-        } catch (TransformException e) {
+        } catch (final TransformException e) {
             LOGGER.error("Could not transform bounds.", e);
             throw new RenderException(e);
-        } catch (FactoryException e) {
+        } catch (final FactoryException e) {
             LOGGER.error("Could not set CRS transforms.", e);
             throw new RenderException(e);
         }
@@ -203,8 +210,8 @@ public abstract class AbstractRenderer extends RendererImpl {
     private void renderElements(final Graphics2D destination, final Envelope bounds_transformed, final Envelope data_bounds,
             final IProgressMonitor monitor) throws NoninvertibleTransformException, ModelException, TransformException {
 
-        for (ILocationElement element : model.getElements(data_bounds)) {
-            Point point = getPoint(model, element, bounds_transformed);
+        for (final ILocationElement element : model.getElements(data_bounds)) {
+            final Point point = getPoint(model, element, bounds_transformed);
             if (point != null) {
                 renderElement(destination, point, element, model);
             } else {
@@ -230,14 +237,14 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected Point getPoint(final IGISModel model, final ILocationElement element, final Envelope bounds_transformed)
             throws TransformException {
 
-        Coordinate location = new Coordinate(element.getLongitude(), element.getLatitude());
+        final Coordinate location = new Coordinate(element.getLongitude(), element.getLatitude());
         java.awt.Point point = null;
 
         if ((location != null) && (bounds_transformed != null) && bounds_transformed.contains(location)) {
-            Coordinate world_location = new Coordinate();
+            final Coordinate world_location = new Coordinate();
             try {
                 JTS.transform(location, world_location, transform_d2w);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 JTS.transform(location, world_location, transform_w2d.inverse());
             }
             point = getContext().worldToPixel(world_location);
@@ -272,10 +279,10 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     protected void drawCoordinateElement(final RenderShape shape, final Graphics2D destination, final Point point,
             final IDataElement element, final boolean isFill) {
-        int size = getSize();
-        int x = point.x - size;
-        int y = point.y - size;
-        Color color = commonStyle.changeColor(getColor(element), commonStyle.getAlpha());
+        final int size = getSize();
+        final int x = point.x - size;
+        final int y = point.y - size;
+        final Color color = commonStyle.changeColor(getColor(element), commonStyle.getAlpha());
         switch (shape) {
         case ELLIPSE:
             drawOval(destination, isFill, x, y, size, color);
@@ -354,7 +361,17 @@ public abstract class AbstractRenderer extends RendererImpl {
      * @return
      */
     protected Color getColor(final IDataElement element) {
-        return getDefaultColor(element);
+        Color result = null;
+
+        if (colorer != null) {
+            result = colorer.getColor(element);
+        }
+
+        if (result == null) {
+            result = getDefaultColor(element);
+        }
+
+        return result;
     }
 
     /**
@@ -402,7 +419,7 @@ public abstract class AbstractRenderer extends RendererImpl {
 
     @Override
     public void render(final IProgressMonitor monitor) throws RenderException {
-        Graphics2D g = getContext().getImage().createGraphics();
+        final Graphics2D g = getContext().getImage().createGraphics();
         render(g, monitor);
     }
 
@@ -413,10 +430,10 @@ public abstract class AbstractRenderer extends RendererImpl {
      * @throws FactoryException
      */
     private void setCrsTransforms(final CoordinateReferenceSystem dataCrs) throws FactoryException {
-        boolean lenient = true; // needs to be lenient to work on uDIG 1.1
+        final boolean lenient = true; // needs to be lenient to work on uDIG 1.1
         // (otherwise we get error:
         // bursa wolf parameters required
-        CoordinateReferenceSystem worldCrs = context.getCRS();
+        final CoordinateReferenceSystem worldCrs = context.getCRS();
         transform_d2w = CRS.findMathTransform(dataCrs, worldCrs, lenient);
         transform_w2d = CRS.findMathTransform(worldCrs, dataCrs, lenient); // could
         // use
@@ -450,10 +467,10 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     protected void highlightSelectedItem(final Graphics2D destination, final java.awt.Point point) {
         int elementSize = getSize() * 2;
-        float radius = 60;
-        float[] fractions = {0.01f, 1.0f};
+        final float radius = 60;
+        final float[] fractions = {0.01f, 1.0f};
         for (; elementSize > 0; elementSize *= 0.8) {
-            Color[] colors = {commonStyle.changeColor(Color.CYAN, 5), commonStyle.changeColor(Color.WHITE, 5)};
+            final Color[] colors = {commonStyle.changeColor(Color.CYAN, 5), commonStyle.changeColor(Color.WHITE, 5)};
             destination.setPaint(new RadialGradientPaint((point.x - (elementSize / 3)), (point.y - (elementSize / 3)), radius,
                     fractions, colors));
             destination.fillOval((int)(point.x - (elementSize * 2.25)), (int)(point.y - (elementSize * 2.25)), 4 * elementSize,
