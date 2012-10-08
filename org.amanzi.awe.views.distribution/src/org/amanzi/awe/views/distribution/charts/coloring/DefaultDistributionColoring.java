@@ -34,7 +34,7 @@ public class DefaultDistributionColoring extends AbstractDistributionColoring {
 
     private static final Color COLOR_MORE = Color.GREEN;
 
-    private int selectedIndex;
+    private int selectedIndex = -1;
 
     private int selectionAdjency;
 
@@ -47,10 +47,12 @@ public class DefaultDistributionColoring extends AbstractDistributionColoring {
 
     @Override
     protected Color getBarColor(final int index) {
-        if (selectedIndex == index) {
-            return COLOR_SELECTED;
-        } else if (Math.abs(selectedIndex - index) <= selectionAdjency) {
-            return index > selectedIndex ? COLOR_MORE : COLOR_LESS;
+        if (selectedIndex != -1) {
+            if (selectedIndex == index) {
+                return COLOR_SELECTED;
+            } else if (Math.abs(selectedIndex - index) <= selectionAdjency) {
+                return index > selectedIndex ? COLOR_MORE : COLOR_LESS;
+            }
         }
 
         return null;

@@ -74,4 +74,9 @@ public class DistributionTypeWidget extends AbstractComboWidget<IDistributionTyp
         listener.onDistributionTypeSelected(selectedItem);
     }
 
+    @Override
+    protected int getDefaultSelectedItemIndex() {
+        return -1;
+    }
+
 }

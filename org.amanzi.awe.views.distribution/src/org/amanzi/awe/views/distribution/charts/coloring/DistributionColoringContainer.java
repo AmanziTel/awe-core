@@ -31,13 +31,28 @@ public class DistributionColoringContainer {
 
     private IDistributionColoring current;
 
-    public DistributionColoringContainer(final List<IDistributionBar> distributionBars) {
+    public DistributionColoringContainer(final List<IDistributionBar> distributionBars,
+            final DistributionColoringContainer previousContainer) {
         defaultColoring = new DefaultDistributionColoring(distributionBars);
         paletteColoring = new PaletteDistributionColoring(distributionBars);
         threeColorsBlend = new ThreeColorsBlendDistributionColoring(distributionBars);
         twoColorsBlend = new TwoColorsBlendDistributionColoring(distributionBars);
 
+        updateCurrent(previousContainer);
+    }
+
+    private void updateCurrent(final DistributionColoringContainer previousContainer) {
         current = defaultColoring;
+
+        if (previousContainer != null) {
+            if (previousContainer.current instanceof PaletteDistributionColoring) {
+                setPalette();
+            } else if (previousContainer.current instanceof ThreeColorsBlendDistributionColoring) {
+                setThreeColors();
+            } else if (previousContainer.current instanceof TwoColorsBlendDistributionColoring) {
+                setTwoColors();
+            }
+        }
     }
 
     public IDistributionColoring getCurrent() {
@@ -46,6 +61,7 @@ public class DistributionColoringContainer {
 
     public void setDefault() {
         current = defaultColoring;
+        defaultColoring.setSelectedIndex(-1);
     }
 
     public void setPalette() {

@@ -17,6 +17,8 @@ import org.amanzi.awe.ui.view.widgets.SpinnerWidget.ISpinnerListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractLabeledWidget;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 
@@ -28,9 +30,11 @@ import org.eclipse.swt.widgets.Spinner;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SpinnerWidget extends AbstractLabeledWidget<Spinner, ISpinnerListener> {
+public class SpinnerWidget extends AbstractLabeledWidget<Spinner, ISpinnerListener> implements ModifyListener {
 
     public interface ISpinnerListener extends AbstractAWEWidget.IAWEWidgetListener {
+
+        void onSpinderChanged(int value);
 
     }
 
@@ -45,13 +49,26 @@ public class SpinnerWidget extends AbstractLabeledWidget<Spinner, ISpinnerListen
 
     @Override
     protected Spinner createControl(final Composite parent) {
-        Spinner spinner = new Spinner(parent, SWT.BORDER);
+        final Spinner spinner = new Spinner(parent, SWT.BORDER);
 
         spinner.setDigits(0);
         spinner.setIncrement(1);
         spinner.setMinimum(0);
         spinner.setSelection(1);
 
+        spinner.addModifyListener(this);
+
         return spinner;
+    }
+
+    @Override
+    public void modifyText(final ModifyEvent e) {
+        for (final ISpinnerListener listener : getListeners()) {
+            listener.onSpinderChanged(getControl().getSelection());
+        }
+    }
+
+    public int getAdjency() {
+        return getControl().getSelection();
     }
 }

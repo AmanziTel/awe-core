@@ -35,6 +35,8 @@ public class PaletteComboWidget extends AbstractComboWidget<BrewerPalette, IPale
 
     public interface IPaletteChanged extends AbstractComboWidget.IComboSelectionListener {
 
+        void onPaletteChanged(BrewerPalette palette);
+
     }
 
     /**
@@ -58,7 +60,7 @@ public class PaletteComboWidget extends AbstractComboWidget<BrewerPalette, IPale
 
     @Override
     protected void fireListener(final IPaletteChanged listener, final BrewerPalette selectedItem) {
-        // TODO Auto-generated method stub
+        listener.onPaletteChanged(selectedItem);
     }
 
     public BrewerPalette getCurrentPalette() {

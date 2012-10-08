@@ -177,7 +177,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         boolean fireEvent = false;
         if (text == null) {
             text = StringUtils.EMPTY;
-            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItemIndex() > 0)
+            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItemIndex() >= 0)
                     && (getDefaultSelectedItemIndex() < getControl().getItemCount())) {
                 text = getControl().getItem(getDefaultSelectedItemIndex());
                 fireEvent = true;

@@ -38,6 +38,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.geotools.brewer.color.BrewerPalette;
 
 /**
  * TODO Purpose of
@@ -145,16 +146,22 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
     private void initializeColoringContainer() {
         if (model != null) {
             try {
-                distributionColoringContainer = new DistributionColoringContainer(model.getDistributionBars());
+                distributionColoringContainer = new DistributionColoringContainer(model.getDistributionBars(),
+                        distributionColoringContainer);
             } catch (final ModelException e) {
                 // TODO: LN: 08.10.2012, handle error
             }
 
-            distributionColoringContainer.updateSelectionAdjency(1);
+            distributionColoringContainer.updateCurrentSelection(-1);
+            distributionColoringContainer.updateSelectionAdjency(spinner.getAdjency());
             distributionColoringContainer.updateLeftColor(leftColor.getColor());
             distributionColoringContainer.updateMiddleColor(thirdColor.getColor());
             distributionColoringContainer.updateRightColor(rightColor.getColor());
-            distributionColoringContainer.updatePalette(paletteCombo.getCurrentPalette());
+            if (paletteCombo.getCurrentPalette() != null) {
+                distributionColoringContainer.updatePalette(paletteCombo.getCurrentPalette());
+            }
+
+            fireColorsUpdated();
         }
     }
 
@@ -205,19 +212,39 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
         thirdColorProperties.setHidden(isHidden);
         thirdColor.setHidden(isHidden || isThirdColorPropertiesHidden);
+
+        if (!isThirdColorPropertiesHidden && distributionColoringContainer != null) {
+            distributionColoringContainer.setThreeColors();
+            fireColorsUpdated();
+        }
     }
 
     private void setPalettePanelHidden(final boolean isHidden) {
+        if (!isHidden && distributionColoringContainer != null) {
+            distributionColoringContainer.setPalette();
+            fireColorsUpdated();
+        }
+
         paletteCombo.setHidden(isHidden);
     }
 
     private void setStandardStatusPanelHidden(final boolean isHidden) {
         selectedValues.setHidden(isHidden);
         spinner.setHidden(isHidden);
+
+        if (!isHidden && distributionColoringContainer != null) {
+            distributionColoringContainer.setDefault();
+            fireColorsUpdated();
+        }
     }
 
     private void setBlendPanelHidden(final boolean isHidden) {
         blendProperties.setHidden(isHidden);
+
+        if (!isHidden && distributionColoringContainer != null) {
+            distributionColoringContainer.setTwoColors();
+            fireColorsUpdated();
+        }
 
         setColorsPanelHidden(isHidden || isBlendPanelHidden);
         setPalettePanelHidden(isHidden || !isBlendPanelHidden);
@@ -232,15 +259,27 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     @Override
     public void onColorChanged(final Color color, final ColorWidget source) {
+        boolean fireEvent = false;
+
         if (source.equals(leftColor)) {
             model.setLeftColor(color);
+
+            fireEvent |= distributionColoringContainer.updateLeftColor(color);
         } else if (source.equals(rightColor)) {
             model.setRightColor(color);
+
+            fireEvent |= distributionColoringContainer.updateRightColor(color);
         } else if (source.equals(thirdColor)) {
             model.setMiddleColor(color);
+
+            fireEvent |= distributionColoringContainer.updateMiddleColor(color);
         }
 
-        fireUpdate();
+        if (fireEvent) {
+            fireColorsUpdated();
+        } else {
+            fireUpdate();
+        }
     }
 
     private void fireUpdate() {
@@ -260,6 +299,22 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
         if (distributionColoringContainer.updateCurrentSelection(index)) {
             fireColorsUpdated();
+        }
+    }
+
+    @Override
+    public void onSpinderChanged(final int value) {
+        if (distributionColoringContainer.updateSelectionAdjency(value)) {
+            fireColorsUpdated();
+        }
+    }
+
+    @Override
+    public void onPaletteChanged(final BrewerPalette palette) {
+        if (palette != null && distributionColoringContainer != null) {
+            if (distributionColoringContainer.updatePalette(palette)) {
+                fireColorsUpdated();
+            }
         }
     }
 }
