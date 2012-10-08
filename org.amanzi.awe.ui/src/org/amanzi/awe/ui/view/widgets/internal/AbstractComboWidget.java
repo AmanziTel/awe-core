@@ -13,8 +13,12 @@
 
 package org.amanzi.awe.ui.view.widgets.internal;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.ui.events.EventStatus;
@@ -48,6 +52,15 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
 
     private static final EventStatus[] SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
 
+    private final Comparator<D> itemComparator = new Comparator<D>() {
+
+        @Override
+        public int compare(final D o1, final D o2) {
+            return getItemName(o1).compareTo(getItemName(o2));
+        }
+
+    };
+
     private final Map<String, D> itemsMap = new HashMap<String, D>();
 
     private D selectedItem;
@@ -66,8 +79,18 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
      * @param parent
      * @param label
      */
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label) {
+        super(parent, listener, label);
+
+        AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
+    }
+
+    /**
+     * @param parent
+     * @param label
+     */
     protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
-            boolean widthoutListeners) {
+            final boolean widthoutListeners) {
         super(parent, listener, label, minimalLabelWidth);
     }
 
@@ -91,7 +114,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
 
     @Override
     protected Combo createControl(final Composite parent) {
-        Combo combo = new Combo(parent, SWT.NONE);
+        final Combo combo = new Combo(parent, SWT.NONE);
 
         combo.addSelectionListener(this);
 
@@ -99,7 +122,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     }
 
     protected D getSelectedItem() {
-        String itemText = getControl().getText();
+        final String itemText = getControl().getText();
 
         if (!StringUtils.isEmpty(itemText)) {
             selectedItem = itemsMap.get(itemText);
@@ -112,15 +135,26 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         getControl().removeAll();
         itemsMap.clear();
 
-        Collection<D> items = getItems();
+        final Collection<D> items = getItems();
         if (items != null) {
-            for (D item : items) {
-                String name = getItemName(item);
+            final List<D> itemList = new ArrayList<D>(items);
+            Collections.sort(itemList, itemComparator);
+            for (final D item : itemList) {
+                final String name = getItemName(item);
 
                 itemsMap.put(name, item);
                 getControl().add(name);
             }
+
+            setEnabled(true);
+            updateSelection();
+        } else {
+            setEnabled(false);
         }
+    }
+
+    public void skipSelection() {
+        selectedItem = null;
 
         updateSelection();
     }
@@ -129,23 +163,39 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         String text = null;
 
         if (selectedItem != null) {
-            String selectedItemName = getItemName(selectedItem);
+            final String selectedItemName = getItemName(selectedItem);
 
             if (ArrayUtils.contains(getControl().getItems(), selectedItemName)) {
                 text = selectedItemName;
             }
+        } else {
+            if (getDefaultSelectedItem() != null) {
+                text = getItemName(getDefaultSelectedItem());
+            }
         }
 
+        boolean fireEvent = false;
         if (text == null) {
-            if (getControl().getItemCount() > 0) {
-                text = getControl().getItem(0);
-            } else {
-                text = StringUtils.EMPTY;
+            text = StringUtils.EMPTY;
+            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItemIndex() > 0)
+                    && (getDefaultSelectedItemIndex() < getControl().getItemCount())) {
+                text = getControl().getItem(getDefaultSelectedItemIndex());
+                fireEvent = true;
             }
         }
 
         getControl().setText(text);
-        fireEvent();
+        if (fireEvent) {
+            fireEvent();
+        }
+    }
+
+    protected D getDefaultSelectedItem() {
+        return null;
+    }
+
+    protected int getDefaultSelectedItemIndex() {
+        return 0;
     }
 
     protected abstract Collection<D> getItems();
@@ -168,7 +218,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
     }
 
     private void fireEvent() {
-        for (L listener : getListeners()) {
+        for (final L listener : getListeners()) {
             fireListener(listener, getSelectedItem());
         }
     }

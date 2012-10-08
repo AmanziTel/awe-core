@@ -40,14 +40,29 @@ import org.neo4j.graphdb.RelationshipType;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatisticalModel> implements IDistributionModel {
 
     private static final Logger LOGGER = Logger.getLogger(DistributionModel.class);
+
+    /**
+     * Default color for Left Bar
+     */
+    private static final Color DEFAULT_LEFT_COLOR = Color.RED;
+
+    /**
+     * Default color for Right Bar
+     */
+    private static final Color DEFAULT_RIGHT_COLOR = Color.GREEN;
+
+    /**
+     * Default color for Selected Bar
+     */
+    private static final Color DEFAULT_MIDDLE_COLOR = Color.RED;
 
     private final ICollectFunction collectBarSources = new ICollectFunction() {
 
@@ -64,11 +79,18 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     private final IDistributionNodeProperties distributionNodeProperties;
 
+    private Color leftColor;
+
+    private Color rightColor;
+
+    private Color middleColor;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
-    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties, final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
+    public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.distributionService = distributionService;
@@ -76,11 +98,46 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     }
 
     @Override
+    public void initialize(final Node rootNode) throws ModelException {
+        super.initialize(rootNode);
+
+        try {
+            leftColor = getColorFromDatabase(rootNode, distributionNodeProperties.getLeftColor(), DEFAULT_LEFT_COLOR);
+            rightColor = getColorFromDatabase(rootNode, distributionNodeProperties.getRightColor(), DEFAULT_RIGHT_COLOR);
+            middleColor = getColorFromDatabase(rootNode, distributionNodeProperties.getMiddleColor(), DEFAULT_MIDDLE_COLOR);
+        } catch (final ServiceException e) {
+            processException("Error on get default Distribution Model properties", e);
+        }
+    }
+
+    private Color getColorFromDatabase(final Node node, final String propertyName, final Color defaultColor)
+            throws ServiceException {
+        final int[] rgbColor = getNodeService().getNodeProperty(node, propertyName, null, false);
+
+        if (rgbColor == null) {
+            return defaultColor;
+        } else {
+            return convertArrayToColor(rgbColor);
+        }
+    }
+
+    @Override
     public void finishUp() throws ModelException {
         if (distributionBars != null) {
-            for (IDistributionBar bar : distributionBars) {
+            for (final IDistributionBar bar : distributionBars) {
                 updateBar(bar);
             }
+        }
+
+        try {
+            getNodeService().updateProperty(getRootNode(), distributionNodeProperties.getLeftColor(),
+                    convertColorToArray(leftColor));
+            getNodeService().updateProperty(getRootNode(), distributionNodeProperties.getRightColor(),
+                    convertColorToArray(rightColor));
+            getNodeService().updateProperty(getRootNode(), distributionNodeProperties.getMiddleColor(),
+                    convertColorToArray(middleColor));
+        } catch (final ServiceException e) {
+            processException("Error on finishing up Distribution Model", e);
         }
     }
 
@@ -105,7 +162,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
         try {
             distributionService.setCurrentDistribution(getParentNode(), getRootNode());
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error occured on setting current Distribution Model for " + getSourceModel(), e);
         }
 
@@ -115,16 +172,17 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     }
 
     protected void updateBar(final IDistributionBar bar) throws ModelException {
-        Node barNode = ((DistributionBar)bar).getNode();
+        final Node barNode = ((DistributionBar)bar).getNode();
 
         try {
             if (bar.getColor() != null) {
-                getNodeService().updateProperty(barNode, distributionNodeProperties.getBarColor(), convertColorToArray(bar.getColor()));
+                getNodeService().updateProperty(barNode, distributionNodeProperties.getBarColor(),
+                        convertColorToArray(bar.getColor()));
             }
 
             getNodeService().updateProperty(barNode, getGeneralNodeProperties().getSizeProperty(), bar.getCount());
             getNodeService().updateProperty(barNode, getGeneralNodeProperties().getNodeNameProperty(), bar.getName());
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error occured on updating properties of bar <" + bar + ">", e);
         }
     }
@@ -133,7 +191,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     public IDistributionBar createDistributionBar(final IRange range) throws ModelException {
         DistributionBar result = null;
         try {
-            Node barNode = distributionService.createDistributionBarNode(getRootNode(), range.getName(), range.getColor() == null ? null : convertColorToArray(range.getColor()));
+            final Node barNode = distributionService.createDistributionBarNode(getRootNode(), range.getName(),
+                    range.getColor() == null ? null : convertColorToArray(range.getColor()));
 
             result = new DistributionBar(barNode, collectBarSources);
 
@@ -146,7 +205,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
                 distributionBars = new ArrayList<IDistributionBar>();
             }
             distributionBars.add(result);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on creating Distribution Bar", e);
         }
 
@@ -159,12 +218,12 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
             LOGGER.debug(getStartLogStatement("createAggregation", bar, element));
         }
 
-        DistributionBar distributionBar = (DistributionBar)bar;
-        DataElement dataElement = (DataElement)element;
+        final DistributionBar distributionBar = (DistributionBar)bar;
+        final DataElement dataElement = (DataElement)element;
 
         try {
             getNodeService().linkNodes(distributionBar.getNode(), dataElement.getNode(), DistributionRelationshipType.AGGREGATED);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error occured on adding Aggregation between nodes", e);
         }
 
@@ -179,8 +238,61 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         return new int[] {color.getRed(), color.getGreen(), color.getBlue()};
     }
 
+    private static Color convertArrayToColor(final int[] colorArray) {
+        return new Color(colorArray[0], colorArray[1], colorArray[2]);
+    }
+
     @Override
     protected RelationshipType getRelationToParent() {
         return DistributionRelationshipType.DISTRIBUTION;
     }
+
+    /**
+     * @return Returns the leftColor.
+     */
+    @Override
+    public Color getLeftColor() {
+        return leftColor;
+    }
+
+    /**
+     * @param leftColor The leftColor to set.
+     */
+    @Override
+    public void setLeftColor(final Color leftColor) {
+        this.leftColor = leftColor;
+    }
+
+    /**
+     * @return Returns the rightColor.
+     */
+    @Override
+    public Color getRightColor() {
+        return rightColor;
+    }
+
+    /**
+     * @param rightColor The rightColor to set.
+     */
+    @Override
+    public void setRightColor(final Color rightColor) {
+        this.rightColor = rightColor;
+    }
+
+    /**
+     * @return Returns the middleColor.
+     */
+    @Override
+    public Color getMiddleColor() {
+        return middleColor;
+    }
+
+    /**
+     * @param middleColor The middleColor to set.
+     */
+    @Override
+    public void setMiddleColor(final Color middleColor) {
+        this.middleColor = middleColor;
+    }
+
 }

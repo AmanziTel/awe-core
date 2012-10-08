@@ -37,8 +37,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -67,8 +67,10 @@ public class DistributionEngine extends AbstractTransactional {
         return DistributionEngineHolder.instance;
     }
 
-    public IDistributionModel build(final IPropertyStatisticalModel analyzedModel, final IDistributionType<?> distributionType, IProgressMonitor progressMonitor) throws ModelException {
-        LOGGER.info("Started Distribution Calculation for Model <" + analyzedModel + "> with distribution type <" + distributionType + ">");
+    public IDistributionModel build(final IPropertyStatisticalModel analyzedModel, final IDistributionType< ? > distributionType,
+            IProgressMonitor progressMonitor) throws ModelException {
+        LOGGER.info("Started Distribution Calculation for Model <" + analyzedModel + "> with distribution type <"
+                + distributionType + ">");
 
         if (progressMonitor == null) {
             progressMonitor = new NullProgressMonitor();
@@ -84,7 +86,8 @@ public class DistributionEngine extends AbstractTransactional {
             result = distributionModelProvider.findDistribution(analyzedModel, distributionType);
 
             if (result == null) {
-                LOGGER.info("No Distribution was found by type <" + distributionType + "> for model " + analyzedModel + ". Create new one.");
+                LOGGER.info("No Distribution was found by type <" + distributionType + "> for model " + analyzedModel
+                        + ". Create new one.");
 
                 result = distributionModelProvider.createDistribution(analyzedModel, distributionType);
 
@@ -107,13 +110,15 @@ public class DistributionEngine extends AbstractTransactional {
         return result;
     }
 
-    private void calculateDistribution(final IDistributionModel distributionModel, final IPropertyStatisticalModel analyzedModel, final IDistributionType<?> distributionType, final IProgressMonitor monitor) throws ModelException {
+    private void calculateDistribution(final IDistributionModel distributionModel, final IPropertyStatisticalModel analyzedModel,
+            final IDistributionType< ? > distributionType, final IProgressMonitor monitor) throws ModelException {
         int totalCount = getTotalElementCount(distributionType, analyzedModel.getPropertyStatistics());
 
         try {
             monitor.beginTask("Calculating Distribution <" + distributionType + ">", totalCount);
 
-            List<Pair<IRange, IDistributionBar>> distributionConditions = createDistributionBars(distributionModel, distributionType);
+            List<Pair<IRange, IDistributionBar>> distributionConditions = createDistributionBars(distributionModel,
+                    distributionType);
 
             for (IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
                 for (Pair<IRange, IDistributionBar> condition : distributionConditions) {
@@ -134,18 +139,21 @@ public class DistributionEngine extends AbstractTransactional {
         }
     }
 
-    private int getTotalElementCount(final IDistributionType<?> distributionType, final IPropertyStatisticsModel propertyStatistics) {
+    private int getTotalElementCount(final IDistributionType< ? > distributionType,
+            final IPropertyStatisticsModel propertyStatistics) {
         int result = 0;
 
         for (Object property : propertyStatistics.getValues(distributionType.getNodeType(), distributionType.getPropertyName())) {
-            result += propertyStatistics.getValueCount(distributionType.getNodeType(), distributionType.getPropertyName(), property);
+            result += propertyStatistics
+                    .getValueCount(distributionType.getNodeType(), distributionType.getPropertyName(), property);
         }
 
         return result;
     }
 
-    private List<Pair<IRange, IDistributionBar>> createDistributionBars(final IDistributionModel distributionModel, final IDistributionType<?> type) throws ModelException {
-        List<Pair<IRange, IDistributionBar>> result = new ArrayList<Pair<IRange,IDistributionBar>>();
+    private List<Pair<IRange, IDistributionBar>> createDistributionBars(final IDistributionModel distributionModel,
+            final IDistributionType< ? > type) throws ModelException {
+        List<Pair<IRange, IDistributionBar>> result = new ArrayList<Pair<IRange, IDistributionBar>>();
 
         for (IRange range : type.getRanges()) {
             result.add(new ImmutablePair<IRange, IDistributionBar>(range, distributionModel.createDistributionBar(range)));

@@ -43,7 +43,7 @@ public class Count implements IAggregationFunction {
 
     @Override
     public IAggregationFunction update(Number value) {
-        if (value != null || (value == null && acceptsNulls)) {
+        if ((value != null) || ((value == null) && acceptsNulls)) {
             count += 1;
         }
         return this;

@@ -20,8 +20,8 @@ import org.amanzi.neo.loader.ui.preferences.internal.AbstractDatasetSynonymsPref
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */

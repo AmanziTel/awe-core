@@ -46,7 +46,7 @@ public class StatisticsViewerComparator extends ViewerComparator {
         IStatisticsGroup group2 = row2.getStatisticsGroup();
         switch (column) {
         case 0:
-            if (row1 != null && row2 != null) {
+            if ((row1 != null) && (row2 != null)) {
                 result = group1.getPropertyValue().compareTo(group2.getPropertyValue());
             }
             break;

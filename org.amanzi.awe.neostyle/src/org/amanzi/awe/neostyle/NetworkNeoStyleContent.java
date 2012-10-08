@@ -89,7 +89,8 @@ public class NetworkNeoStyleContent extends StyleContent {
     }
 
     @Override
-    public Object createDefaultStyle(final IGeoResource resource, final Color colour, final IProgressMonitor monitor) throws IOException {
+    public Object createDefaultStyle(final IGeoResource resource, final Color colour, final IProgressMonitor monitor)
+            throws IOException {
         if (resource.canResolve(GeoResource.class)) {
             GeoResource res = resource.resolve(GeoResource.class, monitor);
             if (res.canResolve(INetworkModel.class)) {

@@ -40,10 +40,12 @@ public class ChangeDimensionAction extends Action implements IWorkbenchAction {
         this.type = type;
     }
 
+    @Override
     public void run() {
         viewer.setContentProvider(new StatisticsTreeContentProvider(type));
     }
 
+    @Override
     public void dispose() {
     }
 

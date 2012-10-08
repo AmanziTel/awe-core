@@ -65,7 +65,8 @@ public class RenderingTester extends PropertyTester {
 
                             if (parentModel != null) {
                                 try {
-                                    elementChain.addIterator(parentModel.getElements(periodItem.getStartDate(), periodItem.getEndDate()).iterator());
+                                    elementChain.addIterator(parentModel.getElements(periodItem.getStartDate(),
+                                            periodItem.getEndDate()).iterator());
                                 } catch (ModelException e) {
                                     // TODO: handle
                                 }
@@ -139,12 +140,12 @@ public class RenderingTester extends PropertyTester {
         return true;
     }
 
-    private <T extends IModel> T getParentModel(final ITreeItem<?, ?> treeItem, final Class<T> clazz) {
+    private <T extends IModel> T getParentModel(final ITreeItem< ? , ? > treeItem, final Class<T> clazz) {
         IModel model = treeItem.getParent();
 
         if (model != null) {
             if (model instanceof IAnalyzisModel) {
-                model = ((IAnalyzisModel<?>)model).getSourceModel();
+                model = ((IAnalyzisModel< ? >)model).getSourceModel();
             }
 
             if (model != null) {

@@ -26,8 +26,8 @@ import org.amanzi.neo.nodetypes.INodeType;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -65,7 +65,7 @@ public class EnumeratedDistributionType extends AbstractDistributionType<SimpleR
             Set<Object> propertyValues = getModel().getPropertyStatistics().getValues(getNodeType(), getPropertyName());
 
             if (propertyValues.size() > MAX_PROPERTY_VALUE_COUNT) {
-                //TODO: LN: throw an error
+                // TODO: LN: throw an error
             }
 
             for (Object value : propertyValues) {

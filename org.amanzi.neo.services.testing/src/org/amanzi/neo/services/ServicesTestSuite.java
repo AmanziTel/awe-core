@@ -26,11 +26,8 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-        org.amanzi.neo.services.impl.NodeServiceTest.class, 
-        org.amanzi.neo.services.impl.NodeServiceIntegrationTest.class,
-        org.amanzi.neo.services.impl.IndexServiceTest.class,
-        org.amanzi.neo.services.impl.IndexServiceIntegrationTest.class,
+@SuiteClasses({org.amanzi.neo.services.impl.NodeServiceTest.class, org.amanzi.neo.services.impl.NodeServiceIntegrationTest.class,
+        org.amanzi.neo.services.impl.IndexServiceTest.class, org.amanzi.neo.services.impl.IndexServiceIntegrationTest.class,
         org.amanzi.neo.services.impl.statistics.PropertyStatisticsServiceTest.class,
         org.amanzi.neo.services.impl.internal.AbstractServiceTest.class,
         org.amanzi.neo.services.impl.statistics.internal.NodeTypeVaultTest.class,

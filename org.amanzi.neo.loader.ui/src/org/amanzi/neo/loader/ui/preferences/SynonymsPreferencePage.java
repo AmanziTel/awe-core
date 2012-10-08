@@ -18,11 +18,12 @@ import org.eclipse.ui.internal.dialogs.EmptyPreferencePage;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+@SuppressWarnings("restriction")
 public class SynonymsPreferencePage extends EmptyPreferencePage {
 
 }

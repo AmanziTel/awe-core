@@ -40,15 +40,16 @@ public class GeoServiceExtension implements ServiceExtension {
     public static final String URL_KEY = "org.amanzi.awe.catalog.neo.url";
     public static final String CLASS_KEY = "org.amanzi.awe.catalog.neo.class";
 
+    @Override
     public Map<String, Serializable> createParams(URL url) {
         try {
             if (url.getProtocol().equals(FILE_PROTOCOL)) {
                 // the URL represent a normal file or directory on disk
                 File path = URLUtils.urlToFile(url);
-                
+
                 if (!(path.exists() && path.isDirectory())) {
-                    //TODO: error
-                } 
+                    // TODO: error
+                }
 
                 // check the directory, does it contain a neo4j database
                 File neostore = new File(path, NEOSTORE_DIR);
@@ -68,6 +69,7 @@ public class GeoServiceExtension implements ServiceExtension {
         return null;
     }
 
+    @Override
     public IService createService(URL id, Map<String, Serializable> params) {
 
         // sets job name for splash monitor

@@ -18,18 +18,16 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-    org.amanzi.neo.loader.ui.handler.LoaderWizardHandlerTest.class,
-    org.amanzi.neo.loader.ui.impl.internal.LoaderContextTest.class
-})
+@SuiteClasses({org.amanzi.neo.loader.ui.handler.LoaderWizardHandlerTest.class,
+        org.amanzi.neo.loader.ui.impl.internal.LoaderContextTest.class})
 public class LoaderUITestSuite {
 
 }

@@ -16,8 +16,10 @@ package org.amanzi.awe.views.statistcstree.view;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeContentProvider;
+import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeFilteredContentProvider;
 import org.amanzi.awe.views.statistcstree.providers.StatisticsTreeLabelProvider;
 import org.amanzi.awe.views.statistcstree.view.actions.ChangeDimensionAction;
+import org.amanzi.awe.views.statistcstree.view.filter.container.IStatisticsTreeFilterContainer;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.TreeViewItem;
@@ -39,11 +41,14 @@ public class StatisticsTreeView extends AbstractTreeView {
 
     public static final String VIEW_ID = "org.amanzi.awe.views.statistcstree.StatisticsTreeView";
 
+    private static final StatisticsTreeContentProvider DEFAULT_CONTENT_PROVIDER = new StatisticsTreeContentProvider(
+            DimensionType.TIME);
+
     /**
      * @param provider
      */
     public StatisticsTreeView() {
-        super(new StatisticsTreeContentProvider(DimensionType.TIME));
+        super(DEFAULT_CONTENT_PROVIDER);
     }
 
     /**
@@ -70,4 +75,30 @@ public class StatisticsTreeView extends AbstractTreeView {
         return new TreeViewItem<IStatisticsModel, IDataElement>((IStatisticsModel)model, element);
     }
 
+    /**
+     * @param parent
+     * @param filter
+     */
+    public void filterTree(IModel parent, IStatisticsTreeFilterContainer filter) {
+        if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
+            StatisticsTreeFilteredContentProvider contentProvider = (StatisticsTreeFilteredContentProvider)getTreeViewer()
+                    .getContentProvider();
+            if (contentProvider.getFilter().equals(filter)) {
+                showElement(parent, null);
+                return;
+            }
+        }
+        getTreeViewer().setContentProvider(
+                new StatisticsTreeFilteredContentProvider(DimensionType.TIME, (IStatisticsModel)parent, filter));
+        getTreeViewer().expandToLevel(5);
+
+    }
+
+    @Override
+    public void showElement(IModel model, IDataElement element) {
+        if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
+            getTreeViewer().setContentProvider(DEFAULT_CONTENT_PROVIDER);
+        }
+        super.showElement(model, element);
+    }
 }

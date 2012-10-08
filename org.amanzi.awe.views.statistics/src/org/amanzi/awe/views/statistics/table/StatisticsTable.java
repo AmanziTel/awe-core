@@ -29,7 +29,7 @@ import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilterDialogEvent;
 import org.amanzi.awe.views.statistics.table.filters.dialog.FilteringDialog;
@@ -66,8 +66,8 @@ import com.google.common.collect.Iterables;
  * @since 1.0.0
  */
 public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStatisticsTableListener>
-implements
-IFilterDialogListener {
+        implements
+            IFilterDialogListener {
 
     public interface IStatisticsTableListener extends AbstractAWEWidget.IAWEWidgetListener {
     }
@@ -94,7 +94,7 @@ IFilterDialogListener {
 
     private TableCursor cursor;
 
-    private IStatisticsFilterContainer filterContainer;
+    private IStatisticsViewFilterContainer filterContainer;
 
     /**
      * @param parent
@@ -130,7 +130,7 @@ IFilterDialogListener {
         return scrolledComposite;
     }
 
-    private void updateProviders(final IStatisticsFilterContainer filterContainer) {
+    private void updateProviders(final IStatisticsViewFilterContainer filterContainer) {
         contentProvider.setFilter(filterContainer);
         labelProvider.setFilter(filterContainer);
     }
@@ -146,7 +146,7 @@ IFilterDialogListener {
         cursor.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
     }
 
-    public void updateStatistics(final IStatisticsModel model, final IStatisticsFilterContainer filterContainer) {
+    public void updateStatistics(final IStatisticsModel model, final IStatisticsViewFilterContainer filterContainer) {
         if (model != null) {
             this.model = model;
             this.filterContainer = filterContainer;
@@ -237,7 +237,7 @@ IFilterDialogListener {
 
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                if (table.getColumn(0).equals(column)) {
+                if (table.getColumn(1).equals(column)) {
                     FilteringDialog filterDialog = new FilteringDialog(tableViewer, column, groups);
                     filterDialog.open();
                 } else {
@@ -258,6 +258,9 @@ IFilterDialogListener {
             column.dispose();
         }
         tableViewer.setInput(null);
+
+        tableViewer.resetFilters();
+        columns.clear();
     }
 
     @Override
@@ -273,7 +276,6 @@ IFilterDialogListener {
     private void drillDown() {
         int column = cursor.getColumn() - 1;
         IStatisticsRow statisticsRow = (IStatisticsRow)cursor.getRow().getData();
-
 
         if ((cursor.getRow() != null) && (cursor.getRow().getData() instanceof IStatisticsRow)) {
             drillDown(statisticsRow, column);

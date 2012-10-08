@@ -45,7 +45,7 @@ public class DistributionEnginePlugin extends AbstractProviderPlugin {
 
     /**
      * Returns the shared instance
-     *
+     * 
      * @return the shared instance
      */
     public static DistributionEnginePlugin getDefault() {

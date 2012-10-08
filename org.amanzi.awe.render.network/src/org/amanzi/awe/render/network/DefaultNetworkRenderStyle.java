@@ -33,7 +33,7 @@ public class DefaultNetworkRenderStyle extends AbstractRendererStyles {
     private int maxSitesLabel = 50;
     private int defaultBeamwidth = 40;
     private Color siteFill = new Color(128, 128, 128, getAlpha());
-    private Color sectorFill = new Color(255, 255, 128, getAlpha());	
+    private Color sectorFill = new Color(255, 255, 128, getAlpha());
 
     public static DefaultNetworkRenderStyle getInstance() {
         if (renderStyle == null) {
@@ -69,13 +69,14 @@ public class DefaultNetworkRenderStyle extends AbstractRendererStyles {
     public Color getSectorFill() {
         return sectorFill;
     }
-    
+
     /**
      * Get default beamwidth
+     * 
      * @return default beamwidth
      */
     public int getDefaultBeamwidth() {
-    	return defaultBeamwidth;
+        return defaultBeamwidth;
     }
 
     /**
@@ -101,10 +102,11 @@ public class DefaultNetworkRenderStyle extends AbstractRendererStyles {
 
     /**
      * Get new default beamwidth
+     * 
      * @param defaultBeamwidth
      */
-	public void setDefaultBeamwidth(int defaultBeamwidth) {
-		this.defaultBeamwidth = defaultBeamwidth;
-	}
+    public void setDefaultBeamwidth(int defaultBeamwidth) {
+        this.defaultBeamwidth = defaultBeamwidth;
+    }
 
 }

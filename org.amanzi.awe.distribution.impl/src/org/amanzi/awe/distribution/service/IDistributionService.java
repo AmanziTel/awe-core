@@ -21,16 +21,16 @@ import org.neo4j.graphdb.Node;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public interface IDistributionService extends IService {
 
-    Node findDistributionNode(Node rootNode, IDistributionType<?> distributionType) throws ServiceException;
+    Node findDistributionNode(Node rootNode, IDistributionType< ? > distributionType) throws ServiceException;
 
-    Node createDistributionNode(Node rootNode, IDistributionType<?> distributionType) throws ServiceException;
+    Node createDistributionNode(Node rootNode, IDistributionType< ? > distributionType) throws ServiceException;
 
     Node getCurrentDistribution(Node rootNode) throws ServiceException;
 

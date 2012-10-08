@@ -27,6 +27,7 @@ import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.providers.context.ProviderContextImpl;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.PlatformUI;
@@ -96,7 +97,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
         LOGGER.fatal(message, e);
 
-        getLog().log(new Status(Status.ERROR, getPluginId(), message, e));
+        getLog().log(new Status(IStatus.ERROR, getPluginId(), message, e));
     }
 
     public IProjectModelProvider getProjectModelProvider() {

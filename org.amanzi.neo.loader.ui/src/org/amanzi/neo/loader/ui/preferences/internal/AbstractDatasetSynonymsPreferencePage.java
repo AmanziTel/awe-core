@@ -31,8 +31,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -56,7 +56,8 @@ public abstract class AbstractDatasetSynonymsPreferencePage extends FieldEditorP
             group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
             for (Synonyms synonym : entry.getValue()) {
-                StringFieldEditor synonymsEditor = new StringFieldEditor(getSynonymsKey(nodeType, synonym.getPropertyName()), synonym.getPropertyName(), group);
+                StringFieldEditor synonymsEditor = new StringFieldEditor(getSynonymsKey(nodeType, synonym.getPropertyName()),
+                        synonym.getPropertyName(), group);
                 synonymsEditor.setEmptyStringAllowed(false);
 
                 addField(synonymsEditor);
@@ -65,12 +66,10 @@ public abstract class AbstractDatasetSynonymsPreferencePage extends FieldEditorP
     }
 
     protected String getSynonymsKey(final INodeType nodeType, final String property) {
-        return getDatasetType() + "." + nodeType.getId() + "." + property ;
+        return getDatasetType() + "." + nodeType.getId() + "." + property;
     }
 
     protected abstract String getDatasetType();
-
-
 
     @Override
     public void init(final IWorkbench workbench) {

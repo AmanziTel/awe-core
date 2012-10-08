@@ -30,8 +30,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -51,9 +51,11 @@ public class SynonymsPreferencesInitializer extends AbstractPreferenceInitialize
         IPreferenceStore store = LoaderUIPlugin.getDefault().getPreferenceStore();
 
         for (String synonymsType : SYNONYMS_TYPES) {
-            for (Entry<INodeType, List<Synonyms>> synonymsEntry : SynonymsManager.getInstance().getSynonyms(synonymsType).entrySet()) {
+            for (Entry<INodeType, List<Synonyms>> synonymsEntry : SynonymsManager.getInstance().getSynonyms(synonymsType)
+                    .entrySet()) {
                 for (Synonyms singleSynonym : synonymsEntry.getValue()) {
-                    String preferenceKey = synonymsType + "." + synonymsEntry.getKey().getId() + "." + singleSynonym.getPropertyName();
+                    String preferenceKey = synonymsType + "." + synonymsEntry.getKey().getId() + "."
+                            + singleSynonym.getPropertyName();
 
                     String preferenceValue = StringUtils.join(Arrays.asList(singleSynonym.getPossibleHeaders()), ", ");
 

@@ -40,9 +40,7 @@ public class DriveStyleConfigurator extends IStyleConfigurator {
 
     /*
      * (non-Javadoc)
-     * 
-     * @see
-     * net.refractions.udig.style.IStyleConfigurator#canStyle(net.refractions
+     * @see net.refractions.udig.style.IStyleConfigurator#canStyle(net.refractions
      * .udig.project.internal.Layer)
      */
     @Override
@@ -52,12 +50,11 @@ public class DriveStyleConfigurator extends IStyleConfigurator {
 
     /*
      * (non-Javadoc)
-     * 
      * @see net.refractions.udig.style.IStyleConfigurator#refresh()
      */
     @Override
     protected void refresh() {
-        driveStyle = (DriveStyle) getStyleBlackboard().get(ID);
+        driveStyle = (DriveStyle)getStyleBlackboard().get(ID);
         defaultStyle.setCurrentStyle(driveStyle);
         defaultStyle.setRenderableModel(findRenderableModel());
         defaultStyle.refresh();
@@ -66,15 +63,13 @@ public class DriveStyleConfigurator extends IStyleConfigurator {
     @Override
     public void preApply() {
         defaultStyle.preApply();
-        DriveStyle clone = (DriveStyle) defaultStyle.getCurrentStyle().clone();
+        DriveStyle clone = (DriveStyle)defaultStyle.getCurrentStyle().clone();
         getStyleBlackboard().put(ID, clone);
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see
-     * net.refractions.udig.style.IStyleConfigurator#createControl(org.eclipse
+     * @see net.refractions.udig.style.IStyleConfigurator#createControl(org.eclipse
      * .swt.widgets.Composite)
      */
     @Override
@@ -87,8 +82,7 @@ public class DriveStyleConfigurator extends IStyleConfigurator {
         CTabItem item = new CTabItem(tabFolder, SWT.NONE);
         item.setText(STYLE_TAB_HEADER);
         tabFolder.setSelection(item);
-        ScrolledComposite scroll = new ScrolledComposite(tabFolder,
-                SWT.V_SCROLL | SWT.H_SCROLL);
+        ScrolledComposite scroll = new ScrolledComposite(tabFolder, SWT.V_SCROLL | SWT.H_SCROLL);
         scroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         scroll.setExpandVertical(true);
         scroll.setExpandHorizontal(true);
@@ -108,10 +102,9 @@ public class DriveStyleConfigurator extends IStyleConfigurator {
     private IDriveModel findRenderableModel() {
         IDriveModel model;
         try {
-            model = getLayer().findGeoResource(IDriveModel.class).resolve(
-                    IDriveModel.class, null);
+            model = getLayer().findGeoResource(IDriveModel.class).resolve(IDriveModel.class, null);
         } catch (IOException e) {
-            throw (RuntimeException) new RuntimeException().initCause(e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
         return model;
     }

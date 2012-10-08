@@ -19,8 +19,8 @@ import org.eclipse.ui.part.ViewPart;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -31,7 +31,6 @@ public abstract class AbstractAWEView extends ViewPart {
 
     @Override
     public void createPartControl(final Composite parent) {
-
 
     }
 

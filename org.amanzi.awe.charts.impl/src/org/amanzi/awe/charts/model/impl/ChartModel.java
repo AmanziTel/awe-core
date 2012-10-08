@@ -122,70 +122,97 @@ public class ChartModel implements IChartModel {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((chartAggregation == null) ? 0 : chartAggregation.hashCode());
-        result = prime * result + ((chartType == null) ? 0 : chartType.hashCode());
-        result = prime * result + ((domainAxisName == null) ? 0 : domainAxisName.hashCode());
-        result = prime * result + ((filter == null) ? 0 : filter.hashCode());
-        result = prime * result + ((mainRangeAxis == null) ? 0 : mainRangeAxis.hashCode());
-        result = prime * result + ((model == null) ? 0 : model.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((orientation == null) ? 0 : orientation.hashCode());
-        result = prime * result + ((period == null) ? 0 : period.hashCode());
-        result = prime * result + ((secondAxis == null) ? 0 : secondAxis.hashCode());
+        result = (prime * result) + ((chartAggregation == null) ? 0 : chartAggregation.hashCode());
+        result = (prime * result) + ((chartType == null) ? 0 : chartType.hashCode());
+        result = (prime * result) + ((domainAxisName == null) ? 0 : domainAxisName.hashCode());
+        result = (prime * result) + ((filter == null) ? 0 : filter.hashCode());
+        result = (prime * result) + ((mainRangeAxis == null) ? 0 : mainRangeAxis.hashCode());
+        result = (prime * result) + ((model == null) ? 0 : model.hashCode());
+        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
+        result = (prime * result) + ((orientation == null) ? 0 : orientation.hashCode());
+        result = (prime * result) + ((period == null) ? 0 : period.hashCode());
+        result = (prime * result) + ((secondAxis == null) ? 0 : secondAxis.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ChartModel other = (ChartModel)obj;
-        if (chartAggregation != other.chartAggregation)
+        if (chartAggregation != other.chartAggregation) {
             return false;
-        if (chartType != other.chartType)
+        }
+        if (chartType != other.chartType) {
             return false;
+        }
         if (domainAxisName == null) {
-            if (other.domainAxisName != null)
+            if (other.domainAxisName != null) {
                 return false;
-        } else if (!domainAxisName.equals(other.domainAxisName))
+            }
+        } else if (!domainAxisName.equals(other.domainAxisName)) {
             return false;
+        }
         if (filter == null) {
-            if (other.filter != null)
+            if (other.filter != null) {
                 return false;
-        } else if (!filter.equals(other.filter))
+            }
+        } else if (!filter.equals(other.filter)) {
             return false;
+        }
         if (mainRangeAxis == null) {
-            if (other.mainRangeAxis != null)
+            if (other.mainRangeAxis != null) {
                 return false;
-        } else if (!mainRangeAxis.equals(other.mainRangeAxis))
+            }
+        } else if (!mainRangeAxis.equals(other.mainRangeAxis)) {
             return false;
+        }
         if (model == null) {
-            if (other.model != null)
+            if (other.model != null) {
                 return false;
-        } else if (!model.equals(other.model))
+            }
+        } else if (!model.equals(other.model)) {
             return false;
+        }
         if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                 return false;
-        } else if (!name.equals(other.name))
+            }
+        } else if (!name.equals(other.name)) {
             return false;
+        }
         if (orientation == null) {
-            if (other.orientation != null)
+            if (other.orientation != null) {
                 return false;
-        } else if (!orientation.equals(other.orientation))
+            }
+        } else if (!orientation.equals(other.orientation)) {
             return false;
-        if (period != other.period)
+        }
+        if (period != other.period) {
             return false;
+        }
         if (secondAxis == null) {
-            if (other.secondAxis != null)
+            if (other.secondAxis != null) {
                 return false;
-        } else if (!secondAxis.equals(other.secondAxis))
+            }
+        } else if (!secondAxis.equals(other.secondAxis)) {
             return false;
+        }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ChartModel [name=" + name + ", domainAxisName=" + domainAxisName + ", model=" + model + ", orientation="
+                + orientation + ", mainRangeAxis=" + mainRangeAxis + ", chartType=" + chartType + ", chartAggregation="
+                + chartAggregation + ", filter=" + filter + ", period=" + period + ", secondAxis=" + secondAxis + "]";
     }
 
 }

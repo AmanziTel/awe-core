@@ -14,14 +14,14 @@
 package org.amanzi.awe.neostyle;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Pechko_E
  * @since 1.0.0
  */
 public enum ShapeType {
-    CIRCLE,RECTANGLE,TEXT;
+    CIRCLE, RECTANGLE, TEXT;
 
 }

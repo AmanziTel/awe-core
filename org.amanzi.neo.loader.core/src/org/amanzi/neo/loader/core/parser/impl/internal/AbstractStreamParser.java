@@ -35,60 +35,60 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D extends IData> extends AbstractParser<C, D> {
 
-	private CountingInputStream stream;
+    private CountingInputStream stream;
 
-	private InputStreamReader reader;
+    private InputStreamReader reader;
 
-	protected CountingInputStream getStream() {
-		if (stream == null) {
-			stream = initializeStream(getConfiguration());
-		}
-		return stream;
-	}
+    protected CountingInputStream getStream() {
+        if (stream == null) {
+            stream = initializeStream(getConfiguration());
+        }
+        return stream;
+    }
 
-	protected InputStreamReader getReader() {
-		if (reader == null) {
-			reader = initializeReader(getStream());
-		}
-		return reader;
-	}
+    protected InputStreamReader getReader() {
+        if (reader == null) {
+            reader = initializeReader(getStream());
+        }
+        return reader;
+    }
 
-	protected CountingInputStream initializeStream(final C configuration) {
-		try {
-			return new CountingInputStream(new FileInputStream(configuration.getFile()));
-		} catch (java.io.FileNotFoundException e) {
-			throw new FileNotFoundException(configuration.getFile(), e);
-		}
-	}
+    protected CountingInputStream initializeStream(final C configuration) {
+        try {
+            return new CountingInputStream(new FileInputStream(configuration.getFile()));
+        } catch (java.io.FileNotFoundException e) {
+            throw new FileNotFoundException(configuration.getFile(), e);
+        }
+    }
 
-	protected InputStreamReader initializeReader(final InputStream stream) {
-		return new InputStreamReader(stream);
-	}
+    protected InputStreamReader initializeReader(final InputStream stream) {
+        return new InputStreamReader(stream);
+    }
 
-	@Override
-	public D next() {
-		D result = super.next();
+    @Override
+    public D next() {
+        D result = super.next();
 
-		work(stream.getCount());
+        work(stream.getCount());
 
-		return result;
-	}
+        return result;
+    }
 
-	@Override
-	public void setProgressMonitor(final String monitorName, final IProgressMonitor monitor) {
-		monitor.beginTask(monitorName, (int)getFileFromConfiguration(getConfiguration()).length());
+    @Override
+    public void setProgressMonitor(final String monitorName, final IProgressMonitor monitor) {
+        monitor.beginTask(monitorName, (int)getFileFromConfiguration(getConfiguration()).length());
 
-		super.setProgressMonitor(monitorName, monitor);
-	}
+        super.setProgressMonitor(monitorName, monitor);
+    }
 
-	@Override
-	public void finishUp() {
-		IOUtils.closeQuietly(reader);
-		IOUtils.closeQuietly(stream);
-	}
+    @Override
+    public void finishUp() {
+        IOUtils.closeQuietly(reader);
+        IOUtils.closeQuietly(stream);
+    }
 
-	@Override
-	protected File getFileFromConfiguration(final ISingleFileConfiguration configuration) {
-		return configuration.getFile();
-	}
+    @Override
+    protected File getFileFromConfiguration(final ISingleFileConfiguration configuration) {
+        return configuration.getFile();
+    }
 }

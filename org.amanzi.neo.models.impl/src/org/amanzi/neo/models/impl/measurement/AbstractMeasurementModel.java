@@ -496,7 +496,8 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         ILocationElement result = null;
 
         try {
-            Node locationNode = getNodeService().getSingleChild(dataElement.getNode(), MeasurementNodeType.MP, MeasurementRelationshipType.LOCATION);
+            Node locationNode = getNodeService().getSingleChild(dataElement.getNode(), MeasurementNodeType.MP,
+                    MeasurementRelationshipType.LOCATION);
 
             if (locationNode != null) {
                 result = getLocationElement(locationNode);

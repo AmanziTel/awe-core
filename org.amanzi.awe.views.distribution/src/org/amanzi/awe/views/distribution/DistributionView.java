@@ -17,8 +17,8 @@ import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.ui.util.ActionUtil;
-import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
@@ -27,9 +27,13 @@ import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistri
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
+import org.amanzi.awe.views.distribution.widgets.DistributionPropertyWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -43,18 +47,50 @@ import org.eclipse.ui.part.ViewPart;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionView extends ViewPart implements IDistributionDatasetSelectionListener, IPropertySelectionListener, IDistributionTypeListener, IDistributionChartListener {
+public class DistributionView extends ViewPart
+        implements
+            IDistributionDatasetSelectionListener,
+            IPropertySelectionListener,
+            IDistributionTypeListener,
+            IDistributionChartListener,
+            IDistributionPropertiesListener {
 
     private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
     private static final int SECOND_ROW_LABEL_WIDTH = 60;
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
+
+    private class UpdateDistributionJob extends Job {
+
+        private final IDistributionModel model;
+
+        public UpdateDistributionJob(final IDistributionModel model) {
+            super(StringUtils.EMPTY);
+            this.model = model;
+
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(final IProgressMonitor monitor) {
+            try {
+                model.finishUp();
+            } catch (final ModelException e) {
+                return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on updating Distribution", e);
+            } finally {
+                // TODO: LN: 05.10.2012, run refresh action on a map
+            }
+
+            return Status.OK_STATUS;
+        }
+
+    }
 
     private class DistributionJob extends Job {
 
@@ -68,8 +104,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
         protected IStatus run(final IProgressMonitor monitor) {
             try {
                 model = currentManager.build(monitor);
-            } catch (ModelException e) {
-                return new Status(Status.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
+            } catch (final ModelException e) {
+                return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
             } finally {
                 ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -102,6 +138,8 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private Composite parentComposite;
 
+    private DistributionPropertiesWidget distributionPropertiesWidget;
+
     /**
      * 
      */
@@ -113,12 +151,15 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
     public void createPartControl(final Composite parent) {
         parentComposite = parent;
 
-        Composite mainComposite = new Composite(parent, SWT.NONE);
-        mainComposite.setLayout(new GridLayout(3, false));
+        final Composite mainComposite = new Composite(parent, SWT.NONE);
+        mainComposite.setLayout(new GridLayout(1, false));
         mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         addDistributionTypeComposite(mainComposite);
         addDistributionChartComposite(mainComposite);
+
+        distributionPropertiesWidget = addDistributionPropertiesWidget(mainComposite, this);
+        distributionPropertiesWidget.setVisible(false);
 
         isInitialized = true;
     }
@@ -131,9 +172,13 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
     }
 
     private void addDistributionTypeComposite(final Composite parent) {
-        addDistributionDatasetWidget(parent, this, FIRST_ROW_LABEL_WIDTH);
-        propertyCombo = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Property:", parent, SECOND_ROW_LABEL_WIDTH);
-        distributionTypeCombo = addDistributionTypeWidget(parent, this, THIRD_ROW_LABEL_WIDTH);
+        final Composite distributionTypeComposite = new Composite(parent, SWT.NONE);
+        distributionTypeComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        distributionTypeComposite.setLayout(new GridLayout(3, false));
+
+        addDistributionDatasetWidget(distributionTypeComposite, this, FIRST_ROW_LABEL_WIDTH);
+        propertyCombo = addDistributionPropertyWidget(distributionTypeComposite, "Property:", this, SECOND_ROW_LABEL_WIDTH);
+        distributionTypeCombo = addDistributionTypeWidget(distributionTypeComposite, this, THIRD_ROW_LABEL_WIDTH);
     }
 
     @Override
@@ -142,25 +187,42 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     }
 
-    private DistributionDatasetWidget addDistributionDatasetWidget(final Composite parent, final IDistributionDatasetSelectionListener listener, final int minWidth) {
-        DistributionDatasetWidget result = new DistributionDatasetWidget(parent, listener, "Dataset:", minWidth,
-                DistributionEnginePlugin.getDefault().getProjectModelProvider(),
-                DistributionEnginePlugin.getDefault().getNetworkModelProvider(),
-                DistributionEnginePlugin.getDefault().getDriveModelProvider());
+    private DistributionDatasetWidget addDistributionDatasetWidget(final Composite parent,
+            final IDistributionDatasetSelectionListener listener, final int minWidth) {
+        final DistributionDatasetWidget result = new DistributionDatasetWidget(parent, listener, "Dataset:", minWidth,
+                DistributionEnginePlugin.getDefault().getProjectModelProvider(), DistributionEnginePlugin.getDefault()
+                        .getNetworkModelProvider(), DistributionEnginePlugin.getDefault().getDriveModelProvider());
         result.initializeWidget();
 
         return result;
     }
 
     private DistributionChartWidget addDistributionChartWidget(final Composite parent, final IDistributionChartListener listener) {
-        DistributionChartWidget result = new DistributionChartWidget(parent, listener);
+        final DistributionChartWidget result = new DistributionChartWidget(parent, listener);
         result.initializeWidget();
 
         return result;
     }
 
-    private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener, final int minWidth) {
-        DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
+    private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener,
+            final int minWidth) {
+        final DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
+        result.initializeWidget();
+
+        return result;
+    }
+
+    private DistributionPropertiesWidget addDistributionPropertiesWidget(final Composite parent,
+            final IDistributionPropertiesListener listener) {
+        final DistributionPropertiesWidget result = new DistributionPropertiesWidget(parent, listener);
+        result.initializeWidget();
+
+        return result;
+    }
+
+    private DistributionPropertyWidget addDistributionPropertyWidget(final Composite parent, final String label,
+            final IPropertySelectionListener listener, final int minimalWidth) {
+        final DistributionPropertyWidget result = new DistributionPropertyWidget(parent, listener, label, minimalWidth);
         result.initializeWidget();
 
         return result;
@@ -173,6 +235,10 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
             currentManager.setNodeType(distributionDataset.getNodeType());
 
             propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
+            distributionPropertiesWidget.setDistributionManager(currentManager);
+
+            propertyCombo.skipSelection();
+            distributionTypeCombo.skipSelection();
         }
     }
 
@@ -182,6 +248,7 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
             currentManager.setProperty(property);
 
             distributionTypeCombo.setDistributionManager(currentManager);
+            distributionTypeCombo.skipSelection();
         }
     }
 
@@ -204,6 +271,24 @@ public class DistributionView extends ViewPart implements IDistributionDatasetSe
 
     private void updateCharts(final IDistributionModel model) {
         distributionChart.updateDistribution(model);
+
+        distributionPropertiesWidget.setVisible(true);
+
+        updateChartColors();
+    }
+
+    @Override
+    public void onChartTypeChanged(final ChartType chartType) {
+        distributionChart.updateChartType(chartType);
+    }
+
+    private void updateChartColors() {
+
+    }
+
+    @Override
+    public void update(final IDistributionModel model) {
+        new UpdateDistributionJob(model).schedule();
     }
 
 }

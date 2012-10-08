@@ -15,15 +15,14 @@ package org.amanzi.neo.models.impl.internal.util;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * This class handles the CRS specification. Currently it is hard coded to return WGS84
- * (EPSG:4326) for data that looks like lat/long and RT90 2.5 gon V (EPSG:3021) for data that
- * looks like it is in meters and no hints are given. If the user passes a hint, the following
- * are considered:
+ * This class handles the CRS specification. Currently it is hard coded to return WGS84 (EPSG:4326)
+ * for data that looks like lat/long and RT90 2.5 gon V (EPSG:3021) for data that looks like it is
+ * in meters and no hints are given. If the user passes a hint, the following are considered:
  * 
  * @author craig
  */
 public class CRSWrapper {
-    
+
     protected String type = null;
     protected String epsg = null;
     protected String wkt = null;
@@ -41,16 +40,17 @@ public class CRSWrapper {
     }
 
     public static CRSWrapper fromLocation(Float lat, Float lon, String hint) {
-        return fromLocation(lat.doubleValue(),lon.doubleValue(),hint);
+        return fromLocation(lat.doubleValue(), lon.doubleValue(), hint);
     }
+
     public static CRSWrapper fromLocation(double lat, double lon, String hint) {
         CRSWrapper crs = new CRSWrapper();
-        crs.wkt=null;
+        crs.wkt = null;
         crs.type = "geographic";
         crs.epsg = "EPSG:4326";
-        if ((lat > 90 || lat < -90) && (lon > 180 || lon < -180)) {
+        if (((lat > 90) || (lat < -90)) && ((lon > 180) || (lon < -180))) {
             crs.type = "projected";
-            if (hint != null && hint.toLowerCase().contains("germany")) {
+            if ((hint != null) && hint.toLowerCase().contains("germany")) {
                 crs.epsg = "EPSG:31467";
             } else {
                 crs.epsg = "EPSG:3021";
@@ -61,7 +61,7 @@ public class CRSWrapper {
 
     public static CRSWrapper fromCRS(String crsType, String crsName) {
         CRSWrapper crs = new CRSWrapper();
-        crs.wkt=null;
+        crs.wkt = null;
         crs.type = crsType;
         crs.epsg = crsName;
         return crs;
@@ -72,7 +72,7 @@ public class CRSWrapper {
      */
     public static CRSWrapper fromCRS(CoordinateReferenceSystem crs) {
         CRSWrapper result = new CRSWrapper();
-        result.wkt=crs.toWKT(); 
+        result.wkt = crs.toWKT();
         result.type = "geographic";
         result.epsg = crs.getIdentifiers().iterator().next().toString();
         return result;
@@ -81,7 +81,7 @@ public class CRSWrapper {
     public String getWkt() {
         return wkt;
     }
-    
+
     public String getEpsg() {
         return epsg;
     }

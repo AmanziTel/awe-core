@@ -58,6 +58,7 @@ public class StatisticsNodeProperties implements IStatisticsNodeProperties {
     /**
      * @return Returns the isSummuryProperty.
      */
+    @Override
     public String isSummuryProperty() {
         return IS_SUMMURY_PROPERTY;
     }

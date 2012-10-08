@@ -18,19 +18,16 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-    org.amanzi.awe.ui.manager.AWEEventManagerIntegrationTest.class,
-    org.amanzi.awe.ui.manager.AWEEventManagerTest.class,
-    org.amanzi.awe.ui.project.ProjectChangedListenerTest.class
-})
+@SuiteClasses({org.amanzi.awe.ui.manager.AWEEventManagerIntegrationTest.class, org.amanzi.awe.ui.manager.AWEEventManagerTest.class,
+        org.amanzi.awe.ui.project.ProjectChangedListenerTest.class})
 public class AWEUITests {
 
 }

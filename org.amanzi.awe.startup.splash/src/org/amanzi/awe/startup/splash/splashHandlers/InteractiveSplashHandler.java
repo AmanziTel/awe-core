@@ -31,6 +31,7 @@ import org.eclipse.ui.splash.BasicSplashHandler;
  */
 @SuppressWarnings("restriction")
 public class InteractiveSplashHandler extends BasicSplashHandler {
+    @Override
     public void init(Shell splash) {
         super.init(splash);
         String progressRectString = null;
@@ -66,6 +67,7 @@ public class InteractiveSplashHandler extends BasicSplashHandler {
             final Point buildIdPoint = StringConverter.asPoint(buildIdLocString, new Point(322, 190));
             getContent().addPaintListener(new PaintListener() {
 
+                @Override
                 public void paintControl(PaintEvent e) {
                     e.gc.setForeground(getForeground());
                     e.gc.drawText(buildId, buildIdPoint.x, buildIdPoint.y, true);

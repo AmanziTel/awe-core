@@ -488,8 +488,7 @@ public class NetworkStyleDefiner extends ViewPart {
      * @return
      */
     private String[] getDefaultSectorType() {
-        String[] result = new String[] {NetworkElementType.SECTOR.getId(),
-                NetworkElementType.TRX.getId(),
+        String[] result = new String[] {NetworkElementType.SECTOR.getId(), NetworkElementType.TRX.getId(),
                 NetworkElementType.FREQUENCY_PLAN.getId()};
         return result;
     }
@@ -503,21 +502,21 @@ public class NetworkStyleDefiner extends ViewPart {
     private String[] getSecondaryPropertyChoices(final String typeId) {
         List<String> result = new ArrayList<String>();
         result.add(NetworkNeoStyleContent.DEF_NONE);
-        //TODO: LN: 20.08.2012, refactor
-        //        if (NetworkElementType.SECTOR.getId().equals(typeId)) {
-        //            result.add(INeoConstants.PROPERTY_NAME_NAME);
-        //            result.add(INeoConstants.PROPERTY_SECTOR_CI);
-        //            result.add(INeoConstants.PROPERTY_SECTOR_LAC);
-        //            result.add("vendor");
-        //        } else if (NetworkElementNodeType.TRX.getId().equals(typeId)) {
-        //            result.add("band");
-        //            result.add(INeoConstants.PROPERTY_BCCH_NAME);
-        //            result.add("hopping_type");
-        //        } else {
-        //            result.add(INeoConstants.PROPERTY_SECTOR_ARFCN);
-        //            result.add("hsn");
-        //            result.add(INeoConstants.PROPERTY_MAIO);
-        //        }
+        // TODO: LN: 20.08.2012, refactor
+        // if (NetworkElementType.SECTOR.getId().equals(typeId)) {
+        // result.add(INeoConstants.PROPERTY_NAME_NAME);
+        // result.add(INeoConstants.PROPERTY_SECTOR_CI);
+        // result.add(INeoConstants.PROPERTY_SECTOR_LAC);
+        // result.add("vendor");
+        // } else if (NetworkElementNodeType.TRX.getId().equals(typeId)) {
+        // result.add("band");
+        // result.add(INeoConstants.PROPERTY_BCCH_NAME);
+        // result.add("hopping_type");
+        // } else {
+        // result.add(INeoConstants.PROPERTY_SECTOR_ARFCN);
+        // result.add("hsn");
+        // result.add(INeoConstants.PROPERTY_MAIO);
+        // }
         return result.toArray(new String[0]);
     }
 

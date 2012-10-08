@@ -24,16 +24,16 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionTypeWidget extends AbstractComboWidget<IDistributionType<?>, IDistributionTypeListener> {
+public class DistributionTypeWidget extends AbstractComboWidget<IDistributionType< ? >, IDistributionTypeListener> {
 
     public interface IDistributionTypeListener extends AbstractComboWidget.IComboSelectionListener {
 
-        void onDistributionTypeSelected(IDistributionType<?> distributionType);
+        void onDistributionTypeSelected(IDistributionType< ? > distributionType);
 
     }
 
@@ -45,7 +45,8 @@ public class DistributionTypeWidget extends AbstractComboWidget<IDistributionTyp
      * @param label
      * @param minimalLabelWidth
      */
-    public DistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener, final String label, final int minimalLabelWidth) {
+    public DistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener, final String label,
+            final int minimalLabelWidth) {
         super(parent, listener, label, minimalLabelWidth);
     }
 

@@ -16,6 +16,7 @@ package org.amanzi.testing;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
@@ -60,7 +61,7 @@ public class AbstractMockitoTest extends AbstractTest {
     }
 
     protected <T> T eq(final T value) {
-        return Mockito.eq(value);
+        return Matchers.eq(value);
     }
 
     protected Stubber doThrow(final Throwable toBeThrown) {
@@ -84,7 +85,7 @@ public class AbstractMockitoTest extends AbstractTest {
     }
 
     protected <T> T any(final Class<T> clazz) {
-        return Mockito.any(clazz);
+        return Matchers.any(clazz);
     }
 
     protected Stubber doReturn(final Object toBeReturned) {
@@ -104,7 +105,7 @@ public class AbstractMockitoTest extends AbstractTest {
     }
 
     protected String contains(final String substring) {
-        return Mockito.contains(substring);
+        return Matchers.contains(substring);
     }
 
     protected Stubber doAnswer(final Answer< ? > answer) {

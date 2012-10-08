@@ -15,11 +15,11 @@ package org.amanzi.awe.neostyle;
 
 import java.io.Serializable;
 
-
 /**
  * <p>
- *Contain base information about NeoGeoResource styles
+ * Contain base information about NeoGeoResource styles
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
@@ -27,5 +27,5 @@ public class BaseNeoStyle implements Serializable {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 2850532621545533216L;
-    
+
 }

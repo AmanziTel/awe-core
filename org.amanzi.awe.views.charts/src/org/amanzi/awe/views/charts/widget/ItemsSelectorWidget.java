@@ -41,9 +41,9 @@ import com.google.common.collect.Lists;
  * @since 1.0.0
  */
 public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSelectedListener>
-implements
-SelectionListener,
-IDialogSelectorListener {
+        implements
+            SelectionListener,
+            IDialogSelectorListener {
 
     private static final String ITEM_SEPARATOR = ";";
 
@@ -116,7 +116,7 @@ IDialogSelectorListener {
     @Override
     public void widgetSelected(final SelectionEvent e) {
         if (e.getSource().equals(editButton)) {
-            FilteringDialog dialog = new FilteringDialog(getControl(), SWT.NONE, this);
+            FilteringDialog dialog = new FilteringDialog(getWidget(), SWT.NONE, this);
             dialog.initializeWidget();
         }
     }

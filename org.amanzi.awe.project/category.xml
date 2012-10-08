@@ -9,7 +9,11 @@
    <feature url="features/org.amanzi.awe.statistics.feature_1.1.1.qualifier.jar" id="org.amanzi.awe.statistics.feature" version="1.1.1.qualifier">
       <category name="org.amanzi.awe.statistics"/>
    </feature>
+   <feature url="features/org.amanzi.awe.distribution.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.distribution.feature" version="1.0.0.qualifier">
+      <category name="org.amanzi.awe.distribution"/>
+   </feature>
    <category-def name="org.amanzi.awe.category" label="General AWE Feature"/>
    <category-def name="org.amanzi.awe.scripting" label="AWE Scripting Framework"/>
    <category-def name="org.amanzi.awe.statistics" label="AWE Statistics Engine"/>
+   <category-def name="org.amanzi.awe.distribution" label=""/>
 </site>

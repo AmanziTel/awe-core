@@ -247,7 +247,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
     @Test
     public void testCheckActiviyOnFindByNotExistingName() throws Exception {
         when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1, NodeServiceRelationshipType.CHILD))
-        .thenReturn(null);
+                .thenReturn(null);
 
         IModel result = provider.findByName(parent, MODEL_NAME);
 

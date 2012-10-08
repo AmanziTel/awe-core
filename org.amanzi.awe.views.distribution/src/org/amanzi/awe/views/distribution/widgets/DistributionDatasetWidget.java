@@ -35,8 +35,8 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -85,8 +85,9 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
      * @param label
      * @param minimalLabelWidth
      */
-    public DistributionDatasetWidget(final Composite parent, final IDistributionDatasetSelectionListener listener, final String label,
-            final int minimalLabelWidth, final IProjectModelProvider projectModelProvider, final INetworkModelProvider networkModelProvider, final IDriveModelProvider driveModelProvider) {
+    public DistributionDatasetWidget(final Composite parent, final IDistributionDatasetSelectionListener listener,
+            final String label, final int minimalLabelWidth, final IProjectModelProvider projectModelProvider,
+            final INetworkModelProvider networkModelProvider, final IDriveModelProvider driveModelProvider) {
         super(parent, listener, label, minimalLabelWidth);
 
         this.driveModelProvider = driveModelProvider;
@@ -102,24 +103,25 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
 
             if (activeProject != null) {
                 result = new ArrayList<DistributionDatasetWidget.DistributionDataset>();
-            }
 
-            for (IDriveModel driveModel : driveModelProvider.findAll(activeProject)) {
-                addDistributionDatasetsForModel(driveModel, result);
-            }
+                for (IDriveModel driveModel : driveModelProvider.findAll(activeProject)) {
+                    addDistributionDatasetsForModel(driveModel, result);
+                }
 
-            for (INetworkModel networkModel : networkModelProvider.findAll(activeProject)) {
-                addDistributionDatasetsForModel(networkModel, result);
+                for (INetworkModel networkModel : networkModelProvider.findAll(activeProject)) {
+                    addDistributionDatasetsForModel(networkModel, result);
+                }
             }
         } catch (ModelException e) {
             LOGGER.error("An error occured on getting all Distribution Datasets", e);
             result = null;
         }
 
-        return result;
+        return result == null ? null : result.isEmpty() ? null : result;
     }
 
-    private void addDistributionDatasetsForModel(final IPropertyStatisticalModel propertyStatisticalModel, final Collection<DistributionDataset> distributionDatasets) {
+    private void addDistributionDatasetsForModel(final IPropertyStatisticalModel propertyStatisticalModel,
+            final Collection<DistributionDataset> distributionDatasets) {
         for (INodeType nodeType : propertyStatisticalModel.getPropertyStatistics().getNodeTypes()) {
             distributionDatasets.add(new DistributionDataset(propertyStatisticalModel, nodeType));
         }
@@ -134,6 +136,11 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
     protected void fireListener(final IDistributionDatasetSelectionListener listener, final DistributionDataset selectedItem) {
         listener.onDistributionDatasetSelected(selectedItem);
 
+    }
+
+    @Override
+    protected int getDefaultSelectedItemIndex() {
+        return -1;
     }
 
 }

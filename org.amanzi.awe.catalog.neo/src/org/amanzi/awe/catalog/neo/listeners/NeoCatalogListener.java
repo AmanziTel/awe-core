@@ -108,7 +108,6 @@ public class NeoCatalogListener implements IAWEEventListenter {
             bounds = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat, model.getMainGIS().getCRS());
         }
 
-
         try {
             IMap map = ApplicationGIS.getActiveMap();
 

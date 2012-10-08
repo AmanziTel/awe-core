@@ -21,8 +21,8 @@ import org.jfree.chart.renderer.category.BarRenderer;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -39,7 +39,7 @@ public class DistributionBarRenderer extends BarRenderer {
 
     @Override
     public Paint getItemPaint(final int row, final int column) {
-        Comparable<?> columnKey = dataset.getColumnKey(column);
+        Comparable< ? > columnKey = dataset.getColumnKey(column);
 
         if (columnKey instanceof IDistributionBar) {
             IDistributionBar bar = (IDistributionBar)columnKey;

@@ -21,7 +21,6 @@ import java.util.TreeMap;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.internal.PropertyVault.ClassType;
 
 /**
  * TODO Purpose of
@@ -107,7 +106,7 @@ public class NodeTypeVault {
         propertyVaults.put(propertyVault.getPropertyName(), propertyVault);
     }
 
-    public Class<?> getPropertyClass(final String propertyName) {
+    public Class< ? > getPropertyClass(final String propertyName) {
         PropertyVault propertyVault = propertyVaults.get(propertyName);
 
         if (propertyVault != null) {

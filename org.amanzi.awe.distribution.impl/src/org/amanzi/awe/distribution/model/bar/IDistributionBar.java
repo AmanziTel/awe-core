@@ -27,24 +27,23 @@ public interface IDistributionBar extends ISourcedElement {
 
     /**
      * Returns Color of this Bar
-     *
+     * 
      * @return
      */
     public Color getColor();
 
     /**
      * Set Color for this bar
-     *
+     * 
      * @param color
      */
     public void setColor(Color color);
 
     /**
      * Number of Data Elements in this Bar
-     *
+     * 
      * @return
      */
     public int getCount();
 
 }
-

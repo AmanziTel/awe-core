@@ -68,7 +68,7 @@ public interface IDistributionType<T extends IRange> {
 
         /**
          * Returns title of this type of Chart
-         *
+         * 
          * @return
          */
         public String getTitle() {
@@ -82,7 +82,7 @@ public interface IDistributionType<T extends IRange> {
 
         /**
          * Searches corresponding ChartType enum by it's title
-         *
+         * 
          * @param title
          * @return
          */
@@ -97,10 +97,8 @@ public interface IDistributionType<T extends IRange> {
         }
 
         /**
-         * Returns Default ChartType
+         * Returns Default ChartType Default ChartType is COUNTS
          * 
-         * Default ChartType is COUNTS
-         *
          * @return
          */
         public static ChartType getDefault() {
@@ -110,35 +108,35 @@ public interface IDistributionType<T extends IRange> {
 
     /**
      * Returns name of this Distribution
-     *
+     * 
      * @return
      */
     public String getName();
 
     /**
      * Returns list of Ranges of this Distribution
-     *
+     * 
      * @return
      */
     public Set<T> getRanges();
 
     /**
      * Type of Node to Analyze
-     *
+     * 
      * @return
      */
     public INodeType getNodeType();
 
     /**
      * Returns name of Analyzed Property
-     *
+     * 
      * @return
      */
     public String getPropertyName();
 
     /**
      * Is it possible to changes colors of this Distribution
-     *
+     * 
      * @return
      */
     public boolean canChangeColors();

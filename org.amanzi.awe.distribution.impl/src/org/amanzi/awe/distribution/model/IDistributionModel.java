@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.distribution.model;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
@@ -25,8 +26,8 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -39,5 +40,17 @@ public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalM
     IDistributionBar createDistributionBar(IRange range) throws ModelException;
 
     void createAggregation(IDistributionBar bar, IDataElement element) throws ModelException;
+
+    Color getRightColor();
+
+    Color getLeftColor();
+
+    Color getMiddleColor();
+
+    void setRightColor(Color color);
+
+    void setMiddleColor(Color color);
+
+    void setLeftColor(Color color);
 
 }

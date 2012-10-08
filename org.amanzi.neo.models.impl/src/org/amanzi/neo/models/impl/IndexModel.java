@@ -250,7 +250,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         try {
             Index<Node> index = indexService.getIndex(getRootNode(), type);
 
-            result = index.query(getGeneralNodeProperties().getNodeTypeProperty() + ":*").iterator();
+            result = index.query(getGeneralNodeProperties().getNodeNameProperty() + ":*").iterator();
         } catch (ServiceException e) {
             processException("Exception on searching for a Node in Index", e);
         }
@@ -263,7 +263,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     }
 
     @Override
-    public void deleteIndex(Node node, INodeType type) throws ModelException {
+    public void deleteIndex(final Node node, final INodeType type) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("deleteIndex", type));
         }

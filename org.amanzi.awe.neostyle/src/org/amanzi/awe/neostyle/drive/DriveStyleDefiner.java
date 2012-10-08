@@ -26,14 +26,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * 
  * @author Bondoronok_p
  */
 public class DriveStyleDefiner extends ViewPart {
 
     // TODO write save for label property in memento
-    private static final String[] FONT_SIZE_ARRAY = new String[] {
-        "8", "9", "10", "11", "12", "14", "16", "18", "20", "24" }; //$NON-NLS-1$
+    private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"}; //$NON-NLS-1$
 
     private Label labelFill;
     private Label labelLabel;
@@ -62,8 +60,7 @@ public class DriveStyleDefiner extends ViewPart {
     /**
      * The constructor
      * 
-     * @param driveStyle
-     *            Drive Style
+     * @param driveStyle Drive Style
      */
     public DriveStyleDefiner(final DriveStyle driveStyle) {
         this.currentStyle = driveStyle;
@@ -78,39 +75,30 @@ public class DriveStyleDefiner extends ViewPart {
     }
 
     public void refresh() {
-        colorEdFill
-        .setColorValue(rgbFromColor(currentStyle.getLocationColor()));
+        colorEdFill.setColorValue(rgbFromColor(currentStyle.getLocationColor()));
         colorEdLabel.setColorValue(rgbFromColor(currentStyle.getLabelColor()));
         colorEdLine.setColorValue(rgbFromColor(currentStyle.getLineColor()));
         locationLabelTypeCombo.setText(currentStyle.getLocationLabelType());
 
-        if (DriveStyleContent.MEASUREMENT.equals(currentStyle
-                .getLocationLabelType())) {
+        if (DriveStyleContent.MEASUREMENT.equals(currentStyle.getLocationLabelType())) {
             fillMeasurementsPropertiesCombo();
-            measurementLabelPropertyCombo.setText(currentStyle
-                    .getMeasurementNameProperty());
+            measurementLabelPropertyCombo.setText(currentStyle.getMeasurementNameProperty());
         }
-        locationLabelFontSize
-        .setText(String.valueOf(currentStyle.getFontSize()));
+        locationLabelFontSize.setText(String.valueOf(currentStyle.getFontSize()));
     }
 
     public void preApply() {
         currentStyle.setFontSize(getLocationLabelFontSize());
         currentStyle.setLabelColor(colorFromRGB(colorEdLabel.getColorValue()));
         currentStyle.setLineColor(colorFromRGB(colorEdLine.getColorValue()));
-        currentStyle
-        .setLocationColor(colorFromRGB(colorEdFill.getColorValue()));
-        currentStyle.setMeasurementNameProperty(measurementLabelPropertyCombo
-                .getText());
+        currentStyle.setLocationColor(colorFromRGB(colorEdFill.getColorValue()));
+        currentStyle.setMeasurementNameProperty(measurementLabelPropertyCombo.getText());
         currentStyle.setLocationLabelType(locationLabelTypeCombo.getText());
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets
-     * .Composite)
+     * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets .Composite)
      */
     @Override
     public void createPartControl(final Composite parent) {
@@ -180,10 +168,8 @@ public class DriveStyleDefiner extends ViewPart {
         locationLabelTypeLabel = new Label(labelsGroup, SWT.NONE);
         locationLabelTypeLabel.setText(Messages.Location_Label);
         locationLabelTypeLabel.setLayoutData(new GridData(SWT.LEFT));
-        locationLabelTypeCombo = new Combo(labelsGroup, SWT.DROP_DOWN
-                | SWT.READ_ONLY);
-        locationLabelTypeCombo.setLayoutData(new GridData(SWT.FILL
-                | GridData.FILL_HORIZONTAL));
+        locationLabelTypeCombo = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        locationLabelTypeCombo.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         locationLabelTypeCombo.setItems(getLocationLabelType());
 
         /*
@@ -192,10 +178,8 @@ public class DriveStyleDefiner extends ViewPart {
         measurementLabelPropertyLabel = new Label(labelsGroup, SWT.NONE);
         measurementLabelPropertyLabel.setText(Messages.Location_Label_Property);
         measurementLabelPropertyLabel.setLayoutData(new GridData(SWT.LEFT));
-        measurementLabelPropertyCombo = new Combo(labelsGroup, SWT.DROP_DOWN
-                | SWT.READ_ONLY);
-        measurementLabelPropertyCombo.setLayoutData(new GridData(SWT.FILL
-                | GridData.FILL_HORIZONTAL));
+        measurementLabelPropertyCombo = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+        measurementLabelPropertyCombo.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
 
         /*
          * font size
@@ -203,10 +187,8 @@ public class DriveStyleDefiner extends ViewPart {
         labelFontSize = new Label(labelsGroup, SWT.NONE);
         labelFontSize.setText(Messages.Location_Label_Font_Size);
         labelFontSize.setLayoutData(new GridData(SWT.LEFT));
-        locationLabelFontSize = new Combo(labelsGroup, SWT.DROP_DOWN
-                | SWT.RIGHT);
-        locationLabelFontSize.setLayoutData(new GridData(SWT.FILL
-                | GridData.FILL_HORIZONTAL));
+        locationLabelFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
+        locationLabelFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         locationLabelFontSize.setItems(getDefaultFontItem());
 
         locationLabelTypeCombo.addSelectionListener(new SelectionListener() {
@@ -227,10 +209,8 @@ public class DriveStyleDefiner extends ViewPart {
      * Fill measurement properties combo
      */
     private void fillMeasurementsPropertiesCombo() {
-        measurementLabelPropertyCombo
-        .setItems(DriveStyleContent.MEASUREMENT
-                .equals(locationLabelTypeCombo.getText()) ? getMeasurementProperties()
-                        : new String[0]);
+        measurementLabelPropertyCombo.setItems(DriveStyleContent.MEASUREMENT.equals(locationLabelTypeCombo.getText())
+                ? getMeasurementProperties() : new String[0]);
     }
 
     /**
@@ -248,7 +228,6 @@ public class DriveStyleDefiner extends ViewPart {
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
      */
     @Override
@@ -261,15 +240,13 @@ public class DriveStyleDefiner extends ViewPart {
      * @return possible types
      */
     private String[] getLocationLabelType() {
-        return new String[] { DriveStyleContent.WHITHOUT_NAME,
-                DriveStyleContent.TIMESTAMP, DriveStyleContent.MEASUREMENT };
+        return new String[] {DriveStyleContent.WHITHOUT_NAME, DriveStyleContent.TIMESTAMP, DriveStyleContent.MEASUREMENT};
     }
 
     /**
      * gets RGB from color
      * 
-     * @param color
-     *            color value
+     * @param color color value
      * @return
      */
     private RGB rgbFromColor(final java.awt.Color color) {
@@ -279,13 +256,11 @@ public class DriveStyleDefiner extends ViewPart {
     /**
      * gets color from RGB
      * 
-     * @param colorValue
-     *            - RGB value
+     * @param colorValue - RGB value
      * @return
      */
     private java.awt.Color colorFromRGB(final RGB colorValue) {
-        return new java.awt.Color(colorValue.red, colorValue.green,
-                colorValue.blue);
+        return new java.awt.Color(colorValue.red, colorValue.green, colorValue.blue);
     }
 
     /**

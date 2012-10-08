@@ -21,8 +21,8 @@ import org.amanzi.neo.nodetypes.INodeType;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -36,7 +36,8 @@ public abstract class AbstractDistributionType<T extends IRange> implements IDis
 
     private final boolean canChangeColors;
 
-    protected AbstractDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName, final boolean canChangeColors) {
+    protected AbstractDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
+            final boolean canChangeColors) {
         this.model = model;
         this.nodeType = nodeType;
         this.propertyName = propertyName;

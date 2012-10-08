@@ -19,6 +19,7 @@ import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.statistcstree.view.StatisticsTreeView;
+import org.amanzi.awe.views.statistcstree.view.filter.container.IStatisticsTreeFilterContainer;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.eclipse.ui.PartInitException;
@@ -39,11 +40,16 @@ public class ShowInStatisticsTreeListener implements IAWEEventListenter {
         if (event.getStatus().equals(EventStatus.SHOW_IN_VIEW)) {
             ShowInViewEvent showInViewEvent = (ShowInViewEvent)event;
 
-            if (showInViewEvent.getParent() instanceof IStatisticsModel && showInViewEvent.getElement() instanceof IDataElement) {
+            if ((showInViewEvent.getParent() instanceof IStatisticsModel)
+                    && ((showInViewEvent.getElement() instanceof IDataElement) || (showInViewEvent.getElement() instanceof IStatisticsTreeFilterContainer))) {
                 StatisticsTreeView view = showStatisticsView();
 
                 if (view != null) {
-                    showInView(view, showInViewEvent.getParent(), (IDataElement)showInViewEvent.getElement());
+                    if (showInViewEvent.getElement() instanceof IDataElement) {
+                        showInView(view, showInViewEvent.getParent(), (IDataElement)showInViewEvent.getElement());
+                    } else if (showInViewEvent.getElement() instanceof IStatisticsTreeFilterContainer) {
+                        showInView(view, showInViewEvent.getParent(), (IStatisticsTreeFilterContainer)showInViewEvent.getElement());
+                    }
                 }
             }
         }
@@ -65,6 +71,10 @@ public class ShowInStatisticsTreeListener implements IAWEEventListenter {
 
     private void showInView(final StatisticsTreeView statisticsTreeView, final IModel model, final IDataElement element) {
         statisticsTreeView.showElement(model, element);
+    }
+
+    private void showInView(StatisticsTreeView statisticsTreeView, IModel parent, IStatisticsTreeFilterContainer filter) {
+        statisticsTreeView.filterTree(parent, filter);
     }
 
 }

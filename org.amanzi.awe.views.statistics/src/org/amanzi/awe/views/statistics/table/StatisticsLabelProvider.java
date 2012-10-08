@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.neo.core.period.PeriodManager;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -56,11 +56,11 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     private final List<IStatisticsCell> cellList = new ArrayList<IStatisticsCell>();
 
-    private IStatisticsFilterContainer filter;
-
     private IStatisticsRow selectedRow;
 
     private int selectedColumn;
+
+    private IStatisticsViewFilterContainer filter;
 
     @Override
     public void addListener(final ILabelProviderListener listener) {
@@ -91,12 +91,12 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public String getColumnText(final Object element, int columnIndex) {
-    	if (columnIndex == 0) {
-    		return StringUtils.EMPTY;
-    	} else {
-    		columnIndex--;
-    	}
-    	
+        if (columnIndex == 0) {
+            return StringUtils.EMPTY;
+        } else {
+            columnIndex--;
+        }
+
         if (element instanceof IStatisticsRow) {
             IStatisticsRow statisticsRow = (IStatisticsRow)element;
 
@@ -155,7 +155,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
     /**
      * @param filterContainer
      */
-    public void setFilter(final IStatisticsFilterContainer filterContainer) {
+    public void setFilter(final IStatisticsViewFilterContainer filterContainer) {
         this.filter = filterContainer;
 
     }
@@ -170,7 +170,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public Color getForeground(final Object element, final int columnIndex) {
-        if (element.equals(selectedRow) && (selectedColumn < 2)){
+        if (element.equals(selectedRow) && (selectedColumn < 2)) {
             return Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
         }
 
@@ -179,7 +179,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public Color getBackground(final Object element, final int columnIndex) {
-        if (element.equals(selectedRow) && (selectedColumn < 2)){
+        if (element.equals(selectedRow) && (selectedColumn < 2)) {
             return Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION);
         }
 

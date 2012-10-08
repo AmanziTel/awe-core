@@ -30,6 +30,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.amanzi.testing.AbstractTest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -99,7 +100,7 @@ public class SynonymsManagerTest extends AbstractMockitoTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException {
-        AbstractMockitoTest.setUpClass();
+        AbstractTest.setUpClass();
 
         NodeTypeManager.getInstance().registerNodeType(TestNodeTypes.class);
     }

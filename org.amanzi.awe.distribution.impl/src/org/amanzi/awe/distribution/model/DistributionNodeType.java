@@ -19,14 +19,13 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public enum DistributionNodeType implements INodeType {
-    DISTRIBUTION_ROOT,
-    DISTRIBUTION_BAR;
+    DISTRIBUTION_ROOT, DISTRIBUTION_BAR;
 
     @Override
     public String getId() {

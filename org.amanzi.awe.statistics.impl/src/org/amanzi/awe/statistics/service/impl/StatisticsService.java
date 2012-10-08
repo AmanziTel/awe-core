@@ -85,7 +85,7 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
                 Node node = path.endNode();
                 long nodeStartTime = (Long)node.getProperty(startTimeName);
                 long nodeEndTime = (Long)node.getProperty(endTimeName);
-                if (nodeStartTime >= startTime && nodeEndTime <= endTime) {
+                if ((nodeStartTime >= startTime) && (nodeEndTime <= endTime)) {
                     toContinue = true;
                     include = toContinue;
                 } else {
@@ -128,6 +128,7 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
                 StatisticsRelationshipType.STATISTICS);
     }
 
+    @Override
     public Iterator<Node> findAllStatisticsNode(Node parentNode) throws ServiceException {
         assert parentNode != null;
         return nodeService.getChildren(parentNode, StatisticsNodeType.STATISTICS, StatisticsRelationshipType.STATISTICS);

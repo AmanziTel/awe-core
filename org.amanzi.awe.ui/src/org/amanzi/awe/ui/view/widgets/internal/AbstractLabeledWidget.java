@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Label;
  * @since 1.0.0
  */
 public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWidgetListener>
-extends
-AbstractAWEWidget<Composite, L> {
+        extends
+            AbstractAWEWidget<Composite, L> {
 
     private static final int NO_MINIMAL_LABEL_WIDTH = -1;
 
@@ -41,7 +41,11 @@ AbstractAWEWidget<Composite, L> {
 
     private C control;
 
+    private Label controlLabel;
+
     private int minialLabelWidth;
+
+    private boolean labelFirst;
 
     /**
      * @param parent
@@ -51,10 +55,24 @@ AbstractAWEWidget<Composite, L> {
         this(parent, listener, label, NO_MINIMAL_LABEL_WIDTH);
     }
 
+    /**
+     * @param parent
+     * @param style
+     */
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final boolean labelFirst) {
+        this(parent, listener, label, NO_MINIMAL_LABEL_WIDTH, labelFirst);
+    }
+
     protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth) {
+        this(parent, listener, label, minimalLabelWidth, true);
+    }
+
+    protected AbstractLabeledWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
+            final boolean labelFirst) {
         super(parent, SWT.NONE, listener);
         this.label = label;
         this.minialLabelWidth = minimalLabelWidth;
+        this.labelFirst = labelFirst;
     }
 
     @Override
@@ -63,25 +81,34 @@ AbstractAWEWidget<Composite, L> {
         composite.setLayout(DEFAULT_LABELED_COMBO_LAYOUT);
         composite.setLayoutData(getControlLayoutData());
 
-        Label comboLabel = new Label(composite, SWT.NONE);
-        comboLabel.setText(label);
-        comboLabel.setLayoutData(getLabelLayoutData());
+        if (labelFirst) {
+            createLabel(composite);
+        }
 
         control = createControl(composite);
         control.setLayoutData(getElementLayoutData());
 
+        if (!labelFirst) {
+            createLabel(composite);
+        }
+
         return composite;
     }
 
-    private GridData getControlLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, false, false);
+    private void createLabel(final Composite parent) {
+        controlLabel = new Label(parent, SWT.NONE);
+        controlLabel.setText(label);
+        controlLabel.setLayoutData(getLabelLayoutData());
     }
 
+    private GridData getControlLayoutData() {
+        return new GridData(SWT.LEFT, SWT.CENTER, false, false);
+    }
 
     protected abstract C createControl(Composite parent);
 
     private GridData getElementLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        return new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
     }
 
     private GridData getLabelLayoutData() {
@@ -96,6 +123,22 @@ AbstractAWEWidget<Composite, L> {
 
     protected C getControl() {
         return control;
+    }
+
+    @Override
+    public void setEnabled(final boolean isEnabled) {
+        super.setEnabled(isEnabled);
+
+        control.setEnabled(isEnabled);
+        controlLabel.setEnabled(isEnabled);
+    }
+
+    @Override
+    public void setVisible(final boolean isVisible) {
+        super.setVisible(isVisible);
+
+        control.setVisible(isVisible);
+        controlLabel.setVisible(isVisible);
     }
 
 }

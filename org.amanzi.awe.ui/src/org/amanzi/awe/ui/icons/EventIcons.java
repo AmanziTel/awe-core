@@ -19,28 +19,22 @@ package org.amanzi.awe.ui.icons;
  * @author Vladislav_Kondratenko
  */
 public enum EventIcons {
-    CONNECT("event_normal"),
-    CONNECT_GOOD("event_good"),
-    CONNECT_BAD("event_bad"),
-    CALL_BLOCKED("event_call_blocked"),
-    CALL_DROPPED("event_call_dropped"),
-    CALL_FAILURE("event_call_failure"),
-    CALL_SUCCESS("event_call_success"),
-    HANDOVER_FAILURE("event_handover_failure"),
-    HANDOVER_SUCCESS("event_handover_success");
+    CONNECT("event_normal"), CONNECT_GOOD("event_good"), CONNECT_BAD("event_bad"), CALL_BLOCKED("event_call_blocked"), CALL_DROPPED(
+            "event_call_dropped"), CALL_FAILURE("event_call_failure"), CALL_SUCCESS("event_call_success"), HANDOVER_FAILURE(
+            "event_handover_failure"), HANDOVER_SUCCESS("event_handover_success");
 
     String fileName;
 
     EventIcons(String fileName) {
         this.fileName = fileName;
     }
-    
+
     /**
      * get the icon name appropriated to event
-     *
+     * 
      * @return file name
      */
-    public String getIconName(){
+    public String getIconName() {
         return fileName;
     }
 

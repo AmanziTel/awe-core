@@ -5,19 +5,19 @@ import org.neo4j.graphdb.Node;
 
 public class FileElement extends DataElement implements IFileElement {
 
-	private String path;
+    private String path;
 
-	public FileElement(final Node node) {
-		super(node);
-	}
+    public FileElement(final Node node) {
+        super(node);
+    }
 
-	public void setPath(final String path) {
-		this.path = path;
-	}
+    public void setPath(final String path) {
+        this.path = path;
+    }
 
-	@Override
-	public String getPath() {
-		return path;
-	}
+    @Override
+    public String getPath() {
+        return path;
+    }
 
 }

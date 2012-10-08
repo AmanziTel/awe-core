@@ -23,19 +23,19 @@ import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget;
-import org.amanzi.awe.ui.view.widgets.DriveComboWidget;
-import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
+import org.amanzi.awe.ui.view.widgets.DriveComboWidget;
 import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsFilterContainer;
+import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.awe.views.statistics.filter.container.dto.impl.StatisticsFilterContainer;
 import org.amanzi.awe.views.statistics.internal.StatisticsPlugin;
 import org.amanzi.awe.views.statistics.table.StatisticsTable;
 import org.amanzi.awe.views.statistics.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.views.statistics.widgets.PeriodComboWidget;
-import org.amanzi.awe.views.statistics.widgets.TemplateComboWidget;
 import org.amanzi.awe.views.statistics.widgets.PeriodComboWidget.IPeriodSelectionListener;
+import org.amanzi.awe.views.statistics.widgets.TemplateComboWidget;
 import org.amanzi.awe.views.statistics.widgets.TemplateComboWidget.ITemplateSelectionListener;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.drive.IDriveModel;
@@ -101,7 +101,7 @@ public class StatisticsView extends ViewPart
                 }, true);
 
             } catch (StatisticsEngineException e) {
-                return new Status(Status.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
+                return new Status(IStatus.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
             }
             return Status.OK_STATUS;
         }
@@ -308,7 +308,7 @@ public class StatisticsView extends ViewPart
         widgetSelected(e);
     }
 
-    private void updateTable(final IStatisticsModel statisticsModel, IStatisticsFilterContainer filterContainer) {
+    private void updateTable(final IStatisticsModel statisticsModel, IStatisticsViewFilterContainer filterContainer) {
         statisticsTable.updateStatistics(statisticsModel, filterContainer);
     }
 

@@ -18,8 +18,8 @@ import org.amanzi.neo.nodeproperties.INodeProperties;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -33,4 +33,9 @@ public interface IDistributionNodeProperties extends INodeProperties {
 
     String getBarColor();
 
+    String getLeftColor();
+
+    String getRightColor();
+
+    String getMiddleColor();
 }

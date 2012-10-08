@@ -29,7 +29,6 @@ public class DatabaseUiPluginMessages extends NLS {
     public static String warningDialogName;
     public static String warningDialogChooseDatabaseLabel;
 
-
     private DatabaseUiPluginMessages() {
     }
 

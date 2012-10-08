@@ -21,8 +21,8 @@ import org.amanzi.neo.services.INodeService;
 /**
  * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
@@ -46,6 +46,5 @@ public abstract class AbstractAnalyzisModel<S extends IModel> extends AbstractMo
     public void setSourceModel(final S sourceModel) {
         this.sourceModel = sourceModel;
     }
-
 
 }

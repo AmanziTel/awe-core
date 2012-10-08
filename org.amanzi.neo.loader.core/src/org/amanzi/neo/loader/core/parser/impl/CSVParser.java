@@ -43,7 +43,7 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
 
     private String[] headers;
 
-    //LN: 21.08.2012, line number started with 1 since first row (0) is Headers
+    // LN: 21.08.2012, line number started with 1 since first row (0) is Headers
     private int lineNumber = 1;
 
     @Override
