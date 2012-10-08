@@ -177,7 +177,7 @@ public final class AWEEventManager {
     }
 
     public synchronized void fireProjectNameChangedEvent(final String newProjectName, final Object source) {
-        fireEvent(new ProjectNameChangedEvent(newProjectName, source), true);
+        fireEvent(new ProjectNameChangedEvent(newProjectName, source), false);
     }
 
     public synchronized void fireDataUpdatedEvent(final Object source) {
