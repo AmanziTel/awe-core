@@ -38,4 +38,6 @@ public interface IDistributionService extends IService {
 
     Node createDistributionBarNode(Node rootNode, String name, int[] color) throws ServiceException;
 
+    Node findDistributionBar(Node rootNode, Node sourceNode) throws ServiceException;
+
 }

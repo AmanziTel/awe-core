@@ -15,7 +15,9 @@ package org.amanzi.awe.distribution.model.impl;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
@@ -84,6 +86,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     private Color rightColor;
 
     private Color middleColor;
+
+    private final Map<Long, IDistributionBar> distributionBarCache = new HashMap<Long, IDistributionBar>();
 
     /**
      * @param nodeService
@@ -205,6 +209,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
                 distributionBars = new ArrayList<IDistributionBar>();
             }
             distributionBars.add(result);
+
+            distributionBarCache.put(barNode.getId(), result);
         } catch (final ServiceException e) {
             processException("Exception on creating Distribution Bar", e);
         }
@@ -295,4 +301,42 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         this.middleColor = middleColor;
     }
 
+    @Override
+    public IDistributionBar findDistributionBar(final IDataElement dataElement) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findDistributionBar", dataElement));
+        }
+
+        // TODO: LN: 8.10.2012, validate input
+
+        IDistributionBar result = null;
+
+        try {
+            final Node distributionBarNode = distributionService.findDistributionBar(getRootNode(),
+                    ((DataElement)dataElement).getNode());
+
+            result = distributionBarCache.get(distributionBarNode.getId());
+
+            if (result == null) {
+                result = createDistributionBar(distributionBarNode);
+
+                distributionBarCache.put(distributionBarNode.getId(), result);
+            }
+        } catch (final ServiceException e) {
+            processException("Error on computing Distribution Bar from Source Element", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findDistributionBar"));
+        }
+        return result;
+    }
+
+    protected DistributionBar createDistributionBar(final Node distributionBarNode) throws ServiceException {
+        final DistributionBar result = new DistributionBar(distributionBarNode, collectBarSources);
+
+        result.setColor(getColorFromDatabase(distributionBarNode, distributionNodeProperties.getBarColor(), null));
+
+        return result;
+    }
 }

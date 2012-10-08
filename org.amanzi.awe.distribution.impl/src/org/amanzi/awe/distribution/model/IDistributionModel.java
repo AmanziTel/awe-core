@@ -53,4 +53,6 @@ public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalM
 
     void setLeftColor(Color color);
 
+    IDistributionBar findDistributionBar(IDataElement dataElement) throws ModelException;
+
 }

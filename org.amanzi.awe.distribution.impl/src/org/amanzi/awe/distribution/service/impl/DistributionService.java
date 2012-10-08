@@ -27,10 +27,16 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * TODO Purpose of
@@ -44,6 +50,31 @@ public class DistributionService extends AbstractService implements IDistributio
 
     public static enum DistributionRelationshipType implements RelationshipType {
         DISTRIBUTION, AGGREGATED;
+    }
+
+    private static final TraversalDescription BAR_BY_SOURCE_TRAVERSAL = Traversal.description().breadthFirst()
+            .relationships(DistributionRelationshipType.AGGREGATED, Direction.INCOMING).evaluator(Evaluators.atDepth(1));
+
+    private final class DistributionBarSourceEvaluator implements Evaluator {
+
+        private final Node rootNode;
+
+        public DistributionBarSourceEvaluator(final Node rootNode) {
+            this.rootNode = rootNode;
+        }
+
+        @Override
+        public Evaluation evaluate(final Path path) {
+            boolean includes = false;
+
+            try {
+                includes = nodeService.getChainParent(path.endNode()).equals(rootNode);
+            } catch (final ServiceException e) {
+                // TODO: LN: 8.12.2012, handle error
+            }
+
+            return Evaluation.ofIncludes(includes);
+        }
     }
 
     private final IDistributionNodeProperties distributionNodeProperties;
@@ -67,14 +98,14 @@ public class DistributionService extends AbstractService implements IDistributio
         assert rootNode != null;
         assert distributionType != null;
 
-        Evaluator nameEvaluator = new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(),
+        final Evaluator nameEvaluator = new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(),
                 distributionType.getName());
-        Evaluator typeEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionNodeType(), distributionType
-                .getNodeType().getId());
-        Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getCurrentDistributionProperty(),
+        final Evaluator typeEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionNodeType(),
+                distributionType.getNodeType().getId());
+        final Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getCurrentDistributionProperty(),
                 distributionType.getPropertyName());
 
-        Iterator<Node> nodeIterator = nodeService
+        final Iterator<Node> nodeIterator = nodeService
                 .getChildrenTraversal(DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION)
                 .evaluator(nameEvaluator).evaluator(typeEvaluator).evaluator(propertyEvaluator).traverse(rootNode).nodes()
                 .iterator();
@@ -100,7 +131,7 @@ public class DistributionService extends AbstractService implements IDistributio
         Node result = null;
 
         try {
-            Map<String, Object> properties = new HashMap<String, Object>();
+            final Map<String, Object> properties = new HashMap<String, Object>();
 
             properties.put(getGeneralNodeProperties().getNodeNameProperty(), distributionType.getName());
             properties.put(distributionNodeProperties.getDistributionPropertyName(), distributionType.getPropertyName());
@@ -108,7 +139,7 @@ public class DistributionService extends AbstractService implements IDistributio
 
             result = nodeService.createNode(rootNode, DistributionNodeType.DISTRIBUTION_ROOT,
                     DistributionRelationshipType.DISTRIBUTION, properties);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -119,7 +150,7 @@ public class DistributionService extends AbstractService implements IDistributio
     public Node getCurrentDistribution(final Node rootNode) throws ServiceException {
         assert rootNode != null;
 
-        Long currentDistributionNodeId = nodeService.getNodeProperty(rootNode,
+        final Long currentDistributionNodeId = nodeService.getNodeProperty(rootNode,
                 distributionNodeProperties.getCurrentDistributionProperty(), null, false);
 
         Node result = null;
@@ -128,7 +159,7 @@ public class DistributionService extends AbstractService implements IDistributio
             if (currentDistributionNodeId != null) {
                 result = getGraphDb().getNodeById(currentDistributionNodeId);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -153,11 +184,11 @@ public class DistributionService extends AbstractService implements IDistributio
             throw new DuplicatedNodeException(getGeneralNodeProperties().getNodeNameProperty(), name);
         }
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<String, Object>();
         if (color != null) {
             properties.put(distributionNodeProperties.getBarColor(), color);
         }
-        Node result = nodeService.createNodeInChain(rootNode, DistributionNodeType.DISTRIBUTION_BAR, name, properties);
+        final Node result = nodeService.createNodeInChain(rootNode, DistributionNodeType.DISTRIBUTION_BAR, name, properties);
 
         return result;
     }
@@ -166,4 +197,24 @@ public class DistributionService extends AbstractService implements IDistributio
         return nodeService.getChildInChainByName(rootNode, name, DistributionNodeType.DISTRIBUTION_BAR);
     }
 
+    @Override
+    public Node findDistributionBar(final Node rootNode, final Node sourceNode) throws ServiceException {
+        assert rootNode != null;
+        assert sourceNode != null;
+
+        final Iterator<Node> nodeIterator = BAR_BY_SOURCE_TRAVERSAL.evaluator(new DistributionBarSourceEvaluator(rootNode))
+                .traverse(sourceNode).nodes().iterator();
+
+        Node result = null;
+
+        if (nodeIterator.hasNext()) {
+            result = nodeIterator.next();
+
+            if (nodeIterator.hasNext()) {
+                throw new DuplicatedNodeException("parent", rootNode);
+            }
+        }
+
+        return result;
+    }
 }
