@@ -39,7 +39,9 @@ public class DataElementPropertySourceProvider implements IPropertySourceProvide
             final IUIItem< ? , ? > uiItem = (IUIItem< ? , ? >)object;
 
             if (uiItem.getChild() instanceof IDataElement) {
-                return new DataElementPropertySource((IDataElement)object, uiItem.getParent());
+                return new DataElementPropertySource((IDataElement)uiItem.getChild(), uiItem.getParent());
+            } else if (uiItem.getChild() instanceof IModel) {
+                return new DataElementPropertySource(((IModel)uiItem.getChild()).asDataElement(), uiItem.getParent());
             }
         }
         return null;

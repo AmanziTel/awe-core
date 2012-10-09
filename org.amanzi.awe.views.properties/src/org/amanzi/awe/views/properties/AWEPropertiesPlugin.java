@@ -87,5 +87,4 @@ public class AWEPropertiesPlugin extends AbstractProviderPlugin {
             propertySheet.unregisterView(view);
         }
     }
-
 }

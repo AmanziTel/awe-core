@@ -13,8 +13,12 @@
 
 package org.amanzi.awe.views.properties.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.awe.ui.views.IAWEView;
 import org.amanzi.awe.views.properties.views.internal.DataElementPropertySourceProvider;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 
 /**
@@ -27,18 +31,36 @@ import org.eclipse.ui.views.properties.PropertySheetPage;
  */
 public class AWEPropertySheet extends PropertySheetPage {
 
+    private final List<IAWEView> preInitializedView = new ArrayList<IAWEView>();
+
     public AWEPropertySheet() {
         super();
 
         setPropertySourceProvider(new DataElementPropertySourceProvider());
     }
 
+    @Override
+    public void createControl(final Composite parent) {
+        super.createControl(parent);
+
+        for (final IAWEView view : preInitializedView) {
+            registerView(view);
+        }
+        preInitializedView.clear();
+    }
+
     public void registerView(final IAWEView view) {
-        getSite().getPage().addSelectionListener(view.getViewId(), this);
+        if (getSite() == null) {
+            preInitializedView.add(view);
+        } else {
+            getSite().getPage().addSelectionListener(view.getViewId(), this);
+        }
     }
 
     public void unregisterView(final IAWEView view) {
-        getSite().getPage().removeSelectionListener(view.getViewId(), this);
+        if (getSite() != null) {
+            getSite().getPage().removeSelectionListener(view.getViewId(), this);
+        }
     }
 
 }

@@ -59,7 +59,7 @@ public class DataElement implements IDataElement {
     @Override
     public boolean equals(final Object anotherObject) {
         if (anotherObject instanceof DataElement) {
-            DataElement anotherElement = (DataElement)anotherObject;
+            final DataElement anotherElement = (DataElement)anotherObject;
             if (node == null) {
                 return properties.equals(anotherElement.properties);
             } else {
@@ -84,8 +84,8 @@ public class DataElement implements IDataElement {
     }
 
     protected void loadProperties() {
-        for (String propertyKey : node.getPropertyKeys()) {
-            Object value = node.getProperty(propertyKey);
+        for (final String propertyKey : node.getPropertyKeys()) {
+            final Object value = node.getProperty(propertyKey);
             properties.put(propertyKey, value);
         }
     }
@@ -97,6 +97,9 @@ public class DataElement implements IDataElement {
 
     @Override
     public Set<String> keySet() {
+        if (node != null && properties.isEmpty()) {
+            loadProperties();
+        }
         return properties.keySet();
     }
 
@@ -128,7 +131,7 @@ public class DataElement implements IDataElement {
         if (name != null) {
             return name.compareTo(o.getName());
         } else if (node != null) {
-            DataElement element = (DataElement)o;
+            final DataElement element = (DataElement)o;
 
             return element.getNode() == null ? 1 : new Long(node.getId()).compareTo(element.getNode().getId());
         }
