@@ -11,9 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.filters;
+package org.amanzi.neo.impl.dto;
 
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.IRelation;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * TODO Purpose of
@@ -23,10 +24,16 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IFilter {
+public class Relation implements IRelation {
 
-    boolean matches(IDataElement element);
+    private final Relationship relation;
 
-    boolean matches(Object object);
+    public Relation(final Relationship relation) {
+        this.relation = relation;
+    }
+
+    public Relationship getRelation() {
+        return relation;
+    }
 
 }

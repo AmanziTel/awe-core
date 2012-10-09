@@ -249,13 +249,23 @@ public class DistributionManager {
     }
 
     public Set<Select> getPossibleSelects() {
+        if (nodeType == null || propertyName == null) {
+            return null;
+        }
+
         final Set<Select> selects = new HashSet<IDistributionType.Select>();
 
         if (model instanceof IMeasurementModel) {
-            selects.add(Select.MIN);
-            selects.add(Select.MAX);
-            selects.add(Select.AVERAGE);
-            selects.add(Select.FIRST);
+            final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
+
+            if (clazz.equals(Number.class)) {
+                selects.add(Select.MIN);
+                selects.add(Select.MAX);
+                selects.add(Select.AVERAGE);
+                selects.add(Select.FIRST);
+            } else {
+                selects.add(Select.EXISTS);
+            }
         } else if (model instanceof INetworkModel) {
             selects.add(Select.EXISTS);
         }

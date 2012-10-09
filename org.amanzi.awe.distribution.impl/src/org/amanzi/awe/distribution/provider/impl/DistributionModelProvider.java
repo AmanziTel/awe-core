@@ -27,6 +27,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
@@ -83,19 +84,24 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
     private final IDistributionNodeProperties distributionNodeProperties;
 
+    private final IPropertyStatisticsNodeProperties countNodeProperties;
+
     public DistributionModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
+            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties,
+            final IPropertyStatisticsNodeProperties countNodeProperties) {
         super();
 
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
         this.distributionService = distributionService;
         this.distributionNodeProperties = distributionNodeProperties;
+        this.countNodeProperties = countNodeProperties;
     }
 
     @Override
     protected DistributionModel createInstance() {
-        return new DistributionModel(nodeService, generalNodeProperties, distributionService, distributionNodeProperties);
+        return new DistributionModel(nodeService, generalNodeProperties, distributionService, distributionNodeProperties,
+                countNodeProperties);
     }
 
     @Override
@@ -110,17 +116,17 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
             LOGGER.debug(getStartLogStatement("getDistribution", analyzedModel, distributionType));
         }
 
-        IKey key = new DistributionCacheKey(distributionType, analyzedModel);
+        final IKey key = new DistributionCacheKey(distributionType, analyzedModel);
 
         DistributionModel result = getFromCache(key);
 
         if (result == null) {
             LOGGER.info("Creating new Distribution Model <" + analyzedModel + ", " + distributionType + "> in Database");
 
-            AbstractModel parentModel = (AbstractModel)analyzedModel;
+            final AbstractModel parentModel = (AbstractModel)analyzedModel;
 
             try {
-                Node distributionRoot = distributionService.findDistributionNode(parentModel.getRootNode(), distributionType);
+                final Node distributionRoot = distributionService.findDistributionNode(parentModel.getRootNode(), distributionType);
 
                 if (distributionRoot != null) {
                     result = initializeFromNode(distributionRoot);
@@ -129,7 +135,7 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
                     addToCache(result, key);
                 }
-            } catch (ServiceException e) {
+            } catch (final ServiceException e) {
                 processException("Error on searching for a Distribution Model <" + analyzedModel + ", " + distributionType + ">", e);
             }
         }
@@ -149,17 +155,17 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
         DistributionModel result = null;
 
-        AbstractModel parentModel = (AbstractModel)analyzedModel;
+        final AbstractModel parentModel = (AbstractModel)analyzedModel;
 
         try {
-            Node distributionRoot = distributionService.getCurrentDistribution(parentModel.getRootNode());
+            final Node distributionRoot = distributionService.getCurrentDistribution(parentModel.getRootNode());
 
             if (distributionRoot != null) {
                 result = initializeFromNode(distributionRoot);
 
                 initializeDistributionModel(result, analyzedModel);
             }
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on searching for a curernt Distribution Model of " + analyzedModel + "", e);
         }
 
@@ -185,14 +191,14 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
             throw new DuplicatedModelException(getModelClass(), "distributionType", distributionType);
         }
 
-        IKey key = new DistributionCacheKey(distributionType, analyzedModel);
+        final IKey key = new DistributionCacheKey(distributionType, analyzedModel);
 
         DistributionModel result = null;
 
-        AbstractModel parentModel = (AbstractModel)analyzedModel;
+        final AbstractModel parentModel = (AbstractModel)analyzedModel;
 
         try {
-            Node distributionRoot = distributionService.createDistributionNode(parentModel.getRootNode(), distributionType);
+            final Node distributionRoot = distributionService.createDistributionNode(parentModel.getRootNode(), distributionType);
 
             if (distributionRoot != null) {
                 result = initializeFromNode(distributionRoot);
@@ -201,7 +207,7 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
                 addToCache(result, key);
             }
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on searching for a Distribution Model <" + analyzedModel + ", " + distributionType + ">", e);
         }
 

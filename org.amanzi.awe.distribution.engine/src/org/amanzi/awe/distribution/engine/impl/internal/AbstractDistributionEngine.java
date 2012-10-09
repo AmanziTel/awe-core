@@ -52,6 +52,8 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
 
     private final IDistributionModelProvider distributionModelProvider;
 
+    private List<Pair<IRange, IDistributionBar>> distributionConditions;
+
     protected AbstractDistributionEngine(final T analyzedModel, final IDistributionModelProvider distributionModelProvider) {
         this.analyzedModel = analyzedModel;
         this.distributionModelProvider = distributionModelProvider;
@@ -108,8 +110,7 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
         try {
             monitor.beginTask("Calculating Distribution <" + distributionType + ">", totalCount);
 
-            final List<Pair<IRange, IDistributionBar>> distributionConditions = createDistributionBars(distributionModel,
-                    distributionType);
+            distributionConditions = createDistributionBars(distributionModel, distributionType);
 
             for (final IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
                 for (final Pair<IRange, IDistributionBar> condition : distributionConditions) {
@@ -118,7 +119,7 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
                     if (range.getFilter().matches(element)) {
                         final IDistributionBar bar = condition.getRight();
 
-                        createAggregation(distributionModel, bar, element);
+                        createAggregation(distributionModel, bar, element, distributionType);
 
                         break;
                     }
@@ -132,7 +133,7 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
     }
 
     protected void createAggregation(final IDistributionModel distributionModel, final IDistributionBar distributionBar,
-            final IDataElement element) throws ModelException {
+            final IDataElement element, final IDistributionType< ? > distributionType) throws ModelException {
         distributionModel.createAggregation(distributionBar, element);
     }
 
@@ -162,6 +163,10 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
 
     protected T getAnalyzedModel() {
         return analyzedModel;
+    }
+
+    protected List<Pair<IRange, IDistributionBar>> getDistributionConditions() {
+        return distributionConditions;
     }
 
 }

@@ -11,22 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.filters;
-
-import org.amanzi.neo.dto.IDataElement;
+package org.amanzi.neo.dto;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IFilter {
-
-    boolean matches(IDataElement element);
-
-    boolean matches(Object object);
+public interface IRelation {
 
 }

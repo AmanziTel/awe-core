@@ -33,6 +33,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
@@ -76,7 +77,7 @@ public class NodeService extends AbstractService implements INodeService {
             boolean toContinue = true;
             boolean include = true;
             if (path.lastRelationship() != null) {
-                Relationship relation = path.lastRelationship();
+                final Relationship relation = path.lastRelationship();
                 if (relation.getStartNode().getId() == node.getId()) {
                     toContinue = relation.isType(NodeServiceRelationshipType.CHILD);
                 } else {
@@ -122,7 +123,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public INodeType getNodeType(final Node node) throws ServiceException, NodeTypeNotExistsException {
-        String nodeType = (String)getNodeProperty(node, getGeneralNodeProperties().getNodeTypeProperty(), null, true);
+        final String nodeType = (String)getNodeProperty(node, getGeneralNodeProperties().getNodeTypeProperty(), null, true);
 
         return NodeTypeManager.getInstance().getType(nodeType);
     }
@@ -134,12 +135,12 @@ public class NodeService extends AbstractService implements INodeService {
         Node parent = null;
 
         try {
-            Relationship relToParent = child.getSingleRelationship(relationshipType, Direction.INCOMING);
+            final Relationship relToParent = child.getSingleRelationship(relationshipType, Direction.INCOMING);
 
             if (relToParent != null) {
                 parent = relToParent.getStartNode();
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -163,7 +164,7 @@ public class NodeService extends AbstractService implements INodeService {
         boolean throwDuplicatedException = false;
 
         try {
-            Iterator<Node> nodes = getChildrenTraversal(nodeType, relationshipType)
+            final Iterator<Node> nodes = getChildrenTraversal(nodeType, relationshipType)
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
                     .nodes().iterator();
 
@@ -174,7 +175,7 @@ public class NodeService extends AbstractService implements INodeService {
                     throwDuplicatedException = true;
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -189,7 +190,7 @@ public class NodeService extends AbstractService implements INodeService {
     public Node getReferencedNode() throws ServiceException {
         try {
             return getGraphDb().getReferenceNode();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
     }
@@ -234,11 +235,16 @@ public class NodeService extends AbstractService implements INodeService {
      * @return
      * @throws ServiceException
      */
-    @SuppressWarnings("unchecked")
     @Override
     public <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
             final boolean throwExceptionIfNotExist) throws ServiceException {
-        assert node != null;
+        return getContainerProperty(node, propertyName, defaultValue, throwExceptionIfNotExist);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T extends Object> T getContainerProperty(final PropertyContainer container, final String propertyName,
+            final T defaultValue, final boolean throwExceptionIfNotExist) throws ServiceException {
+        assert container != null;
         assert !StringUtils.isEmpty(propertyName);
 
         assert !(throwExceptionIfNotExist && (defaultValue != null));
@@ -248,25 +254,31 @@ public class NodeService extends AbstractService implements INodeService {
         T result = null;
 
         try {
-            boolean exists = node.hasProperty(propertyName);
+            final boolean exists = container.hasProperty(propertyName);
             if (throwExceptionIfNotExist && !exists) {
                 throwPropertyNotFoundException = true;
             } else {
                 if (exists) {
-                    result = (T)node.getProperty(propertyName);
+                    result = (T)container.getProperty(propertyName);
                 } else {
-                    result = (T)node.getProperty(propertyName, defaultValue);
+                    result = (T)container.getProperty(propertyName, defaultValue);
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
         if (throwPropertyNotFoundException) {
-            throw new PropertyNotFoundException(propertyName, node);
+            throw new PropertyNotFoundException(propertyName, container);
         }
 
         return result;
+    }
+
+    @Override
+    public <T> T getRelationshipProperty(final Relationship relationship, final String propertyName, final T defaultValue,
+            final boolean throwExceptionIfNotExist) throws ServiceException {
+        return getContainerProperty(relationship, propertyName, defaultValue, throwExceptionIfNotExist);
     }
 
     @Override
@@ -276,7 +288,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert nodeType != null;
         assert relationshipType != null;
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<String, Object>();
         return createNode(parentNode, nodeType, relationshipType, properties);
     }
 
@@ -288,7 +300,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert !StringUtils.isEmpty(name);
         assert relationshipType != null;
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
 
         return createNode(parentNode, nodeType, relationshipType, properties);
@@ -302,7 +314,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert parameters != null;
         assert relationshipType != null;
 
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
 
         Node result = null;
 
@@ -311,14 +323,14 @@ public class NodeService extends AbstractService implements INodeService {
 
             result.setProperty(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId());
 
-            for (Entry<String, Object> property : parameters.entrySet()) {
+            for (final Entry<String, Object> property : parameters.entrySet()) {
                 result.setProperty(property.getKey(), property.getValue());
             }
 
             parentNode.createRelationshipTo(result, relationshipType);
 
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -339,7 +351,7 @@ public class NodeService extends AbstractService implements INodeService {
         Node result = null;
 
         try {
-            Iterator<Node> nodes = getDownlinkTraversal().relationships(relationshipType, Direction.OUTGOING)
+            final Iterator<Node> nodes = getDownlinkTraversal().relationships(relationshipType, Direction.OUTGOING)
                     .evaluator(getPropertyEvaluatorForType(nodeType)).traverse(parentNode).nodes().iterator();
 
             if (nodes.hasNext()) {
@@ -349,7 +361,7 @@ public class NodeService extends AbstractService implements INodeService {
                     throwDuplicatedException = true;
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -376,19 +388,24 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public void updateProperty(final Node node, final String propertyName, final Object newValue) throws ServiceException {
-        assert node != null;
+        updateContainerPropety(node, propertyName, newValue);
+    }
+
+    protected void updateContainerPropety(final PropertyContainer container, final String propertyName, final Object newValue)
+            throws DatabaseException {
+        assert container != null;
         assert !StringUtils.isEmpty(propertyName);
         assert newValue != null;
 
-        boolean shouldWrite = !node.hasProperty(propertyName) || !node.getProperty(propertyName).equals(newValue);
+        final boolean shouldWrite = !container.hasProperty(propertyName) || !container.getProperty(propertyName).equals(newValue);
 
         if (shouldWrite) {
-            Transaction tx = getGraphDb().beginTx();
+            final Transaction tx = getGraphDb().beginTx();
 
             try {
-                node.setProperty(propertyName, newValue);
+                container.setProperty(propertyName, newValue);
                 tx.success();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 tx.failure();
                 throw new DatabaseException(e);
             } finally {
@@ -398,19 +415,25 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
+    public void updateProperty(final Relationship relationship, final String propertyName, final Object newValue)
+            throws ServiceException {
+        updateContainerPropety(relationship, propertyName, newValue);
+    }
+
+    @Override
     public void removeNodeProperty(final Node node, final String propertyName, final boolean throwExceptionIfNotExist)
             throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(propertyName);
 
-        boolean exists = node.hasProperty(propertyName);
+        final boolean exists = node.hasProperty(propertyName);
 
         if (exists) {
-            Transaction tx = getGraphDb().beginTx();
+            final Transaction tx = getGraphDb().beginTx();
             try {
                 node.removeProperty(propertyName);
                 tx.success();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 tx.failure();
                 throw new DatabaseException(e);
             } finally {
@@ -429,7 +452,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert !StringUtils.isEmpty(newPropertyName);
         assert !StringUtils.isEmpty(oldPropertyName);
 
-        Object value = getNodeProperty(node, oldPropertyName, null, false);
+        final Object value = getNodeProperty(node, oldPropertyName, null, false);
 
         if (value != null) {
             removeNodeProperty(node, oldPropertyName, false);
@@ -446,7 +469,7 @@ public class NodeService extends AbstractService implements INodeService {
 
         try {
             return getChildrenTraversal(nodeType, relationshipType).traverse(parentNode).nodes().iterator();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
     }
@@ -462,7 +485,7 @@ public class NodeService extends AbstractService implements INodeService {
 
         try {
             return getChildrenTraversal(relationshipType).traverse(parentNode).nodes().iterator();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
     }
@@ -478,7 +501,7 @@ public class NodeService extends AbstractService implements INodeService {
 
         try {
             return getChildrenChainTraversal(parentNode).traverse(parentNode).nodes().iterator();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
     }
@@ -487,9 +510,9 @@ public class NodeService extends AbstractService implements INodeService {
         RelationshipType relationType = NodeServiceRelationshipType.CHILD;
         Node previousNode = parentNode;
 
-        Long lastChildId = getNodeProperty(parentNode, getGeneralNodeProperties().getLastChildID(), null, false);
+        final Long lastChildId = getNodeProperty(parentNode, getGeneralNodeProperties().getLastChildID(), null, false);
 
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
         try {
             if (lastChildId != null) {
                 previousNode = getGraphDb().getNodeById(lastChildId);
@@ -498,7 +521,7 @@ public class NodeService extends AbstractService implements INodeService {
 
             previousNode.createRelationshipTo(childNode, relationType);
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -522,7 +545,7 @@ public class NodeService extends AbstractService implements INodeService {
         boolean throwDuplicatedException = false;
 
         try {
-            Iterator<Node> nodes = getChildrenChainTraversal(nodeType, parentNode)
+            final Iterator<Node> nodes = getChildrenChainTraversal(nodeType, parentNode)
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
                     .nodes().iterator();
 
@@ -533,7 +556,7 @@ public class NodeService extends AbstractService implements INodeService {
                     throwDuplicatedException = true;
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
 
@@ -549,7 +572,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert parentNode != null;
         assert nodeType != null;
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<String, Object>();
         return createNodeInChain(parentNode, nodeType, properties);
     }
 
@@ -559,7 +582,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert nodeType != null;
         assert !StringUtils.isEmpty(name);
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
 
         return createNodeInChain(parentNode, nodeType, properties);
@@ -572,7 +595,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert nodeType != null;
         assert parameters != null;
 
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
 
         Node result = null;
 
@@ -581,14 +604,14 @@ public class NodeService extends AbstractService implements INodeService {
 
             result.setProperty(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId());
 
-            for (Entry<String, Object> property : parameters.entrySet()) {
+            for (final Entry<String, Object> property : parameters.entrySet()) {
                 result.setProperty(property.getKey(), property.getValue());
             }
 
             addToChain(parentNode, result);
 
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -617,29 +640,33 @@ public class NodeService extends AbstractService implements INodeService {
      * org.neo4j.graphdb.Node, org.neo4j.graphdb.RelationshipType)
      */
     @Override
-    public void linkNodes(final Node startNode, final Node endNode, final RelationshipType relationshipType)
+    public Relationship linkNodes(final Node startNode, final Node endNode, final RelationshipType relationshipType)
             throws ServiceException {
         assert startNode != null;
         assert endNode != null;
         assert relationshipType != null;
 
-        Transaction tx = getGraphDb().beginTx();
+        Relationship result = null;
+
+        final Transaction tx = getGraphDb().beginTx();
         try {
-            startNode.createRelationshipTo(endNode, relationshipType);
+            result = startNode.createRelationshipTo(endNode, relationshipType);
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
             tx.finish();
         }
+
+        return result;
     }
 
     @Override
     public Node getChainParent(final Node node) throws ServiceException {
         assert node != null;
 
-        long parentId = getNodeProperty(node, getGeneralNodeProperties().getParentIDProperty(), null, true);
+        final long parentId = getNodeProperty(node, getGeneralNodeProperties().getParentIDProperty(), null, true);
 
         return getGraphDb().getNodeById(parentId);
     }
@@ -653,24 +680,24 @@ public class NodeService extends AbstractService implements INodeService {
             return CHAIN_TRAVERSAL
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId()))
                     .traverse(parentNode).nodes().iterator();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new DatabaseException(e);
         }
     }
 
     @Override
-    public void deleteChain(Node root) throws DatabaseException {
+    public void deleteChain(final Node root) throws DatabaseException {
         assert root != null;
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
         try {
-            for (Node node : getAllDownlinkTraversal().traverse(root).nodes()) {
-                for (Relationship relationship : node.getRelationships(Direction.INCOMING)) {
+            for (final Node node : getAllDownlinkTraversal().traverse(root).nodes()) {
+                for (final Relationship relationship : node.getRelationships(Direction.INCOMING)) {
                     relationship.delete();
                 }
                 node.delete();
             }
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -679,25 +706,67 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Iterator<Node> getAllChildren(Node node) throws ServiceException {
+    public Iterator<Node> getAllChildren(final Node node) throws ServiceException {
         return getAllDownlinkTraversal().traverse(node).nodes().iterator();
     }
 
     @Override
-    public void deleteSingleNode(Node node) throws ServiceException {
-        Transaction tx = getGraphDb().beginTx();
+    public void deleteSingleNode(final Node node) throws ServiceException {
+        final Transaction tx = getGraphDb().beginTx();
         try {
-            for (Relationship relationship : node.getRelationships(Direction.INCOMING)) {
+            for (final Relationship relationship : node.getRelationships(Direction.INCOMING)) {
                 relationship.delete();
             }
             node.delete();
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
             tx.finish();
         }
 
+    }
+
+    @Override
+    public Relationship findLinkBetweenNodes(final Node startNode, final Node endNode, final RelationshipType relationshipType,
+            final Direction direction) throws ServiceException {
+        assert startNode != null;
+        assert endNode != null;
+        assert relationshipType != null;
+        assert direction != null;
+        assert !startNode.equals(endNode);
+
+        Relationship result = null;
+
+        try {
+            for (final Relationship singleRelation : startNode.getRelationships(direction, relationshipType)) {
+                if (singleRelation.getOtherNode(startNode).equals(endNode)) {
+                    result = singleRelation;
+                    break;
+                }
+            }
+        } catch (final Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public void deleteRelationship(final Relationship relation) throws ServiceException {
+        assert relation != null;
+
+        final Transaction tx = getGraphDb().beginTx();
+        try {
+            relation.delete();
+
+            tx.success();
+        } catch (final Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
     }
 }

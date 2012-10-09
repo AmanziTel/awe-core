@@ -48,6 +48,9 @@
             </serviceReference>
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.distributionNodeProperties">
+            </nodePropertiesReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.PropertyStatisticsNodeProperties">
             </nodePropertiesReference></parameters>
       </provider>
    </extension>
