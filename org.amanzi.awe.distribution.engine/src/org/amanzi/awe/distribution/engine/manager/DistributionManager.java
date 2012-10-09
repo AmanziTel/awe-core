@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.awe.distribution.engine.DistributionEngine;
+import org.amanzi.awe.distribution.engine.DistributionEngineFactory;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
@@ -175,7 +175,7 @@ public class DistributionManager {
 
     public IDistributionModel build(final IProgressMonitor progressMonitor) throws ModelException {
         if (canBuild()) {
-            return DistributionEngine.getEngine().build(model, distributionType, progressMonitor);
+            return DistributionEngineFactory.getFactory().getEngine(model).build(distributionType, progressMonitor);
         }
 
         return null;
