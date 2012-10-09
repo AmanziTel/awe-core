@@ -254,8 +254,6 @@ public class DistributionView extends ViewPart
             propertyCombo.setModel(distributionDataset.getModel(), distributionDataset.getNodeType());
             distributionPropertiesWidget.setDistributionManager(currentManager);
 
-            selectCombo.setDistributionManager(currentManager);
-
             propertyCombo.skipSelection();
             distributionTypeCombo.skipSelection();
         }
@@ -268,6 +266,8 @@ public class DistributionView extends ViewPart
 
             distributionTypeCombo.setDistributionManager(currentManager);
             distributionTypeCombo.skipSelection();
+
+            selectCombo.setDistributionManager(currentManager);
         }
     }
 
