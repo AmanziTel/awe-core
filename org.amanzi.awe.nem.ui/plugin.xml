@@ -95,10 +95,6 @@
          </activeWhen>
       </handler>
       <handler
-            class="org.amanzi.awe.nem.ui.handlers.CreateItem"
-            commandId="org.amanzi.awe.nem.ui.createItem">
-      </handler>
-      <handler
             class="org.amanzi.awe.nem.ui.handlers.CreateNewNetwork"
             commandId="org.amanzi.awe.nem.ui.createNetwork">
       </handler>

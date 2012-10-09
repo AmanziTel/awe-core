@@ -8,9 +8,7 @@ Require-Bundle: org.amanzi.neo.models;bundle-version="1.0.0",
  org.amanzi.log4j;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0"
 Export-Package: org.amanzi.awe.nem,
- org.amanzi.awe.nem.internal,
  org.amanzi.awe.nem.messages,
- org.amanzi.awe.nem.properties,
  org.amanzi.awe.nem.properties.manager
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.amanzi.awe.nem.internal.NemPlugin
