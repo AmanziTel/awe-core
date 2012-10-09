@@ -28,6 +28,7 @@ import org.amanzi.awe.distribution.model.type.impl.NumberDistributionRange;
 import org.amanzi.awe.distribution.model.type.impl.NumberDistributionType;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -255,7 +256,7 @@ public class DistributionManager {
             selects.add(Select.MAX);
             selects.add(Select.AVERAGE);
             selects.add(Select.FIRST);
-        } else if (model instanceof IMeasurementModel) {
+        } else if (model instanceof INetworkModel) {
             selects.add(Select.EXISTS);
         }
 
