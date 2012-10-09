@@ -34,10 +34,14 @@ public abstract class AbstractDistributionType<T extends IRange> implements IDis
 
     private final String propertyName;
 
-    protected AbstractDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName) {
+    private final Select select;
+
+    protected AbstractDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
+            final Select select) {
         this.model = model;
         this.nodeType = nodeType;
         this.propertyName = propertyName;
+        this.select = select;
     }
 
     @Override
@@ -57,6 +61,11 @@ public abstract class AbstractDistributionType<T extends IRange> implements IDis
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public Select getSelect() {
+        return select;
     }
 
 }

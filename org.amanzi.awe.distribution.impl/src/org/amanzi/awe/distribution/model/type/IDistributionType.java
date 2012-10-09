@@ -25,6 +25,10 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public interface IDistributionType<T extends IRange> {
 
+    public static enum Select {
+        MIN, MAX, AVERAGE, EXISTS, FIRST;
+    }
+
     /**
      * Type of Chart
      * 
@@ -133,5 +137,7 @@ public interface IDistributionType<T extends IRange> {
      * @return
      */
     public String getPropertyName();
+
+    public Select getSelect();
 
 }

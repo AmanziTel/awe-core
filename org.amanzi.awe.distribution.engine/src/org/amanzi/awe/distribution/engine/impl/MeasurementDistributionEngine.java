@@ -20,6 +20,7 @@ import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 
 /**
  * TODO Purpose of
@@ -42,8 +43,13 @@ public class MeasurementDistributionEngine extends AbstractDistributionEngine<IM
     @Override
     protected void createAggregation(final IDistributionModel distributionModel, final IDistributionBar distributionBar,
             final IDataElement element) throws ModelException {
-
         distributionModel.createAggregation(distributionBar, element);
+
+    }
+
+    private void updateLocation(final IDistributionModel distributionModel, final IDistributionBar distributionBar,
+            final ILocationElement location) throws ModelException {
+
     }
 
 }

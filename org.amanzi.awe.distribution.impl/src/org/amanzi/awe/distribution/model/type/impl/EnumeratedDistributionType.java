@@ -49,7 +49,7 @@ public class EnumeratedDistributionType extends AbstractDistributionType<SimpleR
      * @param canChangeColors
      */
     public EnumeratedDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName) {
-        super(model, nodeType, propertyName);
+        super(model, nodeType, propertyName, Select.EXISTS);
     }
 
     @Override
