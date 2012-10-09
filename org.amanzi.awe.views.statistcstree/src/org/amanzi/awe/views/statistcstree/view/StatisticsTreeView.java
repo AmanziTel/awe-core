@@ -57,9 +57,9 @@ public class StatisticsTreeView extends AbstractTreeView {
     @Override
     public void createPartControl(final Composite parent) {
         super.createPartControl(parent);
-        IActionBars actionBars = getViewSite().getActionBars();
-        IMenuManager dropDownMenu = actionBars.getMenuManager();
-        for (DimensionType type : DimensionType.values()) {
+        final IActionBars actionBars = getViewSite().getActionBars();
+        final IMenuManager dropDownMenu = actionBars.getMenuManager();
+        for (final DimensionType type : DimensionType.values()) {
             dropDownMenu.add(new ChangeDimensionAction(type, getTreeViewer()));
         }
     }
@@ -79,9 +79,9 @@ public class StatisticsTreeView extends AbstractTreeView {
      * @param parent
      * @param filter
      */
-    public void filterTree(IModel parent, IStatisticsTreeFilterContainer filter) {
+    public void filterTree(final IModel parent, final IStatisticsTreeFilterContainer filter) {
         if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
-            StatisticsTreeFilteredContentProvider contentProvider = (StatisticsTreeFilteredContentProvider)getTreeViewer()
+            final StatisticsTreeFilteredContentProvider contentProvider = (StatisticsTreeFilteredContentProvider)getTreeViewer()
                     .getContentProvider();
             if (contentProvider.getFilter().equals(filter)) {
                 showElement(parent, null);
@@ -95,10 +95,15 @@ public class StatisticsTreeView extends AbstractTreeView {
     }
 
     @Override
-    public void showElement(IModel model, IDataElement element) {
+    public void showElement(final IModel model, final IDataElement element) {
         if (getTreeViewer().getContentProvider() instanceof StatisticsTreeFilteredContentProvider) {
             getTreeViewer().setContentProvider(DEFAULT_CONTENT_PROVIDER);
         }
         super.showElement(model, element);
+    }
+
+    @Override
+    public String getViewId() {
+        return VIEW_ID;
     }
 }

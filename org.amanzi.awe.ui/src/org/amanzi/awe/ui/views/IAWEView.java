@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.property.views.internal;
+package org.amanzi.awe.ui.views;
 
-import org.eclipse.ui.views.properties.PropertyDescriptor;
+import org.eclipse.ui.IViewPart;
 
 /**
  * TODO Purpose of
@@ -23,15 +23,8 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DataElementPropertyDescriptor extends PropertyDescriptor {
+public interface IAWEView extends IViewPart {
 
-    /**
-     * @param id
-     * @param displayName
-     */
-    public DataElementPropertyDescriptor(final Object id, final String displayName, final String category) {
-        super(id, displayName);
-        setCategory(category);
-    }
+    String getViewId();
 
 }

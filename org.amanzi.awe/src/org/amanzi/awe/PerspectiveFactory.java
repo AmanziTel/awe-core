@@ -36,18 +36,21 @@ public class PerspectiveFactory extends AbstractPerspectiveFactory {
      * @param layout the page layout
      */
     @Override
-    public void createInitialLayout(IPageLayout layout) {
+    public void createInitialLayout(final IPageLayout layout) {
         // Get the editor area.
-        String editorArea = layout.getEditorArea();
+        final String editorArea = layout.getEditorArea();
 
-        IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, getTopLeft(), editorArea);
+        final IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, getTopLeft(), editorArea);
         topLeft.addView(LAYERS);
 
         // Here we are making folder layout to show three views side by side
-        IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, getBottomLeft(), editorArea);
+        final IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, getBottomLeft(), editorArea);
         bottomLeft.addView(CATALOG);
+
+        bottomLeft.addView(IPageLayout.ID_PROP_SHEET);
 
         layout.addPerspectiveShortcut(AWE_PERSPECTIVE);
         layout.addPerspectiveShortcut(MapPerspective.ID_PERSPECTIVE);
+        layout.addPerspectiveShortcut(IPageLayout.ID_PROP_SHEET);
     }
 }

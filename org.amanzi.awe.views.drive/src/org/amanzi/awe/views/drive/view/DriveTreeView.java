@@ -55,4 +55,9 @@ public class DriveTreeView extends AbstractTreeView {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public String getViewId() {
+        return DRIVE_TREE_VIEW_ID;
+    }
 }

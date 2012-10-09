@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.views.treeview.provider;
 
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.models.IModel;
 
 /**
@@ -23,9 +24,6 @@ import org.amanzi.neo.models.IModel;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface ITreeItem<T extends IModel, E extends Object> {
-    E getChild();
-
-    T getParent();
+public interface ITreeItem<T extends IModel, E extends Object> extends IUIItem<T, E> {
 
 }

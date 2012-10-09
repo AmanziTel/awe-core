@@ -59,4 +59,9 @@ public class NetworkTreeView extends AbstractTreeView {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public String getViewId() {
+        return NETWORK_TREE_VIEW_ID;
+    }
 }

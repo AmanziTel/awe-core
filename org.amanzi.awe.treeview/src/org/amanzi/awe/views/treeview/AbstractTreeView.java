@@ -17,6 +17,8 @@ import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.views.IAWEView;
+import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
@@ -36,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 
 /**
  * <p>
@@ -45,7 +48,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener {
+public abstract class AbstractTreeView extends ViewPart implements IAWEEventListenter, ModifyListener, IAWEView {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
 
@@ -68,7 +71,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void modifyText(final ModifyEvent e) {
-        String searchText = tSearch.getText();
+        final String searchText = tSearch.getText();
         searchInTreeView(searchText);
     }
 
@@ -108,8 +111,8 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
         getSite().setSelectionProvider(getTreeViewer());
         setLayout(parent);
 
-        MenuManager menuManager = new MenuManager();
-        Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
+        final MenuManager menuManager = new MenuManager();
+        final Menu menu = menuManager.createContextMenu(getTreeViewer().getControl());
         getTreeViewer().getControl().setMenu(menu);
 
         getSite().registerContextMenu(menuManager, getTreeViewer());
@@ -129,7 +132,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
      */
     protected void setLayout(final Composite parent) {
         LOGGER.info("start layout components");
-        FormLayout layout = new FormLayout();
+        final FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.marginWidth = 0;
@@ -201,6 +204,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     @Override
     public void dispose() {
+        AWEPropertiesPlugin.getDefault().unregisterView(this);
         AWEEventManager.getManager().removeListener(this);
         super.dispose();
     }
@@ -211,10 +215,20 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
     }
 
     public void showElement(final IModel model, final IDataElement element) {
-        ITreeItem< ? , ? > item = getTreeItem(model, element);
+        final ITreeItem< ? , ? > item = getTreeItem(model, element);
 
         getTreeViewer().setSelection(new StructuredSelection(item), true);
     }
 
     protected abstract ITreeItem< ? , ? > getTreeItem(IModel model, IDataElement element);
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Object getAdapter(final Class adapter) {
+        if (adapter.equals(IPropertySheetPage.class)) {
+            return AWEPropertiesPlugin.getDefault().registerView(this);
+        }
+
+        return super.getAdapter(adapter);
+    }
 }

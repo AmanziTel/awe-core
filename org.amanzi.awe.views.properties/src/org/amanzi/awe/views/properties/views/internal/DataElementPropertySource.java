@@ -11,9 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.property.views.internal;
+package org.amanzi.awe.views.properties.views.internal;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 
@@ -29,32 +33,41 @@ public class DataElementPropertySource implements IPropertySource {
 
     private final IDataElement dataElement;
 
+    private final IModel model;
+
     public DataElementPropertySource(final IDataElement dataElement) {
+        this(dataElement, null);
+    }
+
+    public DataElementPropertySource(final IDataElement dataElement, final IModel model) {
         this.dataElement = dataElement;
+        this.model = model;
     }
 
     @Override
     public Object getEditableValue() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        // TODO Auto-generated method stub
-        return null;
+        final List<IPropertyDescriptor> propertyDescriptors = new ArrayList<IPropertyDescriptor>();
+
+        for (final String propertyName : dataElement.keySet()) {
+            propertyDescriptors.add(new DataElementPropertyDescriptor(propertyName));
+        }
+
+        return propertyDescriptors.toArray(new IPropertyDescriptor[propertyDescriptors.size()]);
     }
 
     @Override
     public Object getPropertyValue(final Object id) {
-        // TODO Auto-generated method stub
-        return null;
+        return dataElement.get(id.toString());
     }
 
     @Override
     public boolean isPropertySet(final Object id) {
-        // TODO Auto-generated method stub
-        return false;
+        return dataElement.contains(id.toString());
     }
 
     @Override

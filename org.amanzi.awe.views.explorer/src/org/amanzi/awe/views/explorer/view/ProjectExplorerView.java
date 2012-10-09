@@ -63,4 +63,9 @@ public class ProjectExplorerView extends AbstractTreeView {
         return null;
     }
 
+    @Override
+    public String getViewId() {
+        return PROJECT_EXPLORER_ID;
+    }
+
 }

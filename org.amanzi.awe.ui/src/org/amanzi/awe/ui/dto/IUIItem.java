@@ -11,10 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.property.views;
+package org.amanzi.awe.ui.dto;
 
-import org.amanzi.awe.views.property.views.internal.DataElementPropertySourceProvider;
-import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.amanzi.neo.models.IModel;
 
 /**
  * TODO Purpose of
@@ -24,12 +23,8 @@ import org.eclipse.ui.views.properties.PropertySheetPage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AWEPropertySheet extends PropertySheetPage {
+public interface IUIItem<T extends IModel, E extends Object> {
+    E getChild();
 
-    public AWEPropertySheet() {
-        super();
-
-        setPropertySourceProvider(new DataElementPropertySourceProvider());
-    }
-
+    T getParent();
 }
