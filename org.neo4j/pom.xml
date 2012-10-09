@@ -9,6 +9,6 @@
   </parent>
   <groupId>org.neo4j</groupId>
   <artifactId>org.neo4j</artifactId>
-  <version>1.8</version>
+  <version>1.8.0</version>
   <packaging>eclipse-plugin</packaging>
 </project>
