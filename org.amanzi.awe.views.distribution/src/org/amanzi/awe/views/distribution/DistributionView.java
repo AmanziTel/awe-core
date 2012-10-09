@@ -322,6 +322,8 @@ public class DistributionView extends ViewPart
     public void onSelectChanged(final Select select) {
         if (currentManager != null) {
             currentManager.setSelect(select);
+
+            runDistribution();
         }
     }
 

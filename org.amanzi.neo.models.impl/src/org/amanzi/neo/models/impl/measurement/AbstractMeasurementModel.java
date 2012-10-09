@@ -550,7 +550,9 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             final Node locationNode = getNodeService().getSingleChild(elementNode, MeasurementNodeType.MP,
                     MeasurementRelationshipType.LOCATION);
 
-            location = getLocationElement(locationNode);
+            if (locationNode != null) {
+                location = getLocationElement(locationNode);
+            }
         } catch (final ServiceException e) {
             processException("Error on computing element location", e);
         }

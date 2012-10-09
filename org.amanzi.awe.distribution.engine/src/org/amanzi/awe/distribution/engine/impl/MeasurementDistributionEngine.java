@@ -74,7 +74,7 @@ public class MeasurementDistributionEngine extends AbstractDistributionEngine<IM
             if (value instanceof Number) {
                 dValue = ((Number)value).doubleValue();
 
-                shouldUpdate = relation != null && shouldUpdate(relation, dValue);
+                shouldUpdate = relation == null || shouldUpdate(relation, dValue);
             }
 
             if (relation == null) {

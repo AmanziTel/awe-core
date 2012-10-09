@@ -373,11 +373,13 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         try {
             final DistributionBar distributionBar = (DistributionBar)findDistributionBar(element);
 
-            final Relationship relation = getNodeService().findLinkBetweenNodes(element.getNode(), distributionBar.getNode(),
-                    DistributionRelationshipType.AGGREGATED, Direction.INCOMING);
+            if (distributionBar != null) {
+                final Relationship relation = getNodeService().findLinkBetweenNodes(element.getNode(), distributionBar.getNode(),
+                        DistributionRelationshipType.AGGREGATED, Direction.INCOMING);
 
-            if (relation != null) {
-                result = initializeAggregationRelation(relation);
+                if (relation != null) {
+                    result = initializeAggregationRelation(relation);
+                }
             }
         } catch (final ServiceException e) {
 
