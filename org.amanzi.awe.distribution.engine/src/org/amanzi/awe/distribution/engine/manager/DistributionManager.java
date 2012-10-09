@@ -258,7 +258,7 @@ public class DistributionManager {
         if (model instanceof IMeasurementModel) {
             final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
 
-            if (clazz.equals(Number.class)) {
+            if (!clazz.equals(String.class) && !clazz.equals(Boolean.class)) {
                 selects.add(Select.MIN);
                 selects.add(Select.MAX);
                 selects.add(Select.AVERAGE);
