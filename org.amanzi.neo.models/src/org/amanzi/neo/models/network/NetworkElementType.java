@@ -37,10 +37,6 @@ public enum NetworkElementType implements INetworkElementType {
         this.index = index;
     }
 
-    public int getDepth() {
-        return index;
-    }
-
     @Override
     public String getId() {
         return NodeTypeUtils.getTypeId(this);

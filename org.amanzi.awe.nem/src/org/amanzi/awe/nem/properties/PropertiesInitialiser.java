@@ -43,9 +43,9 @@ public class PropertiesInitialiser extends AbstractPreferenceInitializer {
     public void initializeDefaultPreferences() {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(DEFAUL_NETWORK_PROPERTIES_FILE));
+            properties.load(this.getClass().getResourceAsStream(DEFAUL_NETWORK_PROPERTIES_FILE));
             for (Entry<Object, Object> singleProperty : properties.entrySet()) {
-                PREFERENCE_STORE.setDefault(singleProperty.getValue().toString(), singleProperty.getKey().toString());
+                PREFERENCE_STORE.setDefault(singleProperty.getKey().toString(), singleProperty.getValue().toString());
             }
         } catch (FileNotFoundException e) {
             LOGGER.error("file not found", e);

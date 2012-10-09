@@ -29,6 +29,16 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @since 1.0.0
  */
 public class NetworkStructureManager {
+    private final List<INodeType> requiredTypes = new ArrayList<INodeType>() {
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1L;
+
+        {
+            add(NetworkElementType.NETWORK);
+            add(NetworkElementType.SITE);
+            add(NetworkElementType.SECTOR);
+        }
+    };
 
     private static class NetworkStructureManagerInstanceHolder {
         private static final NetworkStructureManager INSTANCE = new NetworkStructureManager();
@@ -62,6 +72,10 @@ public class NetworkStructureManager {
 
     public boolean isInUderline(INodeType type, NetworkElementType expectedType, List<String> structure) {
         return getUnderlineElements(type, structure).contains(expectedType.getId());
+    }
+
+    public List<INodeType> getRequiredNetworkElements() {
+        return requiredTypes;
     }
 
 }

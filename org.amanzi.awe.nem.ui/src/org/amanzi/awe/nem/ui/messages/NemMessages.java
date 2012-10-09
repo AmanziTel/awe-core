@@ -39,6 +39,18 @@ public class NemMessages extends NLS {
 
     public static String DOWN;
 
+    public static String CREATE_TYPE_IN_STRUCTURE;
+
+    public static String TYPE;
+
+    public static String OK;
+
+    public static String CANCEL;
+
+    public static String INCORRECT_SECTOR_LINKAGE;
+
+    public static String PROPERTY_EDITOR_PAGE_TITLE;
+
     private NemMessages() {
     }
 

@@ -11,10 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.ui.wizard;
-
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
+package org.amanzi.awe.nem.ui.widgets;
 
 /**
  * TODO Purpose of
@@ -24,15 +21,20 @@ import org.eclipse.jface.wizard.Wizard;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CreateNetworkWizard extends Wizard {
+public enum PropertyColumns {
 
-    @Override
-    public boolean performFinish() {
-        for (IWizardPage page : getPages()) {
-            if (!page.isPageComplete()) {
-                return false;
-            }
-        }
-        return true;
+    NAME("name"), TYPE("type"), DEFAULT_VALUE("Default_Value");
+
+    private String name;
+
+    /**
+     * 
+     */
+    private PropertyColumns(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
     }
 }

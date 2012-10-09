@@ -11,7 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties.manager;
+package org.amanzi.awe.nem.ui.wizard;
+
+import java.util.List;
 
 /**
  * TODO Purpose of
@@ -21,29 +23,17 @@ package org.amanzi.awe.nem.properties.manager;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class NetworkProperty {
+public class NetworkDataContainer {
 
     private String name;
-    
-    private String type;
 
-    protected NetworkProperty(String name, String type) {
-        this.name = name;
-        this.type = type;
-    }
+    private List<String> structure;
 
     /**
      * @return Returns the name.
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * @return Returns the type.
-     */
-    public String getType() {
-        return type;
     }
 
     /**
@@ -54,9 +44,16 @@ public class NetworkProperty {
     }
 
     /**
-     * @param type The type to set.
+     * @return Returns the structure.
      */
-    public void setType(String type) {
-        this.type = type;
+    public List<String> getStructure() {
+        return structure;
+    }
+
+    /**
+     * @param structure The structure to set.
+     */
+    public void setStructure(List<String> structure) {
+        this.structure = structure;
     }
 }

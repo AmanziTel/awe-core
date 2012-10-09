@@ -13,6 +13,15 @@
 
 package org.amanzi.awe.nem.properties.manager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.amanzi.awe.nem.internal.NemPlugin;
+import org.eclipse.jface.preference.IPreferenceStore;
+
 /**
  * TODO Purpose of
  * <p>
@@ -23,6 +32,10 @@ package org.amanzi.awe.nem.properties.manager;
  */
 public class NetworkPropertiesManager {
 
+    private static final IPreferenceStore PREFERENCE_STORE = NemPlugin.getDefault().getPreferenceStore();
+
+    private static final String COMMA_SEPARATOR = ",";
+
     private static class ManagerInstanceHolder {
         private static final NetworkPropertiesManager MANAGER = new NetworkPropertiesManager();
     }
@@ -32,6 +45,72 @@ public class NetworkPropertiesManager {
     }
 
     private NetworkPropertiesManager() {
+        initTypesMap();
+    }
 
+    /**
+     *
+     */
+    private void initTypesMap() {
+        for (String type : KNOWN_TYPES) {
+            String knownProperties = PREFERENCE_STORE.getString(type);
+            if (knownProperties == null) {
+                continue;
+            }
+            List<String> newProperties = new ArrayList<String>();
+            String[] properties = knownProperties.split(COMMA_SEPARATOR);
+            for (String singleProperty : properties) {
+                newProperties.add(singleProperty);
+            }
+            propertiesTypes.put(type, newProperties);
+        }
+    }
+
+    private Map<String, List<NetworkProperty>> typesProperties = new HashMap<String, List<NetworkProperty>>();
+
+    private Map<String, List<String>> propertiesTypes = new HashMap<String, List<String>>();
+
+    private String[] KNOWN_TYPES = {"String", "Double", "Long", "Object", "Integer"};
+
+    public Iterable<NetworkProperty> getProperties(String type) {
+        List<NetworkProperty> properties = typesProperties.get(type);
+        if (properties == null) {
+            properties = new ArrayList<NetworkProperty>();
+            String[] exitedProperties = getPropertiesForType(type);
+            for (String singleProperty : exitedProperties) {
+                String propertyType = getPropertyType(singleProperty);
+                properties.add(new NetworkProperty(singleProperty, propertyType));
+            }
+            typesProperties.put(type, properties);
+        }
+        return properties;
+    }
+
+    /**
+     * @param singleProperty
+     * @return
+     */
+    private String getPropertyType(String singleProperty) {
+        for (Entry<String, List<String>> typesAssociation : propertiesTypes.entrySet()) {
+            if (typesAssociation.getValue().contains(singleProperty)) {
+                return typesAssociation.getKey();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param type
+     * @return
+     */
+    private String[] getPropertiesForType(String type) {
+        String value = PREFERENCE_STORE.getString(type);
+        String[] properties;
+        if (value.length() > 0) {
+            properties = value.split(COMMA_SEPARATOR);
+        } else {
+            properties = new String[0];
+        }
+        return properties;
     }
 }

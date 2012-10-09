@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Text;
 public class NetworkNameWidget extends AbstractLabeledWidget<Text, INetworkNameChanged> implements ModifyListener {
 
     public interface INetworkNameChanged extends IAWEWidgetListener {
-        void onChanged(String name);
+        void onNameChanged(String name);
     }
 
     private Text tNetworkNameField;
@@ -65,7 +65,7 @@ public class NetworkNameWidget extends AbstractLabeledWidget<Text, INetworkNameC
     @Override
     public void modifyText(ModifyEvent e) {
         for (INetworkNameChanged listener : getListeners()) {
-            listener.onChanged(tNetworkNameField.getText());
+            listener.onNameChanged(tNetworkNameField.getText());
         }
 
     }

@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.List;
+
+import org.amanzi.awe.nem.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
@@ -46,11 +49,18 @@ public class InitialNetworkPage extends WizardPage
 
     private Composite mainComposite;
 
+    public boolean isCompleate;
+
+    private TypeControlWidget typesSelector;
+
+    private String networkName;
+
     /**
      * @param pageName
      */
     public InitialNetworkPage() {
         super(NemMessages.CREATE_NEW_NETWORK);
+        setTitle(NemMessages.CREATE_NEW_NETWORK);
     }
 
     @Override
@@ -72,11 +82,20 @@ public class InitialNetworkPage extends WizardPage
         Composite typeComposite = new Composite(mainComposite, SWT.NONE);
         typeComposite.setLayout(ONE_COLUMN_LAYOU);
         typeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        TypeControlWidget typesSelector = new TypeControlWidget(typeComposite, SWT.NONE, this);
+        typesSelector = new TypeControlWidget(typeComposite, SWT.NONE, this, NetworkStructureManager.getInstance()
+                .getRequiredNetworkElements());
         typesSelector.initializeWidget();
-
         setControl(mainComposite);
 
+    }
+
+    public List<String> getNetworkStructure() {
+        return typesSelector.getStructure();
+    }
+
+    @Override
+    public boolean canFlipToNextPage() {
+        return isCompleate;
     }
 
     /**
@@ -88,18 +107,43 @@ public class InitialNetworkPage extends WizardPage
 
     @Override
     public boolean isPageComplete() {
-        return false;
+        return isCompleate;
     }
 
     @Override
-    public void onChanged(String name) {
-        // TODO Auto-generated method stub
-
+    public void onNameChanged(String name) {
+        networkName = name;
+        if (name.isEmpty()) {
+            isCompleate = false;
+        }
+        isCompleate = true;
+        setPageComplete(isCompleate);
     }
 
     @Override
     public void onCRSSelecte() {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public void onStatusUpdate(int code, String message) {
+        switch (code) {
+        case WARNING:
+            setErrorMessage(message);
+            break;
+        case INFORMATION:
+            setErrorMessage(null);
+        default:
+            break;
+        }
+
+    }
+
+    /**
+     * @return
+     */
+    public String getNetworkName() {
+        return networkName;
     }
 }
