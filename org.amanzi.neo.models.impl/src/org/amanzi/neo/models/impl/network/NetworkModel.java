@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.impl.network;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,13 +31,13 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.models.network.INetworkStructure;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
@@ -147,7 +148,16 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     private final INetworkNodeProperties networkNodeProperties;
-    private final NetworkStructure structure;
+    // private final NetworkStructure structure;
+
+    private final List<String> structure = new ArrayList<String>() {
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 7149098047373556881L;
+
+        {
+            add(NetworkElementType.NETWORK.getId());
+        }
+    };
 
     /**
      * @param nodeService
@@ -157,7 +167,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties) {
         super(nodeService, generalNodeProperties, geoNodeProperties);
         this.networkNodeProperties = networkNodeProperties;
-        structure = new NetworkStructure();
     }
 
     @Override
@@ -167,7 +176,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     @Override
     public void initialize(Node rootNode) throws ModelException {
-        structure.initiailizeFromArray((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()));
+        structure.clear();
+        structure.addAll(Arrays.asList(((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()))));
         super.initialize(rootNode);
     }
 
@@ -266,7 +276,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             Node parentNode = ((DataElement)parent).getNode();
             Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
 
-            structure.addItem(elementType);
+            updateNetworkStructure(parent, elementType);
 
             getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
 
@@ -282,6 +292,37 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         return result;
+    }
+
+    /**
+     * @param parent
+     * @param elementType
+     * @throws ServiceException
+     */
+    private void updateNetworkStructure(IDataElement parent, INetworkElementType elementType) throws ServiceException {
+        String parentType;
+        try {
+            parentType = getNodeService().getNodeType(((DataElement)parent).getNode()).getId();
+        } catch (ServiceException e) {
+            throw e;
+        } catch (NodeTypeNotExistsException e) {
+            LOGGER.error("can't get parent node type", e);
+            return;
+
+        }
+        String currentType = elementType.getId();
+        if (!structure.contains(currentType)) {
+            structure.add(currentType);
+            return;
+        } else if (structure.contains(currentType) && structure.contains(parentType)) {
+            return;
+        }
+
+        int parentIndex = structure.indexOf(parentType);
+        int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        if (parentIndex < lastIndex) {
+            structure.add(parentIndex, currentType);
+        }
     }
 
     @Override
@@ -455,8 +496,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
         try {
+
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
-                    structure.getStructuredArray());
+                    structure.toArray(new String[structure.size()]));
         } catch (ServiceException e) {
             processException("can't set structure properties", e);
         }
@@ -484,7 +526,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public INetworkStructure getNetworkStructure() {
-        return structure;
+    public String[] getNetworkStructure() {
+        return structure.toArray(new String[structure.size()]);
     }
 }

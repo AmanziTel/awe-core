@@ -107,7 +107,7 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
 
     protected abstract C createControl(Composite parent);
 
-    private GridData getElementLayoutData() {
+    protected GridData getElementLayoutData() {
         return new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
     }
 

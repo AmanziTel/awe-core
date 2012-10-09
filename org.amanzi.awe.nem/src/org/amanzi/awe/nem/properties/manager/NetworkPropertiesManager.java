@@ -11,10 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.ui.handlers;
-
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.models.IModel;
+package org.amanzi.awe.nem.properties.manager;
 
 /**
  * TODO Purpose of
@@ -24,11 +21,17 @@ import org.amanzi.neo.models.IModel;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CreateItem extends AbstractNemHandler {
+public class NetworkPropertiesManager {
 
-    @Override
-    protected void handleItem(ITreeItem<IModel, Object> selectedObject) {
-
+    private static class ManagerInstanceHolder {
+        private static final NetworkPropertiesManager MANAGER = new NetworkPropertiesManager();
     }
 
+    public static NetworkPropertiesManager getInstance() {
+        return ManagerInstanceHolder.MANAGER;
+    }
+
+    private NetworkPropertiesManager() {
+
+    }
 }

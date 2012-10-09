@@ -31,77 +31,21 @@
                      </test>
                   </with>
                </visibleWhen>
-               <command
-                     commandId="org.amanzi.awe.nem.ui.createItem"
-                     label="CITY"
-                     style="push">
-                  <visibleWhen
-                        checkEnabled="false">
-                     <with
-                           variable="activeMenuSelection">
-                        <test
-                              property="org.amanzi.awe.nem.ui.isCityAllow">
-                        </test>
-                     </with>
-                  </visibleWhen>
-               </command>
-               <command
-                     commandId="org.amanzi.awe.nem.ui.createItem"
-                     label="MSC"
-                     style="push">
-                  <visibleWhen
-                        checkEnabled="false">
-                     <with
-                           variable="activeMenuSelection">
-                        <test
-                              property="org.amanzi.awe.nem.ui.isMSCAllow">
-                        </test>
-                     </with>
-                  </visibleWhen>
-               </command>
-               <command
-                     commandId="org.amanzi.awe.nem.ui.createItem"
-                     label="BSC"
-                     style="push">
-                  <visibleWhen
-                        checkEnabled="false">
-                     <with
-                           variable="activeMenuSelection">
-                        <test
-                              property="org.amanzi.awe.nem.ui.isBSCAllow">
-                        </test>
-                     </with>
-                  </visibleWhen>
-               </command>
-               <command
-                     commandId="org.amanzi.awe.nem.ui.createItem"
-                     label="SITE"
-                     style="push">
-                  <visibleWhen
-                        checkEnabled="false">
-                     <with
-                           variable="activeMenuSelection">
-                        <test
-                              property="org.amanzi.awe.nem.ui.isSiteAllow">
-                        </test>
-                     </with>
-                  </visibleWhen>
-               </command>
-               <command
-                     commandId="org.amanzi.awe.nem.ui.createItem"
-                     label="SECTOR"
-                     style="push">
-                  <visibleWhen
-                        checkEnabled="false">
-                     <with
-                           variable="activeMenuSelection">
-                        <test
-                              property="org.amanzi.awe.nem.ui.isSectorAllow">
-                        </test>
-                     </with>
-                  </visibleWhen>
-               </command>
+               <dynamic
+                     class="org.amanzi.awe.nem.ui.contributions.CreateNetworkElementContribution"
+                     id="org.amanzi.awe.nem.ui.contributions.creationContribution">
+               </dynamic>
             </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.amanzi.awe.views.network.views.NetworkTreeView">
+         <command
+               commandId="org.amanzi.awe.nem.ui.createNetwork"
+               icon="icons/network.png"
+               style="push"
+               tooltip="Create new Network">
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -130,6 +74,10 @@
             id="org.amanzi.awe.nem.ui.createItem"
             name="BSC">
       </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createNetwork"
+            name="Create new Network">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -150,6 +98,10 @@
             class="org.amanzi.awe.nem.ui.handlers.CreateItem"
             commandId="org.amanzi.awe.nem.ui.createItem">
       </handler>
+      <handler
+            class="org.amanzi.awe.nem.ui.handlers.CreateNewNetwork"
+            commandId="org.amanzi.awe.nem.ui.createNetwork">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
@@ -157,7 +109,7 @@
             class="org.amanzi.awe.nem.ui.testers.NemTester"
             id="org.amanzi.awe.nem.ui.deletabletester"
             namespace="org.amanzi.awe.nem.ui"
-            properties="isDeletable,isAddetable,isCityAllow,isMSCAllow,isBSCAllow, isSiteAllow,isSectorAllow"
+            properties="isDeletable,isAddetable"
             type="org.eclipse.jface.viewers.IStructuredSelection">
       </propertyTester>
    </extension>

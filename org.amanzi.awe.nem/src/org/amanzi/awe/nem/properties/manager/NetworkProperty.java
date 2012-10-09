@@ -11,11 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.network;
-
-import java.util.Collection;
-
-import org.amanzi.neo.nodetypes.INodeType;
+package org.amanzi.awe.nem.properties.manager;
 
 /**
  * TODO Purpose of
@@ -25,10 +21,27 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface INetworkStructure {
+public class NetworkProperty {
 
-    Collection<NetworkElementType> getUnderlineElements(INodeType root);
+    private String name;
+    private Class< ? > type;
 
-    boolean isInUderline(INodeType type, NetworkElementType expectedType);
+    protected NetworkProperty(String name, Class< ? > type) {
+        this.name = name;
+        this.type = type;
+    }
 
+    /**
+     * @return Returns the name.
+     */
+    protected String getName() {
+        return name;
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    protected Class< ? > getType() {
+        return type;
+    }
 }

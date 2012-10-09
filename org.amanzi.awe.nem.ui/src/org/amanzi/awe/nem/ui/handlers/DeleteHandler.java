@@ -7,6 +7,7 @@ import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -55,7 +56,7 @@ public class DeleteHandler extends AbstractNemHandler {
     }
 
     @Override
-    protected void handleItem(ITreeItem<IModel, Object> treeItem) {
+    protected void handleItem(ITreeItem<IModel, Object> treeItem, Command command) {
         if (treeItem.getParent() instanceof INetworkModel || treeItem.getChild() instanceof INetworkModel) {
             NemDeleteJob job = null;
             if (treeItem.getParent() == null) {
