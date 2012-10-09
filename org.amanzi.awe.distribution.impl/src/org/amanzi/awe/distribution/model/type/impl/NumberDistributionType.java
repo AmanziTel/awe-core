@@ -50,8 +50,8 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
      * @param canChangeColors
      */
     public NumberDistributionType(final IPropertyStatisticalModel model, final INodeType nodeType, final String propertyName,
-            final NumberDistributionRange numberDistributionRange) {
-        super(model, nodeType, propertyName);
+            final NumberDistributionRange numberDistributionRange, final Select select) {
+        super(model, nodeType, propertyName, select);
         this.numberDistributionRange = numberDistributionRange;
     }
 

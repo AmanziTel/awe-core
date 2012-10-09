@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.distribution.dto.IAggregationRelation;
+import org.amanzi.awe.distribution.dto.impl.AggregationRelation;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.bar.impl.DistributionBar;
@@ -35,8 +37,11 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -81,6 +86,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     private final IDistributionNodeProperties distributionNodeProperties;
 
+    private final IPropertyStatisticsNodeProperties countNodePropeties;
+
     private Color leftColor;
 
     private Color rightColor;
@@ -94,11 +101,13 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
      * @param generalNodeProperties
      */
     public DistributionModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
-            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties) {
+            final IDistributionService distributionService, final IDistributionNodeProperties distributionNodeProperties,
+            final IPropertyStatisticsNodeProperties countNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.distributionService = distributionService;
         this.distributionNodeProperties = distributionNodeProperties;
+        this.countNodePropeties = countNodeProperties;
     }
 
     @Override
@@ -219,7 +228,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     }
 
     @Override
-    public void createAggregation(final IDistributionBar bar, final IDataElement element) throws ModelException {
+    public IAggregationRelation createAggregation(final IDistributionBar bar, final IDataElement element) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("createAggregation", bar, element));
         }
@@ -227,8 +236,13 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         final DistributionBar distributionBar = (DistributionBar)bar;
         final DataElement dataElement = (DataElement)element;
 
+        AggregationRelation result = null;
+
         try {
-            getNodeService().linkNodes(distributionBar.getNode(), dataElement.getNode(), DistributionRelationshipType.AGGREGATED);
+            final Relationship relation = getNodeService().linkNodes(distributionBar.getNode(), dataElement.getNode(),
+                    DistributionRelationshipType.AGGREGATED);
+
+            result = new AggregationRelation(relation);
         } catch (final ServiceException e) {
             processException("Error occured on adding Aggregation between nodes", e);
         }
@@ -238,6 +252,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("createAggregation"));
         }
+
+        return result;
     }
 
     private static int[] convertColorToArray(final Color color) {
@@ -340,5 +356,79 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         result.setColor(getColorFromDatabase(distributionBarNode, distributionNodeProperties.getBarColor(), null));
 
         return result;
+    }
+
+    @Override
+    public IAggregationRelation findAggregationRelation(final IDataElement dataElement) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findAggregationRelation", dataElement));
+        }
+
+        // TODO: LN: 9.10.2012, validate input
+
+        final DataElement element = (DataElement)dataElement;
+
+        IAggregationRelation result = null;
+
+        try {
+            final DistributionBar distributionBar = (DistributionBar)findDistributionBar(element);
+
+            if (distributionBar != null) {
+                final Relationship relation = getNodeService().findLinkBetweenNodes(element.getNode(), distributionBar.getNode(),
+                        DistributionRelationshipType.AGGREGATED, Direction.INCOMING);
+
+                if (relation != null) {
+                    result = initializeAggregationRelation(relation);
+                }
+            }
+        } catch (final ServiceException e) {
+
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findAggregationRelation"));
+        }
+        return result;
+    }
+
+    protected AggregationRelation initializeAggregationRelation(final Relationship relationship) throws ServiceException {
+        final AggregationRelation result = new AggregationRelation(relationship);
+
+        result.setCount(getNodeService().getRelationshipProperty(relationship, countNodePropeties.getCountProperty(), 0, false));
+        result.setValue(getNodeService().getRelationshipProperty(relationship, countNodePropeties.getValuePrefix(), 0, false));
+
+        return result;
+    }
+
+    @Override
+    public void updateAggregationRelation(final IDataElement dataElement, final IAggregationRelation relation,
+            final IDistributionBar bar) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("updateAggregationRelation", relation, bar));
+        }
+
+        // TODO: LN: 9.10.2012, validate input
+
+        AggregationRelation relationImpl = (AggregationRelation)relation;
+        final DistributionBar barImpl = (DistributionBar)bar;
+        final DataElement elementImpl = (DataElement)dataElement;
+
+        try {
+            if (!relationImpl.getRelation().getOtherNode(elementImpl.getNode()).equals(barImpl.getNode())) {
+                getNodeService().deleteRelationship(relationImpl.getRelation());
+
+                relationImpl = (AggregationRelation)createAggregation(barImpl, elementImpl);
+            }
+
+            getNodeService().updateProperty(relationImpl.getRelation(), countNodePropeties.getCountProperty(), relation.getCount());
+            getNodeService().updateProperty(relationImpl.getRelation(), countNodePropeties.getValuePrefix(), relation.getValue());
+        } catch (final ServiceException e) {
+            processException("Error on updating Aggregation property", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("updateAggregationRelation"));
+        }
+
     }
 }

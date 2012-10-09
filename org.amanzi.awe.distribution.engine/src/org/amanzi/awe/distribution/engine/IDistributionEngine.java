@@ -11,9 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.filters;
+package org.amanzi.awe.distribution.engine;
 
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -23,10 +27,9 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IFilter {
+public interface IDistributionEngine<T extends IPropertyStatisticalModel> {
 
-    boolean matches(IDataElement element);
-
-    boolean matches(Object object);
+    IDistributionModel build(final IDistributionType< ? > distributionType, final IProgressMonitor progressMonitor)
+            throws ModelException;
 
 }

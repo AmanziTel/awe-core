@@ -193,13 +193,13 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         IFileElement result = null;
 
         try {
-            DataElement parentElement = (DataElement)parent;
-            Node parentNode = parentElement.getNode();
+            final DataElement parentElement = (DataElement)parent;
+            final Node parentNode = parentElement.getNode();
 
             Node fileNode = getNodeService().getChildInChainByName(parentNode, name, MeasurementNodeType.FILE);
 
             if (fileNode == null) {
-                Map<String, Object> properties = new HashMap<String, Object>();
+                final Map<String, Object> properties = new HashMap<String, Object>();
 
                 properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
                 properties.put(measurementNodeProperties.getFilePathProperty(), path);
@@ -212,7 +212,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             }
 
             result = getFileElement(fileNode, name, path);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on adding new File", e);
         }
 
@@ -238,15 +238,15 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         ILocationElement location = null;
 
         try {
-            DataElement measurementElement = (DataElement)parent;
-            Node measurementNode = measurementElement.getNode();
+            final DataElement measurementElement = (DataElement)parent;
+            final Node measurementNode = measurementElement.getNode();
 
-            Map<String, Object> properties = new HashMap<String, Object>();
+            final Map<String, Object> properties = new HashMap<String, Object>();
             properties.put(getGeoNodeProperties().getLatitudeProperty(), latitude);
             properties.put(getGeoNodeProperties().getLongitudeProperty(), longitude);
             properties.put(timePeriodNodeProperties.getTimestampProperty(), timestamp);
 
-            Node locationNode = getNodeService().createNode(measurementNode, MeasurementNodeType.MP,
+            final Node locationNode = getNodeService().createNode(measurementNode, MeasurementNodeType.MP,
                     MeasurementRelationshipType.LOCATION, properties);
 
             getIndexModel().indexInMultiProperty(MeasurementNodeType.MP, locationNode, Double.class,
@@ -256,7 +256,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             location = getLocationElement(locationNode);
 
             locationCount++;
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on creating Location", e);
         }
 
@@ -273,12 +273,12 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         }
 
         try {
-            DataElement measurementElement = (DataElement)measurement;
-            DataElement locationElement = (DataElement)location;
+            final DataElement measurementElement = (DataElement)measurement;
+            final DataElement locationElement = (DataElement)location;
 
             getNodeService().linkNodes(measurementElement.getNode(), locationElement.getNode(),
                     MeasurementRelationshipType.LOCATION);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on adding Location to Measurement", e);
         }
 
@@ -304,10 +304,10 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         IDataElement result = null;
 
         try {
-            DataElement parentElement = (DataElement)parent;
-            Node parentNode = parentElement.getNode();
+            final DataElement parentElement = (DataElement)parent;
+            final Node parentNode = parentElement.getNode();
 
-            Node measurementNode = getNodeService().createNodeInChain(parentNode, getMainMeasurementNodeType(), properties);
+            final Node measurementNode = getNodeService().createNodeInChain(parentNode, getMainMeasurementNodeType(), properties);
 
             result = getDataElement(measurementNode, null, null);
 
@@ -316,9 +316,9 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
             getPropertyStatisticsModel().indexElement(getMainMeasurementNodeType(), properties);
 
-            Long timestamp = (Long)properties.get(timePeriodNodeProperties.getTimestampProperty());
+            final Long timestamp = (Long)properties.get(timePeriodNodeProperties.getTimestampProperty());
             updateTimestamp(timestamp);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on adding Measurement", e);
         }
 
@@ -335,10 +335,10 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
     @Override
     public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
-        Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
-        Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
+        final Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
+        final Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
 
-        Iterator<Node> nodeIterator = getIndexModel().getNodes(MeasurementNodeType.MP, Double.class, min, max,
+        final Iterator<Node> nodeIterator = getIndexModel().getNodes(MeasurementNodeType.MP, Double.class, min, max,
                 getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
 
         return new LocationIterator(nodeIterator).toIterable();
@@ -356,7 +356,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     }
 
     protected IFileElement getFileElement(final Node node, final String name, final String path) {
-        FileElement file = new FileElement(node);
+        final FileElement file = new FileElement(node);
 
         file.setName(name);
         file.setPath(path);
@@ -367,7 +367,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
     @Override
     protected ILocationElement getLocationElement(final Node node) {
-        LocationElement location = new LocationElement(node);
+        final LocationElement location = new LocationElement(node);
 
         location.setNodeType(MeasurementNodeType.MP);
 
@@ -377,7 +377,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             location.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(),
                     null, true));
 
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             LOGGER.error("Unable to create a Location Element from node", e);
 
             return null;
@@ -396,11 +396,11 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         Iterable<IDataElement> result = null;
 
         try {
-            DataElement parent = (DataElement)parentElement;
-            Node parentNode = parent.getNode();
+            final DataElement parent = (DataElement)parentElement;
+            final Node parentNode = parent.getNode();
 
             result = new MeasurementIterator(getNodeService().getChildrenChain(parentNode)).toIterable();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("An error occured on search child for parent Element", e);
         }
         return result;
@@ -410,19 +410,21 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         IDataElement element = null;
 
         try {
-            INodeType type = getNodeService().getNodeType(node);
+            final INodeType type = getNodeService().getNodeType(node);
 
             if (type.equals(getMainMeasurementNodeType())) {
-                String name = getNodeService().getNodeProperty(node, measurementNodeProperties.getEventProperty(), null, false);
+                final String name = getNodeService().getNodeProperty(node, measurementNodeProperties.getEventProperty(), null,
+                        false);
 
                 element = getDataElement(node, type, name);
             } else if (type.equals(MeasurementNodeType.FILE)) {
-                String name = getNodeService().getNodeName(node);
-                String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePathProperty(), null, false);
+                final String name = getNodeService().getNodeName(node);
+                final String path = getNodeService().getNodeProperty(node, measurementNodeProperties.getFilePathProperty(), null,
+                        false);
 
                 element = getFileElement(node, name, path);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on converting Node to Measurement Element", e);
         }
 
@@ -443,12 +445,12 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
                     Long.MAX_VALUE, false);
             maxTimestamp = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getMaxTimestampProperty(),
                     Long.MIN_VALUE, false);
-            String primaryTypeName = getNodeService().getNodeProperty(node, measurementNodeProperties.getPrimaryTypeProperty(),
-                    DEFAULT_PRIMARY_TYPE.getId(), false);
+            final String primaryTypeName = getNodeService().getNodeProperty(node,
+                    measurementNodeProperties.getPrimaryTypeProperty(), DEFAULT_PRIMARY_TYPE.getId(), false);
             primaryType = NodeTypeManager.getInstance().getType(primaryTypeName);
 
             locationCount = getNodeService().getNodeProperty(node, getGeoNodeProperties().getLocationCountProperty(), 0, false);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             processException("Error on initialization of Measurement Model", e);
         }
     }
@@ -462,7 +464,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
             getNodeService().updateProperty(getRootNode(), getGeoNodeProperties().getLocationCountProperty(), locationCount);
 
             super.finishUp();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on finishin up Measurement Model", e);
         }
     }
@@ -483,10 +485,10 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
     @Override
     public Iterable<IDataElement> getElements(final long minTimestamp, final long maxTimestamp) throws ModelException {
-        Long[] min = new Long[] {minTimestamp};
-        Long[] max = new Long[] {maxTimestamp};
+        final Long[] min = new Long[] {minTimestamp};
+        final Long[] max = new Long[] {maxTimestamp};
 
-        Iterator<Node> nodeIterator = getIndexModel().getNodes(getMainMeasurementNodeType(), Long.class, min, max,
+        final Iterator<Node> nodeIterator = getIndexModel().getNodes(getMainMeasurementNodeType(), Long.class, min, max,
                 timePeriodNodeProperties.getTimestampProperty());
 
         return new DataElementIterator(nodeIterator).toIterable();
@@ -496,13 +498,13 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         ILocationElement result = null;
 
         try {
-            Node locationNode = getNodeService().getSingleChild(dataElement.getNode(), MeasurementNodeType.MP,
+            final Node locationNode = getNodeService().getSingleChild(dataElement.getNode(), MeasurementNodeType.MP,
                     MeasurementRelationshipType.LOCATION);
 
             if (locationNode != null) {
                 result = getLocationElement(locationNode);
             }
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             LOGGER.error("Error on calculating location Node", e);
         }
 
@@ -524,7 +526,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
         try {
             result = new MeasurementIterator(getNodeService().getChildrenChain(getRootNode(), nodeType)).toIterable();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("An error occured on search child for parent Element", e);
         }
 
@@ -533,5 +535,33 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         }
 
         return result;
+    }
+
+    @Override
+    public ILocationElement getElementLocation(final IDataElement dataElement) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getElementLocation", dataElement));
+        }
+
+        ILocationElement location = null;
+        final Node elementNode = ((DataElement)dataElement).getNode();
+
+        try {
+            final Node locationNode = getNodeService().getSingleChild(elementNode, MeasurementNodeType.MP,
+                    MeasurementRelationshipType.LOCATION);
+
+            if (locationNode != null) {
+                location = getLocationElement(locationNode);
+            }
+        } catch (final ServiceException e) {
+            processException("Error on computing element location", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getElementLocation"));
+        }
+
+        return location;
+
     }
 }

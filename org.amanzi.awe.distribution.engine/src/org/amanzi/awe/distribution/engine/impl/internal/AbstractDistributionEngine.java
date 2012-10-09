@@ -11,12 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.distribution.engine;
+package org.amanzi.awe.distribution.engine.impl.internal;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
+import org.amanzi.awe.distribution.engine.IDistributionEngine;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
@@ -42,33 +42,26 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionEngine extends AbstractTransactional {
+public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> extends AbstractTransactional
+        implements
+            IDistributionEngine<T> {
 
-    private static final Logger LOGGER = Logger.getLogger(DistributionEngine.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractDistributionEngine.class);
 
-    private static class DistributionEngineHolder {
-        private static volatile DistributionEngine instance = new DistributionEngine();
-    }
+    private final T analyzedModel;
 
     private final IDistributionModelProvider distributionModelProvider;
 
-    /**
-     * 
-     */
-    protected DistributionEngine(final IDistributionModelProvider distributionModelProvider) {
+    private List<Pair<IRange, IDistributionBar>> distributionConditions;
+
+    protected AbstractDistributionEngine(final T analyzedModel, final IDistributionModelProvider distributionModelProvider) {
+        this.analyzedModel = analyzedModel;
         this.distributionModelProvider = distributionModelProvider;
     }
 
-    private DistributionEngine() {
-        this(DistributionEnginePlugin.getDefault().getDistributionModelProvider());
-    }
-
-    public static DistributionEngine getEngine() {
-        return DistributionEngineHolder.instance;
-    }
-
-    public IDistributionModel build(final IPropertyStatisticalModel analyzedModel, final IDistributionType< ? > distributionType,
-            IProgressMonitor progressMonitor) throws ModelException {
+    @Override
+    public IDistributionModel build(final IDistributionType< ? > distributionType, IProgressMonitor progressMonitor)
+            throws ModelException {
         LOGGER.info("Started Distribution Calculation for Model <" + analyzedModel + "> with distribution type <"
                 + distributionType + ">");
 
@@ -98,7 +91,7 @@ public class DistributionEngine extends AbstractTransactional {
 
             result.finishUp();
             isSuccess = true;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("An error occured on Distribution calculation", e);
             throw new FatalException(e);
         } finally {
@@ -112,22 +105,22 @@ public class DistributionEngine extends AbstractTransactional {
 
     private void calculateDistribution(final IDistributionModel distributionModel, final IPropertyStatisticalModel analyzedModel,
             final IDistributionType< ? > distributionType, final IProgressMonitor monitor) throws ModelException {
-        int totalCount = getTotalElementCount(distributionType, analyzedModel.getPropertyStatistics());
+        final int totalCount = getTotalElementCount(distributionType, analyzedModel.getPropertyStatistics());
 
         try {
             monitor.beginTask("Calculating Distribution <" + distributionType + ">", totalCount);
 
-            List<Pair<IRange, IDistributionBar>> distributionConditions = createDistributionBars(distributionModel,
-                    distributionType);
+            distributionConditions = createDistributionBars(distributionModel, distributionType);
 
-            for (IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
-                for (Pair<IRange, IDistributionBar> condition : distributionConditions) {
-                    IRange range = condition.getLeft();
+            for (final IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
+                for (final Pair<IRange, IDistributionBar> condition : distributionConditions) {
+                    final IRange range = condition.getLeft();
 
                     if (range.getFilter().matches(element)) {
-                        IDistributionBar bar = condition.getRight();
+                        final IDistributionBar bar = condition.getRight();
 
-                        distributionModel.createAggregation(bar, element);
+                        createAggregation(distributionModel, bar, element, distributionType);
+
                         break;
                     }
                 }
@@ -139,11 +132,17 @@ public class DistributionEngine extends AbstractTransactional {
         }
     }
 
+    protected void createAggregation(final IDistributionModel distributionModel, final IDistributionBar distributionBar,
+            final IDataElement element, final IDistributionType< ? > distributionType) throws ModelException {
+        distributionModel.createAggregation(distributionBar, element);
+    }
+
     private int getTotalElementCount(final IDistributionType< ? > distributionType,
             final IPropertyStatisticsModel propertyStatistics) {
         int result = 0;
 
-        for (Object property : propertyStatistics.getValues(distributionType.getNodeType(), distributionType.getPropertyName())) {
+        for (final Object property : propertyStatistics.getValues(distributionType.getNodeType(),
+                distributionType.getPropertyName())) {
             result += propertyStatistics
                     .getValueCount(distributionType.getNodeType(), distributionType.getPropertyName(), property);
         }
@@ -153,13 +152,21 @@ public class DistributionEngine extends AbstractTransactional {
 
     private List<Pair<IRange, IDistributionBar>> createDistributionBars(final IDistributionModel distributionModel,
             final IDistributionType< ? > type) throws ModelException {
-        List<Pair<IRange, IDistributionBar>> result = new ArrayList<Pair<IRange, IDistributionBar>>();
+        final List<Pair<IRange, IDistributionBar>> result = new ArrayList<Pair<IRange, IDistributionBar>>();
 
-        for (IRange range : type.getRanges()) {
+        for (final IRange range : type.getRanges()) {
             result.add(new ImmutablePair<IRange, IDistributionBar>(range, distributionModel.createDistributionBar(range)));
         }
 
         return result;
+    }
+
+    protected T getAnalyzedModel() {
+        return analyzedModel;
+    }
+
+    protected List<Pair<IRange, IDistributionBar>> getDistributionConditions() {
+        return distributionConditions;
     }
 
 }

@@ -11,9 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.filters;
+package org.amanzi.awe.distribution.engine.impl;
 
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.awe.distribution.engine.impl.internal.AbstractDistributionEngine;
+import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
+import org.amanzi.neo.models.network.INetworkModel;
 
 /**
  * TODO Purpose of
@@ -23,10 +25,14 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IFilter {
+public class NetworkDistributionEngine extends AbstractDistributionEngine<INetworkModel> {
 
-    boolean matches(IDataElement element);
-
-    boolean matches(Object object);
+    /**
+     * @param analyzedModel
+     * @param distributionModelProvider
+     */
+    public NetworkDistributionEngine(final INetworkModel analyzedModel) {
+        super(analyzedModel, DistributionEnginePlugin.getDefault().getDistributionModelProvider());
+    }
 
 }

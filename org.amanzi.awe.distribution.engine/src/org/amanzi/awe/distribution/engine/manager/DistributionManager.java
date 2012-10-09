@@ -18,14 +18,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.awe.distribution.engine.DistributionEngine;
+import org.amanzi.awe.distribution.engine.DistributionEngineFactory;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
+import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
 import org.amanzi.awe.distribution.model.type.impl.EnumeratedDistributionType;
 import org.amanzi.awe.distribution.model.type.impl.NumberDistributionRange;
 import org.amanzi.awe.distribution.model.type.impl.NumberDistributionType;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -115,6 +118,8 @@ public class DistributionManager {
 
     private IDistributionType< ? > distributionType;
 
+    private Select select;
+
     private DistributionManager(final IPropertyStatisticalModel model) {
         this.model = model;
         managerCache.put(model, this);
@@ -146,6 +151,10 @@ public class DistributionManager {
         this.chartType = chartType;
     }
 
+    public void setSelect(final Select select) {
+        this.select = select;
+    }
+
     public Set<IDistributionType< ? >> getAvailableDistirbutions() {
         if ((nodeType != null) && (propertyName != null)) {
             final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
@@ -164,7 +173,7 @@ public class DistributionManager {
                 }
             } else if (Number.class.isAssignableFrom(clazz)) {
                 for (final NumberDistributionRange numberDistributionType : NumberDistributionRange.values()) {
-                    result.add(getNumberDistributionType(numberDistributionType));
+                    result.add(getNumberDistributionType(numberDistributionType, select));
                 }
             }
 
@@ -175,7 +184,7 @@ public class DistributionManager {
 
     public IDistributionModel build(final IProgressMonitor progressMonitor) throws ModelException {
         if (canBuild()) {
-            return DistributionEngine.getEngine().build(model, distributionType, progressMonitor);
+            return DistributionEngineFactory.getFactory().getEngine(model).build(distributionType, progressMonitor);
         }
 
         return null;
@@ -196,7 +205,8 @@ public class DistributionManager {
         return result;
     }
 
-    private IDistributionType< ? > getNumberDistributionType(final NumberDistributionRange numberDistributionType) {
+    private IDistributionType< ? > getNumberDistributionType(final NumberDistributionRange numberDistributionType,
+            final Select select) {
         final IDistributionCacheKey key = new NumberDistributionCacheKey(model, nodeType, propertyName, numberDistributionType);
 
         IDistributionType< ? > result = distributionTypeCache.get(key);
@@ -204,7 +214,7 @@ public class DistributionManager {
         if (result == null) {
             LOGGER.info("Creating DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ">.");
 
-            result = new NumberDistributionType(model, nodeType, propertyName, numberDistributionType);
+            result = new NumberDistributionType(model, nodeType, propertyName, numberDistributionType, select);
             distributionTypeCache.put(key, result);
         }
 
@@ -236,5 +246,30 @@ public class DistributionManager {
         }
 
         return chartTypes;
+    }
+
+    public Set<Select> getPossibleSelects() {
+        if (nodeType == null || propertyName == null) {
+            return null;
+        }
+
+        final Set<Select> selects = new HashSet<IDistributionType.Select>();
+
+        if (model instanceof IMeasurementModel) {
+            final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
+
+            if (!clazz.equals(String.class) && !clazz.equals(Boolean.class)) {
+                selects.add(Select.MIN);
+                selects.add(Select.MAX);
+                selects.add(Select.AVERAGE);
+                selects.add(Select.FIRST);
+            } else {
+                selects.add(Select.EXISTS);
+            }
+        } else if (model instanceof INetworkModel) {
+            selects.add(Select.EXISTS);
+        }
+
+        return selects;
     }
 }

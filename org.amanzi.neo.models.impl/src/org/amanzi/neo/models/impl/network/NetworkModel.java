@@ -97,7 +97,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             try {
                 ILocationElement element = null;
                 while (dataElements.hasNext() && (element == null)) {
-                    IDataElement dataElement = dataElements.next();
+                    final IDataElement dataElement = dataElements.next();
 
                     if (dataElement.getNodeType().equals(NetworkElementType.SITE)) {
                         element = getLocationElement(((DataElement)dataElement).getNode());
@@ -119,7 +119,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
                 }
 
                 return element;
-            } catch (ModelException e) {
+            } catch (final ModelException e) {
                 LOGGER.error(e);
                 return null;
             } finally {
@@ -179,8 +179,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         IDataElement result = null;
 
-        Node elementNode = getIndexModel()
-                .getSingleNode(elementType, getGeneralNodeProperties().getNodeNameProperty(), elementName);
+        final Node elementNode = getIndexModel().getSingleNode(elementType, getGeneralNodeProperties().getNodeNameProperty(),
+                elementName);
 
         if (elementNode != null) {
             result = new DataElement(elementNode);
@@ -206,7 +206,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             throw new ParameterInconsistencyException(getGeoNodeProperties().getLongitudeProperty());
         }
 
-        DataElement result = createDefaultElement(NetworkElementType.SITE, parent, name, properties);
+        final DataElement result = createDefaultElement(NetworkElementType.SITE, parent, name, properties);
 
         if (result != null) {
             getIndexModel().indexInMultiProperty(NetworkElementType.SITE, result.getNode(), Double.class,
@@ -227,7 +227,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             LOGGER.debug(getStartLogStatement("createSector", parent, name, lac, ci, properties));
         }
 
-        DataElement result = createDefaultElement(NetworkElementType.SECTOR, parent, name, properties);
+        final DataElement result = createDefaultElement(NetworkElementType.SECTOR, parent, name, properties);
 
         if (result != null) {
             if (ci != null) {
@@ -254,15 +254,16 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         DataElement result = null;
 
         try {
-            Node parentNode = ((DataElement)parent).getNode();
-            Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
+            final Node parentNode = ((DataElement)parent).getNode();
+            final Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
+                    properties);
 
             getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
 
             getPropertyStatisticsModel().indexElement(elementType, removeIgnoredProperties(properties));
 
             result = new DataElement(node);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("An error occured on creating new Network Element", e);
         }
 
@@ -298,12 +299,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         IDataElement result = null;
 
         if (elementType == NetworkElementType.SECTOR) {
-            Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
-            Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
+            final Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
+            final Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
             result = createSector(parent, name, lac, ci, properties);
         } else if (elementType == NetworkElementType.SITE) {
-            Double lat = (Double)properties.get(getGeoNodeProperties().getLatitudeProperty());
-            Double lon = (Double)properties.get(getGeoNodeProperties().getLongitudeProperty());
+            final Double lat = (Double)properties.get(getGeoNodeProperties().getLatitudeProperty());
+            final Double lon = (Double)properties.get(getGeoNodeProperties().getLongitudeProperty());
 
             result = createSite(parent, name, lat, lon, properties);
         } else {
@@ -350,11 +351,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         if (!StringUtils.isEmpty(sectorName)) {
             result = findElement(NetworkElementType.SECTOR, sectorName);
         } else {
-            List<Node> ciList = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);
+            final List<Node> ciList = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);
             List<Node> resultList = null;
 
             if (lac != null) {
-                List<Node> lacNodes = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getLACProperty(), lac);
+                final List<Node> lacNodes = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getLACProperty(),
+                        lac);
 
                 resultList = new ArrayList<Node>(CollectionUtils.intersection(ciList, lacNodes));
             }
@@ -374,7 +376,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private List<Node> getNodeListFromIndex(final INodeType nodeType, final String propertyName, final Object value)
             throws ModelException {
-        List<Node> result = new ArrayList<Node>();
+        final List<Node> result = new ArrayList<Node>();
 
         CollectionUtils.addAll(result, getIndexModel().getNodes(nodeType, propertyName, value));
 
@@ -383,10 +385,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     @Override
     public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
-        Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
-        Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
+        final Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
+        final Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
 
-        Iterator<Node> nodeIterator = getIndexModel().getNodes(NetworkElementType.SITE, Double.class, min, max,
+        final Iterator<Node> nodeIterator = getIndexModel().getNodes(NetworkElementType.SITE, Double.class, min, max,
                 getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
 
         return new LocationIterator(nodeIterator).toIterable();
@@ -400,7 +402,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     @Override
     protected ILocationElement getLocationElement(final Node node) {
-        SiteElement site = new SiteElement(node);
+        final SiteElement site = new SiteElement(node);
         site.setNodeType(NetworkElementType.SITE);
 
         try {
@@ -409,13 +411,13 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             site.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
                     true));
 
-            Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR,
+            final Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR,
                     NodeServiceRelationshipType.CHILD);
             while (sectorNodes.hasNext()) {
                 site.addSector(getSectorElement(sectorNodes.next()));
             }
 
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             LOGGER.error("Unable to create a SiteElement from node", e);
 
             return null;
@@ -425,7 +427,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     private ISectorElement getSectorElement(final Node node) throws ServiceException {
-        SectorElement element = new SectorElement(node);
+        final SectorElement element = new SectorElement(node);
         element.setNodeType(NetworkElementType.SECTOR);
         element.setName(getName());
         element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
@@ -457,7 +459,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             LOGGER.debug(getStartLogStatement("getAllElementsByType", nodeType));
         }
 
-        Iterable<IDataElement> result = new DataElementIterator(getIndexModel().getAllNodes(nodeType)).toIterable();
+        final Iterable<IDataElement> result = new DataElementIterator(getIndexModel().getAllNodes(nodeType)).toIterable();
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getAllElementsByType"));
@@ -466,4 +468,32 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         return result;
     }
 
+    @Override
+    public ILocationElement getElementLocation(final IDataElement dataElement) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getElelemntLocation", dataElement));
+        }
+
+        ILocationElement location = null;
+
+        final Node elementNode = ((DataElement)dataElement).getNode();
+
+        try {
+            if (dataElement instanceof ISiteElement) {
+                location = (ISiteElement)dataElement;
+            } else if (dataElement.getNodeType().equals(NetworkElementType.SITE)) {
+                location = getLocationElement(elementNode);
+            } else if (dataElement.getNodeType().equals(NetworkElementType.SECTOR)) {
+                location = getLocationElement(getParent(elementNode));
+            }
+        } catch (final ServiceException e) {
+            processException("Error on computing Location element", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getElementLocation"));
+        }
+
+        return location;
+    }
 }

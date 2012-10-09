@@ -20,7 +20,9 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 
@@ -90,7 +92,12 @@ public interface INodeService extends IService {
 
     void updateProperty(Node node, String propertyName, Object newValue) throws ServiceException;
 
+    void updateProperty(Relationship relationship, String propertyName, Object newValue) throws ServiceException;
+
     <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
+            final boolean throwExceptionIfNotExist) throws ServiceException;
+
+    <T extends Object> T getRelationshipProperty(final Relationship relationship, final String propertyName, final T defaultValue,
             final boolean throwExceptionIfNotExist) throws ServiceException;
 
     void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExist) throws ServiceException;
@@ -121,7 +128,7 @@ public interface INodeService extends IService {
 
     Iterator<Node> getChildrenChain(Node parentNode, INodeType nodeType) throws ServiceException;
 
-    void linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
+    Relationship linkNodes(Node startNode, Node endNode, RelationshipType relationshipType) throws ServiceException;
 
     TraversalDescription getChildrenTraversal(final INodeType nodeType, final RelationshipType relationshipType);
 
@@ -134,4 +141,9 @@ public interface INodeService extends IService {
     void deleteSingleNode(Node node) throws ServiceException;
 
     Iterator<Node> getAllChildren(Node node) throws ServiceException;
+
+    Relationship findLinkBetweenNodes(Node startNode, Node endNode, RelationshipType relationshipType, Direction direction)
+            throws ServiceException;
+
+    void deleteRelationship(Relationship relation) throws ServiceException;
 }

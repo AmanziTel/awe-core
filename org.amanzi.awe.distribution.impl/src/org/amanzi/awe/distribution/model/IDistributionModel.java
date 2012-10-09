@@ -16,6 +16,7 @@ package org.amanzi.awe.distribution.model;
 import java.awt.Color;
 import java.util.List;
 
+import org.amanzi.awe.distribution.dto.IAggregationRelation;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IRange;
 import org.amanzi.neo.dto.IDataElement;
@@ -39,7 +40,7 @@ public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalM
 
     IDistributionBar createDistributionBar(IRange range) throws ModelException;
 
-    void createAggregation(IDistributionBar bar, IDataElement element) throws ModelException;
+    IAggregationRelation createAggregation(IDistributionBar bar, IDataElement element) throws ModelException;
 
     Color getRightColor();
 
@@ -54,5 +55,9 @@ public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalM
     void setLeftColor(Color color);
 
     IDistributionBar findDistributionBar(IDataElement dataElement) throws ModelException;
+
+    IAggregationRelation findAggregationRelation(IDataElement dataElement) throws ModelException;
+
+    void updateAggregationRelation(IDataElement dataElement, IAggregationRelation relation, IDistributionBar bar) throws ModelException;
 
 }

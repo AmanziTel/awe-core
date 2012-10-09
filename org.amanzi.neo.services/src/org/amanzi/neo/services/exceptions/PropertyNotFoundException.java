@@ -16,7 +16,7 @@ package org.amanzi.neo.services.exceptions;
 import java.text.MessageFormat;
 
 import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
-import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
 /**
  * TODO Purpose of
@@ -33,14 +33,14 @@ public class PropertyNotFoundException extends ServiceException {
 
     private static final String EXCEPTION_MESSAGE = "Node <{0}> does not contain property <{1}>.";
 
-    private String message;
+    private final String message;
 
     /**
      * @param reason
      * @param severity
      * @param message
      */
-    public PropertyNotFoundException(String propertyName, Node node) {
+    public PropertyNotFoundException(final String propertyName, final PropertyContainer node) {
         super(ServiceExceptionReason.PROPERTY_NOT_FOUND);
 
         message = convertMessage(propertyName, node);
@@ -51,7 +51,7 @@ public class PropertyNotFoundException extends ServiceException {
         return message;
     }
 
-    private String convertMessage(String propertyName, Node node) {
+    private String convertMessage(final String propertyName, final PropertyContainer node) {
         return MessageFormat.format(EXCEPTION_MESSAGE, node, propertyName);
     }
 

@@ -47,4 +47,6 @@ public interface IRenderableModel extends IModel {
 
     Iterable<ILocationElement> getElementsLocations(Iterable<IDataElement> dataElements);
 
+    ILocationElement getElementLocation(IDataElement dataElement) throws ModelException;
+
 }

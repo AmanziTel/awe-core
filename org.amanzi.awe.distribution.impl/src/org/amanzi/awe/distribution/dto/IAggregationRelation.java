@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.filters;
+package org.amanzi.awe.distribution.dto;
 
-import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.dto.IRelation;
 
 /**
  * TODO Purpose of
@@ -23,10 +23,14 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IFilter {
+public interface IAggregationRelation extends IRelation {
 
-    boolean matches(IDataElement element);
+    int getCount();
 
-    boolean matches(Object object);
+    double getValue();
+
+    void setCount(int count);
+
+    void setValue(double value);
 
 }

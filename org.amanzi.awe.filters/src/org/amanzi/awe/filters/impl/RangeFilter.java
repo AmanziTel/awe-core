@@ -46,26 +46,40 @@ public class RangeFilter extends AbstractFilter<Number> {
 
     @Override
     public boolean matches(final IDataElement element) {
-        Number value = getElementValue(element);
+        final Number value = getElementValue(element);
         if (value != null) {
-            double dValue = value.doubleValue();
-            boolean contains = range.contains(dValue);
+            return isMatches(value);
+        }
 
-            if (contains) {
-                switch (filterType) {
-                case EXCLUDE_START_AND_END:
-                    return contains && !range.isStartedBy(dValue) && !range.isStartedBy(dValue);
-                case EXCLUDE_START_INCLUDE_END:
-                    return contains && !range.isStartedBy(dValue);
-                case INCLUDE_START_AND_END:
-                    return contains;
-                case INCLUDE_START_EXCLUDE_END:
-                    return contains && !range.isStartedBy(dValue);
-                }
+        return false;
+    }
+
+    private boolean isMatches(final Number value) {
+        final double dValue = value.doubleValue();
+        final boolean contains = range.contains(dValue);
+
+        if (contains) {
+            switch (filterType) {
+            case EXCLUDE_START_AND_END:
+                return contains && !range.isStartedBy(dValue) && !range.isStartedBy(dValue);
+            case EXCLUDE_START_INCLUDE_END:
+                return contains && !range.isStartedBy(dValue);
+            case INCLUDE_START_AND_END:
+                return contains;
+            case INCLUDE_START_EXCLUDE_END:
+                return contains && !range.isStartedBy(dValue);
             }
         }
 
         return false;
     }
 
+    @Override
+    public boolean matches(final Object object) {
+        if (object instanceof Number) {
+            return isMatches((Number)object);
+        }
+
+        return false;
+    }
 }

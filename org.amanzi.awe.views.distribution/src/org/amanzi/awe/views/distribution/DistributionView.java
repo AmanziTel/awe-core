@@ -19,6 +19,7 @@ import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
+import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
@@ -34,6 +35,8 @@ import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.ID
 import org.amanzi.awe.views.distribution.widgets.DistributionPropertyWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
 import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
+import org.amanzi.awe.views.distribution.widgets.SelectComboWidget;
+import org.amanzi.awe.views.distribution.widgets.SelectComboWidget.ISelectChanged;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -60,13 +63,16 @@ public class DistributionView extends ViewPart
             IPropertySelectionListener,
             IDistributionTypeListener,
             IDistributionChartListener,
-            IDistributionPropertiesListener {
+            IDistributionPropertiesListener,
+            ISelectChanged {
 
     private static final int FIRST_ROW_LABEL_WIDTH = 55;
 
     private static final int SECOND_ROW_LABEL_WIDTH = 60;
 
     private static final int THIRD_ROW_LABEL_WIDTH = 85;
+
+    private static final int FOURS_ROW_LABEL_WIDTH = 50;
 
     private class UpdateDistributionJob extends Job {
 
@@ -142,6 +148,8 @@ public class DistributionView extends ViewPart
 
     private DistributionPropertiesWidget distributionPropertiesWidget;
 
+    private SelectComboWidget selectCombo;
+
     /**
      * 
      */
@@ -176,17 +184,17 @@ public class DistributionView extends ViewPart
     private void addDistributionTypeComposite(final Composite parent) {
         final Composite distributionTypeComposite = new Composite(parent, SWT.NONE);
         distributionTypeComposite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        distributionTypeComposite.setLayout(new GridLayout(3, false));
+        distributionTypeComposite.setLayout(new GridLayout(4, false));
 
         addDistributionDatasetWidget(distributionTypeComposite, this, FIRST_ROW_LABEL_WIDTH);
         propertyCombo = addDistributionPropertyWidget(distributionTypeComposite, "Property:", this, SECOND_ROW_LABEL_WIDTH);
         distributionTypeCombo = addDistributionTypeWidget(distributionTypeComposite, this, THIRD_ROW_LABEL_WIDTH);
+        selectCombo = addSelectWidget(distributionTypeComposite, this, FOURS_ROW_LABEL_WIDTH);
     }
 
     @Override
     public void setFocus() {
-        // TODO Auto-generated method stub
-
+        // do nothing
     }
 
     private DistributionDatasetWidget addDistributionDatasetWidget(final Composite parent,
@@ -209,6 +217,13 @@ public class DistributionView extends ViewPart
     private DistributionTypeWidget addDistributionTypeWidget(final Composite parent, final IDistributionTypeListener listener,
             final int minWidth) {
         final DistributionTypeWidget result = new DistributionTypeWidget(parent, listener, "Distribution:", minWidth);
+        result.initializeWidget();
+
+        return result;
+    }
+
+    private SelectComboWidget addSelectWidget(final Composite parent, final ISelectChanged listener, final int minWidth) {
+        final SelectComboWidget result = new SelectComboWidget(parent, listener, "Select:", minWidth);
         result.initializeWidget();
 
         return result;
@@ -251,6 +266,8 @@ public class DistributionView extends ViewPart
 
             distributionTypeCombo.setDistributionManager(currentManager);
             distributionTypeCombo.skipSelection();
+
+            selectCombo.setDistributionManager(currentManager);
         }
     }
 
@@ -299,6 +316,15 @@ public class DistributionView extends ViewPart
     @Override
     public void onBarSelected(final IDistributionBar bar, final int index) {
         distributionPropertiesWidget.setSelection(bar, index);
+    }
+
+    @Override
+    public void onSelectChanged(final Select select) {
+        if (currentManager != null) {
+            currentManager.setSelect(select);
+
+            runDistribution();
+        }
     }
 
 }
