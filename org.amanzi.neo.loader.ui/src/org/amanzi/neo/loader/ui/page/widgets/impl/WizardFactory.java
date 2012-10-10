@@ -18,7 +18,6 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
-import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector.ICRSSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.ResourceType;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
@@ -92,10 +91,6 @@ public final class WizardFactory {
 
     public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener) {
         return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider));
-    }
-
-    public CRSSelector addCRSSelector(final Composite parent, final ICRSSelectorListener listener) {
-        return initializeWidget(new CRSSelector(parent, listener));
     }
 
     public DriveDataFileSelector addDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {

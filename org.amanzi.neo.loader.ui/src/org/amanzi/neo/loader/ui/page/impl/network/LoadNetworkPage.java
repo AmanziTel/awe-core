@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.ui.page.impl.network;
 
 import java.io.File;
 
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.impl.SingleFileConfiguration;
@@ -62,7 +63,7 @@ public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
         super.createControl(parent);
 
         networkNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
-        WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
+        AWEWidgetFactory.getFactory().addCRSSelectorWidget(this, getMainComposite());
 
         resourceEditor = WizardFactory.getInstance().addFileSelector(getMainComposite(), this);
 
