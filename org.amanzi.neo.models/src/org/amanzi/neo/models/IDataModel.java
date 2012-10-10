@@ -26,18 +26,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @since 1.0.0
  */
 // TODO: LN: 10.10.2012, add comments
-public interface IDataModel extends IModel {
-
-    /**
-     * The method is supposed to find a parent for the node, contained in <code>childElement</code>,
-     * and create an <code>IDataElement</code> based on result.
-     * 
-     * @param childElement
-     * @return <code>IDataElement</code> based on found parent node or <code>null</code>.
-     */
-    IDataElement getParentElement(IDataElement childElement) throws ModelException;
-
-    Iterable<IDataElement> getChildren(IDataElement parentElement) throws ModelException;
+public interface IDataModel extends ITreeModel {
 
     Iterable<IDataElement> getAllElementsByType(INodeType nodeType) throws ModelException;
 

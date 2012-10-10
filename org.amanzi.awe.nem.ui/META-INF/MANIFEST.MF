@@ -4,6 +4,6 @@ Bundle-Name: Ui
 Bundle-SymbolicName: org.amanzi.awe.nem.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.amanzi.awe.treeview;bundle-version="1.0.0",
+Require-Bundle: org.amanzi.awe.ui.tree;bundle-version="1.0.0",
  org.eclipse.core.expressions;bundle-version="3.4.300",
  org.amanzi.awe.nem;bundle-version="1.0.0"

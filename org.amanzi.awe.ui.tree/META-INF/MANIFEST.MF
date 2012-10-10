@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Treeview
-Bundle-SymbolicName: org.amanzi.awe.treeview
+Bundle-SymbolicName: org.amanzi.awe.ui.tree
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui;bundle-version="3.7.0";visibility:=reexport,
  org.amanzi.awe.ui;bundle-version="1.0.0";visibility:=reexport,

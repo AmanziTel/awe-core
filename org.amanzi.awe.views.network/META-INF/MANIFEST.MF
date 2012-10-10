@@ -9,4 +9,4 @@ Export-Package: org.amanzi.awe.views.network,
  org.amanzi.awe.views.network.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
-Require-Bundle: org.amanzi.awe.treeview;bundle-version="1.0.0"
+Require-Bundle: org.amanzi.awe.ui.tree;bundle-version="1.0.0"

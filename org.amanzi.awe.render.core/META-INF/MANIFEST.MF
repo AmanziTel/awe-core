@@ -10,7 +10,7 @@ Require-Bundle: net.refractions.udig.project,
  org.amanzi.neo.models;bundle-version="1.0.0";visibility:=reexport,
  org.eclipse.ui;bundle-version="3.7.0",
  org.eclipse.core.expressions;bundle-version="3.4.300",
- org.amanzi.awe.treeview;bundle-version="1.0.0"
+ org.amanzi.awe.ui.tree;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.render.core,
