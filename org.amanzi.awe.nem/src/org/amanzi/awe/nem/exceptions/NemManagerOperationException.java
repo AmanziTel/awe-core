@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties;
+package org.amanzi.awe.nem.exceptions;
 
 /**
  * TODO Purpose of
@@ -21,11 +21,11 @@ package org.amanzi.awe.nem.properties;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ParsersExceptions extends Exception {
+public class NemManagerOperationException extends Exception {
     /** long serialVersionUID field */
-    private static final long serialVersionUID = 4870402076235550696L;
+    private static final long serialVersionUID = -6086738960836742360L;
 
-    public ParsersExceptions(String message, Exception e) {
+    public NemManagerOperationException(String message, Exception e) {
         super(message, e);
     }
 }

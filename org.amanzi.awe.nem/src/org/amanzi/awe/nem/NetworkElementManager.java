@@ -13,10 +13,19 @@
 
 package org.amanzi.awe.nem;
 
+import java.util.List;
+import java.util.Map;
+
+import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
+import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.providers.INetworkModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
 
 /**
@@ -38,7 +47,16 @@ public class NetworkElementManager {
         return NEMInstanceHolder.NEM_MANAGER;
     }
 
+    private INetworkModelProvider networkModelProvider;
+    private IProjectModelProvider projectModelPovider;
+
+    protected NetworkElementManager(INetworkModelProvider provider, IProjectModelProvider projectModelProvider) {
+        this.networkModelProvider = provider;
+        this.projectModelPovider = projectModelProvider;
+    }
+
     private NetworkElementManager() {
+        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
     }
 
     public void removeModel(final INetworkModel model) throws ModelException {
@@ -63,5 +81,22 @@ public class NetworkElementManager {
 
     public void updateNodeTypes(String[] types) {
         NodeTypeManager.getInstance().addDynamicNodeTypes(types);
+    }
+
+    /**
+     * @param name
+     * @param structure
+     * @param typeProperties
+     * @throws NemManagerOperationException
+     */
+    public void createModel(String name, List<String> structure, Map<String, List<PropertyContainer>> typeProperties)
+            throws NemManagerOperationException {
+        try {
+            networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
+        } catch (ModelException e) {
+            LOGGER.error("can't create model", e);
+            throw new NemManagerOperationException("can't create model", e);
+        }
+        AWEEventManager.getManager().fireDataUpdatedEvent(null);
     }
 }

@@ -19,6 +19,7 @@ import java.util.Collection;
 import org.amanzi.awe.nem.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.nem.ui.wizard.NetworkCreationWizard;
+import org.amanzi.awe.nem.ui.wizard.PropertyCreationWizard;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
@@ -61,7 +62,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
             return;
         }
 
-        INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
+        final INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
         IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
         INodeType type = MenuUtils.getInstance().getType(model, element);
 
@@ -75,7 +76,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
             menuItem.setText(newType);
             menuItem.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
-                    openWizard(newType);
+                    openWizard(model, newType);
                 }
             });
         }
@@ -83,10 +84,11 @@ public class CreateNetworkElementContribution extends ContributionItem {
     }
 
     /**
+     * @param model
      * @param newType
      */
-    protected void openWizard(String newType) {
-        NetworkCreationWizard wizard = new NetworkCreationWizard();
+    protected void openWizard(INetworkModel model, String newType) {
+        PropertyCreationWizard wizard = new PropertyCreationWizard(model);
         wizard.addPage(new PropertyEditorPage(newType));
         Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();

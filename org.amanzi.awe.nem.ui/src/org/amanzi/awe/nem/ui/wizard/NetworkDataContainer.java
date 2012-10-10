@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.nem.ui.properties.PropertyContainer;
+import org.amanzi.awe.nem.properties.manager.PropertyContainer;
 
 /**
  * TODO Purpose of
@@ -58,6 +58,13 @@ public class NetworkDataContainer {
 
     public void putToTypeProperties(String type, List<PropertyContainer> container) {
         typeProperties.put(type, container);
+    }
+
+    /**
+     * @return Returns the typeProperties.
+     */
+    public Map<String, List<PropertyContainer>> getTypeProperties() {
+        return typeProperties;
     }
 
     /**

@@ -150,7 +150,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     private final INetworkNodeProperties networkNodeProperties;
 
     // TODO: LN: 10.10.2012 why this structure work with Strings instead of INodeType?
-    private final List<String> structure = new ArrayList<String>() {
+    private List<String> structure = new ArrayList<String>() {
         /** long serialVersionUID field */
         private static final long serialVersionUID = 7149098047373556881L;
 
@@ -176,11 +176,22 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     @Override
     public void initialize(final Node rootNode) throws ModelException {
+        super.initialize(rootNode);
         structure.clear();
         // TODO: LN: 10.10.2012, incorrect! here should be used getNodeService().getNodeProperty()
         // method
         structure.addAll(Arrays.asList(((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()))));
-        super.initialize(rootNode);
+    }
+
+    public void setStructure(final List<String> structure) throws ModelException {
+        this.structure = structure;
+        try {
+            getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
+                    structure.toArray(new String[structure.size()]));
+        } catch (final ServiceException e) {
+            processException("can't setStructure to network", e);
+        }
+
     }
 
     @Override

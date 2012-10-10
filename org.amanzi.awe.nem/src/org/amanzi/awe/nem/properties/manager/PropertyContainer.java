@@ -11,10 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.ui.properties;
+package org.amanzi.awe.nem.properties.manager;
 
-import org.amanzi.awe.nem.properties.manager.KnownTypes;
-import org.amanzi.awe.nem.properties.manager.NetworkProperty;
 import org.apache.commons.lang3.StringUtils;
 
 /**

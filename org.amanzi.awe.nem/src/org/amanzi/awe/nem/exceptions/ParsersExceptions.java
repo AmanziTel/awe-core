@@ -11,25 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
-
-import java.util.List;
-
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.providers.internal.INamedModelProvider;
+package org.amanzi.awe.nem.exceptions;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface INetworkModelProvider extends INamedModelProvider<INetworkModel, IProjectModel> {
+public class ParsersExceptions extends Exception {
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 4870402076235550696L;
 
-    INetworkModel createModel(IProjectModel parent, String name, List<String> structure) throws ModelException;
-
+    public ParsersExceptions(String message, Exception e) {
+        super(message, e);
+    }
 }

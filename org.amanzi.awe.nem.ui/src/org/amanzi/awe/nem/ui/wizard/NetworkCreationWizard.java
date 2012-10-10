@@ -14,9 +14,9 @@
 package org.amanzi.awe.nem.ui.wizard;
 
 import org.amanzi.awe.nem.NetworkElementManager;
+import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
-import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -29,15 +29,8 @@ import org.eclipse.jface.wizard.Wizard;
  * @since 1.0.0
  */
 public class NetworkCreationWizard extends Wizard {
-    
-    private NetworkDataContainer container;
-    
-    private INetworkModel model;
 
-    public NetworkCreationWizard(INetworkModel model) {
-        this.model = model;
-        setForcePreviousAndNextButtons(false);
-    }
+    private NetworkDataContainer container;
 
     public NetworkCreationWizard() {
         setForcePreviousAndNextButtons(true);
@@ -46,39 +39,49 @@ public class NetworkCreationWizard extends Wizard {
     @Override
     public boolean performFinish() {
         if (getPages().length == 1) {
-            if (getPages()[0] instanceof InitialNetworkPage) {
-                initContainer((InitialNetworkPage)getPages()[0]);
-            }
+            handleFirstPageOnFinish(getPages()[0]);
         }
         NetworkElementManager.getInstance().updateNodeTypes(
-                container.getStructure().toArray(new String[container.getStructure().size()]));
-        if (model == null) {
-            createModelFromContainer();
-        } else {
-            createSingleElement();
-        }
+                getDataContainer().getStructure().toArray(new String[getDataContainer().getStructure().size()]));
+
+        handleModelRefreshing();
         return true;
     }
 
-    private void createModelFromContainer() {
-        // TODO Auto-generated method stub
-
+    protected void handleModelRefreshing() {
+        try {
+            NetworkElementManager.getInstance().createModel(container.getName(), container.getStructure(),
+                    container.getTypeProperties());
+        } catch (NemManagerOperationException e) {
+            return;
+        }
     }
 
-    private void createSingleElement() {
-        // TODO Auto-generated method stub
-
+    /**
+     * @param iWizardPage
+     */
+    protected void handleFirstPageOnFinish(IWizardPage iWizardPage) {
+        if (getPages()[0] instanceof InitialNetworkPage) {
+            initContainerFromStartPage((InitialNetworkPage)getPages()[0]);
+        }
     }
 
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof InitialNetworkPage) {
-            initContainer((InitialNetworkPage)page);
+            initContainerFromStartPage((InitialNetworkPage)page);
             initializeNewPages((InitialNetworkPage)page);
         } else {
-            PropertyEditorPage editor = (PropertyEditorPage)page;
-            container.putToTypeProperties(page.getName(), editor.getProperties());
+            handlePropertyPage((PropertyEditorPage)page);
+
         }
         return super.getNextPage(page);
+    }
+
+    /**
+     * @param page
+     */
+    protected void handlePropertyPage(PropertyEditorPage page) {
+        container.putToTypeProperties(page.getName(), page.getProperties());
     }
 
     /**
@@ -94,15 +97,19 @@ public class NetworkCreationWizard extends Wizard {
 
     }
 
-    /**
-     * @param page
-     */
-    private void initContainer(InitialNetworkPage page) {
+    protected NetworkDataContainer getDataContainer() {
         if (container == null) {
             container = new NetworkDataContainer();
         }
-        container.setName(page.getNetworkName());
-        container.setStructure(page.getNetworkStructure());
+        return container;
+    }
+
+    /**
+     * @param page
+     */
+    private void initContainerFromStartPage(InitialNetworkPage page) {
+        getDataContainer().setName(page.getNetworkName());
+        getDataContainer().setStructure(page.getNetworkStructure());
 
     }
 

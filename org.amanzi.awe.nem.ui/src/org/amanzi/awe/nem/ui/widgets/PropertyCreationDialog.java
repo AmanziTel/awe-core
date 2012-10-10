@@ -14,7 +14,7 @@
 package org.amanzi.awe.nem.ui.widgets;
 
 import org.amanzi.awe.nem.properties.manager.KnownTypes;
-import org.amanzi.awe.nem.ui.properties.PropertyContainer;
+import org.amanzi.awe.nem.properties.manager.PropertyContainer;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
