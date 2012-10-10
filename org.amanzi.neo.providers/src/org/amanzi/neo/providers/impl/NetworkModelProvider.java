@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.providers.impl;
 
+import java.util.List;
+
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.network.NetworkModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.NetworkElementType;
@@ -72,4 +75,20 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
         return NetworkModel.class;
     }
 
+    @Override
+    protected void postInitialize(NetworkModel model) throws ModelException {
+        super.postInitialize(model);
+    }
+
+    @Override
+    public INetworkModel createModel(IProjectModel parent, String name, List<String> structure) throws ModelException {
+        NetworkModel model;
+        try {
+            model = (NetworkModel)create(parent, name);
+            model.setStructure(structure);
+        } catch (ModelException e) {
+            throw e;
+        }
+        return model;
+    }
 }

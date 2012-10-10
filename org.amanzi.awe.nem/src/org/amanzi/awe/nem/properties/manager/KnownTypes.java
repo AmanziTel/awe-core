@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.nem.properties.manager;
 
-import org.amanzi.awe.nem.properties.ParsersExceptions;
+import org.amanzi.awe.nem.exceptions.ParsersExceptions;
 import org.apache.commons.lang3.StringUtils;
 
 /**

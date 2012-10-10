@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.providers;
 
+import java.util.List;
+
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.internal.INamedModelProvider;
@@ -26,5 +29,7 @@ import org.amanzi.neo.providers.internal.INamedModelProvider;
  * @since 1.0.0
  */
 public interface INetworkModelProvider extends INamedModelProvider<INetworkModel, IProjectModel> {
+
+    INetworkModel createModel(IProjectModel parent, String name, List<String> structure) throws ModelException;
 
 }

@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.nem.properties.manager.NetworkProperty;
+import org.amanzi.awe.nem.properties.manager.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
-import org.amanzi.awe.nem.ui.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable.IPropertyTableListener;
 import org.amanzi.awe.nem.ui.widgets.PropertyCreationDialog.IPropertyDialogListener;

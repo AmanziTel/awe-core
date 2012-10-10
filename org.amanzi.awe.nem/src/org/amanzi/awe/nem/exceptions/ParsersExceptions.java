@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties;
+package org.amanzi.awe.nem.exceptions;
 
 /**
  * TODO Purpose of
