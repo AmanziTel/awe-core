@@ -67,7 +67,7 @@ public class IndexService extends AbstractService implements IIndexService {
         assert rootNode != null;
         assert nodeType != null;
 
-        String key = getIndexKey(rootNode, nodeType);
+        final String key = getIndexKey(rootNode, nodeType);
 
         Index<Node> result = nodeIndexMap.get(key);
 
@@ -83,11 +83,11 @@ public class IndexService extends AbstractService implements IIndexService {
     protected Index<Node> createNodeIndex(final String key) throws ServiceException {
         Index<Node> result = null;
 
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
         try {
             result = getGraphDb().index().forNodes(key);
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -98,9 +98,9 @@ public class IndexService extends AbstractService implements IIndexService {
     }
 
     protected String getIndexKey(final Node rootNode, final INodeType nodeType, final String... properties) {
-        StringBuilder builder = new StringBuilder().append(rootNode.getId()).append(INDEX_SEPARATOR).append(nodeType.getId());
+        final StringBuilder builder = new StringBuilder().append(rootNode.getId()).append(INDEX_SEPARATOR).append(nodeType.getId());
 
-        for (String property : properties) {
+        for (final String property : properties) {
             builder.append(PROPERTY_SEPARATOR).append(property);
         }
 
@@ -115,12 +115,12 @@ public class IndexService extends AbstractService implements IIndexService {
         assert !StringUtils.isEmpty(propertyName);
         assert value != null;
 
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
         try {
-            Index<Node> index = getIndex(rootNode, nodeType);
+            final Index<Node> index = getIndex(rootNode, nodeType);
             index.add(node, propertyName, value);
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -138,9 +138,9 @@ public class IndexService extends AbstractService implements IIndexService {
 
         MultiPropertyIndex<T> result = null;
 
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
         try {
-            String key = getIndexKey(node, nodeType, properties);
+            final String key = getIndexKey(node, nodeType, properties);
 
             MultiValueConverter<T> converter = null;
 
@@ -154,7 +154,7 @@ public class IndexService extends AbstractService implements IIndexService {
             result.initialize(getGraphDb(), node);
 
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
             throw new DatabaseException(e);
         } finally {
@@ -165,25 +165,27 @@ public class IndexService extends AbstractService implements IIndexService {
     }
 
     @Override
-    public void deleteFromIndexes(Node node, INodeType nodeType) {
-        String key = getIndexKey(node, nodeType);
-        Index<Node> result = nodeIndexMap.get(key);
+    public void deleteFromIndexes(final Node node, final INodeType nodeType) {
+        final String key = getIndexKey(node, nodeType);
+        final Index<Node> result = nodeIndexMap.get(key);
         if (result != null) {
             result.remove(node);
         }
     }
 
     @Override
+    // TODO: LN: 10.10.2012, incorrect - this will delete all indexes in DB (e.g. for all Networks)
     public void deleteAll() {
-        Transaction tx = getGraphDb().beginTx();
+        final Transaction tx = getGraphDb().beginTx();
         try {
-            for (Index<Node> index : nodeIndexMap.values()) {
+            for (final Index<Node> index : nodeIndexMap.values()) {
                 index.delete();
             }
             nodeIndexMap.clear();
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             tx.failure();
+            // TODO: LN: 10.10.2012, exception should be provided to higher level
         } finally {
             tx.finish();
         }

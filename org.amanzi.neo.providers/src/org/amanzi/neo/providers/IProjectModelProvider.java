@@ -27,6 +27,7 @@ import org.amanzi.neo.providers.internal.IModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface IProjectModelProvider extends IModelProvider<IProjectModel> {
 
     IProjectModel findProjectByName(String name) throws ModelException;

@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.providers.context.internal;
 
-import org.amanzi.neo.services.internal.IService;
+import org.amanzi.neo.services.IService;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**

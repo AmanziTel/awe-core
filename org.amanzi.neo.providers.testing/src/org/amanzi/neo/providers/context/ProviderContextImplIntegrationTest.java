@@ -20,7 +20,7 @@ import org.amanzi.neo.providers.context.internal.AnotherTestService;
 import org.amanzi.neo.providers.context.internal.MultiConstructorService;
 import org.amanzi.neo.providers.context.internal.TestService;
 import org.amanzi.neo.providers.impl.ProjectModelProvider;
-import org.amanzi.neo.services.internal.IService;
+import org.amanzi.neo.services.IService;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.Before;

@@ -13,16 +13,24 @@
 
 package org.amanzi.neo.providers;
 
+/**
+ * TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @since 1.0.0
+ */
 public class ContextException extends Exception {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -6470727859236377384L;
 
-    public ContextException(Exception e) {
+    public ContextException(final Exception e) {
         super(e);
     }
 
-    public ContextException(String message) {
+    public ContextException(final String message) {
         super(message);
     }
 

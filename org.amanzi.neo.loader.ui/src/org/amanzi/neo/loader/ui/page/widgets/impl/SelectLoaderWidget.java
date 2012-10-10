@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboWidget<ISelectLoaderListener>
         implements
             SelectionListener {
@@ -62,7 +63,7 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
 
     @Override
     protected Combo createWidget(final Composite parent, final int style) {
-        Combo combo = super.createWidget(parent, style);
+        final Combo combo = super.createWidget(parent, style);
 
         combo.addSelectionListener(this);
 
@@ -76,7 +77,7 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
 
     @Override
     public void fillData() {
-        for (ILoader< ? , ? > loader : loaders) {
+        for (final ILoader< ? , ? > loader : loaders) {
             getWidget().add(loader.getName());
         }
         updateData();
@@ -84,7 +85,7 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
 
     @Override
     public void widgetSelected(final SelectionEvent e) {
-        for (ISelectLoaderListener listener : getListeners()) {
+        for (final ISelectLoaderListener listener : getListeners()) {
             listener.onLoaderChanged();
         }
     }
@@ -101,6 +102,7 @@ public class SelectLoaderWidget<T extends IConfiguration> extends AbstractComboW
 
     @Override
     protected GridData getComboLayoutData() {
+        // TODO: LN: 10.10.2012, make a factory for LayoutData
         return new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
     }
 

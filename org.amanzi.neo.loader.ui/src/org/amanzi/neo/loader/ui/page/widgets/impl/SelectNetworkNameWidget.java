@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISelectNetworkListener> {
 
     private static final Logger LOGGER = Logger.getLogger(SelectNetworkNameWidget.class);
@@ -61,10 +62,10 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISe
     @Override
     public void fillData() {
         try {
-            for (INetworkModel network : networkModelProvider.findAll(getActiveProject())) {
+            for (final INetworkModel network : networkModelProvider.findAll(getActiveProject())) {
                 getWidget().add(network.getName());
             }
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             LOGGER.error("Cannot fill Select Network Name Combobox", e); //$NON-NLS-1$
         }
 
@@ -73,7 +74,7 @@ public class SelectNetworkNameWidget extends AbstractSelectDatasetNameWidget<ISe
 
     @Override
     public void modifyText(final ModifyEvent e) {
-        for (ISelectNetworkListener listener : getListeners()) {
+        for (final ISelectNetworkListener listener : getListeners()) {
             listener.onNetworkChanged();
         }
     }

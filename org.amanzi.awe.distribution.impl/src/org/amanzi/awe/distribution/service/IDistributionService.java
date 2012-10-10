@@ -14,8 +14,8 @@
 package org.amanzi.awe.distribution.service;
 
 import org.amanzi.awe.distribution.model.type.IDistributionType;
+import org.amanzi.neo.services.IService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
 
 /**

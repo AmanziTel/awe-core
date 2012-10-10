@@ -23,6 +23,7 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, create a message based on input parameters
 public class DuplicatedModelException extends ModelException {
 
     /** long serialVersionUID field */

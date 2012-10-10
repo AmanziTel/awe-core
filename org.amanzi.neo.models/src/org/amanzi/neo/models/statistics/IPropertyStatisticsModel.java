@@ -26,6 +26,7 @@ import org.amanzi.neo.services.exceptions.ServiceException;
  * @author grigoreva_a
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface IPropertyStatisticsModel extends IModel {
 
     void indexElement(INodeType nodeType, Map<String, Object> properties) throws ServiceException;

@@ -21,6 +21,7 @@ package org.amanzi.neo.models.exceptions;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, create a message based on exception parameters
 public class ParameterInconsistencyException extends ModelException {
 
     /** long serialVersionUID field */

@@ -23,6 +23,7 @@ import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, create exception message based on provided data
 public class DuplicatedNodeException extends ServiceException {
 
     /** long serialVersionUID field */
@@ -35,7 +36,7 @@ public class DuplicatedNodeException extends ServiceException {
     /**
      * @param reason
      */
-    public DuplicatedNodeException(String propertyName, Object duplicatedValue) {
+    public DuplicatedNodeException(final String propertyName, final Object duplicatedValue) {
         super(ServiceExceptionReason.DUPLICATED_NODE);
 
         this.propertyName = propertyName;

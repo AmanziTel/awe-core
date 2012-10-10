@@ -23,6 +23,7 @@ import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, create exception message based on provided data
 public class StatisticsConversionException extends ServiceException {
 
     /** long serialVersionUID field */
@@ -43,7 +44,8 @@ public class StatisticsConversionException extends ServiceException {
      * @param value
      * @param propertyName
      */
-    public StatisticsConversionException(Class< ? > fromClass, Class< ? > toClass, Object value, String propertyName) {
+    public StatisticsConversionException(final Class< ? > fromClass, final Class< ? > toClass, final Object value,
+            final String propertyName) {
         super(ServiceExceptionReason.STATISTICS_CONVERSION_EXCEPTION);
         this.fromClass = fromClass;
         this.toClass = toClass;

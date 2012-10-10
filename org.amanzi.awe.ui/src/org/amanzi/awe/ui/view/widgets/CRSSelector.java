@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.ui.view.widgets;
 
+import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -21,7 +22,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
 
 /**
  * TODO Purpose of
@@ -42,14 +42,15 @@ public class CRSSelector extends AbstractAWEWidget<Button, ICRSSelectorListener>
      * @param style
      * @param listener
      */
-    protected CRSSelector(Composite parent, ICRSSelectorListener listener) {
+    protected CRSSelector(final Composite parent, final ICRSSelectorListener listener) {
         super(parent, SWT.FILL | SWT.PUSH, listener);
     }
 
     @Override
     protected Button createWidget(final Composite parent, final int style) {
-        Button result = new Button(parent, style);
+        final Button result = new Button(parent, style);
 
+        // TODO: LN: 10.10.2012, make a factory for LayoutData
         result.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         result.addSelectionListener(this);

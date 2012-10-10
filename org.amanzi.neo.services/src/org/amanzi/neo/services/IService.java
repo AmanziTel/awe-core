@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.network;
+package org.amanzi.neo.services;
 
 /**
  * TODO Purpose of
@@ -21,6 +21,6 @@ package org.amanzi.neo.models.network;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface INetworkType {
+public interface IService {
 
 }

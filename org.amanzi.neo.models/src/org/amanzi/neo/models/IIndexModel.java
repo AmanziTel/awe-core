@@ -27,6 +27,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface IIndexModel extends IModel {
 
     Node getSingleNode(INodeType nodeType, String propertyName, Object value) throws ModelException;

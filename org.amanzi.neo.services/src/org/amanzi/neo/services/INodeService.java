@@ -19,7 +19,6 @@ import java.util.Map;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -34,6 +33,7 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface INodeService extends IService {
 
     /**
@@ -90,10 +90,14 @@ public interface INodeService extends IService {
 
     Node createNodeInChain(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException;
 
+    // TODO: LN: 10.10.2012, split updateProperty for nodes and updateProperty for Relationships to
+    // one method (since both Node nad Relationship extends PropertyContainer)
     void updateProperty(Node node, String propertyName, Object newValue) throws ServiceException;
 
     void updateProperty(Relationship relationship, String propertyName, Object newValue) throws ServiceException;
 
+    // TODO: LN: 10.10.2012, split getNodeProperty and getRelationshipProperty to one method (since
+    // both Node nad Relationship extends PropertyContainer)
     <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
             final boolean throwExceptionIfNotExist) throws ServiceException;
 

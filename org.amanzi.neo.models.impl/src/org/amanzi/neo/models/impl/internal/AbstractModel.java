@@ -46,10 +46,11 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public abstract class AbstractModel extends AbstractLoggable implements IModel {
-    /** String INITIALIZE_METHOD_NAME field */
-    protected static final String INITIALIZE_METHOD_NAME = "initialize";
 
     private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
+
+    /** String INITIALIZE_METHOD_NAME field */
+    protected static final String INITIALIZE_METHOD_NAME = "initialize";
 
     protected final class DataElementIterator extends AbstractDataElementIterator<IDataElement> {
         String defaultProperty = getGeneralNodeProperties().getNodeNameProperty();
@@ -74,7 +75,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             try {
                 name = getNodeService().getNodeProperty(node, defaultProperty, null, false);
                 type = getNodeService().getNodeType(node);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOGGER.info("can't get required property from node " + node);
                 return null;
             }
@@ -113,7 +114,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
         try {
             rootNode = createNode(parentNode, nodeType, name);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on initializing new node for Model", e);
         }
 
@@ -138,7 +139,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             name = nodeService.getNodeName(rootNode);
             nodeType = nodeService.getNodeType(rootNode);
             parentNode = getParent(rootNode);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             processException("An error occured on Model Initialization", e);
         }
 
@@ -178,7 +179,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         LOGGER.error(logMessage, e);
 
         if (e instanceof ServiceException) {
-            ServiceException serviceException = (ServiceException)e;
+            final ServiceException serviceException = (ServiceException)e;
             switch (serviceException.getReason()) {
             case DATABASE_EXCEPTION:
                 throw new FatalException(serviceException);
@@ -187,7 +188,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             case INCORRECT_PROPERTY:
                 throw new DataInconsistencyException(serviceException);
             case DUPLICATED_NODE:
-                DuplicatedNodeException error = (DuplicatedNodeException)e;
+                final DuplicatedNodeException error = (DuplicatedNodeException)e;
                 throw new DuplicatedModelException(getClass(), error.getPropertyName(), error.getDuplicatedValue());
             default:
                 // do nothing
@@ -215,7 +216,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     }
 
     protected IDataElement toDataElement() {
-        DataElement result = new DataElement(rootNode);
+        final DataElement result = new DataElement(rootNode);
 
         result.setNodeType(getType());
         result.setName(name);
@@ -236,7 +237,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     @Override
     public boolean equals(final Object o) {
         if (o instanceof IModel) {
-            IModel model = (IModel)o;
+            final IModel model = (IModel)o;
 
             return model.asDataElement().equals(asDataElement());
         }
@@ -245,7 +246,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     }
 
     protected IDataElement getDataElement(final Node node, final INodeType nodeType, final String name) {
-        DataElement result = new DataElement(node);
+        final DataElement result = new DataElement(node);
 
         result.setNodeType(nodeType);
         result.setName(name);
@@ -270,7 +271,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     public void delete() throws ModelException {
         try {
             nodeService.deleteChain(rootNode);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Can't delete node" + rootNode, e);
         }
     }

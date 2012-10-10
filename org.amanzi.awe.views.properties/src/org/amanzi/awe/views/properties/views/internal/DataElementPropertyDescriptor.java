@@ -27,8 +27,20 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
  */
 public class DataElementPropertyDescriptor extends PropertyDescriptor {
 
+    protected final static String ID_PROPERTY = "id";
+
     private enum Category {
-        PROPERTY, HEADER;
+        PROPERTY("Properties"), HEADER("General info");
+
+        private String title;
+
+        private Category(final String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
     }
 
     private static final IGeneralNodeProperties generalNodeProperties;
@@ -43,11 +55,11 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
      */
     public DataElementPropertyDescriptor(final String propertyName) {
         super(propertyName, propertyName);
-        setCategory(calculateCategory(propertyName).toString());
+        setCategory(calculateCategory(propertyName).getTitle());
     }
 
     private Category calculateCategory(final String propertyName) {
-        if (propertyName.equals(generalNodeProperties.getNodeTypeProperty()) || propertyName.equals("id")) {
+        if (propertyName.equals(generalNodeProperties.getNodeTypeProperty()) || propertyName.equals(ID_PROPERTY)) {
             return Category.HEADER;
         }
 

@@ -21,7 +21,7 @@ import org.amanzi.neo.db.manager.events.DatabaseEvent;
 import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.internal.IService;
+import org.amanzi.neo.services.IService;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
