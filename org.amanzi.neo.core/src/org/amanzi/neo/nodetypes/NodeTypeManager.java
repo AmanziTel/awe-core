@@ -19,11 +19,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.core.internal.NeoCorePlugin;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * <p>
@@ -47,6 +49,12 @@ public final class NodeTypeManager {
     private static final String NODE_TYPE_EXTENSION_ID = "org.amanzi.nodetypes";
 
     private static final String CLASS_ATTRIBUTE = "class";
+
+    private static final String DYNAMIC_NODE_TYPES_KEY = "dynnamic_types";
+
+    private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
+
+    private static final String COMMA_SEPARATOR = ",";
 
     @SuppressWarnings("rawtypes")
     private static final class StringToEnumConverter<T extends Enum> {
@@ -76,6 +84,7 @@ public final class NodeTypeManager {
     protected NodeTypeManager() {
         registry = Platform.getExtensionRegistry();
         initializeNodeTypesFromExtensions();
+        initializeNodeTypesFromPreferenceStore();
     }
 
     public static NodeTypeManager getInstance() {
@@ -143,6 +152,38 @@ public final class NodeTypeManager {
             }
 
         }
+    }
+
+    /**
+    *
+    */
+    private void initializeNodeTypesFromPreferenceStore() {
+        String dynamicTypesString = PREFERENCE_STORE.getDefaultString(DYNAMIC_NODE_TYPES_KEY);
+        if (StringUtils.isEmpty(dynamicTypesString)) {
+            return;
+        }
+        String[] dynamicTypesArray = dynamicTypesString.split(COMMA_SEPARATOR);
+        for (String type : dynamicTypesArray) {
+            if (!type.isEmpty()) {
+                nodeTypeCache.put(type, new DynamicNodeType(type));
+            }
+        }
+    }
+
+    public void addDynamicNodeTypes(String... types) {
+        String existedTypes = PREFERENCE_STORE.getDefaultString(DYNAMIC_NODE_TYPES_KEY);
+        StringBuilder builder = new StringBuilder(existedTypes);
+        for (String type : types) {
+            if (nodeTypeCache.containsKey(type)) {
+                continue;
+            }
+            if (!builder.toString().isEmpty()) {
+                builder.append(COMMA_SEPARATOR);
+            }
+            builder.append(type);
+            nodeTypeCache.put(type, new DynamicNodeType(type));
+        }
+        PREFERENCE_STORE.setDefault(DYNAMIC_NODE_TYPES_KEY, builder.toString());
     }
 
     protected Set<Class< ? >> getRegisteredNodeTypes() {

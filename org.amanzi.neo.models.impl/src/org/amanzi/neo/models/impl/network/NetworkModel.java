@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.impl.network;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
@@ -147,6 +149,15 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private final INetworkNodeProperties networkNodeProperties;
 
+    private final List<String> structure = new ArrayList<String>() {
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 7149098047373556881L;
+
+        {
+            add(NetworkElementType.NETWORK.getId());
+        }
+    };
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -160,6 +171,13 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     @Override
     protected INodeType getModelType() {
         return NetworkElementType.NETWORK;
+    }
+
+    @Override
+    public void initialize(Node rootNode) throws ModelException {
+        structure.clear();
+        structure.addAll(Arrays.asList(((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()))));
+        super.initialize(rootNode);
     }
 
     @Override
@@ -254,9 +272,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         DataElement result = null;
 
         try {
-            final Node parentNode = ((DataElement)parent).getNode();
-            final Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
-                    properties);
+            Node parentNode = ((DataElement)parent).getNode();
+            Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
+
+            updateNetworkStructure(parent, elementType);
 
             getIndexModel().index(elementType, node, getGeneralNodeProperties().getNodeNameProperty(), name);
 
@@ -272,6 +291,37 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         return result;
+    }
+
+    /**
+     * @param parent
+     * @param elementType
+     * @throws ServiceException
+     */
+    private void updateNetworkStructure(IDataElement parent, INetworkElementType elementType) throws ServiceException {
+        String parentType;
+        try {
+            parentType = getNodeService().getNodeType(((DataElement)parent).getNode()).getId();
+        } catch (ServiceException e) {
+            throw e;
+        } catch (NodeTypeNotExistsException e) {
+            LOGGER.error("can't get parent node type", e);
+            return;
+
+        }
+        String currentType = elementType.getId();
+        if (!structure.contains(currentType)) {
+            structure.add(currentType);
+            return;
+        } else if (structure.contains(currentType) && structure.contains(parentType)) {
+            return;
+        }
+
+        int parentIndex = structure.indexOf(parentType);
+        int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        if (parentIndex < lastIndex) {
+            structure.add(parentIndex, currentType);
+        }
     }
 
     @Override
@@ -445,6 +495,13 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     @Override
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
+        try {
+
+            getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
+                    structure.toArray(new String[structure.size()]));
+        } catch (ServiceException e) {
+            processException("can't set structure properties", e);
+        }
         super.finishUp();
     }
 
@@ -495,5 +552,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         return location;
+    }
+
+    @Override
+    public String[] getNetworkStructure() {
+        return structure.toArray(new String[structure.size()]);
     }
 }

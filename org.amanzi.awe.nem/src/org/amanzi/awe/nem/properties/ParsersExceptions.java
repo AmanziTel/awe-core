@@ -11,26 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties;
+package org.amanzi.awe.nem.properties;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface INetworkNodeProperties extends INodeProperties {
+public class ParsersExceptions extends Exception {
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 4870402076235550696L;
 
-    String getCIProperty();
-
-    String getLACProperty();
-
-    String getAzimuthProperty();
-
-    String getBeamwidthProperty();
-
-    String getStuctureProperty();
-
+    public ParsersExceptions(String message, Exception e) {
+        super(message, e);
+    }
 }

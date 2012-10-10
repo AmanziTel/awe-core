@@ -16,6 +16,7 @@ package org.amanzi.awe.nem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.apache.log4j.Logger;
 
 /**
@@ -58,5 +59,9 @@ public class NetworkElementManager {
             LOGGER.error("Can't remove element " + element + " from model " + model, e);
             throw e;
         }
+    }
+
+    public void updateNodeTypes(String[] types) {
+        NodeTypeManager.getInstance().addDynamicNodeTypes(types);
     }
 }

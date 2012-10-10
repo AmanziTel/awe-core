@@ -11,26 +11,30 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties;
+package org.amanzi.awe.nem.ui.properties.table;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface INetworkNodeProperties extends INodeProperties {
+public enum PropertyColumns {
 
-    String getCIProperty();
+    NAME("name"), TYPE("type"), DEFAULT_VALUE("Default_Value");
 
-    String getLACProperty();
+    private String name;
 
-    String getAzimuthProperty();
+    /**
+     * 
+     */
+    private PropertyColumns(String name) {
+        this.name = name;
+    }
 
-    String getBeamwidthProperty();
-
-    String getStuctureProperty();
-
+    public String getName() {
+        return this.name;
+    }
 }

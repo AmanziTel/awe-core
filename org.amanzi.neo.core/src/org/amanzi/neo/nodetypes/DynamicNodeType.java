@@ -11,26 +11,26 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties;
+package org.amanzi.neo.nodetypes;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface INetworkNodeProperties extends INodeProperties {
+public class DynamicNodeType implements INodeType {
 
-    String getCIProperty();
+    private String type;
 
-    String getLACProperty();
+    public DynamicNodeType(String type) {
+        this.type = type;
+    }
 
-    String getAzimuthProperty();
-
-    String getBeamwidthProperty();
-
-    String getStuctureProperty();
+    @Override
+    public String getId() {
+        return type;
+    }
 
 }
