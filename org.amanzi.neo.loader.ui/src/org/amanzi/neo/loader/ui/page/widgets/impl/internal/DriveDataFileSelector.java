@@ -61,6 +61,7 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
         }
     };
 
+    // TODO: LN: 10.10.2012, make a factory for Layouts
     protected static final GridLayout FIXED_ONE_ROW_LAYOUT = new GridLayout(1, false);
 
     private List availableFilesList;
@@ -103,16 +104,18 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     }
 
     private List createListComposite(final Composite parent, final String labelText) {
-        Composite panel = new Composite(parent, SWT.NONE);
+        final Composite panel = new Composite(parent, SWT.NONE);
+        // TODO: LN: 10.10.2012, make a factory for Layouts
         panel.setLayout(FIXED_ONE_ROW_LAYOUT);
         panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        Label listLabel = new Label(panel, SWT.NONE);
+        final Label listLabel = new Label(panel, SWT.NONE);
         listLabel.setText(labelText);
+        // TODO: LN: 10.10.2012, make a factory for Layouts
         listLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
-        List list = new List(panel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        final List list = new List(panel, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         gridData.minimumWidth = 200;
         gridData.minimumHeight = 300;
         list.setLayoutData(gridData);
@@ -121,7 +124,7 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     }
 
     private void createActionComposite(final Composite parent) {
-        Composite actionPanel = new Composite(parent, SWT.NONE);
+        final Composite actionPanel = new Composite(parent, SWT.NONE);
         actionPanel.setLayout(FIXED_ONE_ROW_LAYOUT);
         actionPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 
@@ -132,7 +135,7 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     }
 
     private Button createChooseButton(final Composite parent, final String label) {
-        Button button = new Button(parent, SWT.NONE);
+        final Button button = new Button(parent, SWT.NONE);
         button.setText(label);
         button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
 
@@ -142,8 +145,8 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     }
 
     private void transferFiles(final String[] fileNames, final Map<String, File> from, final Map<String, File> to) {
-        for (String fileName : fileNames) {
-            File file = from.remove(fileName);
+        for (final String fileName : fileNames) {
+            final File file = from.remove(fileName);
 
             to.put(fileName, file);
         }
@@ -161,9 +164,9 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     public void setFiles(final File directory) {
         assert directory.isDirectory();
 
-        File[] files = directory.listFiles((FileFilter)fileFilter);
+        final File[] files = directory.listFiles((FileFilter)fileFilter);
         Arrays.sort(files, NameFileComparator.NAME_SYSTEM_COMPARATOR);
-        for (File singleFile : files) {
+        for (final File singleFile : files) {
             availableFiles.put(singleFile.getName(), singleFile);
         }
 
@@ -178,9 +181,9 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     private void updateList(final List list, final Map<String, File> values) {
         list.removeAll();
 
-        String[] items = new String[values.size()];
+        final String[] items = new String[values.size()];
         int i = 0;
-        for (String fileName : values.keySet()) {
+        for (final String fileName : values.keySet()) {
             items[i++] = fileName;
         }
 
@@ -224,7 +227,7 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     }
 
     private void fireFilesChangedEvent() {
-        for (ISelectDriveResourceListener listener : getListeners()) {
+        for (final ISelectDriveResourceListener listener : getListeners()) {
             listener.onResourcesSelected(selectedFiles.values());
         }
     }

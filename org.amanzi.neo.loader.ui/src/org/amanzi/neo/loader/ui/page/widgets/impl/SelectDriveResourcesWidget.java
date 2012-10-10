@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, ISelectDriveResourceListener>
         implements
             IResourceSelectorListener {
@@ -70,7 +71,7 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
 
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
-        Composite panel = new Composite(parent, style);
+        final Composite panel = new Composite(parent, style);
         panel.setLayoutData(getGroupLayoutData());
         panel.setLayout(new GridLayout(1, false));
 
@@ -82,14 +83,17 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
     }
 
     private Composite getPanel(final Composite parent) {
-        Composite panel = new Composite(parent, SWT.NONE);
+        final Composite panel = new Composite(parent, SWT.NONE);
+        // TODO: LN: 10.10.2012, make a factory for Layouts
         panel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        // TODO: LN: 10.10.2012, make a factory for LayoutData
         panel.setLayout(new GridLayout(3, false));
 
         return panel;
     }
 
     protected Object getGroupLayoutData() {
+        // TODO: LN: 10.10.2012, make a factory for LayoutData
         return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
     }
 
@@ -104,9 +108,9 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
 
     @Override
     public void onResourceChanged() {
-        String directoryName = resourceSelector.getFileName();
+        final String directoryName = resourceSelector.getFileName();
 
-        for (ISelectDriveResourceListener listener : getListeners()) {
+        for (final ISelectDriveResourceListener listener : getListeners()) {
             listener.onDirectorySelected(directoryName);
         }
 

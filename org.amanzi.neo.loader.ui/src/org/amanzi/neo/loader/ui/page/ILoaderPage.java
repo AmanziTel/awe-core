@@ -27,6 +27,7 @@ import org.eclipse.jface.wizard.IWizardPage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface ILoaderPage<T extends IConfiguration> extends IWizardPage {
 
     void addLoader(ILoader<T, ? > loader);

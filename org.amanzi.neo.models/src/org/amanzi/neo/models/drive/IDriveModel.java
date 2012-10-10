@@ -23,6 +23,7 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface IDriveModel extends IMeasurementModel {
 
     public interface IDriveType {

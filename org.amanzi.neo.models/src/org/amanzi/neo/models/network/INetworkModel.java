@@ -30,7 +30,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-
+// TODO: LN: 10.10.2012, add comments
 public interface INetworkModel extends IDatasetModel {
 
     public interface ISectorElement extends IDataElement {

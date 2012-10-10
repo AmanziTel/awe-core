@@ -45,6 +45,7 @@ public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extend
 
     public static final int NUMBER_OF_COLUMNS = 4;
 
+    // TODO: LN: 10.10.2012, make a Factory for Layouts
     private static final GridLayout STANDARD_LOADER_PAGE_LAYOUT = new GridLayout(NUMBER_OF_COLUMNS, false);
 
     private final List<ILoader<T, ? >> loaders = new ArrayList<ILoader<T, ? >>();
@@ -90,8 +91,8 @@ public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extend
         ILoader<T, ? > lastUnknown = null;
         IValidationResult unkonwnResult = null;
         ILoader<T, ? > definedLoader = null;
-        for (ILoader<T, ? > loader : loaders) {
-            IValidationResult result = loader.isAppropriate(getConfiguration());
+        for (final ILoader<T, ? > loader : loaders) {
+            final IValidationResult result = loader.isAppropriate(getConfiguration());
             switch (result.getResult()) {
             default:
             case FAIL:
@@ -169,13 +170,13 @@ public abstract class AbstractLoaderPage<T extends AbstractConfiguration> extend
 
     @Override
     public void onCRSSelected(final CoordinateReferenceSystem crs) {
-        T configuration = getConfiguration();
+        final T configuration = getConfiguration();
 
         configuration.setCRS(crs);
     }
 
-    protected ILoader<T, ? > getLoader(String loaderName) {
-        for (ILoader<T, ? > loader : loaders) {
+    protected ILoader<T, ? > getLoader(final String loaderName) {
+        for (final ILoader<T, ? > loader : loaders) {
             if (loader.getName().equals(loaderName)) {
                 return loader;
             }

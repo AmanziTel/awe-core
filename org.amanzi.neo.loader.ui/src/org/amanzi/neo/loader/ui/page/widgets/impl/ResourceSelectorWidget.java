@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResourceSelectorListener> implements ModifyListener {
 
     public interface IResourceSelectorListener extends AbstractPageWidget.IPageEventListener {
@@ -68,7 +69,7 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
             editor = new DirectoryFieldEditor("resource", Messages.ResourceSelectorWidget_SelectDirectoryTitle, parent); //$NON-NLS-1$
             break;
         case FILE:
-            AdvancedFileFieldEditor fileEditor = new AdvancedFileFieldEditor(
+            final AdvancedFileFieldEditor fileEditor = new AdvancedFileFieldEditor(
                     "resource", Messages.ResourceSelectorWidget_SelectFileTitle, parent); //$NON-NLS-1$
             fileEditor.setFileExtensions(fileExtensions);
 
@@ -90,7 +91,7 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
 
     @Override
     public void modifyText(final ModifyEvent e) {
-        for (IResourceSelectorListener listener : getListeners()) {
+        for (final IResourceSelectorListener listener : getListeners()) {
             listener.onResourceChanged();
         }
     }

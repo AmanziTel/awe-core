@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public class SelectDriveNameWidget extends AbstractSelectDatasetNameWidget<ISelectDriveListener> {
 
     private static final Logger LOGGER = Logger.getLogger(SelectDriveNameWidget.class);
@@ -61,10 +62,10 @@ public class SelectDriveNameWidget extends AbstractSelectDatasetNameWidget<ISele
     @Override
     public void fillData() {
         try {
-            for (IDriveModel network : driveModelProvider.findAll(getActiveProject())) {
+            for (final IDriveModel network : driveModelProvider.findAll(getActiveProject())) {
                 getWidget().add(network.getName());
             }
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             LOGGER.error("Cannot fill Select Drive Name Combobox", e); //$NON-NLS-1$
         }
 
@@ -73,7 +74,7 @@ public class SelectDriveNameWidget extends AbstractSelectDatasetNameWidget<ISele
 
     @Override
     public void modifyText(final ModifyEvent e) {
-        for (ISelectDriveListener listener : getListeners()) {
+        for (final ISelectDriveListener listener : getListeners()) {
             listener.onDriveChanged();
         }
     }

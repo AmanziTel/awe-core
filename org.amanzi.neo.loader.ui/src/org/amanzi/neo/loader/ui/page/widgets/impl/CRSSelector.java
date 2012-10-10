@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public class CRSSelector extends AbstractPageWidget<Button, ICRSSelectorListener> implements SelectionListener {
 
     public interface ICRSSelectorListener extends AbstractPageWidget.IPageEventListener {
@@ -49,8 +50,9 @@ public class CRSSelector extends AbstractPageWidget<Button, ICRSSelectorListener
 
     @Override
     protected Button createWidget(final Composite parent, final int style) {
-        Button result = new Button(parent, style);
+        final Button result = new Button(parent, style);
 
+        // TODO: LN: 10.10.2012, make a factory for LayoutData
         result.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         result.addSelectionListener(this);

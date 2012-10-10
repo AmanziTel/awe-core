@@ -41,6 +41,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
 public final class WizardFactory {
 
     private static class WizardFactoryHolder {
