@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.ui.page.impl.drive;
 import java.io.File;
 import java.util.Collection;
 
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.impl.MultiFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
@@ -64,7 +65,7 @@ public class LoadDrivePage extends AbstractLoaderPage<MultiFileConfiguration>
         super.createControl(parent);
 
         driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
-        WizardFactory.getInstance().addCRSSelector(getMainComposite(), this);
+        AWEWidgetFactory.getFactory().addCRSSelectorWidget(this, getMainComposite());
         driveResource = WizardFactory.getInstance().addDriveResourceSelector(getMainComposite(), this, getFileFilter());
 
         loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());

@@ -15,19 +15,20 @@ package org.amanzi.awe.nem.ui.wizard.pages;
 
 import java.util.List;
 
-import org.amanzi.awe.nem.NetworkStructureManager;
+import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
-import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
-import org.amanzi.awe.nem.ui.widgets.NetworkNameWidget;
-import org.amanzi.awe.nem.ui.widgets.NetworkNameWidget.INetworkNameChanged;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget.ITableItemSelectionListener;
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
+import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -40,8 +41,9 @@ import org.eclipse.swt.widgets.Composite;
 public class InitialNetworkPage extends WizardPage
         implements
             ITableItemSelectionListener,
-            INetworkNameChanged,
-            ICRSSelectedListener {
+            ICRSSelectedListener,
+            ICRSSelectorListener,
+            ITextChandedListener {
 
     private static final GridLayout ONE_COLUMN_LAYOU = new GridLayout(1, false);
 
@@ -74,11 +76,9 @@ public class InitialNetworkPage extends WizardPage
         networkAndCrsComposite.setLayout(TWO_COLUMN_LAYOU);
         networkAndCrsComposite.setLayoutData(getGridData());
 
-        NetworkNameWidget networkNameWidget = new NetworkNameWidget(networkAndCrsComposite, this);
-        networkNameWidget.initializeWidget();
-        
-        CRSSelectionWidget crsSelectionWidget = new CRSSelectionWidget(networkAndCrsComposite, SWT.NONE, this);
-        crsSelectionWidget.initializeWidget();
+        AWEWidgetFactory.getFactory().addStyledTextWidget(this, SWT.BORDER, NemMessages.NETWORK_NAME_LABEL, networkAndCrsComposite);
+
+        AWEWidgetFactory.getFactory().addCRSSelectorWidget(this, networkAndCrsComposite);
 
         Composite typeComposite = new Composite(mainComposite, SWT.NONE);
         typeComposite.setLayout(ONE_COLUMN_LAYOU);
@@ -112,16 +112,6 @@ public class InitialNetworkPage extends WizardPage
     }
 
     @Override
-    public void onNameChanged(String name) {
-        networkName = name;
-        if (name.isEmpty()) {
-            isCompleate = false;
-        }
-        isCompleate = true;
-        setPageComplete(isCompleate);
-    }
-
-    @Override
     public void onCRSSelecte() {
         // TODO Auto-generated method stub
 
@@ -147,4 +137,22 @@ public class InitialNetworkPage extends WizardPage
     public String getNetworkName() {
         return networkName;
     }
+
+    @Override
+    public void onCRSSelected(CoordinateReferenceSystem crs) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onTextChanged(String name) {
+        networkName = name;
+        if (name.isEmpty()) {
+            isCompleate = false;
+        }
+        isCompleate = true;
+        setPageComplete(isCompleate);
+
+    }
+
 }

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties.manager;
+package org.amanzi.awe.nem.managers.properties;
 
 import org.amanzi.awe.nem.exceptions.ParsersExceptions;
 import org.apache.commons.lang3.StringUtils;

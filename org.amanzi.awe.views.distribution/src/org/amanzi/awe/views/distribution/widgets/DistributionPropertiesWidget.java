@@ -317,4 +317,10 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
             }
         }
     }
+
+    @Override
+    public void onTextChanged(String text) {
+        // TODO Auto-generated method stub
+
+    }
 }

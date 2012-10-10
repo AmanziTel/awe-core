@@ -16,12 +16,12 @@ package org.amanzi.neo.loader.ui.page.impl.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.impl.internal.AbstractConfiguration;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.ILoaderPage;
-import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector.ICRSSelectorListener;
 import org.amanzi.neo.loader.ui.wizard.ILoaderWizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;

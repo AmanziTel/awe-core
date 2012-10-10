@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties.manager;
+package org.amanzi.awe.nem.managers.properties;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,18 +66,18 @@ public class NetworkPropertiesManager {
         }
     }
 
-    private Map<String, List<NetworkProperty>> typesProperties = new HashMap<String, List<NetworkProperty>>();
+    private Map<String, List<PropertyContainer>> typesProperties = new HashMap<String, List<PropertyContainer>>();
 
     private Map<KnownTypes, List<String>> propertiesTypes = new HashMap<KnownTypes, List<String>>();
 
-    public Iterable<NetworkProperty> getProperties(String type) {
-        List<NetworkProperty> properties = typesProperties.get(type);
+    public List<PropertyContainer> getProperties(String type) {
+        List<PropertyContainer> properties = typesProperties.get(type);
         if (properties == null) {
-            properties = new ArrayList<NetworkProperty>();
+            properties = new ArrayList<PropertyContainer>();
             String[] exitedProperties = getPropertiesForType(type);
             for (String singleProperty : exitedProperties) {
                 KnownTypes propertyType = getPropertyType(singleProperty);
-                properties.add(new NetworkProperty(singleProperty, propertyType));
+                properties.add(new PropertyContainer(singleProperty, propertyType));
             }
             typesProperties.put(type, properties);
         }

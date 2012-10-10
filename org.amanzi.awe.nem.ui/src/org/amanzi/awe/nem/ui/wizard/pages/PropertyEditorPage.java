@@ -13,15 +13,14 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.NetworkPropertiesManager;
-import org.amanzi.awe.nem.properties.manager.NetworkProperty;
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.NetworkPropertiesManager;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
-import org.amanzi.neo.models.network.INetworkModel;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -46,20 +45,10 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     private PropertyTableWidget propertyTablWidget;
 
-    private INetworkModel model;
-
-    /**
-     * @param pageName
-     */
-    public PropertyEditorPage(String type, INetworkModel model) {
-        this(type);
-        this.model = model;
-    }
-
     public PropertyEditorPage(String type) {
         super(type);
-        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + type);
         this.type = type;
+        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + type);
     }
 
     @Override
@@ -68,8 +57,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         mainComposite.setLayout(ONE_COLUMN_LAYOU);
         mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Iterable<NetworkProperty> properties = getTypedProperties();
-        propertyTablWidget = new PropertyTableWidget(mainComposite, this, type, properties);
+        propertyTablWidget = new PropertyTableWidget(mainComposite, this, type, getTypedProperties());
         propertyTablWidget.initializeWidget();
         setControl(mainComposite);
 
@@ -78,13 +66,13 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
     /**
      * @return
      */
-    private Iterable<NetworkProperty> getTypedProperties() {
-        if (model == null) {
-            return NetworkPropertiesManager.getInstance().getProperties(type);
-        } else {
-            // TODO KV: implement getting properties from model;
-            return null;
-        }
+    protected List<PropertyContainer> getTypedProperties() {
+        return new ArrayList<PropertyContainer>() {
+            private static final long serialVersionUID = 2311734283765321434L;
+            {
+                addAll(NetworkPropertiesManager.getInstance().getProperties(type));
+            }
+        };
     }
 
     public List<PropertyContainer> getProperties() {

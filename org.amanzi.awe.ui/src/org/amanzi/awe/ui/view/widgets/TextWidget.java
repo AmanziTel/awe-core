@@ -16,7 +16,9 @@ package org.amanzi.awe.ui.view.widgets;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractLabeledWidget;
-import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
@@ -28,29 +30,49 @@ import org.eclipse.swt.widgets.Text;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class TextWidget extends AbstractLabeledWidget<Text, ITextChandedListener> {
+public class TextWidget extends AbstractLabeledWidget<Text, ITextChandedListener> implements ModifyListener {
 
     public interface ITextChandedListener extends AbstractAWEWidget.IAWEWidgetListener {
 
+        void onTextChanged(String text);
+
     }
+
+    private Text text;
+    private int controlStyle;
 
     /**
      * @param parent
      * @param listener
      * @param label
      */
-    protected TextWidget(final Composite parent, final ITextChandedListener listener, final String label) {
+    protected TextWidget(final Composite parent, int controlStyle, final ITextChandedListener listener, final String label) {
         super(parent, listener, label);
+        this.controlStyle = controlStyle;
     }
 
     @Override
     protected Text createControl(final Composite parent) {
-        final Text text = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
-
+        parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text = new Text(parent, controlStyle);
+        text.addModifyListener(this);
         return text;
+    }
+
+    @Override
+    protected GridData getElementLayoutData() {
+        return new GridData(GridData.FILL_HORIZONTAL);
     }
 
     public void setText(final String text) {
         getControl().setText(text);
+    }
+
+    @Override
+    public void modifyText(ModifyEvent e) {
+        for (ITextChandedListener listener : getListeners()) {
+            listener.onTextChanged(text.getText());
+        }
+
     }
 }

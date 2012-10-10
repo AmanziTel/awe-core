@@ -16,6 +16,7 @@ package org.amanzi.awe.nem.ui.wizard;
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.awe.nem.ui.wizard.pages.PropertyCreatorPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -32,9 +33,12 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
 
     private INetworkModel model;
 
-    public PropertyCreationWizard(INetworkModel model) {
+    private String type;
+
+    public PropertyCreationWizard(INetworkModel model, String type) {
         assert model != null;
 
+        this.type = type;
         this.model = model;
 
         List<String> structure = Arrays.asList(model.getNetworkStructure());
@@ -47,6 +51,11 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
     @Override
     protected void handleFirstPageOnFinish(IWizardPage page) {
         handlePropertyPage((PropertyEditorPage)page);
+    }
+
+    @Override
+    public void addPages() {
+        addPage(new PropertyCreatorPage(type, model));
     }
 
     // TODO KV: not implemented yet
