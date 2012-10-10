@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.awe.showProperties"
+            name="Show Properties">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:org.amanzi.ui.menu.showIn">
+         <command
+               commandId="org.amanzi.awe.showProperties"
+               label="Show Properties"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.awe.views.properties.handler.ShowPropertiesHandler"
+            commandId="org.amanzi.awe.showProperties">
+         <activeWhen>
+            <with
+                  variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                        value="org.amanzi.awe.ui.dto.IUIItem">
+                  </instanceof>
+               </iterate>
+            </with>
+         </activeWhen>
+      </handler>
+   </extension>
+
+</plugin>

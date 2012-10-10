@@ -6,24 +6,20 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="true"
-            locationURI="popup:org.eclipse.ui.popup.any">
-         <menu
-               id="org.amanzi.awe.drilldown.menu"
-               label="Show in ...">
-            <command
-                  commandId="org.amanzi.awe.render.showonmap"
-                  label="Show on Map"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="false">
-                     <iterate>
-                     	<instanceof
-                        	   value="org.amanzi.awe.views.treeview.provider.ITreeItem">
-                     	</instanceof>
-                     </iterate>
-               </visibleWhen>
-            </command>
-         </menu>
+            locationURI="popup:org.amanzi.ui.menu.showIn">
+         <command
+               commandId="org.amanzi.awe.render.showonmap"
+               label="Show on Map"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <iterate>
+                  <instanceof
+                        value="org.amanzi.awe.views.treeview.provider.ITreeItem">
+                  </instanceof>
+               </iterate>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension

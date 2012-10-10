@@ -53,6 +53,7 @@ public class DataElementPropertySource implements IPropertySource {
     public IPropertyDescriptor[] getPropertyDescriptors() {
         final List<IPropertyDescriptor> propertyDescriptors = new ArrayList<IPropertyDescriptor>();
 
+        propertyDescriptors.add(new DataElementPropertyDescriptor(DataElementPropertyDescriptor.ID_PROPERTY));
         for (final String propertyName : dataElement.keySet()) {
             propertyDescriptors.add(new DataElementPropertyDescriptor(propertyName));
         }
@@ -62,6 +63,9 @@ public class DataElementPropertySource implements IPropertySource {
 
     @Override
     public Object getPropertyValue(final Object id) {
+        if (id.equals(DataElementPropertyDescriptor.ID_PROPERTY)) {
+            return dataElement.getId();
+        }
         return dataElement.get(id.toString());
     }
 
