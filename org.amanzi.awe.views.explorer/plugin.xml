@@ -26,4 +26,11 @@
       </perspectiveExtension>
    </extension>
    
+   <extension
+   		point="org.amanzi.tree.rootexpanders">
+   		<root-expander
+   			class="org.amanzi.awe.views.explorer.expanders.ProjectRootExpander">
+   		</root-expander>
+   </extension>
+   
 </plugin>

@@ -9,3 +9,4 @@ Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
 Export-Package: org.amanzi.awe.ui.tree.expanders,
  org.amanzi.awe.ui.tree.expanders.impl,
  org.amanzi.awe.ui.tree.views
+Bundle-ActivationPolicy: lazy
