@@ -17,8 +17,8 @@ import java.util.Iterator;
 
 import org.amanzi.awe.ui.tree.expanders.impl.AbstractModelExpander;
 import org.amanzi.awe.views.explorer.ProjectExplorerPlugin;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.INetworkModelProvider;
 
@@ -30,7 +30,7 @@ import org.amanzi.neo.providers.INetworkModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProjectNetworkExpander extends AbstractModelExpander<IProjectModel, IProjectModel, INetworkModel> {
+public class ProjectNetworkExpander extends AbstractModelExpander<IModel, IProjectModel> {
 
     private final INetworkModelProvider networkModelProvider;
 
@@ -39,13 +39,13 @@ public class ProjectNetworkExpander extends AbstractModelExpander<IProjectModel,
     }
 
     @Override
-    protected IProjectModel getParent(final IProjectModel child) {
+    protected <T extends IModel> T getParent(final IModel child) {
         return null;
     }
 
     @Override
-    protected Class<IProjectModel> getSupportedParentClass() {
-        return IProjectModel.class;
+    protected Class<IModel> getSupportedParentClass() {
+        return null;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ProjectNetworkExpander extends AbstractModelExpander<IProjectModel,
     }
 
     @Override
-    protected Iterator<INetworkModel> getChildren(final IProjectModel model, final IProjectModel child) {
+    protected Iterator< ? > getChildren(final IModel model, final IProjectModel child) {
         try {
             return networkModelProvider.findAll(child).iterator();
         } catch (final ModelException e) {
@@ -62,4 +62,5 @@ public class ProjectNetworkExpander extends AbstractModelExpander<IProjectModel,
         }
         return null;
     }
+
 }

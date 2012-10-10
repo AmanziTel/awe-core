@@ -29,15 +29,13 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractModelExpander<M extends IModel, C extends IModel, NC extends IModel>
-        extends
-            AbstractChildrenExpander<M, C, C, NC> {
+public abstract class AbstractModelExpander<M extends IModel, C extends IModel> extends AbstractChildrenExpander<M, C> {
 
     @Override
-    public Collection<IUIItem<C, NC>> getChildren(final IUIItem<M, C> parent) {
-        final List<IUIItem<C, NC>> result = new ArrayList<IUIItem<C, NC>>();
+    public Collection<IUIItem< ? , ? >> getChildren(final IUIItem<M, C> parent) {
+        final List<IUIItem< ? , ? >> result = new ArrayList<IUIItem< ? , ? >>();
 
-        final Iterator<NC> children = getChildren(parent.getParent(), parent.getChild());
+        final Iterator< ? > children = getChildren(parent.getParent(), parent.getChild());
         if (children != null) {
             while (children.hasNext()) {
                 result.add(createItem(parent.getChild(), children.next()));
@@ -48,10 +46,10 @@ public abstract class AbstractModelExpander<M extends IModel, C extends IModel, 
     }
 
     @Override
-    public IUIItem<M, C> getParent(final IUIItem<C, NC> child) {
+    public IUIItem< ? , ? > getParent(final IUIItem<M, C> child) {
         return createItem(getParent(child.getParent()), child.getParent());
     }
 
-    protected abstract M getParent(C child);
+    protected abstract <T extends IModel> T getParent(M child);
 
 }

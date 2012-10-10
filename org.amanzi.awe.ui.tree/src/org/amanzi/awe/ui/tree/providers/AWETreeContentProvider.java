@@ -36,16 +36,15 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
 public class AWETreeContentProvider implements ITreeContentProvider {
 
     @SuppressWarnings("unused")
     private class CacheKey {
-        private final Class parentClass;
+        private final Class< ? > parentClass;
 
-        private final Class childClass;
+        private final Class< ? > childClass;
 
-        public CacheKey(final Class parentClass, final Class childClass) {
+        public CacheKey(final Class< ? > parentClass, final Class< ? > childClass) {
             this.parentClass = parentClass;
             this.childClass = childClass;
         }
@@ -61,9 +60,9 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         }
     }
 
-    private final Map<CacheKey, List<IChildrenExpander>> childrenExpanderCache = new HashMap<CacheKey, List<IChildrenExpander>>();
+    private final Map<CacheKey, List<IChildrenExpander< ? , ? >>> childrenExpanderCache = new HashMap<CacheKey, List<IChildrenExpander< ? , ? >>>();
 
-    private final List<IRootExpander> rootExpanders;
+    private final List<IRootExpander< ? >> rootExpanders;
 
     private final ExpandersProvider expandersProvider;
 
@@ -89,7 +88,7 @@ public class AWETreeContentProvider implements ITreeContentProvider {
     public Object[] getElements(final Object inputElement) {
         final List<Object> result = new ArrayList<Object>();
 
-        for (final IRootExpander rootExpander : rootExpanders) {
+        for (final IRootExpander< ? > rootExpander : rootExpanders) {
             result.addAll(rootExpander.getRootItems());
         }
 
@@ -98,23 +97,57 @@ public class AWETreeContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getChildren(final Object parentElement) {
-        // TODO Auto-generated method stub
+        if (parentElement instanceof IUIItem) {
+            return getChildrenInternal((IUIItem< ? , ? >)parentElement);
+        }
         return null;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Object[] getChildrenInternal(final IUIItem< ? , ? > uiItem) {
+        final List<Object> result = new ArrayList<Object>();
+
+        for (final IChildrenExpander expander : getChildrenExpanders(uiItem.getParent().getClass(), uiItem.getChild().getClass())) {
+            result.addAll(expander.getChildren(uiItem));
+        }
+
+        return result.toArray(new Object[result.size()]);
     }
 
     @Override
     public Object getParent(final Object element) {
-        // TODO Auto-generated method stub
+        if (element instanceof IUIItem) {
+            return getParentInternal((IUIItem< ? , ? >)element);
+        }
+
         return null;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Object getParentInternal(final IUIItem< ? , ? > uiItem) {
+        Object parent = null;
+        for (final IChildrenExpander expander : getChildrenExpanders(uiItem.getParent().getClass(), uiItem.getChild().getClass())) {
+            parent = expander.getParent(uiItem);
+
+            if (parent != null) {
+                break;
+            }
+        }
+
+        return parent;
     }
 
     @Override
     public boolean hasChildren(final Object element) {
+        if (element instanceof IUIItem) {
+            return hasChildrenInternal((IUIItem< ? , ? >)element);
+        }
 
         return false;
     }
 
-    private boolean hasChildrenInternal(final IUIItem uiItem) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private boolean hasChildrenInternal(final IUIItem< ? , ? > uiItem) {
         for (final IChildrenExpander expander : getChildrenExpanders(uiItem.getParent().getClass(), uiItem.getChild().getClass())) {
             if (expander.hasChildren(uiItem)) {
                 return true;
@@ -124,13 +157,16 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    private List<IChildrenExpander> getChildrenExpanders(final Class parent, final Class child) {
-        final CacheKey key = new CacheKey(parent, child);
+    private List<IChildrenExpander< ? , ? >> getChildrenExpanders(final Object parent, final Object child) {
+        final Class< ? > parentClass = parent == null ? null : parent.getClass();
+        final Class< ? > childClass = child == null ? null : child.getClass();
 
-        List<IChildrenExpander> result = childrenExpanderCache.get(key);
+        final CacheKey key = new CacheKey(parentClass, childClass);
+
+        List<IChildrenExpander< ? , ? >> result = childrenExpanderCache.get(key);
 
         if (result == null) {
-            result = ExpandersProvider.getProvider().getChildrenExpander(parent, child);
+            result = ExpandersProvider.getProvider().getChildrenExpander(parentClass, childClass);
 
             childrenExpanderCache.put(key, result);
         }

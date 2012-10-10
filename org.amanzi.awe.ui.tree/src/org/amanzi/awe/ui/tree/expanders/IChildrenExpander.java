@@ -26,11 +26,11 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IChildrenExpander<P extends IModel, C extends Object, NP extends IModel, NC extends Object> {
+public interface IChildrenExpander<P extends IModel, C extends Object> {
 
-    Collection<IUIItem<NP, NC>> getChildren(IUIItem<P, C> parent);
+    Collection<IUIItem< ? , ? >> getChildren(IUIItem<P, C> parent);
 
-    IUIItem<P, C> getParent(IUIItem<NP, NC> child);
+    IUIItem< ? , ? > getParent(IUIItem<P, C> child);
 
     boolean hasChildren(IUIItem<P, C> parent);
 

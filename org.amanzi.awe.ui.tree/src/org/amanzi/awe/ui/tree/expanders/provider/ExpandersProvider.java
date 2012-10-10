@@ -27,7 +27,6 @@ import org.amanzi.awe.ui.tree.views.IAWETreeView;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-@SuppressWarnings("rawtypes")
 public final class ExpandersProvider {
 
     private static final class ExpandersProviderHolder {
@@ -42,11 +41,12 @@ public final class ExpandersProvider {
         return ExpandersProviderHolder.instance;
     }
 
-    public synchronized List<IRootExpander> getRootExpanders(final IAWETreeView treeView) {
+    public synchronized List<IRootExpander< ? >> getRootExpanders(final IAWETreeView treeView) {
         return null;
     }
 
-    public synchronized List<IChildrenExpander> getChildrenExpander(final Class parentClass, final Class childClass) {
+    public synchronized List<IChildrenExpander< ? , ? >> getChildrenExpander(final Class< ? > parentClass,
+            final Class< ? > childClass) {
         return null;
     }
 

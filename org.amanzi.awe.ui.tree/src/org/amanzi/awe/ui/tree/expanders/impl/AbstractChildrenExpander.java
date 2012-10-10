@@ -29,9 +29,7 @@ import org.apache.commons.lang3.ObjectUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractChildrenExpander<P extends IModel, C extends Object, NP extends IModel, NC extends Object>
-        implements
-            IChildrenExpander<P, C, NP, NC> {
+public abstract class AbstractChildrenExpander<P extends IModel, C extends Object> implements IChildrenExpander<P, C> {
 
     @Override
     public boolean hasChildren(final IUIItem<P, C> parent) {
@@ -48,7 +46,7 @@ public abstract class AbstractChildrenExpander<P extends IModel, C extends Objec
 
     protected abstract Class<C> getSupportedChildClass();
 
-    protected abstract Iterator<NC> getChildren(P model, C child);
+    protected abstract Iterator< ? > getChildren(P model, C child);
 
     protected <T1 extends IModel, T2 extends Object> TreeItem<T1, T2> createItem(final T1 parent, final T2 child) {
         return new TreeItem<T1, T2>(parent, child);

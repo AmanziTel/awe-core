@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 import org.amanzi.awe.ui.tree.expanders.impl.AbstractModelExpander;
 import org.amanzi.awe.views.explorer.ProjectExplorerPlugin;
-import org.amanzi.neo.models.drive.IDriveModel;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IDriveModelProvider;
@@ -30,22 +30,22 @@ import org.amanzi.neo.providers.IDriveModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveNetworkExpander extends AbstractModelExpander<IProjectModel, IProjectModel, IDriveModel> {
+public class ProjectDriveExpander extends AbstractModelExpander<IModel, IProjectModel> {
 
     private final IDriveModelProvider driveModelProvider;
 
-    public DriveNetworkExpander() {
+    public ProjectDriveExpander() {
         driveModelProvider = ProjectExplorerPlugin.getDefault().getDriveModelProvider();
     }
 
     @Override
-    protected IProjectModel getParent(final IProjectModel child) {
+    protected <T extends IModel> T getParent(final IModel child) {
         return null;
     }
 
     @Override
-    protected Class<IProjectModel> getSupportedParentClass() {
-        return IProjectModel.class;
+    protected Class<IModel> getSupportedParentClass() {
+        return null;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class DriveNetworkExpander extends AbstractModelExpander<IProjectModel, I
     }
 
     @Override
-    protected Iterator<IDriveModel> getChildren(final IProjectModel model, final IProjectModel child) {
+    protected Iterator< ? > getChildren(final IModel model, final IProjectModel child) {
         try {
             return driveModelProvider.findAll(child).iterator();
         } catch (final ModelException e) {
@@ -62,4 +62,5 @@ public class DriveNetworkExpander extends AbstractModelExpander<IProjectModel, I
         }
         return null;
     }
+
 }
