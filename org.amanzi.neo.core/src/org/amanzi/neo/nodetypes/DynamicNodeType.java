@@ -11,9 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.types;
-
-import org.amanzi.neo.nodetypes.INodeType;
+package org.amanzi.neo.nodetypes;
 
 /**
  * <p>

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
+import org.amanzi.awe.nem.NetworkElementManager;
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -42,6 +43,13 @@ public class NetworkCreationWizard extends Wizard {
 
     @Override
     public boolean performFinish() {
+        if (getPages().length == 1) {
+            if (getPages()[0] instanceof InitialNetworkPage) {
+                initContainer((InitialNetworkPage)getPages()[0]);
+            }
+        }
+        NetworkElementManager.getInstance().updateNodeTypes(
+                container.getStructure().toArray(new String[container.getStructure().size()]));
         if (model == null) {
             createModelFromContainer();
         } else {
