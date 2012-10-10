@@ -1,6 +1,8 @@
 package org.amanzi.awe.nem.ui.testers;
 
+import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -24,21 +26,15 @@ public class NemTester extends PropertyTester {
         } else {
             return false;
         }
-        if (property.equals("isDeletable")) {
-            return chechDeletable(item);
-        }
-        return false;
-    }
 
-    /**
-     * @param item
-     */
-    @SuppressWarnings("rawtypes")
-    private boolean chechDeletable(ITreeItem item) {
-        if (item.getChild() instanceof INetworkModel || item.getParent() instanceof INetworkModel) {
-            return true;
+        INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
+        IDataElement elment = MenuUtils.getInstance().getElementFromTreeItem(item);
+        MenuProperties creatable = MenuProperties.findByName(property);
+        if (creatable != null && model != null) {
+            return creatable.check(model, elment);
         }
 
         return false;
     }
+
 }

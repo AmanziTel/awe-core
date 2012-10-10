@@ -29,7 +29,9 @@ import org.eclipse.jface.wizard.Wizard;
  * @since 1.0.0
  */
 public class NetworkCreationWizard extends Wizard {
+    
     private NetworkDataContainer container;
+    
     private INetworkModel model;
 
     public NetworkCreationWizard(INetworkModel model) {

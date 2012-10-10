@@ -19,6 +19,33 @@
                   </iterate>
                </visibleWhen>
             </command>
+            <menu
+                  id="org.amanzi.awe.nem.createnew"
+                  label="Create new element">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeMenuSelection">
+                     <test
+                           property="org.amanzi.awe.nem.ui.isAddetable">
+                     </test>
+                  </with>
+               </visibleWhen>
+               <dynamic
+                     class="org.amanzi.awe.nem.ui.contributions.CreateNetworkElementContribution"
+                     id="org.amanzi.awe.nem.ui.contributions.creationContribution">
+               </dynamic>
+            </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.amanzi.awe.views.network.views.NetworkTreeView">
+         <command
+               commandId="org.amanzi.awe.nem.ui.createNetwork"
+               icon="icons/network.png"
+               style="push"
+               tooltip="Create new Network">
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -26,6 +53,30 @@
       <command
             id="org.amanzi.awe.nem.ui.delete"
             name="Delete">
+      </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createItem"
+            name="CITY">
+      </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createItem"
+            name="MSC">
+      </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createItem"
+            name="SITE">
+      </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createItem"
+            name="SECTOR">
+      </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createItem"
+            name="BSC">
+      </command>
+      <command
+            id="org.amanzi.awe.nem.ui.createNetwork"
+            name="Create new Network">
       </command>
    </extension>
    <extension
@@ -43,6 +94,10 @@
             </with>
          </activeWhen>
       </handler>
+      <handler
+            class="org.amanzi.awe.nem.ui.handlers.CreateNewNetwork"
+            commandId="org.amanzi.awe.nem.ui.createNetwork">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
@@ -50,7 +105,7 @@
             class="org.amanzi.awe.nem.ui.testers.NemTester"
             id="org.amanzi.awe.nem.ui.deletabletester"
             namespace="org.amanzi.awe.nem.ui"
-            properties="isDeletable"
+            properties="isDeletable,isAddetable"
             type="org.eclipse.jface.viewers.IStructuredSelection">
       </propertyTester>
    </extension>
