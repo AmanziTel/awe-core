@@ -11,9 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.ui.properties.table;
+package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.neo.models.network.INetworkModel;
 
 /**
  * TODO Purpose of
@@ -23,20 +28,20 @@ import org.amanzi.awe.nem.ui.messages.NemMessages;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public enum PropertyColumns {
-
-    NAME(NemMessages.COLUMN_NAME_LABEL), TYPE(NemMessages.COLUMN_TYPE_LABEL), DEFAULT_VALUE(NemMessages.COLUMN_DEFAULT_VALUE_LABEL);
-
-    private String name;
+public class PropertyCreatorPage extends PropertyEditorPage {
+    private INetworkModel model;
 
     /**
-     * 
+     * @param pageName
      */
-    private PropertyColumns(String name) {
-        this.name = name;
+    public PropertyCreatorPage(String type, INetworkModel model) {
+        super(type);
+        this.model = model;
+        setTitle(NemMessages.PROPERTY_CREATOR_PAGE_TITLE + type);
     }
 
-    public String getName() {
-        return this.name;
+    @Override
+    protected List<PropertyContainer> getTypedProperties() {
+        return new ArrayList<PropertyContainer>();
     }
 }

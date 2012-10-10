@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
-import org.amanzi.awe.nem.NetworkElementManager;
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
+import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -34,6 +34,11 @@ public class NetworkCreationWizard extends Wizard {
 
     public NetworkCreationWizard() {
         setForcePreviousAndNextButtons(true);
+    }
+
+    @Override
+    public void addPages() {
+        addPage(new InitialNetworkPage());
     }
 
     @Override

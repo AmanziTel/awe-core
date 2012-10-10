@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.wizard.pages;
 
 import java.util.List;
 
-import org.amanzi.awe.nem.NetworkStructureManager;
+import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
@@ -76,7 +76,7 @@ public class InitialNetworkPage extends WizardPage
 
         NetworkNameWidget networkNameWidget = new NetworkNameWidget(networkAndCrsComposite, this);
         networkNameWidget.initializeWidget();
-        
+
         CRSSelectionWidget crsSelectionWidget = new CRSSelectionWidget(networkAndCrsComposite, SWT.NONE, this);
         crsSelectionWidget.initializeWidget();
 

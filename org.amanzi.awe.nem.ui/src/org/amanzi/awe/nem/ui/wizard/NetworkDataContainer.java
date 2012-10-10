@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 
 /**
  * TODO Purpose of

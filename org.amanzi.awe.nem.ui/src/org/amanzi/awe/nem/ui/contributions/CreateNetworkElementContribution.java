@@ -16,11 +16,10 @@ package org.amanzi.awe.nem.ui.contributions;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.amanzi.awe.nem.NetworkStructureManager;
+import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.nem.ui.wizard.NetworkCreationWizard;
 import org.amanzi.awe.nem.ui.wizard.PropertyCreationWizard;
-import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -88,8 +87,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @param newType
      */
     protected void openWizard(INetworkModel model, String newType) {
-        PropertyCreationWizard wizard = new PropertyCreationWizard(model);
-        wizard.addPage(new PropertyEditorPage(newType));
+        PropertyCreationWizard wizard = new PropertyCreationWizard(model, newType);
         Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();
         wizardDialog.open();

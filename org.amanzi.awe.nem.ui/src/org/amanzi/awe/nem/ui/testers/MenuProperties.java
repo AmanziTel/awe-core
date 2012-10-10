@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.testers;
 
 import java.util.Arrays;
 
-import org.amanzi.awe.nem.NetworkStructureManager;
+import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;

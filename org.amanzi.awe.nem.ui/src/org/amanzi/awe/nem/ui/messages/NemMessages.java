@@ -47,11 +47,15 @@ public class NemMessages extends NLS {
 
     public static String CANCEL;
 
-    public static String INCORRECT_SECTOR_LINKAGE;
-
     public static String PROPERTY_EDITOR_PAGE_TITLE;
 
-    public static String FILL_PROPERTIES_ROWS;
+    public static String PROPERTY_CREATOR_PAGE_TITLE;
+
+    public static String COLUMN_NAME_LABEL;
+
+    public static String COLUMN_TYPE_LABEL;
+
+    public static String COLUMN_DEFAULT_VALUE_LABEL;
 
     private NemMessages() {
     }

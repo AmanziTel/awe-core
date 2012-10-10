@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.properties.table;
 
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.editors.PropertyEditor;
 import org.amanzi.awe.nem.ui.properties.table.providers.PropertyLabelProvider;
 import org.amanzi.awe.nem.ui.properties.table.providers.TableContentProvider;

@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.properties.table.providers;
 
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.NetworkProperty;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -44,8 +44,8 @@ public class TableContentProvider implements IStructuredContentProvider {
     @SuppressWarnings("unchecked")
     @Override
     public Object[] getElements(Object inputElement) {
-        List<NetworkProperty> elements = (List<NetworkProperty>)inputElement;
-        return elements.toArray(new NetworkProperty[elements.size()]);
+        List<PropertyContainer> elements = (List<PropertyContainer>)inputElement;
+        return elements.toArray(new PropertyContainer[elements.size()]);
     }
 
 }

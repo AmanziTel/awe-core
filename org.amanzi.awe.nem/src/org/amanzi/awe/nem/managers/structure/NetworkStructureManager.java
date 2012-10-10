@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem;
+package org.amanzi.awe.nem.managers.structure;
 
 import java.util.ArrayList;
 import java.util.Collection;

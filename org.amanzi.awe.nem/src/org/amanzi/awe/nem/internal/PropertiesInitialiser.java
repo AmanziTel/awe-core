@@ -11,14 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties;
+package org.amanzi.awe.nem.internal;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.amanzi.awe.nem.internal.NemPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;

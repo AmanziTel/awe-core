@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem;
+package org.amanzi.awe.nem.managers.network;
 
 import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;

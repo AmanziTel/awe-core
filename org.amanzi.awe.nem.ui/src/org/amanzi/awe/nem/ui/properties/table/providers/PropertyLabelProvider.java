@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.nem.ui.properties.table.providers;
 
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.PropertyColumns;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 
