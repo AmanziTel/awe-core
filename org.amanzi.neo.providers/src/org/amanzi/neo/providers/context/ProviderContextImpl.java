@@ -26,7 +26,7 @@ import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.providers.internal.IModelProvider;
-import org.amanzi.neo.services.internal.IService;
+import org.amanzi.neo.services.IService;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;

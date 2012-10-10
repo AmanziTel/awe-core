@@ -335,6 +335,8 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
 
     @Override
     public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
+        // TODO: LN: 10.10.2012, validate input
+
         final Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
         final Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
 

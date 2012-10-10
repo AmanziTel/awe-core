@@ -16,8 +16,8 @@ package org.amanzi.awe.statistics.service;
 import java.util.Iterator;
 
 import org.amanzi.awe.statistics.model.DimensionType;
+import org.amanzi.neo.services.IService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
 
 /**

@@ -11,11 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
-
-import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.models.network.ISelectionModel;
-import org.amanzi.neo.providers.internal.INamedModelProvider;
+package org.amanzi.neo.services;
 
 /**
  * TODO Purpose of
@@ -25,6 +21,6 @@ import org.amanzi.neo.providers.internal.INamedModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ISelectionModelProvider extends INamedModelProvider<ISelectionModel, INetworkModel> {
+public interface IService {
 
 }

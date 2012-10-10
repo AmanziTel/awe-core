@@ -41,6 +41,8 @@ import org.neo4j.graphdb.index.IndexHits;
  */
 public class IndexModel extends AbstractModel implements IIndexModel {
 
+    private static final Logger LOGGER = Logger.getLogger(IndexModel.class);
+
     private interface IKey {
 
     }
@@ -61,7 +63,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         @Override
         public boolean equals(final Object o) {
             if (o instanceof MultiPropertyKey) {
-                MultiPropertyKey key = (MultiPropertyKey)o;
+                final MultiPropertyKey key = (MultiPropertyKey)o;
 
                 return Arrays.equals(properties, key.properties);
             }
@@ -69,8 +71,6 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             return false;
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(IndexModel.class);
 
     private final IIndexService indexService;
 
@@ -114,7 +114,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
         try {
             result = getNodeIndexHits(getRootNode(), nodeType, propertyName, value).getSingle();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on searching for a Node in Index", e);
         }
 
@@ -127,7 +127,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
     protected IndexHits<Node> getNodeIndexHits(final Node node, final INodeType nodeType, final String propertyName,
             final Object value) throws ServiceException {
-        Index<Node> index = indexService.getIndex(node, nodeType);
+        final Index<Node> index = indexService.getIndex(node, nodeType);
 
         return index.get(propertyName, value);
     }
@@ -141,7 +141,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
         try {
             indexService.addToIndex(getRootNode(), nodeType, node, propertyName, value);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on indexing Node", e);
         }
 
@@ -157,7 +157,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             LOGGER.debug(getStartLogStatement("indexMultiProperty", nodeType, node, properties));
         }
 
-        MultiPropertyIndex< ? > index = getMultiPropertyIndex(nodeType, clazz, properties);
+        final MultiPropertyIndex< ? > index = getMultiPropertyIndex(nodeType, clazz, properties);
         index.add(node);
 
         if (LOGGER.isDebugEnabled()) {
@@ -168,7 +168,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     @SuppressWarnings("unchecked")
     private <T extends Object> MultiPropertyIndex<T> getMultiPropertyIndex(final INodeType nodeType, final Class<T> clazz,
             final String... properties) throws ModelException {
-        IKey key = new MultiPropertyKey(properties);
+        final IKey key = new MultiPropertyKey(properties);
 
         MultiPropertyIndex<T> index = (MultiPropertyIndex<T>)indexMap.get(key);
 
@@ -176,7 +176,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             try {
                 index = indexService.createMultiPropertyIndex(nodeType, getRootNode(), clazz, properties);
                 indexMap.put(key, index);
-            } catch (ServiceException e) {
+            } catch (final ServiceException e) {
                 processException("Error on initializing MultiPropertyIndex", e);
             }
         }
@@ -194,7 +194,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
 
         try {
             result = getNodeIndexHits(getRootNode(), nodeType, propertyName, value).iterator();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on searching for a Node in Index", e);
         }
 
@@ -212,9 +212,9 @@ public class IndexModel extends AbstractModel implements IIndexModel {
             LOGGER.debug(getStartLogStatement("getNodes", nodeType, min, max));
         }
 
-        MultiPropertyIndex<T> index = getMultiPropertyIndex(nodeType, clazz, properties);
+        final MultiPropertyIndex<T> index = getMultiPropertyIndex(nodeType, clazz, properties);
 
-        Iterator<Node> result = index.find(min, max).iterator();
+        final Iterator<Node> result = index.find(min, max).iterator();
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getNodes"));
@@ -228,7 +228,7 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Flushing indexes");
         }
-        for (MultiPropertyIndex< ? > index : indexMap.values()) {
+        for (final MultiPropertyIndex< ? > index : indexMap.values()) {
             index.finishUp();
         }
         super.flush();
@@ -248,10 +248,11 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         Iterator<Node> result = null;
 
         try {
-            Index<Node> index = indexService.getIndex(getRootNode(), type);
+            final Index<Node> index = indexService.getIndex(getRootNode(), type);
 
+            // TODO: LN: 10.10.2012, hard coded string
             result = index.query(getGeneralNodeProperties().getNodeNameProperty() + ":*").iterator();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on searching for a Node in Index", e);
         }
 

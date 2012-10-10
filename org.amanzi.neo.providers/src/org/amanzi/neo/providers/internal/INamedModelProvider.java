@@ -26,6 +26,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface INamedModelProvider<M extends IModel, P extends IModel> extends IModelProvider<M> {
 
     List<M> findAll(P parent) throws ModelException;

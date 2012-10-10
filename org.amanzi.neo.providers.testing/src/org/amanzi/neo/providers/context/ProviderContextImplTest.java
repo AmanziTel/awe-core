@@ -22,7 +22,7 @@ import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.internal.IModelProvider;
-import org.amanzi.neo.services.internal.IService;
+import org.amanzi.neo.services.IService;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.runtime.CoreException;

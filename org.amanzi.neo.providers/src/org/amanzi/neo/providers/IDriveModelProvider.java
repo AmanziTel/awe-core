@@ -27,6 +27,7 @@ import org.amanzi.neo.providers.internal.INamedModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+// TODO: LN: 10.10.2012, add comments
 public interface IDriveModelProvider extends INamedModelProvider<IDriveModel, IProjectModel> {
 
     IDriveModel create(final IProjectModel parent, final String name, final IDriveType driveType) throws ModelException;

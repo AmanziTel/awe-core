@@ -149,6 +149,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private final INetworkNodeProperties networkNodeProperties;
 
+    // TODO: LN: 10.10.2012 why this structure work with Strings instead of INodeType?
     private final List<String> structure = new ArrayList<String>() {
         /** long serialVersionUID field */
         private static final long serialVersionUID = 7149098047373556881L;
@@ -174,8 +175,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public void initialize(Node rootNode) throws ModelException {
+    public void initialize(final Node rootNode) throws ModelException {
         structure.clear();
+        // TODO: LN: 10.10.2012, incorrect! here should be used getNodeService().getNodeProperty()
+        // method
         structure.addAll(Arrays.asList(((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()))));
         super.initialize(rootNode);
     }
@@ -272,8 +275,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         DataElement result = null;
 
         try {
-            Node parentNode = ((DataElement)parent).getNode();
-            Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
+            final Node parentNode = ((DataElement)parent).getNode();
+            final Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
+                    properties);
 
             updateNetworkStructure(parent, elementType);
 
@@ -298,18 +302,19 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      * @param elementType
      * @throws ServiceException
      */
-    private void updateNetworkStructure(IDataElement parent, INetworkElementType elementType) throws ServiceException {
+    private void updateNetworkStructure(final IDataElement parent, final INetworkElementType elementType) throws ServiceException {
         String parentType;
         try {
+            // TODO: LN: 10.10.2012, why IDataElement.getNodeType() was not used?
             parentType = getNodeService().getNodeType(((DataElement)parent).getNode()).getId();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             throw e;
-        } catch (NodeTypeNotExistsException e) {
+        } catch (final NodeTypeNotExistsException e) {
             LOGGER.error("can't get parent node type", e);
             return;
 
         }
-        String currentType = elementType.getId();
+        final String currentType = elementType.getId();
         if (!structure.contains(currentType)) {
             structure.add(currentType);
             return;
@@ -317,8 +322,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             return;
         }
 
-        int parentIndex = structure.indexOf(parentType);
-        int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        final int parentIndex = structure.indexOf(parentType);
+        final int lastIndex = structure.indexOf(NetworkElementType.SITE);
         if (parentIndex < lastIndex) {
             structure.add(parentIndex, currentType);
         }
@@ -499,7 +504,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
                     structure.toArray(new String[structure.size()]));
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't set structure properties", e);
         }
         super.finishUp();

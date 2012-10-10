@@ -16,7 +16,6 @@ package org.amanzi.neo.services;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
-import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 
@@ -28,6 +27,8 @@ import org.neo4j.graphdb.index.Index;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+
+// TODO: LN: 10.10.2012, add comments
 public interface IIndexService extends IService {
 
     Index<Node> getIndex(Node rootNode, INodeType nodeType) throws ServiceException;
