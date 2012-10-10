@@ -83,10 +83,10 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
     @SuppressWarnings("unchecked")
     @Override
     public Object[] getChildren(final Object parentElement) {
-        ITreeItem<T, E> item = (ITreeItem<T, E>)parentElement;
+        final ITreeItem<T, E> item = (ITreeItem<T, E>)parentElement;
         try {
             getChildren(item);
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             LOGGER.error("can't get child for parentElement " + parentElement, e);
             return null;
         }
@@ -97,9 +97,9 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
     @Override
     public boolean hasChildren(final Object element) {
         try {
-            ITreeItem<T, E> item = (ITreeItem<T, E>)element;
+            final ITreeItem<T, E> item = (ITreeItem<T, E>)element;
             return checkNext(item);
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             LOGGER.error("exception when trying to get child", e);
         }
         return false;
@@ -119,9 +119,9 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
      * @return
      */
     protected Object[] processReturment(final T model) {
-        List<ITreeItem<T, E>> dataElements = new ArrayList<ITreeItem<T, E>>();
-        for (E dataElement : children) {
-            ITreeItem<T, E> item = createItem(model, dataElement);
+        final List<ITreeItem<T, E>> dataElements = new ArrayList<ITreeItem<T, E>>();
+        for (final E dataElement : children) {
+            final ITreeItem<T, E> item = createItem(model, dataElement);
             dataElements.add(item);
         }
         Collections.sort(dataElements, getDataElementComparer());
@@ -143,11 +143,11 @@ public abstract class AbstractContentProvider<T extends IModel, E extends Object
         try {
             if (getActiveProjectModel() != null) {
                 roots = getRootElements();
-                for (T root : roots) {
+                for (final T root : roots) {
                     rootList.add(createRootItem(root));
                 }
             }
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             LOGGER.error("can't get roots", e);
         }
 
