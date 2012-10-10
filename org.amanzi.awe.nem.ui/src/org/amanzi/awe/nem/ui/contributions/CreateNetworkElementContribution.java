@@ -65,14 +65,14 @@ public class CreateNetworkElementContribution extends ContributionItem {
         IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
         INodeType type = MenuUtils.getInstance().getType(model, element);
 
-        Collection<String> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
+        Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
                 Arrays.asList(model.getNetworkStructure()));
 
         log("Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
 
-        for (final String newType : types) {
+        for (final INodeType newType : types) {
             MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
-            menuItem.setText(newType);
+            menuItem.setText(newType.getId());
             menuItem.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
                     openWizard(model, newType);
@@ -86,7 +86,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @param model
      * @param newType
      */
-    protected void openWizard(INetworkModel model, String newType) {
+    protected void openWizard(INetworkModel model, INodeType newType) {
         PropertyCreationWizard wizard = new PropertyCreationWizard(model, newType);
         Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();

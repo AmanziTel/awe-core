@@ -21,6 +21,7 @@ import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -41,14 +42,14 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     private Composite mainComposite;
 
-    private String type;
+    private INodeType type;
 
     private PropertyTableWidget propertyTablWidget;
 
-    public PropertyEditorPage(String type) {
-        super(type);
+    public PropertyEditorPage(INodeType type) {
+        super(type.getId());
         this.type = type;
-        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + type);
+        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + " " + type.getId());
     }
 
     @Override
@@ -57,7 +58,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         mainComposite.setLayout(ONE_COLUMN_LAYOU);
         mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        propertyTablWidget = new PropertyTableWidget(mainComposite, this, type, getTypedProperties());
+        propertyTablWidget = new PropertyTableWidget(mainComposite, this, getTypedProperties());
         propertyTablWidget.initializeWidget();
         setControl(mainComposite);
 
@@ -70,7 +71,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         return new ArrayList<PropertyContainer>() {
             private static final long serialVersionUID = 2311734283765321434L;
             {
-                addAll(NetworkPropertiesManager.getInstance().getProperties(type));
+                addAll(NetworkPropertiesManager.getInstance().getProperties(type.getId()));
             }
         };
     }
@@ -83,5 +84,9 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
     public void updateStatus(String message) {
         this.setErrorMessage(message);
         setPageComplete(StringUtils.isEmpty(message));
+    }
+
+    public INodeType getType() {
+        return type;
     }
 }

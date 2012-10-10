@@ -63,7 +63,7 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
      * @param style
      * @param listener
      */
-    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, String type, List<PropertyContainer> properties) {
+    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, List<PropertyContainer> properties) {
         super(parent, SWT.NONE, listener);
         this.propertyContainer = properties;
     }

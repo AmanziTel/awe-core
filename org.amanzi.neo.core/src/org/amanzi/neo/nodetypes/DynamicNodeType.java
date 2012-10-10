@@ -33,4 +33,8 @@ public class DynamicNodeType implements INodeType {
         return type;
     }
 
+    @Override
+    public String toString() {
+        return getId();
+    }
 }

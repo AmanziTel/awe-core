@@ -23,6 +23,7 @@ import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -79,8 +80,8 @@ public class NetworkElementManager {
         }
     }
 
-    public void updateNodeTypes(String[] types) {
-        NodeTypeManager.getInstance().addDynamicNodeTypes(types);
+    public List<INodeType> updateNodeTypes(String[] types) {
+        return NodeTypeManager.getInstance().addDynamicNodeTypes(types);
     }
 
     /**
@@ -89,7 +90,7 @@ public class NetworkElementManager {
      * @param typeProperties
      * @throws NemManagerOperationException
      */
-    public void createModel(String name, List<String> structure, Map<String, List<PropertyContainer>> typeProperties)
+    public void createModel(String name, List<INodeType> structure, Map<String, List<PropertyContainer>> typeProperties)
             throws NemManagerOperationException {
         try {
             networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);

@@ -13,12 +13,10 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyCreatorPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.jface.wizard.IWizardPage;
 
 /**
@@ -33,18 +31,15 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
 
     private INetworkModel model;
 
-    private String type;
+    private INodeType type;
 
-    public PropertyCreationWizard(INetworkModel model, String type) {
+    public PropertyCreationWizard(INetworkModel model, INodeType type) {
         assert model != null;
 
         this.type = type;
         this.model = model;
 
-        List<String> structure = Arrays.asList(model.getNetworkStructure());
         getDataContainer().setName(model.getName());
-        getDataContainer().setStructure(structure);
-
         setForcePreviousAndNextButtons(false);
     }
 

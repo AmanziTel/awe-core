@@ -13,12 +13,12 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of
@@ -34,14 +34,14 @@ public class PropertyCreatorPage extends PropertyEditorPage {
     /**
      * @param pageName
      */
-    public PropertyCreatorPage(String type, INetworkModel model) {
+    public PropertyCreatorPage(INodeType type, INetworkModel model) {
         super(type);
         this.model = model;
-        setTitle(NemMessages.PROPERTY_CREATOR_PAGE_TITLE + type);
+        setTitle(NemMessages.PROPERTY_CREATOR_PAGE_TITLE + " " + type.getId());
     }
 
     @Override
     protected List<PropertyContainer> getTypedProperties() {
-        return new ArrayList<PropertyContainer>();
+        return null;
     }
 }

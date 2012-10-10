@@ -13,10 +13,14 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
+import java.util.List;
+
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
+import org.amanzi.neo.nodetypes.DynamicNodeType;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -46,17 +50,16 @@ public class NetworkCreationWizard extends Wizard {
         if (getPages().length == 1) {
             handleFirstPageOnFinish(getPages()[0]);
         }
-        NetworkElementManager.getInstance().updateNodeTypes(
-                getDataContainer().getStructure().toArray(new String[getDataContainer().getStructure().size()]));
 
-        handleModelRefreshing();
+        List<INodeType> types = NetworkElementManager.getInstance().updateNodeTypes(
+                getDataContainer().getStructure().toArray(new String[getDataContainer().getStructure().size()]));;
+        handleModelRefreshing(types);
         return true;
     }
 
-    protected void handleModelRefreshing() {
+    protected void handleModelRefreshing(List<INodeType> types) {
         try {
-            NetworkElementManager.getInstance().createModel(container.getName(), container.getStructure(),
-                    container.getTypeProperties());
+            NetworkElementManager.getInstance().createModel(container.getName(), types, container.getTypeProperties());
         } catch (NemManagerOperationException e) {
             return;
         }
@@ -94,9 +97,9 @@ public class NetworkCreationWizard extends Wizard {
      */
     private void initializeNewPages(InitialNetworkPage page) {
         for (int i = 1; i < page.getNetworkStructure().size(); i++) {
-            IWizardPage newPage = new PropertyEditorPage(page.getNetworkStructure().get(i));
-            if (getPage(newPage.getName()) == null) {
-                addPage(new PropertyEditorPage(page.getNetworkStructure().get(i)));
+            INodeType type = new DynamicNodeType(page.getNetworkStructure().get(i));
+            if (getPage(type.getId()) == null) {
+                addPage(new PropertyEditorPage(type));
             }
         }
 

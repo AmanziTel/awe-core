@@ -81,7 +81,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
     }
 
     @Override
-    public INetworkModel createModel(IProjectModel parent, String name, List<String> structure) throws ModelException {
+    public INetworkModel createModel(IProjectModel parent, String name, List<INodeType> structure) throws ModelException {
         NetworkModel model;
         try {
             model = (NetworkModel)create(parent, name);
@@ -91,4 +91,5 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
         }
         return model;
     }
+
 }
