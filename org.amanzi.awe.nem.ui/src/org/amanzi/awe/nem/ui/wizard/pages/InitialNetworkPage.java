@@ -76,6 +76,7 @@ public class InitialNetworkPage extends WizardPage
 
         NetworkNameWidget networkNameWidget = new NetworkNameWidget(networkAndCrsComposite, this);
         networkNameWidget.initializeWidget();
+        
         CRSSelectionWidget crsSelectionWidget = new CRSSelectionWidget(networkAndCrsComposite, SWT.NONE, this);
         crsSelectionWidget.initializeWidget();
 

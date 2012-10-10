@@ -52,14 +52,15 @@ public class NetworkNameWidget extends AbstractLabeledWidget<Text, INetworkNameC
 
     @Override
     protected Text createControl(Composite parent) {
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
-        tNetworkNameField = new Text(parent, SWT.BORDER);
+        parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        tNetworkNameField = new Text(parent, SWT.BORDER | SWT.FILL);
         tNetworkNameField.addModifyListener(this);
         return tNetworkNameField;
     }
 
     protected GridData getElementLayoutData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, true);
+        return new GridData(GridData.FILL_HORIZONTAL);
     }
 
     @Override
