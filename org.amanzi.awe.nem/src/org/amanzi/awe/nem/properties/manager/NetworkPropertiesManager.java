@@ -52,8 +52,8 @@ public class NetworkPropertiesManager {
      *
      */
     private void initTypesMap() {
-        for (String type : KNOWN_TYPES) {
-            String knownProperties = PREFERENCE_STORE.getString(type);
+        for (KnownTypes type : KnownTypes.values()) {
+            String knownProperties = PREFERENCE_STORE.getString(type.getId());
             if (knownProperties == null) {
                 continue;
             }
@@ -68,9 +68,7 @@ public class NetworkPropertiesManager {
 
     private Map<String, List<NetworkProperty>> typesProperties = new HashMap<String, List<NetworkProperty>>();
 
-    private Map<String, List<String>> propertiesTypes = new HashMap<String, List<String>>();
-
-    private String[] KNOWN_TYPES = {"String", "Double", "Long", "Object", "Integer"};
+    private Map<KnownTypes, List<String>> propertiesTypes = new HashMap<KnownTypes, List<String>>();
 
     public Iterable<NetworkProperty> getProperties(String type) {
         List<NetworkProperty> properties = typesProperties.get(type);
@@ -78,7 +76,7 @@ public class NetworkPropertiesManager {
             properties = new ArrayList<NetworkProperty>();
             String[] exitedProperties = getPropertiesForType(type);
             for (String singleProperty : exitedProperties) {
-                String propertyType = getPropertyType(singleProperty);
+                KnownTypes propertyType = getPropertyType(singleProperty);
                 properties.add(new NetworkProperty(singleProperty, propertyType));
             }
             typesProperties.put(type, properties);
@@ -90,8 +88,8 @@ public class NetworkPropertiesManager {
      * @param singleProperty
      * @return
      */
-    private String getPropertyType(String singleProperty) {
-        for (Entry<String, List<String>> typesAssociation : propertiesTypes.entrySet()) {
+    private KnownTypes getPropertyType(String singleProperty) {
+        for (Entry<KnownTypes, List<String>> typesAssociation : propertiesTypes.entrySet()) {
             if (typesAssociation.getValue().contains(singleProperty)) {
                 return typesAssociation.getKey();
             }

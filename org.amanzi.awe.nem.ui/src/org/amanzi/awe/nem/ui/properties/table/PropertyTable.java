@@ -13,12 +13,8 @@
 
 package org.amanzi.awe.nem.ui.properties.table;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.NetworkPropertiesManager;
-import org.amanzi.awe.nem.properties.manager.NetworkProperty;
-import org.amanzi.awe.nem.ui.widgets.PropertyColumns;
 import org.amanzi.awe.nem.ui.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.editors.PropertyEditor;
 import org.amanzi.awe.nem.ui.properties.table.providers.PropertyLabelProvider;
@@ -40,18 +36,19 @@ import org.eclipse.swt.widgets.Composite;
 public class PropertyTable extends TableViewer {
 
     public interface IPropertyTableListener {
-
+        void onError(String message);
     }
 
     private static final int COLUMN_WIDTH = 100;
 
     private List<PropertyContainer> properties;
 
-    private String type;
+    private IPropertyTableListener listener;
 
-    public PropertyTable(Composite parent, int style, String type) {
+    public PropertyTable(Composite parent, int style, List<PropertyContainer> properties, IPropertyTableListener listener) {
         super(parent, style);
-        this.type = type;
+        this.properties = properties;
+        this.listener = listener;
     }
 
     public void initialize() {
@@ -81,15 +78,27 @@ public class PropertyTable extends TableViewer {
         column.setEditingSupport(new PropertyEditor(this, columnId));
     }
 
-    /**
-    *
-    */
-    private void fillTable() {
-        properties = new ArrayList<PropertyContainer>();
-        for (NetworkProperty property : NetworkPropertiesManager.getInstance().getProperties(type)) {
-            properties.add(new PropertyContainer(property));
-        }
-        this.setInput(properties);
+    @Override
+    public void update(Object element, String[] properties) {
+        PropertyContainer container = (PropertyContainer)element;
+        container.getType().parse(container.getDefaultValue());
+        listener.onError(container.getType().getErrorMessage());
+        super.update(element, properties);
+    }
 
+    @Override
+    public void add(Object element) {
+        properties.add((PropertyContainer)element);
+        super.add(element);
+    }
+
+    @Override
+    public void remove(Object element) {
+        properties.remove(element);
+        super.remove(element);
+    }
+
+    private void fillTable() {
+        this.setInput(properties);
     }
 }

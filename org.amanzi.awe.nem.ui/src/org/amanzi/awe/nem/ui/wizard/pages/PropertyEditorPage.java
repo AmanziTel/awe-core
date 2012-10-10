@@ -13,9 +13,16 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.List;
+
+import org.amanzi.awe.nem.properties.manager.NetworkPropertiesManager;
+import org.amanzi.awe.nem.properties.manager.NetworkProperty;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -39,11 +46,18 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     private PropertyTableWidget propertyTablWidget;
 
+    private INetworkModel model;
+
     /**
      * @param pageName
      */
+    public PropertyEditorPage(String type, INetworkModel model) {
+        this(type);
+        this.model = model;
+    }
+
     public PropertyEditorPage(String type) {
-        super(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + type);
+        super(type);
         setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + type);
         this.type = type;
     }
@@ -54,10 +68,32 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         mainComposite.setLayout(ONE_COLUMN_LAYOU);
         mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        propertyTablWidget = new PropertyTableWidget(mainComposite, this, type);
+        Iterable<NetworkProperty> properties = getTypedProperties();
+        propertyTablWidget = new PropertyTableWidget(mainComposite, this, type, properties);
         propertyTablWidget.initializeWidget();
-
         setControl(mainComposite);
 
+    }
+
+    /**
+     * @return
+     */
+    private Iterable<NetworkProperty> getTypedProperties() {
+        if (model == null) {
+            return NetworkPropertiesManager.getInstance().getProperties(type);
+        } else {
+            // TODO KV: implement getting properties from model;
+            return null;
+        }
+    }
+
+    public List<PropertyContainer> getProperties() {
+        return propertyTablWidget.getProperties();
+    }
+
+    @Override
+    public void updateStatus(String message) {
+        this.setErrorMessage(message);
+        setPageComplete(StringUtils.isEmpty(message));
     }
 }

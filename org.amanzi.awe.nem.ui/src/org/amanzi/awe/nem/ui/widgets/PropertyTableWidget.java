@@ -13,12 +13,19 @@
 
 package org.amanzi.awe.nem.ui.widgets;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.awe.nem.properties.manager.NetworkProperty;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable.IPropertyTableListener;
+import org.amanzi.awe.nem.ui.widgets.PropertyCreationDialog.IPropertyDialogListener;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -39,7 +46,8 @@ import org.eclipse.swt.widgets.Composite;
 public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChangedWidget>
         implements
             SelectionListener,
-            IPropertyTableListener {
+            IPropertyTableListener,
+            IPropertyDialogListener {
     private static final GridLayout TWO_COLUMNS_LAYOUT = new GridLayout(2, false);
 
     private static final GridLayout ONE_COLUMNS_LAYOUT = new GridLayout(1, false);
@@ -50,20 +58,22 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
     private Object bRemove;
 
-    private String type;
+    private Iterable<NetworkProperty> properties;
+
+    private List<PropertyContainer> propertyContainer;
 
     /**
      * @param parent
      * @param style
      * @param listener
      */
-    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, String type) {
+    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, String type, Iterable<NetworkProperty> properties) {
         super(parent, SWT.NONE, listener);
-        this.type = type;
+        this.properties = properties;
     }
 
     public interface ITableChangedWidget extends IAWEWidgetListener {
-
+        void updateStatus(String message);
     }
 
     @Override
@@ -76,7 +86,9 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         tableComposite.setLayout(ONE_COLUMNS_LAYOUT);
         tableComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tableViewer = new PropertyTable(tableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, type);
+        preparePropertyContainer();
+
+        tableViewer = new PropertyTable(tableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, propertyContainer, this);
 
         tableViewer.initialize();
 
@@ -98,12 +110,23 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         return button;
     }
 
+    private List<PropertyContainer> preparePropertyContainer() {
+        propertyContainer = new ArrayList<PropertyContainer>();
+        for (NetworkProperty property : properties) {
+            propertyContainer.add(new PropertyContainer(property));
+        }
+        return propertyContainer;
+    }
+
     @Override
     public void widgetSelected(SelectionEvent e) {
         if (e.getSource().equals(bAdd)) {
-            // TODO KV: handle action
+            PropertyCreationDialog dialog = new PropertyCreationDialog(getWidget().getShell(), this);
+            dialog.open();
         } else if (e.getSource().equals(bRemove)) {
-            // TODO KV: handle action;
+            IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+            PropertyContainer container = (PropertyContainer)selection.getFirstElement();
+            tableViewer.remove(container);
         }
 
     }
@@ -111,6 +134,26 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
     @Override
     public void widgetDefaultSelected(SelectionEvent e) {
         // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onError(String message) {
+        for (ITableChangedWidget listener : getListeners()) {
+            listener.updateStatus(message);
+        }
+    }
+
+    /**
+     * @return
+     */
+    public List<PropertyContainer> getProperties() {
+        return propertyContainer;
+    }
+
+    @Override
+    public void onNewItemCreated(PropertyContainer container) {
+        tableViewer.add(container);
 
     }
 }

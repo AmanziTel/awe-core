@@ -14,7 +14,7 @@
 package org.amanzi.awe.nem.ui.properties.table.providers;
 
 import org.amanzi.awe.nem.ui.properties.PropertyContainer;
-import org.amanzi.awe.nem.ui.widgets.PropertyColumns;
+import org.amanzi.awe.nem.ui.properties.table.PropertyColumns;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 
 /**
@@ -41,7 +41,7 @@ public class PropertyLabelProvider extends ColumnLabelProvider {
         case NAME:
             return property.getName();
         case TYPE:
-            return property.getType();
+            return property.getType().getId();
         default:
             return property.getDefaultValue();
         }

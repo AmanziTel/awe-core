@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.ui.properties;
 
+import org.amanzi.awe.nem.properties.manager.KnownTypes;
 import org.amanzi.awe.nem.properties.manager.NetworkProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,6 +33,10 @@ public class PropertyContainer extends NetworkProperty {
         super(property.getName(), property.getType());
     }
 
+    public PropertyContainer(String name, KnownTypes type) {
+        super(name, type);
+    }
+
     /**
      * @return Returns the defaultValue.
      */
@@ -45,4 +50,5 @@ public class PropertyContainer extends NetworkProperty {
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
+
 }

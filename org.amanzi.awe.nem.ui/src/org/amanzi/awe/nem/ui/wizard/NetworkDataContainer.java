@@ -13,7 +13,11 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.amanzi.awe.nem.ui.properties.PropertyContainer;
 
 /**
  * TODO Purpose of
@@ -28,6 +32,8 @@ public class NetworkDataContainer {
     private String name;
 
     private List<String> structure;
+
+    private Map<String, List<PropertyContainer>> typeProperties = new HashMap<String, List<PropertyContainer>>();
 
     /**
      * @return Returns the name.
@@ -48,6 +54,10 @@ public class NetworkDataContainer {
      */
     public List<String> getStructure() {
         return structure;
+    }
+
+    public void putToTypeProperties(String type, List<PropertyContainer> container) {
+        typeProperties.put(type, container);
     }
 
     /**

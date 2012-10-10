@@ -15,6 +15,7 @@ package org.amanzi.awe.nem.ui.wizard;
 
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
+import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -28,32 +29,44 @@ import org.eclipse.jface.wizard.Wizard;
  */
 public class NetworkCreationWizard extends Wizard {
     private NetworkDataContainer container;
+    private INetworkModel model;
 
-    @Override
-    public boolean performFinish() {
-        for (IWizardPage page : getPages()) {
-            if (!page.isPageComplete()) {
-                return false;
-            }
-        }
-        return true;
+    public NetworkCreationWizard(INetworkModel model) {
+        this.model = model;
+        setForcePreviousAndNextButtons(false);
     }
 
-    /**
-     * 
-     */
     public NetworkCreationWizard() {
-        super();
         setForcePreviousAndNextButtons(true);
     }
 
     @Override
+    public boolean performFinish() {
+        if (model == null) {
+            createModelFromContainer();
+        } else {
+            createSingleElement();
+        }
+        return true;
+    }
+
+    private void createModelFromContainer() {
+        // TODO Auto-generated method stub
+
+    }
+
+    private void createSingleElement() {
+        // TODO Auto-generated method stub
+
+    }
+
     public IWizardPage getNextPage(IWizardPage page) {
         if (page instanceof InitialNetworkPage) {
             initContainer((InitialNetworkPage)page);
             initializeNewPages((InitialNetworkPage)page);
         } else {
-            // TODO KV: handle PropertyEditor page handling
+            PropertyEditorPage editor = (PropertyEditorPage)page;
+            container.putToTypeProperties(page.getName(), editor.getProperties());
         }
         return super.getNextPage(page);
     }

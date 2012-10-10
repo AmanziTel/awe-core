@@ -51,6 +51,8 @@ public class NemMessages extends NLS {
 
     public static String PROPERTY_EDITOR_PAGE_TITLE;
 
+    public static String FILL_PROPERTIES_ROWS;
+
     private NemMessages() {
     }
 
