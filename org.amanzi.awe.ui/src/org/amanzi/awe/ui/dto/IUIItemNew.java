@@ -11,13 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.tree.wrapper;
+package org.amanzi.awe.ui.dto;
 
-import java.util.Collection;
-
-import org.amanzi.awe.ui.tree.wrapper.item.ITreeItem;
-import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.ITreeModel;
+import org.amanzi.neo.models.IModel;
 
 /**
  * TODO Purpose of
@@ -27,12 +23,9 @@ import org.amanzi.neo.models.ITreeModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ITreeWrapper<T extends ITreeModel, O extends IDataElement> {
+public interface IUIItemNew {
 
-    boolean hasChildren(ITreeItem<T, O> item);
+    <T extends IModel> T castParent(T clazz);
 
-    Collection<ITreeItem<T, O>> getChildren(ITreeItem<T, O> item);
-
-    ITreeItem<T, O> getParent(ITreeItem<T, O> item);
-
+    <T extends Object> T castChild(T clazz);
 }

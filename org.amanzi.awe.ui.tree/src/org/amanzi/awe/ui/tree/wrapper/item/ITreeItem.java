@@ -13,8 +13,7 @@
 
 package org.amanzi.awe.ui.tree.wrapper.item;
 
-import org.amanzi.awe.ui.dto.IUIItem;
-import org.amanzi.neo.models.IModel;
+import org.amanzi.awe.ui.dto.IUIItemNew;
 
 /**
  * TODO Purpose of
@@ -24,6 +23,6 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ITreeItem<T extends IModel, O extends Object> extends IUIItem<T, O> {
+public interface ITreeItem extends IUIItemNew {
 
 }

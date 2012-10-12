@@ -23,6 +23,7 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
+@Deprecated
 public interface IUIItem<T extends IModel, E extends Object> {
     E getChild();
 
