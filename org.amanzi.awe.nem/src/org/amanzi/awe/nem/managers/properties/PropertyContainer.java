@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class PropertyContainer {
 
-    private String defaultValue = StringUtils.EMPTY;
+    private Object defaultValue = StringUtils.EMPTY;
 
     private String name;
 
@@ -67,14 +67,14 @@ public class PropertyContainer {
     /**
      * @return Returns the defaultValue.
      */
-    public String getDefaultValue() {
+    public Object getDefaultValue() {
         return defaultValue;
     }
 
     /**
      * @param defaultValue The defaultValue to set.
      */
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
     }
 

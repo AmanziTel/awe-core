@@ -115,4 +115,23 @@ public class NodeTypeVault {
 
         return null;
     }
+
+    /**
+     * @param properties
+     */
+    public void updateDefaultValues(Map<String, Object> properties) {
+        for (Entry<String, Object> entry : properties.entrySet()) {
+            PropertyVault propertyVault = getPropertyVault(entry.getKey());
+            propertyVault.setDefaultValue(entry.getValue());
+        }
+        isChanged = !properties.isEmpty();
+    }
+
+    /**
+     * @param property
+     * @return
+     */
+    public Object getDefaultValue(String property) {
+        return getPropertyVault(property).getDefaultValue();
+    }
 }

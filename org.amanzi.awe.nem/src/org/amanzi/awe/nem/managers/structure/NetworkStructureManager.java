@@ -52,14 +52,12 @@ public class NetworkStructureManager {
         List<INodeType> undrlines = new ArrayList<INodeType>();
         int index = structure.indexOf(root) + 1;
         int siteIndex = getElementIndex(structure, NetworkElementType.SITE);
-        System.out.println(structure);
 
         for (int i = index; i != structure.size(); i++) {
             INodeType existed = structure.get(i);
             System.out.println(existed);
             if (i == siteIndex && rootIs(root, NetworkElementType.SITE)) {
                 INodeType lastElement = structure.get(structure.size());
-                System.out.println("last " + lastElement);
                 undrlines.add(existed);
                 undrlines.add(lastElement);
                 break;

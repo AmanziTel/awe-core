@@ -81,7 +81,7 @@ public class PropertyTable extends TableViewer {
     @Override
     public void update(Object element, String[] properties) {
         PropertyContainer container = (PropertyContainer)element;
-        container.getType().parse(container.getDefaultValue());
+        container.setDefaultValue(container.getType().parse((String)container.getDefaultValue()));
         listener.onError(container.getType().getErrorMessage());
         super.update(element, properties);
     }

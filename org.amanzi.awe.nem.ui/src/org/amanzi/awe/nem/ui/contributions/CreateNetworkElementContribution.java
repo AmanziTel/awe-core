@@ -62,7 +62,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
         }
 
         final INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
-        IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
+        final IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
         INodeType type = MenuUtils.getInstance().getType(model, element);
 
         Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
@@ -75,7 +75,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
             menuItem.setText(newType.getId());
             menuItem.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
-                    openWizard(model, newType);
+                    openWizard(model, element, newType);
                 }
             });
         }
@@ -86,8 +86,8 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @param model
      * @param newType
      */
-    protected void openWizard(INetworkModel model, INodeType newType) {
-        PropertyCreationWizard wizard = new PropertyCreationWizard(model, newType);
+    protected void openWizard(INetworkModel model, IDataElement root, INodeType newType) {
+        PropertyCreationWizard wizard = new PropertyCreationWizard(model, root, newType);
         Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();
         wizardDialog.open();

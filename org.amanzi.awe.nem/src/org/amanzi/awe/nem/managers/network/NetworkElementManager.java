@@ -13,8 +13,10 @@
 
 package org.amanzi.awe.nem.managers.network;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
@@ -23,6 +25,7 @@ import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -90,14 +93,44 @@ public class NetworkElementManager {
      * @param typeProperties
      * @throws NemManagerOperationException
      */
-    public void createModel(String name, List<INodeType> structure, Map<String, List<PropertyContainer>> typeProperties)
+    public void createModel(String name, List<INodeType> structure, Map<INodeType, List<PropertyContainer>> typeProperties)
             throws NemManagerOperationException {
         try {
-            networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
+            INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
+            IPropertyStatisticsModel propertiesModel = model.getPropertyStatistics();
+            updateProperties(propertiesModel, typeProperties);
         } catch (ModelException e) {
             LOGGER.error("can't create model", e);
             throw new NemManagerOperationException("can't create model", e);
         }
         AWEEventManager.getManager().fireDataUpdatedEvent(null);
+    }
+
+    /**
+     * @param propertiesModel
+     * @param typeProperties
+     */
+    private void updateProperties(IPropertyStatisticsModel propertiesModel, Map<INodeType, List<PropertyContainer>> typeProperties) {
+        for (Entry<INodeType, List<PropertyContainer>> properties : typeProperties.entrySet()) {
+            Map<String, Object> preparedProeprties = preparePropertiesMapFromContainer(properties.getValue());
+            propertiesModel.updateDefaultProperties(properties.getKey(), preparedProeprties);
+        }
+        try {
+            propertiesModel.finishUp();
+        } catch (ModelException e) {
+            LOGGER.error("Can't update property statisticsModel ", e);
+        }
+    }
+
+    /**
+     * @param value
+     * @return
+     */
+    private Map<String, Object> preparePropertiesMapFromContainer(List<PropertyContainer> containers) {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        for (PropertyContainer container : containers) {
+            properties.put(container.getName(), container.getDefaultValue());
+        }
+        return properties;
     }
 }

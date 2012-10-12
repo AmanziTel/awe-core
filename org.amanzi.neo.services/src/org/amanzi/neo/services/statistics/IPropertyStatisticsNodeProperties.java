@@ -33,4 +33,6 @@ public interface IPropertyStatisticsNodeProperties extends INodeProperties {
 
     String getCountPrefix();
 
+    String getDefaultValueProperty();
+
 }

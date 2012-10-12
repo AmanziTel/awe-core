@@ -20,6 +20,7 @@ import org.amanzi.awe.nem.ui.widgets.TypesCreationDialog.ITypesCreationDialogLis
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
 import org.amanzi.neo.models.network.NetworkElementType;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -50,7 +51,7 @@ public class TypesCreationDialog extends AbstractAWEWidget<Shell, ITypesCreation
     private static final Layout TWO_COLUMN_LAYOUT = new GridLayout(2, false);
     private static final Point SHELL_SIZE = new Point(300, 100);
     private Shell shell;
-    private Combo cTypesCombo;
+    private Combo cNodeTypesCombo;
     private Button bOk;
     private Button bCancel;
     private List<String> alreadySelectedTypes;
@@ -76,8 +77,8 @@ public class TypesCreationDialog extends AbstractAWEWidget<Shell, ITypesCreation
         label.setText(NemMessages.TYPE);
         label.setLayoutData(getGridData());
 
-        cTypesCombo = new Combo(shell, SWT.BORDER);
-        cTypesCombo.setLayoutData(getGridData());
+        cNodeTypesCombo = new Combo(shell, SWT.BORDER);
+        cNodeTypesCombo.setLayoutData(getGridData());
         fillCombo();
         bOk = createButton(NemMessages.OK);
         bCancel = createButton(NemMessages.CANCEL);
@@ -95,10 +96,10 @@ public class TypesCreationDialog extends AbstractAWEWidget<Shell, ITypesCreation
                 if (type == NetworkElementType.SECTOR && !isContainSite) {
                     return;
                 } else if (type == NetworkElementType.SECTOR && isContainSite) {
-                    cTypesCombo.add(type.getId());
+                    cNodeTypesCombo.add(type.getId());
                     return;
                 }
-                cTypesCombo.add(type.getId());
+                cNodeTypesCombo.add(type.getId());
             } else if (alreadySelectedTypes.contains(type.getId()) && type == NetworkElementType.SECTOR) {
                 return;
             }
@@ -131,7 +132,13 @@ public class TypesCreationDialog extends AbstractAWEWidget<Shell, ITypesCreation
             shell.close();
         } else if (e.getSource().equals(bOk)) {
             for (ITypesCreationDialogListener listener : getListeners()) {
-                listener.onNewTypeAdded(cTypesCombo.getText());
+                String newType = cNodeTypesCombo.getText();
+                if (alreadySelectedTypes.contains(newType)) {
+                    MessageDialog.openWarning(shell, NemMessages.TYPES_DIALOG_WARNING_TITLE,
+                            NemMessages.TYPES_DIALOG_WARNING_MESSAGE);
+                } else {
+                    listener.onNewTypeAdded(newType);
+                }
             }
             shell.close();
         }

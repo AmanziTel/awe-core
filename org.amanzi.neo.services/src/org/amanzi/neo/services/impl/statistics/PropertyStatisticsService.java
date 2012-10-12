@@ -119,7 +119,8 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
 
             vault.addValue(value, count);
         }
-
+        vault.setDefaultValue(nodeService.getNodeProperty(propertyVaultNode, statisticsNodeProperties.getDefaultValueProperty(),
+                null, false));
         return vault;
     }
 
@@ -206,6 +207,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         }
 
         nodeService.updateProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(), values.size());
+        nodeService.updateProperty(propertyVault, statisticsNodeProperties.getDefaultValueProperty(), vault.getDefaultValue());
     }
 
     protected Node updateNodeTypeVault(final Node statisticsNode, final NodeTypeVault vault) throws ServiceException {

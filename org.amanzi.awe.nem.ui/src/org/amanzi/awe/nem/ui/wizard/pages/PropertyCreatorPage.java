@@ -13,11 +13,15 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
 
 /**
@@ -42,6 +46,17 @@ public class PropertyCreatorPage extends PropertyEditorPage {
 
     @Override
     protected List<PropertyContainer> getTypedProperties() {
-        return null;
+        IPropertyStatisticsModel propertyModel = model.getPropertyStatistics();
+        Set<String> properties = propertyModel.getPropertyNames();
+        List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
+        for (String property : properties) {
+            Object value = propertyModel.getDefaultValues(getType(), property);
+            Class< ? > clazz = propertyModel.getPropertyClass(getType(), property);
+            PropertyContainer container = new PropertyContainer(property, KnownTypes.getTypeByClass(clazz));
+            container.setDefaultValue(value);
+            containers.add(container);
+
+        }
+        return containers;
     }
 }

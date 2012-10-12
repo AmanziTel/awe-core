@@ -89,7 +89,7 @@ public class NetworkCreationWizard extends Wizard {
      * @param page
      */
     protected void handlePropertyPage(PropertyEditorPage page) {
-        container.putToTypeProperties(page.getName(), page.getProperties());
+        container.putToTypeProperties(page.getType(), page.getProperties());
     }
 
     /**

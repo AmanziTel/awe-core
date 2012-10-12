@@ -15,6 +15,7 @@ package org.amanzi.awe.nem.ui.wizard;
 
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyCreatorPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -33,13 +34,14 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
 
     private INodeType type;
 
-    public PropertyCreationWizard(INetworkModel model, INodeType type) {
+    public PropertyCreationWizard(INetworkModel model, IDataElement parent, INodeType type) {
         assert model != null;
 
         this.type = type;
         this.model = model;
 
         getDataContainer().setName(model.getName());
+        getDataContainer().setStructure(type.getId());
         setForcePreviousAndNextButtons(false);
     }
 

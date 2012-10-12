@@ -94,7 +94,7 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
      */
     private void createLabel(Composite labelsCompsoite, String text) {
         Label label = new Label(labelsCompsoite, SWT.NONE);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
         label.setText(text);
 
     }

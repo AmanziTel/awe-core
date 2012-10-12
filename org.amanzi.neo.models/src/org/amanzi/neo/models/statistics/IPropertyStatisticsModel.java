@@ -47,4 +47,8 @@ public interface IPropertyStatisticsModel extends IModel {
 
     Class< ? > getPropertyClass(INodeType nodeType, String property);
 
+    void updateDefaultProperties(INodeType key, Map<String, Object> preparedProeprties);
+
+    Object getDefaultValues(INodeType type, String property);
+
 }

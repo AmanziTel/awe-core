@@ -57,6 +57,10 @@ public class NemMessages extends NLS {
 
     public static String COLUMN_DEFAULT_VALUE_LABEL;
 
+    public static String TYPES_DIALOG_WARNING_TITLE;
+
+    public static String TYPES_DIALOG_WARNING_MESSAGE;
+
     private NemMessages() {
     }
 
