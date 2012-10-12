@@ -341,8 +341,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
         INodeType currentType = elementType;
 
-        int parentIndex = getTypePosition(parentType);
-        int currentIndex = getTypePosition(currentType);
+        int parentIndex = structure.indexOf(parentType);
+        int currentIndex = structure.indexOf(currentType);
 
         if (currentIndex < 0) {
             structure.add(currentType);
@@ -351,21 +351,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             return;
         }
 
-        int lastIndex = getTypePosition(NetworkElementType.SITE);
+        int lastIndex = structure.indexOf(NetworkElementType.SITE);
         if (parentIndex < lastIndex) {
             structure.add(parentIndex, currentType);
         }
-    }
-
-    private int getTypePosition(INodeType type) {
-        int i = 0;
-        for (INodeType existedTypes : structure) {
-            if (existedTypes.getId().equals(type.getId())) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
     }
 
     @Override
@@ -392,11 +381,11 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         IDataElement result = null;
 
-        if (elementType == NetworkElementType.SECTOR) {
+        if (elementType.equals(NetworkElementType.SECTOR)) {
             final Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
             final Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
             result = createSector(parent, name, lac, ci, properties);
-        } else if (elementType == NetworkElementType.SITE) {
+        } else if (elementType.equals(NetworkElementType.SITE)) {
             final Double lat = (Double)properties.get(getGeoNodeProperties().getLatitudeProperty());
             final Double lon = (Double)properties.get(getGeoNodeProperties().getLongitudeProperty());
 

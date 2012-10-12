@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
+import java.util.List;
+
+import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyCreatorPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.dto.IDataElement;
@@ -34,11 +37,14 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
 
     private INodeType type;
 
+    private IDataElement parent;
+
     public PropertyCreationWizard(INetworkModel model, IDataElement parent, INodeType type) {
         assert model != null;
 
         this.type = type;
         this.model = model;
+        this.parent = parent;
 
         getDataContainer().setName(model.getName());
         getDataContainer().setStructure(type.getId());
@@ -55,8 +61,7 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
         addPage(new PropertyCreatorPage(type, model));
     }
 
-    // TODO KV: not implemented yet
-    protected void handleModelRefreshing() {
-
+    protected void handleModelRefreshing(List<INodeType> types) {
+        NetworkElementManager.getInstance().createElement(model, parent, type, getDataContainer().getTypeProperties().get(type));
     }
 }

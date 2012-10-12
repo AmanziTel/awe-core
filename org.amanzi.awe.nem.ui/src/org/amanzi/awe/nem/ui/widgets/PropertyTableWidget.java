@@ -23,6 +23,7 @@ import org.amanzi.awe.nem.ui.widgets.PropertyCreationDialog.IPropertyDialogListe
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -139,7 +140,13 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
     @Override
     public void onNewItemCreated(PropertyContainer container) {
-        tableViewer.add(container);
+        if (propertyContainer.contains(container)) {
+            MessageDialog.openWarning(tableViewer.getControl().getShell(), NemMessages.PROPERTY_DUPLICATED_TITLE,
+                    NemMessages.PROPERTY_DUPLICATED_MESSAGE);
+        } else {
+            tableViewer.add(container);
+        }
 
     }
+
 }

@@ -43,7 +43,7 @@ public class PropertyLabelProvider extends ColumnLabelProvider {
         case TYPE:
             return property.getType().getId();
         default:
-            return property.getDefaultValue().toString();
+            return property.getValue().toString();
         }
     }
 }

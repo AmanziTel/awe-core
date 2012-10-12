@@ -36,7 +36,7 @@ public enum KnownTypes {
         }
 
         @Override
-        protected Object getDefaultValue() {
+        public Object getDefaultValue() {
             return "";
         }
     },
@@ -53,7 +53,7 @@ public enum KnownTypes {
         }
 
         @Override
-        protected Object getDefaultValue() {
+        public Object getDefaultValue() {
             return 0d;
         }
     },
@@ -70,7 +70,7 @@ public enum KnownTypes {
         }
 
         @Override
-        protected Object getDefaultValue() {
+        public Object getDefaultValue() {
             return 0l;
         }
     },
@@ -87,7 +87,7 @@ public enum KnownTypes {
         }
 
         @Override
-        protected Object getDefaultValue() {
+        public Object getDefaultValue() {
             return 0;
         }
     };
@@ -161,5 +161,5 @@ public enum KnownTypes {
     /**
      * @return
      */
-    protected abstract Object getDefaultValue();
+    public abstract Object getDefaultValue();
 }

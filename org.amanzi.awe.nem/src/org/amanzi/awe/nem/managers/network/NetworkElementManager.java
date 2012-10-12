@@ -13,12 +13,14 @@
 
 package org.amanzi.awe.nem.managers.network;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
+import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.manager.AWEEventManager;
@@ -126,11 +128,29 @@ public class NetworkElementManager {
      * @param value
      * @return
      */
-    private Map<String, Object> preparePropertiesMapFromContainer(List<PropertyContainer> containers) {
+    private Map<String, Object> preparePropertiesMapFromContainer(Collection<PropertyContainer> containers) {
         Map<String, Object> properties = new HashMap<String, Object>();
         for (PropertyContainer container : containers) {
-            properties.put(container.getName(), container.getDefaultValue());
+            properties.put(container.getName(), container.getValue());
         }
         return properties;
+    }
+
+    /**
+     * @param model
+     * @param parent
+     * @param type
+     * @param map
+     */
+    public void createElement(INetworkModel model, IDataElement parent, INodeType type, Collection<PropertyContainer> properties) {
+        IDataElement parentElement = parent == null ? model.asDataElement() : parent;
+        Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        String name = (String)prop.get("name");
+        try {
+            model.createElement(new DynamicNetworkType(type.getId()), parentElement, name, prop);
+        } catch (ModelException e) {
+            LOGGER.error("can't create new element");
+        }
+        AWEEventManager.getManager().fireDataUpdatedEvent(null);
     }
 }

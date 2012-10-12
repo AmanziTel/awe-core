@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.nem.managers.properties;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * TODO Purpose of
  * <p>
@@ -25,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class PropertyContainer {
 
-    private Object defaultValue = StringUtils.EMPTY;
+    private Object value;
 
     private String name;
 
@@ -34,6 +32,17 @@ public class PropertyContainer {
     public PropertyContainer(String name, KnownTypes type) {
         this.name = name;
         this.type = type;
+        value = type.getDefaultValue().toString();
+    }
+
+    /**
+     * @param string
+     * @param string2
+     * @param id
+     */
+    public PropertyContainer(String name, KnownTypes type, Object value) {
+        this(name, type);
+        this.value = value;
     }
 
     /**
@@ -67,15 +76,15 @@ public class PropertyContainer {
     /**
      * @return Returns the defaultValue.
      */
-    public Object getDefaultValue() {
-        return defaultValue;
+    public Object getValue() {
+        return value;
     }
 
     /**
      * @param defaultValue The defaultValue to set.
      */
-    public void setDefaultValue(Object defaultValue) {
-        this.defaultValue = defaultValue;
+    public void setValue(Object defaultValue) {
+        this.value = defaultValue;
     }
 
     @Override

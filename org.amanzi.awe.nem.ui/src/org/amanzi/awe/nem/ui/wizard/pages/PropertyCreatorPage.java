@@ -33,6 +33,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @since 1.0.0
  */
 public class PropertyCreatorPage extends PropertyEditorPage {
+
     private INetworkModel model;
 
     /**
@@ -47,13 +48,15 @@ public class PropertyCreatorPage extends PropertyEditorPage {
     @Override
     protected List<PropertyContainer> getTypedProperties() {
         IPropertyStatisticsModel propertyModel = model.getPropertyStatistics();
-        Set<String> properties = propertyModel.getPropertyNames();
+        Set<String> properties = propertyModel.getPropertyNames(getType());
         List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
+
         for (String property : properties) {
             Object value = propertyModel.getDefaultValues(getType(), property);
             Class< ? > clazz = propertyModel.getPropertyClass(getType(), property);
-            PropertyContainer container = new PropertyContainer(property, KnownTypes.getTypeByClass(clazz));
-            container.setDefaultValue(value);
+            KnownTypes type = KnownTypes.getTypeByClass(clazz);
+            PropertyContainer container = new PropertyContainer(property, type);
+            container.setValue(value == null ? type.getDefaultValue() : value);
             containers.add(container);
 
         }

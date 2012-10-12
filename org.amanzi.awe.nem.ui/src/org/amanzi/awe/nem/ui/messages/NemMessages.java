@@ -25,6 +25,7 @@ public class NemMessages extends NLS {
 
     private static final String BUNDLE_NAME = NemMessages.class.getName();
 
+
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
 
     public static String NETWORK_NAME_LABEL;
@@ -60,6 +61,10 @@ public class NemMessages extends NLS {
     public static String TYPES_DIALOG_WARNING_TITLE;
 
     public static String TYPES_DIALOG_WARNING_MESSAGE;
+
+    public static String PROPERTY_DUPLICATED_MESSAGE;
+
+    public static String PROPERTY_DUPLICATED_TITLE;
 
     private NemMessages() {
     }

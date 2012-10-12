@@ -51,17 +51,16 @@ public class NetworkStructureManager {
     public Collection<INodeType> getUnderlineElements(INodeType root, List<INodeType> structure) {
         List<INodeType> undrlines = new ArrayList<INodeType>();
         int index = structure.indexOf(root) + 1;
-        int siteIndex = getElementIndex(structure, NetworkElementType.SITE);
+        int siteIndex = structure.indexOf(NetworkElementType.SITE);
 
         for (int i = index; i != structure.size(); i++) {
             INodeType existed = structure.get(i);
-            System.out.println(existed);
-            if (i == siteIndex && rootIs(root, NetworkElementType.SITE)) {
+            if (i == siteIndex && root.equals(NetworkElementType.SITE)) {
                 INodeType lastElement = structure.get(structure.size());
                 undrlines.add(existed);
                 undrlines.add(lastElement);
                 break;
-            } else if (i == siteIndex && !rootIs(root, NetworkElementType.SITE)) {
+            } else if (i == siteIndex && !root.equals(NetworkElementType.SITE)) {
                 undrlines.add(existed);
                 break;
             }
@@ -69,29 +68,6 @@ public class NetworkStructureManager {
 
         }
         return undrlines;
-    }
-
-    /**
-     * @param checkableType
-     * @return
-     */
-    private boolean rootIs(INodeType rootNode, INodeType checkableType) {
-        return rootNode.getId().equals(checkableType.getId());
-    }
-
-    /**
-     * @param structure
-     * @return
-     */
-    private int getElementIndex(List<INodeType> structure, INodeType searchableType) {
-        int i = 0;
-        for (INodeType type : structure) {
-            if (type.getId().equals(searchableType.getId())) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
     }
 
     public List<INodeType> getRequiredNetworkElements() {
