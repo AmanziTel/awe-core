@@ -11,6 +11,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.ui.tree.item,
  org.amanzi.awe.ui.tree.item.impl,
  org.amanzi.awe.ui.tree.wrapper,
+ org.amanzi.awe.ui.tree.wrapper.factory.impl,
  org.amanzi.awe.ui.tree.wrapper.impl,
  org.amanzi.awe.views.treeview,
  org.amanzi.awe.views.treeview.command.handlers,
