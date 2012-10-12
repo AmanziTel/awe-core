@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.nem.ui.properties.table.editors;
 
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.PropertyColumns;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -68,7 +68,7 @@ public class PropertyEditor extends EditingSupport {
         PropertyContainer property = (PropertyContainer)element;
         switch (column) {
         case DEFAULT_VALUE:
-            return property.getDefaultValue();
+            return property.getValue().toString();
         default:
             break;
         }
@@ -81,7 +81,7 @@ public class PropertyEditor extends EditingSupport {
         String newValue = (String)value;
         switch (column) {
         case DEFAULT_VALUE:
-            target.setDefaultValue(newValue);
+            target.setValue(newValue);
             getViewer().update(element, null);
         default:
             break;

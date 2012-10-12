@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.nodetypes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -170,20 +172,25 @@ public final class NodeTypeManager {
         }
     }
 
-    public void addDynamicNodeTypes(String... types) {
+    public List<INodeType> addDynamicNodeTypes(String... types) {
         String existedTypes = PREFERENCE_STORE.getDefaultString(DYNAMIC_NODE_TYPES_KEY);
         StringBuilder builder = new StringBuilder(existedTypes);
+        List<INodeType> dynamicTypes = new ArrayList<INodeType>();
         for (String type : types) {
             if (nodeTypeCache.containsKey(type)) {
+                dynamicTypes.add(nodeTypeCache.get(type));
                 continue;
             }
             if (!builder.toString().isEmpty()) {
                 builder.append(COMMA_SEPARATOR);
             }
             builder.append(type);
-            nodeTypeCache.put(type, new DynamicNodeType(type));
+            INodeType newType = new DynamicNodeType(type);
+            dynamicTypes.add(newType);
+            nodeTypeCache.put(type, newType);
         }
         PREFERENCE_STORE.setDefault(DYNAMIC_NODE_TYPES_KEY, builder.toString());
+        return dynamicTypes;
     }
 
     protected Set<Class< ? >> getRegisteredNodeTypes() {

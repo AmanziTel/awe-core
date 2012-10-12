@@ -2,7 +2,7 @@ package org.amanzi.awe.nem.ui.handlers;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.nem.NetworkElementManager;
+import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;

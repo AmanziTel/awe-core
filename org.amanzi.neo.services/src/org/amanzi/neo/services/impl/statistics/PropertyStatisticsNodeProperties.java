@@ -33,6 +33,8 @@ public final class PropertyStatisticsNodeProperties implements IPropertyStatisti
 
     private static final String COUNT_PREFIX = "c";
 
+    private static final String DEFAULT_VALUE_PROPERTY = "default_value";
+
     @Override
     public String getCountProperty() {
         return COUNT_PROPERTY;
@@ -51,6 +53,11 @@ public final class PropertyStatisticsNodeProperties implements IPropertyStatisti
     @Override
     public String getCountPrefix() {
         return COUNT_PREFIX;
+    }
+
+    @Override
+    public String getDefaultValueProperty() {
+        return DEFAULT_VALUE_PROPERTY;
     }
 
 }

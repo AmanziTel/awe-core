@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem;
+package org.amanzi.awe.nem.managers.structure;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,19 +48,19 @@ public class NetworkStructureManager {
         return NetworkStructureManagerInstanceHolder.INSTANCE;
     }
 
-    public Collection<String> getUnderlineElements(INodeType root, List<String> structure) {
-        List<String> undrlines = new ArrayList<String>();
-        int index = structure.indexOf(root.getId()) + 1;
-        int siteIndex = structure.indexOf(NetworkElementType.SITE.getId());
+    public Collection<INodeType> getUnderlineElements(INodeType root, List<INodeType> structure) {
+        List<INodeType> undrlines = new ArrayList<INodeType>();
+        int index = structure.indexOf(root) + 1;
+        int siteIndex = structure.indexOf(NetworkElementType.SITE);
 
         for (int i = index; i != structure.size(); i++) {
-            String existed = structure.get(i);
-            if (i == siteIndex && root.equals(NetworkElementType.SITE.getId())) {
-                String lastElement = structure.get(structure.indexOf(structure.size() - 1));
+            INodeType existed = structure.get(i);
+            if (i == siteIndex && root.equals(NetworkElementType.SITE)) {
+                INodeType lastElement = structure.get(structure.size());
                 undrlines.add(existed);
                 undrlines.add(lastElement);
                 break;
-            } else if (i == siteIndex && !root.equals(NetworkElementType.SITE.getId())) {
+            } else if (i == siteIndex && !root.equals(NetworkElementType.SITE)) {
                 undrlines.add(existed);
                 break;
             }
@@ -68,10 +68,6 @@ public class NetworkStructureManager {
 
         }
         return undrlines;
-    }
-
-    public boolean isInUderline(INodeType type, NetworkElementType expectedType, List<String> structure) {
-        return getUnderlineElements(type, structure).contains(expectedType.getId());
     }
 
     public List<INodeType> getRequiredNetworkElements() {

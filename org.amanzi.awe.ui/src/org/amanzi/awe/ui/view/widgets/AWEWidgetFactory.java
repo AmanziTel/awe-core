@@ -14,6 +14,7 @@
 package org.amanzi.awe.ui.view.widgets;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
 import org.amanzi.awe.ui.view.widgets.ColorWidget.IColorChangedListener;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
@@ -25,6 +26,7 @@ import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -75,7 +77,11 @@ public final class AWEWidgetFactory {
     }
 
     public TextWidget addTextWidget(final ITextChandedListener listener, final String label, final Composite parent) {
-        return initializeWidget(new TextWidget(parent, listener, label));
+        return initializeWidget(new TextWidget(parent, SWT.BORDER | SWT.READ_ONLY, listener, label));
+    }
+
+    public TextWidget addStyledTextWidget(final ITextChandedListener listener, int style, final String label, final Composite parent) {
+        return initializeWidget(new TextWidget(parent, style, listener, label));
     }
 
     public SpinnerWidget addSpinnerWidget(final ISpinnerListener listener, final String label, final Composite parent) {
@@ -88,6 +94,10 @@ public final class AWEWidgetFactory {
 
     public ColorWidget addColorWidget(final IColorChangedListener listener, final Composite parent, final String tooltip) {
         return initializeWidget(new ColorWidget(parent, listener, tooltip));
+    }
+
+    public CRSSelector addCRSSelectorWidget(final ICRSSelectorListener listener, final Composite parent) {
+        return initializeWidget(new CRSSelector(parent, listener));
     }
 
     public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {

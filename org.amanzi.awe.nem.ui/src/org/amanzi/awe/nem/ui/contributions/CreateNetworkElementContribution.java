@@ -16,11 +16,10 @@ package org.amanzi.awe.nem.ui.contributions;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.amanzi.awe.nem.NetworkStructureManager;
+import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.nem.ui.wizard.NetworkCreationWizard;
 import org.amanzi.awe.nem.ui.wizard.PropertyCreationWizard;
-import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -63,20 +62,20 @@ public class CreateNetworkElementContribution extends ContributionItem {
         }
 
         final INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
-        IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
+        final IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
         INodeType type = MenuUtils.getInstance().getType(model, element);
 
-        Collection<String> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
+        Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
                 Arrays.asList(model.getNetworkStructure()));
 
         log("Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
 
-        for (final String newType : types) {
+        for (final INodeType newType : types) {
             MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
-            menuItem.setText(newType);
+            menuItem.setText(newType.getId());
             menuItem.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
-                    openWizard(model, newType);
+                    openWizard(model, element, newType);
                 }
             });
         }
@@ -87,9 +86,8 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @param model
      * @param newType
      */
-    protected void openWizard(INetworkModel model, String newType) {
-        PropertyCreationWizard wizard = new PropertyCreationWizard(model);
-        wizard.addPage(new PropertyEditorPage(newType));
+    protected void openWizard(INetworkModel model, IDataElement root, INodeType newType) {
+        PropertyCreationWizard wizard = new PropertyCreationWizard(model, root, newType);
         Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();
         wizardDialog.open();

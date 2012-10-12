@@ -13,11 +13,9 @@
 
 package org.amanzi.awe.nem.ui.widgets;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.NetworkProperty;
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable.IPropertyTableListener;
@@ -25,6 +23,7 @@ import org.amanzi.awe.nem.ui.widgets.PropertyCreationDialog.IPropertyDialogListe
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -58,8 +57,6 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
     private Object bRemove;
 
-    private Iterable<NetworkProperty> properties;
-
     private List<PropertyContainer> propertyContainer;
 
     /**
@@ -67,9 +64,9 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
      * @param style
      * @param listener
      */
-    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, String type, Iterable<NetworkProperty> properties) {
+    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, List<PropertyContainer> properties) {
         super(parent, SWT.NONE, listener);
-        this.properties = properties;
+        this.propertyContainer = properties;
     }
 
     public interface ITableChangedWidget extends IAWEWidgetListener {
@@ -85,8 +82,6 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         Composite tableComposite = new Composite(widgetComposite, SWT.NONE);
         tableComposite.setLayout(ONE_COLUMNS_LAYOUT);
         tableComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        preparePropertyContainer();
 
         tableViewer = new PropertyTable(tableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, propertyContainer, this);
 
@@ -108,14 +103,6 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         button.setText(name);
         button.addSelectionListener(this);
         return button;
-    }
-
-    private List<PropertyContainer> preparePropertyContainer() {
-        propertyContainer = new ArrayList<PropertyContainer>();
-        for (NetworkProperty property : properties) {
-            propertyContainer.add(new PropertyContainer(property));
-        }
-        return propertyContainer;
     }
 
     @Override
@@ -153,7 +140,13 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
     @Override
     public void onNewItemCreated(PropertyContainer container) {
-        tableViewer.add(container);
+        if (propertyContainer.contains(container)) {
+            MessageDialog.openWarning(tableViewer.getControl().getShell(), NemMessages.PROPERTY_DUPLICATED_TITLE,
+                    NemMessages.PROPERTY_DUPLICATED_MESSAGE);
+        } else {
+            tableViewer.add(container);
+        }
 
     }
+
 }

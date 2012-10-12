@@ -13,16 +13,18 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.NetworkPropertiesManager;
-import org.amanzi.awe.nem.properties.manager.NetworkProperty;
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.KnownTypes;
+import org.amanzi.awe.nem.managers.properties.NetworkPropertiesManager;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
-import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -42,24 +44,26 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     private Composite mainComposite;
 
-    private String type;
+    private INodeType type;
 
     private PropertyTableWidget propertyTablWidget;
 
-    private INetworkModel model;
+    private final PropertyContainer requireNameProperty;
 
-    /**
-     * @param pageName
-     */
-    public PropertyEditorPage(String type, INetworkModel model) {
-        this(type);
-        this.model = model;
+    public PropertyEditorPage(INodeType type) {
+        super(type.getId());
+        this.type = type;
+        requireNameProperty = new PropertyContainer("name", KnownTypes.STRING, type.getId());
+        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + " " + type.getId());
     }
 
-    public PropertyEditorPage(String type) {
-        super(type);
-        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + type);
-        this.type = type;
+    @Override
+    public IWizardPage getPreviousPage() {
+        if (super.getPreviousPage() != null && super.getPreviousPage() instanceof InitialNetworkPage) {
+            return null;
+        }
+        // TODO Auto-generated method stub
+        return super.getPreviousPage();
     }
 
     @Override
@@ -68,8 +72,19 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         mainComposite.setLayout(ONE_COLUMN_LAYOU);
         mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Iterable<NetworkProperty> properties = getTypedProperties();
-        propertyTablWidget = new PropertyTableWidget(mainComposite, this, type, properties);
+        List<PropertyContainer> properties = getTypedProperties();
+
+        if (!properties.contains(requireNameProperty)) {
+            properties.add(requireNameProperty);
+        } else {
+            PropertyContainer container = properties.get(properties.indexOf(requireNameProperty));
+            if (StringUtils.isEmpty((String)container.getValue())) {
+                container.setValue(type.getId());
+            }
+        }
+
+        propertyTablWidget = new PropertyTableWidget(mainComposite, this, properties);
+
         propertyTablWidget.initializeWidget();
         setControl(mainComposite);
 
@@ -78,13 +93,13 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
     /**
      * @return
      */
-    private Iterable<NetworkProperty> getTypedProperties() {
-        if (model == null) {
-            return NetworkPropertiesManager.getInstance().getProperties(type);
-        } else {
-            // TODO KV: implement getting properties from model;
-            return null;
-        }
+    protected List<PropertyContainer> getTypedProperties() {
+        return new ArrayList<PropertyContainer>() {
+            private static final long serialVersionUID = 2311734283765321434L;
+            {
+                addAll(NetworkPropertiesManager.getInstance().getProperties(type.getId()));
+            }
+        };
     }
 
     public List<PropertyContainer> getProperties() {
@@ -93,7 +108,14 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     @Override
     public void updateStatus(String message) {
+        if (StringUtils.isEmpty((String)requireNameProperty.getValue())) {
+            message = "required name property can't be empty";
+        }
         this.setErrorMessage(message);
         setPageComplete(StringUtils.isEmpty(message));
+    }
+
+    public INodeType getType() {
+        return type;
     }
 }

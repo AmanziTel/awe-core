@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.nem.ui.widgets;
 
-import org.amanzi.awe.nem.properties.manager.KnownTypes;
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.KnownTypes;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -94,7 +94,7 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
      */
     private void createLabel(Composite labelsCompsoite, String text) {
         Label label = new Label(labelsCompsoite, SWT.NONE);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
         label.setText(text);
 
     }

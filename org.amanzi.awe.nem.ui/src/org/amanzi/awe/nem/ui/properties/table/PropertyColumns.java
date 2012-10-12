@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.nem.ui.properties.table;
 
+import org.amanzi.awe.nem.ui.messages.NemMessages;
+
 /**
  * TODO Purpose of
  * <p>
@@ -23,7 +25,7 @@ package org.amanzi.awe.nem.ui.properties.table;
  */
 public enum PropertyColumns {
 
-    NAME("name"), TYPE("type"), DEFAULT_VALUE("Default_Value");
+    NAME(NemMessages.COLUMN_NAME_LABEL), TYPE(NemMessages.COLUMN_TYPE_LABEL), DEFAULT_VALUE(NemMessages.COLUMN_DEFAULT_VALUE_LABEL);
 
     private String name;
 

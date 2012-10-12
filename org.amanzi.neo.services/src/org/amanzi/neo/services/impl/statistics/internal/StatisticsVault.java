@@ -94,6 +94,12 @@ public class StatisticsVault {
         return result;
     }
 
+    public void updateDefaultProperties(INodeType nodeType, Map<String, Object> properties) {
+        NodeTypeVault result = getNodeTypeVaule(nodeType);
+        result.updateDefaultValues(properties);
+        isChanged = result.isChanged();
+    }
+
     public Collection<NodeTypeVault> getAllNodeTypeVaults() {
         return nodeTypeVaults.values();
     }
@@ -122,6 +128,15 @@ public class StatisticsVault {
         }
 
         return null;
+    }
+
+    /**
+     * @param type
+     * @param property
+     * @return
+     */
+    public Object getDefaultValue(INodeType type, String property) {
+        return getNodeTypeVaule(type).getDefaultValue(property);
     }
 
 }

@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.properties.table;
 
 import java.util.List;
 
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.editors.PropertyEditor;
 import org.amanzi.awe.nem.ui.properties.table.providers.PropertyLabelProvider;
 import org.amanzi.awe.nem.ui.properties.table.providers.TableContentProvider;
@@ -81,7 +81,10 @@ public class PropertyTable extends TableViewer {
     @Override
     public void update(Object element, String[] properties) {
         PropertyContainer container = (PropertyContainer)element;
-        container.getType().parse(container.getDefaultValue());
+        Object value = container.getType().parse(container.getValue().toString());
+        if (value != null) {
+            container.setValue(value);
+        }
         listener.onError(container.getType().getErrorMessage());
         super.update(element, properties);
     }

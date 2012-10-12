@@ -14,7 +14,6 @@
 package org.amanzi.awe.nem.ui.handlers;
 
 import org.amanzi.awe.nem.ui.wizard.NetworkCreationWizard;
-import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -36,8 +35,6 @@ public class CreateNewNetwork extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         NetworkCreationWizard wizard = new NetworkCreationWizard();
-        InitialNetworkPage firstPage = new InitialNetworkPage();
-        wizard.addPage(firstPage);
         Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();
         wizardDialog.open();

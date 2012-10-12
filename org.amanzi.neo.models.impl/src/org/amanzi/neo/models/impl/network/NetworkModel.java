@@ -14,7 +14,6 @@
 package org.amanzi.neo.models.impl.network;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +36,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -149,13 +149,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private final INetworkNodeProperties networkNodeProperties;
 
-    // TODO: LN: 10.10.2012 why this structure work with Strings instead of INodeType?
-    private List<String> structure = new ArrayList<String>() {
+    private List<INodeType> structure = new ArrayList<INodeType>() {
         /** long serialVersionUID field */
         private static final long serialVersionUID = 7149098047373556881L;
 
         {
-            add(NetworkElementType.NETWORK.getId());
+            add(NetworkElementType.NETWORK);
         }
     };
 
@@ -175,20 +174,37 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public void initialize(final Node rootNode) throws ModelException {
+    public void initialize(Node rootNode) throws ModelException {
         super.initialize(rootNode);
-        structure.clear();
-        // TODO: LN: 10.10.2012, incorrect! here should be used getNodeService().getNodeProperty()
-        // method
-        structure.addAll(Arrays.asList(((String[])rootNode.getProperty(networkNodeProperties.getStuctureProperty()))));
+        initializeNetworkStructire();
     }
 
-    public void setStructure(final List<String> structure) throws ModelException {
+    /**
+     * @param rootNode
+     * @throws NodeTypeNotExistsException
+     */
+    public void initializeNetworkStructire() {
+        structure.clear();
+        String[] structure = (String[])getRootNode().getProperty(networkNodeProperties.getStuctureProperty());
+        for (String element : structure) {
+            INodeType type;
+            try {
+                type = NodeTypeManager.getInstance().getType(element);
+            } catch (NodeTypeNotExistsException e) {
+                LOGGER.error("can't find node type " + element, e);
+                continue;
+            }
+            this.structure.add(type);
+        }
+
+    }
+
+    public void setStructure(List<INodeType> structure) throws ModelException {
         this.structure = structure;
         try {
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
-                    structure.toArray(new String[structure.size()]));
-        } catch (final ServiceException e) {
+                    structureToStringArrayFormat());
+        } catch (ServiceException e) {
             processException("can't setStructure to network", e);
         }
 
@@ -286,9 +302,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         DataElement result = null;
 
         try {
-            final Node parentNode = ((DataElement)parent).getNode();
-            final Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
-                    properties);
+            Node parentNode = ((DataElement)parent).getNode();
+            Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
 
             updateNetworkStructure(parent, elementType);
 
@@ -313,28 +328,30 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      * @param elementType
      * @throws ServiceException
      */
-    private void updateNetworkStructure(final IDataElement parent, final INetworkElementType elementType) throws ServiceException {
-        String parentType;
+    private void updateNetworkStructure(IDataElement parent, INetworkElementType elementType) throws ServiceException {
+        INodeType parentType;
         try {
-            // TODO: LN: 10.10.2012, why IDataElement.getNodeType() was not used?
-            parentType = getNodeService().getNodeType(((DataElement)parent).getNode()).getId();
-        } catch (final ServiceException e) {
+            parentType = getNodeService().getNodeType(((DataElement)parent).getNode());
+        } catch (ServiceException e) {
             throw e;
-        } catch (final NodeTypeNotExistsException e) {
+        } catch (NodeTypeNotExistsException e) {
             LOGGER.error("can't get parent node type", e);
             return;
 
         }
-        final String currentType = elementType.getId();
-        if (!structure.contains(currentType)) {
+        INodeType currentType = elementType;
+
+        int parentIndex = structure.indexOf(parentType);
+        int currentIndex = structure.indexOf(currentType);
+
+        if (currentIndex < 0) {
             structure.add(currentType);
             return;
-        } else if (structure.contains(currentType) && structure.contains(parentType)) {
+        } else if (currentIndex > 0 && parentIndex >= 0) {
             return;
         }
 
-        final int parentIndex = structure.indexOf(parentType);
-        final int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        int lastIndex = structure.indexOf(NetworkElementType.SITE);
         if (parentIndex < lastIndex) {
             structure.add(parentIndex, currentType);
         }
@@ -364,11 +381,11 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         IDataElement result = null;
 
-        if (elementType == NetworkElementType.SECTOR) {
+        if (elementType.equals(NetworkElementType.SECTOR)) {
             final Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
             final Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
             result = createSector(parent, name, lac, ci, properties);
-        } else if (elementType == NetworkElementType.SITE) {
+        } else if (elementType.equals(NetworkElementType.SITE)) {
             final Double lat = (Double)properties.get(getGeoNodeProperties().getLatitudeProperty());
             final Double lon = (Double)properties.get(getGeoNodeProperties().getLongitudeProperty());
 
@@ -514,11 +531,21 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         try {
 
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
-                    structure.toArray(new String[structure.size()]));
-        } catch (final ServiceException e) {
+                    structureToStringArrayFormat());
+        } catch (ServiceException e) {
             processException("can't set structure properties", e);
         }
         super.finishUp();
+    }
+
+    private String[] structureToStringArrayFormat() {
+        String[] structure = new String[this.structure.size()];
+        int i = 0;
+        for (INodeType type : this.structure) {
+            structure[i] = type.getId();
+            i++;
+        }
+        return structure;
     }
 
     @Override
@@ -571,7 +598,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public String[] getNetworkStructure() {
-        return structure.toArray(new String[structure.size()]);
+    public INodeType[] getNetworkStructure() {
+        return structure.toArray(new INodeType[structure.size()]);
     }
 }

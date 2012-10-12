@@ -143,4 +143,15 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
         return statisticsVault.getPropertyClass(nodeType, property);
     }
 
+    @Override
+    public void updateDefaultProperties(INodeType type, Map<String, Object> preparedProeprties) {
+        statisticsVault.updateDefaultProperties(type, preparedProeprties);
+    }
+
+    @Override
+    public Object getDefaultValues(INodeType type, String property) {
+        return statisticsVault.getDefaultValue(type, property);
+
+    }
+
 }

@@ -13,11 +13,13 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.awe.nem.properties.manager.PropertyContainer;
+import org.amanzi.awe.nem.managers.properties.PropertyContainer;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of
@@ -33,7 +35,7 @@ public class NetworkDataContainer {
 
     private List<String> structure;
 
-    private Map<String, List<PropertyContainer>> typeProperties = new HashMap<String, List<PropertyContainer>>();
+    private Map<INodeType, List<PropertyContainer>> typeProperties = new HashMap<INodeType, List<PropertyContainer>>();
 
     /**
      * @return Returns the name.
@@ -56,14 +58,14 @@ public class NetworkDataContainer {
         return structure;
     }
 
-    public void putToTypeProperties(String type, List<PropertyContainer> container) {
+    public void putToTypeProperties(INodeType type, List<PropertyContainer> container) {
         typeProperties.put(type, container);
     }
 
     /**
      * @return Returns the typeProperties.
      */
-    public Map<String, List<PropertyContainer>> getTypeProperties() {
+    public Map<INodeType, List<PropertyContainer>> getTypeProperties() {
         return typeProperties;
     }
 
@@ -72,5 +74,13 @@ public class NetworkDataContainer {
      */
     public void setStructure(List<String> structure) {
         this.structure = structure;
+    }
+
+    /**
+     * @param structure The structure to set.
+     */
+    public void setStructure(String singleElement) {
+        this.structure = new ArrayList<String>();
+        structure.add(singleElement);
     }
 }

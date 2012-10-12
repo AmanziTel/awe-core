@@ -98,6 +98,8 @@ public class PropertyVault {
 
     private Map<Object, Integer> values = new HashMap<Object, Integer>();
 
+    private Object defaultValue;
+
     private ClassType classType;
 
     private boolean handleStatistics;
@@ -139,9 +141,22 @@ public class PropertyVault {
                 handleStatistics = false;
                 values.clear();
             }
+            updateDefault();
         }
-
         isChanged = true;
+    }
+
+    /**
+     *
+     */
+    private void updateDefault() {
+        int maxCount = Integer.MIN_VALUE;
+        for (Entry<Object, Integer> singleValue : values.entrySet()) {
+            if (singleValue.getValue() > maxCount) {
+                maxCount = singleValue.getValue();
+                defaultValue = singleValue.getKey();
+            }
+        }
     }
 
     public Set<Object> getValues() {
@@ -213,6 +228,18 @@ public class PropertyVault {
 
     public void addValue(final Object value, final int count) {
         values.put(value, count);
+    }
+
+    public void setDefaultValue(Object value) {
+        isChanged = true;
+        this.defaultValue = value;
+        if (classType == null) {
+            defineClass(value);
+        }
+    }
+
+    public Object getDefaultValue() {
+        return this.defaultValue;
     }
 
     public Class< ? > getClassType() {

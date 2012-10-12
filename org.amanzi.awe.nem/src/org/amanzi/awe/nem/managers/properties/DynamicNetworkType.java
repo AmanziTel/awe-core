@@ -11,28 +11,26 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.statistics;
+package org.amanzi.awe.nem.managers.properties;
 
-import org.amanzi.neo.nodeproperties.INodeProperties;
+import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
+import org.amanzi.neo.nodetypes.DynamicNodeType;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IPropertyStatisticsNodeProperties extends INodeProperties {
+public class DynamicNetworkType extends DynamicNodeType implements INetworkElementType {
 
-    String getCountProperty();
-
-    String getClassProperty();
-
-    String getValuePrefix();
-
-    String getCountPrefix();
-
-    String getDefaultValueProperty();
+    /**
+     * @param type
+     */
+    public DynamicNetworkType(String type) {
+        super(type);
+    }
 
 }

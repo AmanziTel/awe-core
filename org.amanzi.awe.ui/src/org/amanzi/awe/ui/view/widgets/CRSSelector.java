@@ -11,10 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.widgets.impl;
+package org.amanzi.awe.ui.view.widgets;
 
-import org.amanzi.neo.loader.ui.page.widgets.impl.CRSSelector.ICRSSelectorListener;
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
+import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -31,21 +31,19 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-// TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
-public class CRSSelector extends AbstractPageWidget<Button, ICRSSelectorListener> implements SelectionListener {
+public class CRSSelector extends AbstractAWEWidget<Button, ICRSSelectorListener> implements SelectionListener {
 
-    public interface ICRSSelectorListener extends AbstractPageWidget.IPageEventListener {
+    public interface ICRSSelectorListener extends AbstractAWEWidget.IAWEWidgetListener {
         void onCRSSelected(CoordinateReferenceSystem crs);
     }
 
     /**
-     * @param isEnabled
      * @param parent
+     * @param style
      * @param listener
-     * @param projectModelProvider
      */
     protected CRSSelector(final Composite parent, final ICRSSelectorListener listener) {
-        super(true, parent, listener, null);
+        super(parent, SWT.FILL | SWT.PUSH, listener);
     }
 
     @Override
@@ -58,11 +56,6 @@ public class CRSSelector extends AbstractPageWidget<Button, ICRSSelectorListener
         result.addSelectionListener(this);
 
         return result;
-    }
-
-    @Override
-    protected int getStyle() {
-        return SWT.FILL | SWT.PUSH;
     }
 
     @Override

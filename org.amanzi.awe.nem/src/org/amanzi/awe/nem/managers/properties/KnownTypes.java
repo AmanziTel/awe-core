@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties.manager;
+package org.amanzi.awe.nem.managers.properties;
 
 import org.amanzi.awe.nem.exceptions.ParsersExceptions;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum KnownTypes {
 
-    STRING("String") {
+    STRING("String", String.class) {
         @Override
         public Object parseValue(String value) throws ParsersExceptions {
             if (StringUtils.isEmpty(value)) {
@@ -34,8 +34,13 @@ public enum KnownTypes {
             }
             return value;
         }
+
+        @Override
+        public Object getDefaultValue() {
+            return "";
+        }
     },
-    DOUBLE("Double") {
+    DOUBLE("Double", Double.class) {
         @Override
         public Object parseValue(String value) throws ParsersExceptions {
             Object result = null;
@@ -46,8 +51,13 @@ public enum KnownTypes {
             }
             return result;
         }
+
+        @Override
+        public Object getDefaultValue() {
+            return 0d;
+        }
     },
-    LONG("Long") {
+    LONG("Long", Long.class) {
         @Override
         public Object parseValue(String value) throws ParsersExceptions {
             Object result = null;
@@ -58,8 +68,13 @@ public enum KnownTypes {
             }
             return result;
         }
+
+        @Override
+        public Object getDefaultValue() {
+            return 0l;
+        }
     },
-    INTEGER("Integer") {
+    INTEGER("Integer", Integer.class) {
         @Override
         public Object parseValue(String value) throws ParsersExceptions {
             Object result = null;
@@ -70,6 +85,11 @@ public enum KnownTypes {
             }
             return result;
         }
+
+        @Override
+        public Object getDefaultValue() {
+            return 0;
+        }
     };
 
     private static final String ERROR_MESSAGE_FORMAT = "can't parse value %s to type %s";
@@ -78,23 +98,34 @@ public enum KnownTypes {
 
     private String errorMessage;
 
-    private KnownTypes(String id) {
+    private Class< ? > clazz;
+
+    private KnownTypes(String id, Class< ? > clazz) {
         this.id = id;
+        this.clazz = clazz;
     }
 
     public String getId() {
         return id;
     }
 
+    /**
+     * @return Returns the clazz.
+     */
+    public Class< ? > getClazz() {
+        return clazz;
+    }
+
     public Object parse(String value) {
+        Object result;
         try {
-            parseValue(value);
+            result = parseValue(value);
             errorMessage = null;
         } catch (ParsersExceptions e) {
             errorMessage = e.getMessage();
-            value = null;
+            result = null;
         }
-        return value;
+        return result;
     }
 
     /**
@@ -113,8 +144,22 @@ public enum KnownTypes {
         return null;
     }
 
+    public static final KnownTypes getTypeByClass(Class< ? > clazz) {
+        for (KnownTypes type : values()) {
+            if (type.getClazz().equals(clazz)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
     /**
      * @param value
      */
     protected abstract Object parseValue(String value) throws ParsersExceptions;
+
+    /**
+     * @return
+     */
+    public abstract Object getDefaultValue();
 }

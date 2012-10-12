@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.properties.manager;
+package org.amanzi.awe.nem.managers.properties;
 
 /**
  * TODO Purpose of
@@ -21,15 +21,28 @@ package org.amanzi.awe.nem.properties.manager;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class NetworkProperty {
+public class PropertyContainer {
+
+    private Object value;
 
     private String name;
 
     private KnownTypes type;
 
-    protected NetworkProperty(String name, KnownTypes type) {
+    public PropertyContainer(String name, KnownTypes type) {
         this.name = name;
         this.type = type;
+        value = type.getDefaultValue().toString();
+    }
+
+    /**
+     * @param string
+     * @param string2
+     * @param id
+     */
+    public PropertyContainer(String name, KnownTypes type, Object value) {
+        this(name, type);
+        this.value = value;
     }
 
     /**
@@ -60,6 +73,20 @@ public class NetworkProperty {
         this.type = type;
     }
 
+    /**
+     * @return Returns the defaultValue.
+     */
+    public Object getValue() {
+        return value;
+    }
+
+    /**
+     * @param defaultValue The defaultValue to set.
+     */
+    public void setValue(Object defaultValue) {
+        this.value = defaultValue;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -76,7 +103,7 @@ public class NetworkProperty {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        NetworkProperty other = (NetworkProperty)obj;
+        PropertyContainer other = (PropertyContainer)obj;
         if (name == null) {
             if (other.name != null)
                 return false;
@@ -84,5 +111,5 @@ public class NetworkProperty {
             return false;
         return true;
     }
-    
+
 }
