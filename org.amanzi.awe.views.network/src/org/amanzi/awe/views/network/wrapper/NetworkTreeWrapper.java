@@ -11,9 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.dto;
+package org.amanzi.awe.views.network.wrapper;
 
-import org.amanzi.neo.models.IModel;
+import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
+import org.amanzi.neo.models.network.INetworkModel;
 
 /**
  * TODO Purpose of
@@ -23,9 +24,18 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IUIItemNew {
+public class NetworkTreeWrapper extends AbstractTreeModelWrapper<INetworkModel> {
 
-    <T extends IModel> T castParent(Class<T> clazz);
+    /**
+     * @param model
+     */
+    public NetworkTreeWrapper(final INetworkModel model) {
+        super(model);
+    }
 
-    <T extends Object> T castChild(Class<T> clazz);
+    @Override
+    protected Class<INetworkModel> getModelClass() {
+        return INetworkModel.class;
+    }
+
 }

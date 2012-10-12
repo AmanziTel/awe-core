@@ -11,8 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.dto;
+package org.amanzi.awe.ui.tree.item.impl;
 
+import org.amanzi.awe.ui.dto.impl.UIItem;
+import org.amanzi.awe.ui.tree.item.ITreeItem;
+import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.neo.models.IModel;
 
 /**
@@ -23,9 +26,23 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IUIItemNew {
+public class TreeItem extends UIItem implements ITreeItem {
 
-    <T extends IModel> T castParent(Class<T> clazz);
+    private final ITreeWrapper wrapper;
 
-    <T extends Object> T castChild(Class<T> clazz);
+    /**
+     * @param parent
+     * @param child
+     */
+    public TreeItem(final IModel parent, final Object child, final ITreeWrapper wrapper) {
+        super(parent, child);
+
+        this.wrapper = wrapper;
+    }
+
+    @Override
+    public ITreeWrapper getWrapper() {
+        return wrapper;
+    }
+
 }

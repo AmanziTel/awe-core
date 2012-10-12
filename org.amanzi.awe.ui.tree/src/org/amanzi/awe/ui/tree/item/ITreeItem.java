@@ -11,9 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.tree.wrapper.item;
+package org.amanzi.awe.ui.tree.item;
 
 import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 
 /**
  * TODO Purpose of
@@ -24,5 +25,7 @@ import org.amanzi.awe.ui.dto.IUIItemNew;
  * @since 1.0.0
  */
 public interface ITreeItem extends IUIItemNew {
+
+    ITreeWrapper getWrapper();
 
 }

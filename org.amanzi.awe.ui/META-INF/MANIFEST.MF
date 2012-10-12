@@ -12,6 +12,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.ui,
  org.amanzi.awe.ui.dto,
+ org.amanzi.awe.ui.dto.impl,
  org.amanzi.awe.ui.events,
  org.amanzi.awe.ui.events.impl,
  org.amanzi.awe.ui.icons,
