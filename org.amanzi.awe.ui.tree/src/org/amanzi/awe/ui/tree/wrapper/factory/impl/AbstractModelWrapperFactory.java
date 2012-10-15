@@ -16,6 +16,7 @@ package org.amanzi.awe.ui.tree.wrapper.factory.impl;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapperFactory;
 import org.amanzi.neo.models.IModel;
@@ -74,11 +75,19 @@ public abstract class AbstractModelWrapperFactory<M extends IModel, P extends IN
     }
 
     @Override
-    public Iterator<ITreeWrapper> getWrappers() {
+    public Iterator<ITreeWrapper> getWrappers(final Object parent) {
         Iterator<ITreeWrapper> result = null;
 
         try {
-            final IProjectModel projectModel = projectModelProvider.getActiveProjectModel();
+            IProjectModel projectModel = null;
+
+            if (parent != null && parent instanceof IUIItemNew) {
+                projectModel = ((IUIItemNew)parent).castChild(IProjectModel.class);
+            }
+
+            if (projectModel == null) {
+                projectModelProvider.getActiveProjectModel();
+            }
 
             if (projectModel != null) {
                 final List<M> models = provider.findAll(projectModel);

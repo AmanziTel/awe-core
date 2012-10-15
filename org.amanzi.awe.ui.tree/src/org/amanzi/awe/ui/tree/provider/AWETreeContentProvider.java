@@ -55,9 +55,19 @@ public class AWETreeContentProvider implements ITreeContentProvider {
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object[] getElements(final Object inputElement) {
-        return getElements();
+        final List<ITreeWrapper> wrappers = new ArrayList<ITreeWrapper>();
+
+        for (final ITreeWrapperFactory factory : getFactories()) {
+            final Iterator<ITreeWrapper> items = factory.getWrappers(inputElement);
+            if (items != null) {
+                wrappers.addAll(IteratorUtils.toList(items));
+            }
+        }
+
+        return toObject(wrappers);
     }
 
     @Override
@@ -93,18 +103,8 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
-    private Object[] getElements() {
-        final List<ITreeWrapper> wrappers = new ArrayList<ITreeWrapper>();
-
-        for (final ITreeWrapperFactory factory : factories) {
-            final Iterator<ITreeWrapper> items = factory.getWrappers();
-            if (items != null) {
-                wrappers.addAll(IteratorUtils.toList(items));
-            }
-        }
-
-        return toObject(wrappers);
+    protected Set<ITreeWrapperFactory> getFactories() {
+        return factories;
     }
 
     private Pair<ITreeWrapper, ITreeItem> convertObject(final Object element) {

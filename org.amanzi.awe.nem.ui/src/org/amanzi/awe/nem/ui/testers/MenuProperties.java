@@ -35,12 +35,12 @@ public enum MenuProperties {
 
     private String name;
 
-    private MenuProperties(String parameterName) {
+    private MenuProperties(final String parameterName) {
         this.name = parameterName;
     }
 
-    public static MenuProperties findByName(String parameterName) {
-        for (MenuProperties item : values()) {
+    public static MenuProperties findByName(final String parameterName) {
+        for (final MenuProperties item : values()) {
             if (item.getName().equals(parameterName)) {
                 return item;
             }
@@ -48,13 +48,13 @@ public enum MenuProperties {
         return null;
     }
 
-    public boolean check(INetworkModel model, IDataElement element) {
+    public boolean check(final INetworkModel model, final IDataElement element) {
         switch (this) {
         case IS_ADDETABLE:
             if (model == null) {
                 return false;
             }
-            INodeType type = MenuUtils.getInstance().getType(model, element);
+            final INodeType type = MenuUtils.getType(model, element);
             return NetworkStructureManager.getInstance().getUnderlineElements(type, Arrays.asList(model.getNetworkStructure()))
                     .size() > 0;
         case IS_DELETABLE:

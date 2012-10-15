@@ -49,6 +49,9 @@
 
    <element name="wrapper-factory">
       <complexType>
+         <sequence>
+            <element ref="tree_id" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
          <attribute name="class" type="string">
             <annotation>
                <documentation>
@@ -59,7 +62,12 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="tree_id" type="string" use="required">
+      </complexType>
+   </element>
+
+   <element name="tree_id">
+      <complexType>
+         <attribute name="refId" type="string" use="required">
             <annotation>
                <documentation>
                   

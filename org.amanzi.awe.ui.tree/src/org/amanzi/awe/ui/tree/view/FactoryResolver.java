@@ -41,6 +41,8 @@ public final class FactoryResolver {
 
     private static final String VIEW_ID_PROPERTY = "tree_id";
 
+    private static final String VIEW_REFERENCE_PROPERTY = "refId";
+
     private static final class FactoryResolverHolder {
         private static volatile FactoryResolver instance = new FactoryResolver();
     }
@@ -78,8 +80,10 @@ public final class FactoryResolver {
         final Set<IConfigurationElement> result = new HashSet<IConfigurationElement>();
 
         for (final IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_POINT_NAME)) {
-            if (element.getAttribute(VIEW_ID_PROPERTY).equals(viewId)) {
-                result.add(element);
+            for (final IConfigurationElement treeIdElement : element.getChildren(VIEW_ID_PROPERTY)) {
+                if (treeIdElement.getAttribute(VIEW_REFERENCE_PROPERTY).equals(viewId)) {
+                    result.add(element);
+                }
             }
         }
 

@@ -53,4 +53,13 @@ public class UIItem implements IUIItemNew {
 
         return null;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append("UIItem {parent: ").append(parent).append(", child: ").append(child).append("}");
+
+        return builder.toString();
+    }
 }

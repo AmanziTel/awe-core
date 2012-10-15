@@ -30,8 +30,13 @@
    <extension
          point="org.amanzi.tree.factories">
       <wrapper-factory
-            class="org.amanzi.awe.network.ui.wrapper.NetworkTreeWrapperFactory"
-            tree_id="org.amanzi.trees.NetworkTree">
+            class="org.amanzi.awe.network.ui.wrapper.NetworkTreeWrapperFactory">
+         <tree_id
+               refId="org.amanzi.trees.NetworkTree">
+         </tree_id>
+         <tree_id
+               refId="org.amanzi.trees.ProjectExplorer">
+         </tree_id>
       </wrapper-factory>
    </extension>
    

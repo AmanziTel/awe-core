@@ -15,9 +15,7 @@ package org.amanzi.awe.nem.ui.handlers;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.nem.ui.utils.MenuUtils;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.models.IModel;
+import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -36,22 +34,20 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public abstract class AbstractNemHandler extends AbstractHandler {
 
-    private static final MenuUtils MENU_UTILS = MenuUtils.getInstance();
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
+    public Object execute(final ExecutionEvent event) throws ExecutionException {
+        final ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
         if (selection instanceof IStructuredSelection) {
-            Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
+            final Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
             try {
                 while (selectionIterator.hasNext()) {
-                    Object selectedObject = selectionIterator.next();
-                    if (selectedObject instanceof ITreeItem) {
-                        handleItem((ITreeItem)selectedObject, event.getCommand());
+                    final Object selectedObject = selectionIterator.next();
+                    if (selectedObject instanceof IUIItemNew) {
+                        handleItem((IUIItemNew)selectedObject, event.getCommand());
                     }
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new ExecutionException("can't execute action ", e);
             }
         }
@@ -62,12 +58,5 @@ public abstract class AbstractNemHandler extends AbstractHandler {
      * @param selectedObject
      * @param command
      */
-    protected abstract void handleItem(ITreeItem<IModel, Object> selectedObject, Command command);
-
-    /**
-     * @return Returns the menuUtils.
-     */
-    protected MenuUtils getMenuUtils() {
-        return MENU_UTILS;
-    }
+    protected abstract void handleItem(IUIItemNew selectedObject, Command command);
 }

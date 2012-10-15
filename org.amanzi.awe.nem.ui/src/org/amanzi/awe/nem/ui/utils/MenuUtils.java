@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.nem.ui.utils;
 
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -26,30 +26,24 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class MenuUtils {
+public final class MenuUtils {
 
-    private static final class MenuUtilsInstanceHolder {
-        private static final MenuUtils UTILS = new MenuUtils();
+    private MenuUtils() {
+
     }
 
-    public static MenuUtils getInstance() {
-        return MenuUtilsInstanceHolder.UTILS;
-    }
+    public static INetworkModel getModelFromItem(final IUIItemNew item) {
+        INetworkModel networkModel = item.castParent(INetworkModel.class);
 
-    public INetworkModel getModelFromTreeItem(ITreeItem< ? , ? > item) {
-        if (item.getParent() == null && item.getChild() instanceof INetworkModel) {
-            return (INetworkModel)item.getChild();
-        } else if (item.getParent() instanceof INetworkModel && item.getChild() instanceof IDataElement) {
-            return (INetworkModel)item.getParent();
+        if (networkModel == null) {
+            networkModel = item.castChild(INetworkModel.class);
         }
-        return null;
+
+        return networkModel;
     }
 
-    public IDataElement getElementFromTreeItem(ITreeItem< ? , ? > item) {
-        if (item.getParent() != null && item.getChild() != null) {
-            return (IDataElement)item.getChild();
-        }
-        return null;
+    public static IDataElement getElementFromItem(final IUIItemNew item) {
+        return item.castChild(IDataElement.class);
     }
 
     /**
@@ -57,7 +51,7 @@ public class MenuUtils {
      * @param element
      * @return
      */
-    public INodeType getType(INetworkModel model, IDataElement element) {
+    public static INodeType getType(final INetworkModel model, final IDataElement element) {
         INodeType type;
         if (element == null) {
             type = model.getType();

@@ -7,13 +7,7 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
-import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
-import org.amanzi.awe.views.treeview.AbstractTreeView;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IModel;
-import org.eclipse.jface.viewers.IElementComparer;
-import org.eclipse.swt.widgets.Composite;
+import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
 /**
  * project explorer view
@@ -21,47 +15,11 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 0.3
  */
-public class ProjectExplorerView extends AbstractTreeView {
+public class ProjectExplorerView extends AbstractAWETreeView {
     /*
      * ID of this View
      */
-    public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
-    private static final IElementComparer TREE_ITEMS_COMPARATOR = new IElementComparer() {
-
-        @Override
-        public boolean equals(final Object a, final Object b) {
-            return a == null ? b == null : a.equals(b);
-        }
-
-        @Override
-        public int hashCode(final Object element) {
-            return element.hashCode();
-        }
-    };
-
-    /**
-     * The constructor.
-     */
-    public ProjectExplorerView() {
-        this(new ProjectTreeContentProvider());
-    }
-
-    protected ProjectExplorerView(final ProjectTreeContentProvider projectTreeContentProvider) {
-        super(projectTreeContentProvider);
-    }
-
-    @Override
-    public void createPartControl(final Composite parent) {
-        super.createPartControl(parent);
-
-        getTreeViewer().setComparer(TREE_ITEMS_COMPARATOR);
-    }
-
-    @Override
-    protected ITreeItem< ? , ? > getTreeItem(final IModel model, final IDataElement element) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public static final String PROJECT_EXPLORER_ID = "org.amanzi.trees.ProjectExplorer";
 
     @Override
     public String getViewId() {

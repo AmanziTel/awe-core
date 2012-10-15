@@ -25,6 +25,6 @@ import java.util.Iterator;
  */
 public interface ITreeWrapperFactory {
 
-    Iterator<ITreeWrapper> getWrappers();
+    Iterator<ITreeWrapper> getWrappers(Object parent);
 
 }

@@ -3,9 +3,10 @@ package org.amanzi.awe.nem.ui.handlers;
 import java.util.Iterator;
 
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
+import org.amanzi.awe.nem.ui.utils.MenuUtils;
+import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.core.commands.AbstractHandler;
@@ -24,14 +25,14 @@ public class DeleteHandler extends AbstractHandler {
     private static class NemDeleteJob extends Job {
 
         private static final NetworkElementManager MANAGER = NetworkElementManager.getInstance();
-        private IDataElement element;
-        private INetworkModel model;
+        private final IDataElement element;
+        private final INetworkModel model;
 
         /**
          * @param isNeedToCreateBuild
          * @param name
          */
-        public NemDeleteJob(INetworkModel model, IDataElement element) {
+        public NemDeleteJob(final INetworkModel model, final IDataElement element) {
             super("Removing data: " + model + " element:" + element);
             this.model = model;
             this.element = element;
@@ -54,39 +55,36 @@ public class DeleteHandler extends AbstractHandler {
                     }
                 }, true);
 
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
             }
             return Status.OK_STATUS;
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
+    public Object execute(final ExecutionEvent event) throws ExecutionException {
+        final ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
 
         if (selection instanceof IStructuredSelection) {
-            Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
+            final Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
             try {
                 while (selectionIterator.hasNext()) {
-                    Object selectedObject = selectionIterator.next();
-                    if (selectedObject instanceof ITreeItem) {
-                        ITreeItem treeItem = (ITreeItem)selectedObject;
-                        if (treeItem.getParent() instanceof INetworkModel || treeItem.getChild() instanceof INetworkModel) {
-                            NemDeleteJob job = null;
-                            if (treeItem.getParent() == null) {
-                                job = new NemDeleteJob((INetworkModel)treeItem.getChild(), null);
-                            } else if (treeItem.getChild() instanceof IDataElement) {
-                                job = new NemDeleteJob((INetworkModel)treeItem.getParent(), (IDataElement)treeItem.getChild());
-                            }
-                            if (job != null) {
-                                job.schedule();
-                            }
+                    final Object selectedObject = selectionIterator.next();
+                    if (selectedObject instanceof IUIItemNew) {
+                        final IUIItemNew treeItem = (IUIItemNew)selectedObject;
+
+                        final INetworkModel networkModel = MenuUtils.getModelFromItem(treeItem);
+                        final IDataElement dataElement = MenuUtils.getElementFromItem(treeItem);
+
+                        if (networkModel != null) {
+                            final NemDeleteJob job = new NemDeleteJob(networkModel, dataElement);
+                            job.schedule();
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new ExecutionException("can't execute action ", e);
             }
         }

@@ -20,7 +20,7 @@ import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.nem.ui.wizard.NetworkCreationWizard;
 import org.amanzi.awe.nem.ui.wizard.PropertyCreationWizard;
-import org.amanzi.awe.views.treeview.provider.ITreeItem;
+import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -54,27 +54,28 @@ public class CreateNetworkElementContribution extends ContributionItem {
     }
 
     @Override
-    public void fill(Menu menu, int index) {
-        ITreeItem< ? , ? > item = getSelectedItem();
+    public void fill(final Menu menu, final int index) {
+        final IUIItemNew item = getSelectedItem();
 
         if (item == null) {
             return;
         }
 
-        final INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
-        final IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
-        INodeType type = MenuUtils.getInstance().getType(model, element);
+        final INetworkModel model = MenuUtils.getModelFromItem(item);
+        final IDataElement element = MenuUtils.getElementFromItem(item);
+        final INodeType type = MenuUtils.getType(model, element);
 
-        Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
+        final Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
                 Arrays.asList(model.getNetworkStructure()));
 
         log("Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
 
         for (final INodeType newType : types) {
-            MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
+            final MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
             menuItem.setText(newType.getId());
             menuItem.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e) {
+                @Override
+                public void widgetSelected(final SelectionEvent e) {
                     openWizard(model, element, newType);
                 }
             });
@@ -86,9 +87,9 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @param model
      * @param newType
      */
-    protected void openWizard(INetworkModel model, IDataElement root, INodeType newType) {
-        PropertyCreationWizard wizard = new PropertyCreationWizard(model, root, newType);
-        Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
+    protected void openWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
+        final PropertyCreationWizard wizard = new PropertyCreationWizard(model, root, newType);
+        final Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();
         wizardDialog.open();
 
@@ -99,38 +100,38 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @param wizard
      * @return
      */
-    private Dialog createDialog(IWorkbenchWindow activeWorkbenchWindow, NetworkCreationWizard wizard) {
+    private Dialog createDialog(final IWorkbenchWindow activeWorkbenchWindow, final NetworkCreationWizard wizard) {
         return new WizardDialog(activeWorkbenchWindow.getShell(), wizard);
     }
 
     /**
      * @return
      */
-    private ITreeItem< ? , ? > getSelectedItem() {
+    private IUIItemNew getSelectedItem() {
         log("geting selected tree item", LoggerStatus.INFO);
 
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
         if (window == null) {
             LOGGER.warn("Active window is null");
             return null;
         }
-        IStructuredSelection selection = (IStructuredSelection)window.getSelectionService().getSelection();
+        final IStructuredSelection selection = (IStructuredSelection)window.getSelectionService().getSelection();
         if (selection == null) {
             log("No selection data", LoggerStatus.WARN);
             return null;
         }
-        Object firstElement = selection.getFirstElement();
-        ITreeItem< ? , ? > item = null;
-        if (firstElement instanceof ITreeItem< ? , ? >) {
-            item = (ITreeItem< ? , ? >)firstElement;
-            item = MenuUtils.getInstance().getModelFromTreeItem(item) == null ? null : item;
+        final Object firstElement = selection.getFirstElement();
+        IUIItemNew item = null;
+        if (firstElement instanceof IUIItemNew) {
+            item = (IUIItemNew)firstElement;
+            item = MenuUtils.getModelFromItem(item) == null ? null : item;
         }
-        log("found ITreeItem parent:" + item.getParent() + " child: " + item.getChild(), LoggerStatus.INFO);
+        log("found Item <" + item + ">", LoggerStatus.INFO);
         return item;
     }
 
-    private void log(String message, LoggerStatus status) {
+    private void log(final String message, final LoggerStatus status) {
         if (LOGGER.isDebugEnabled()) {
             switch (status) {
             case WARN:
