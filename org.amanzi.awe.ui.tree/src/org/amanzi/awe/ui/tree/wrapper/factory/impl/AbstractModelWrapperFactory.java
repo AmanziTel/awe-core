@@ -24,6 +24,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.internal.INamedModelProvider;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -81,12 +82,12 @@ public abstract class AbstractModelWrapperFactory<M extends IModel, P extends IN
         try {
             IProjectModel projectModel = null;
 
-            if (parent != null && parent instanceof IUIItemNew) {
-                projectModel = ((IUIItemNew)parent).castChild(IProjectModel.class);
-            }
-
-            if (projectModel == null) {
-                projectModelProvider.getActiveProjectModel();
+            if (parent != null) {
+                if (parent.equals(ObjectUtils.NULL)) {
+                    projectModel = projectModelProvider.getActiveProjectModel();
+                } else if (parent instanceof IUIItemNew) {
+                    projectModel = ((IUIItemNew)parent).castChild(IProjectModel.class);
+                }
             }
 
             if (projectModel != null) {

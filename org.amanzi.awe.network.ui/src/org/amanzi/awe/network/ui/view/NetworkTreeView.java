@@ -12,6 +12,7 @@
  */
 package org.amanzi.awe.network.ui.view;
 
+import org.amanzi.awe.network.ui.NetworkTreePlugin;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
 /**

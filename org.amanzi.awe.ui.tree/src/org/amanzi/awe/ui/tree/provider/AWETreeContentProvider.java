@@ -55,12 +55,16 @@ public class AWETreeContentProvider implements ITreeContentProvider {
     public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object[] getElements(final Object inputElement) {
+        return getElementsInternal(inputElement);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Object[] getElementsInternal(final Object inputElement) {
         final List<ITreeWrapper> wrappers = new ArrayList<ITreeWrapper>();
 
-        for (final ITreeWrapperFactory factory : getFactories()) {
+        for (final ITreeWrapperFactory factory : factories) {
             final Iterator<ITreeWrapper> items = factory.getWrappers(inputElement);
             if (items != null) {
                 wrappers.addAll(IteratorUtils.toList(items));
@@ -103,10 +107,6 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         return false;
     }
 
-    protected Set<ITreeWrapperFactory> getFactories() {
-        return factories;
-    }
-
     private Pair<ITreeWrapper, ITreeItem> convertObject(final Object element) {
         Pair<ITreeWrapper, ITreeItem> result = null;
 
@@ -124,7 +124,7 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         return wrapper.getParent(item);
     }
 
-    private Object[] getChildren(final ITreeWrapper wrapper, final ITreeItem item) {
+    protected Object[] getChildren(final ITreeWrapper wrapper, final ITreeItem item) {
         final Iterator<ITreeItem> iterator = wrapper.getChildren(item);
 
         if (iterator != null) {
@@ -134,7 +134,7 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         return null;
     }
 
-    private boolean hasChildren(final ITreeWrapper wrapper, final ITreeItem item) {
+    protected boolean hasChildren(final ITreeWrapper wrapper, final ITreeItem item) {
         final Iterator<ITreeItem> iterator = wrapper.getChildren(item);
 
         return iterator != null && iterator.hasNext();
@@ -144,7 +144,7 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         return IteratorUtils.toArray(itemIterator);
     }
 
-    private <T extends ITreeItem> Object[] toObject(final Collection<T> itemCollection) {
+    protected <T extends ITreeItem> Object[] toObject(final Collection<T> itemCollection) {
         return itemCollection.toArray(new Object[itemCollection.size()]);
     }
 }

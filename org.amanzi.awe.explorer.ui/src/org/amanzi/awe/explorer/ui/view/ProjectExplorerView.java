@@ -5,9 +5,11 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
  */
-package org.amanzi.awe.views.explorer.view;
+package org.amanzi.awe.explorer.ui.view;
 
+import org.amanzi.awe.explorer.ui.provider.ExplorerContentProvider;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 
 /**
  * project explorer view
@@ -19,11 +21,20 @@ public class ProjectExplorerView extends AbstractAWETreeView {
     /*
      * ID of this View
      */
-    public static final String PROJECT_EXPLORER_ID = "org.amanzi.trees.ProjectExplorer";
+    private static final String PROJECT_EXPLORER_ID = "org.amanzi.trees.ProjectExplorer";
+
+    public ProjectExplorerView() {
+        super();
+    }
 
     @Override
     public String getViewId() {
         return PROJECT_EXPLORER_ID;
+    }
+
+    @Override
+    protected ITreeContentProvider createContentProvider() {
+        return new ExplorerContentProvider(getFactories());
     }
 
 }

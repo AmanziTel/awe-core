@@ -9,3 +9,4 @@ Require-Bundle: net.refractions.udig.project.edit,
  org.amanzi.awe.ui.tree;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: amanzi.org
+Bundle-Activator: org.amanzi.awe.explorer.ui.ProjectExplorerPlugin

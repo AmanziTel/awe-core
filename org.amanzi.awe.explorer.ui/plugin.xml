@@ -7,7 +7,7 @@
             name="Database Project Explorer"
             icon="icons/project.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
+            class="org.amanzi.awe.explorer.ui.view.ProjectExplorerView"
             id="org.amanzi.trees.ProjectExplorer">
       </view>
    </extension>

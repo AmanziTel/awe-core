@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.views.explorer;
+package org.amanzi.awe.explorer.ui;
 
 import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
