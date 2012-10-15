@@ -33,7 +33,7 @@ public class NetworkDataContainer {
 
     private String name;
 
-    private List<String> structure;
+    private List<INodeType> structure;
 
     private Map<INodeType, List<PropertyContainer>> typeProperties = new HashMap<INodeType, List<PropertyContainer>>();
 
@@ -54,7 +54,7 @@ public class NetworkDataContainer {
     /**
      * @return Returns the structure.
      */
-    public List<String> getStructure() {
+    public List<INodeType> getStructure() {
         return structure;
     }
 
@@ -72,15 +72,15 @@ public class NetworkDataContainer {
     /**
      * @param structure The structure to set.
      */
-    public void setStructure(List<String> structure) {
+    public void setStructure(List<INodeType> structure) {
         this.structure = structure;
     }
 
     /**
      * @param structure The structure to set.
      */
-    public void setStructure(String singleElement) {
-        this.structure = new ArrayList<String>();
+    public void setStructure(INodeType singleElement) {
+        this.structure = new ArrayList<INodeType>();
         structure.add(singleElement);
     }
 }

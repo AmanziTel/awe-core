@@ -1,66 +1,24 @@
 package org.amanzi.awe.nem.ui.handlers;
 
+import java.text.MessageFormat;
 import java.util.Iterator;
 
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
+import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.ui.dto.IUIItemNew;
-import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class DeleteHandler extends AbstractHandler {
-
-    private static class NemDeleteJob extends Job {
-
-        private static final NetworkElementManager MANAGER = NetworkElementManager.getInstance();
-        private final IDataElement element;
-        private final INetworkModel model;
-
-        /**
-         * @param isNeedToCreateBuild
-         * @param name
-         */
-        public NemDeleteJob(final INetworkModel model, final IDataElement element) {
-            super("Removing data: " + model + " element:" + element);
-            this.model = model;
-            this.element = element;
-        }
-
-        @Override
-        protected IStatus run(final IProgressMonitor monitor) {
-            try {
-                if (element == null) {
-                    MANAGER.removeModel(model);
-                } else {
-                    MANAGER.removeElement(model, element);
-                }
-
-                ActionUtil.getInstance().runTask(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        AWEEventManager.getManager().fireDataUpdatedEvent(null);
-                    }
-                }, true);
-
-            } catch (final Exception e) {
-                return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
-            }
-            return Status.OK_STATUS;
-        }
-    }
 
     @SuppressWarnings({"unchecked"})
     @Override
@@ -79,10 +37,23 @@ public class DeleteHandler extends AbstractHandler {
                         final IDataElement dataElement = MenuUtils.getElementFromItem(treeItem);
 
                         if (networkModel != null) {
-                            final NemDeleteJob job = new NemDeleteJob(networkModel, dataElement);
-                            job.schedule();
+                            if (dataElement == null) {
+                                if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                                        NemMessages.REMOVE_DIALOG_TITLE,
+                                        MessageFormat.format(NemMessages.REMOVE_MODEL_CONFIRMATION_TEXT, networkModel.getName()))) {
+                                    NetworkElementManager.getInstance().removeModel(networkModel);
+                                }
+                            } else {
+                                if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                                        NemMessages.REMOVE_DIALOG_TITLE, MessageFormat.format(
+                                                NemMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, dataElement.getName(),
+                                                networkModel.getName()))) {
+                                    NetworkElementManager.getInstance().removeElement(networkModel, dataElement);
+                                }
+                            }
                         }
                     }
+
                 }
             } catch (final Exception e) {
                 throw new ExecutionException("can't execute action ", e);

@@ -180,4 +180,9 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
         }
     }
 
+    protected void deleteFromCache(IKey... keys) {
+        for (IKey key : keys) {
+            modelCache.remove(key);
+        }
+    }
 }

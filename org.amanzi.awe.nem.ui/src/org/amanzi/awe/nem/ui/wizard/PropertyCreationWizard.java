@@ -47,7 +47,7 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
         this.parent = parent;
 
         getDataContainer().setName(model.getName());
-        getDataContainer().setStructure(type.getId());
+        getDataContainer().setStructure(type);
         setForcePreviousAndNextButtons(false);
     }
 

@@ -776,7 +776,6 @@ public class NodeService extends AbstractService implements INodeService {
         final Transaction tx = getGraphDb().beginTx();
         try {
             relation.delete();
-
             tx.success();
         } catch (final Exception e) {
             tx.failure();

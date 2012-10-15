@@ -14,25 +14,33 @@
 package org.amanzi.awe.nem.managers.network;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
-import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.manager.EventChain;
+import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 
 /**
  * TODO Purpose of
@@ -54,6 +62,7 @@ public class NetworkElementManager {
     }
 
     private INetworkModelProvider networkModelProvider;
+
     private IProjectModelProvider projectModelPovider;
 
     protected NetworkElementManager(INetworkModelProvider provider, IProjectModelProvider projectModelProvider) {
@@ -66,26 +75,62 @@ public class NetworkElementManager {
     }
 
     public void removeModel(final INetworkModel model) throws ModelException {
-        LOGGER.info("Start removing model " + model);
-        try {
-            model.delete();
-        } catch (ModelException e) {
-            LOGGER.error("Can't model " + model, e);
-            throw e;
-        }
+        LOGGER.info("Start removing model " + model + " at " + new Date(System.currentTimeMillis()));
+
+        Job job = new Job("removing model " + model.getName()) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    networkModelProvider.deleteModel(model);
+                    LOGGER.info("Finished removing model " + model + " at " + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
+                        }
+                    }, true);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't remove model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
     }
 
     public void removeElement(final INetworkModel model, final IDataElement element) throws ModelException {
-        LOGGER.info("Start  removing element " + element + " from model " + model);
-        try {
-            model.deleteElement(element);
-        } catch (ModelException e) {
-            LOGGER.error("Can't remove element " + element + " from model " + model, e);
-            throw e;
-        }
+        LOGGER.info("Start  removing element " + element + " from model " + model + " at " + new Date(System.currentTimeMillis()));
+
+        Job job = new Job("Removing element" + element.getName() + " from model " + model.getName()) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    model.deleteElement(element);
+                    model.finishUp();
+                    LOGGER.info("Finished  removing element " + element + " from model " + model + " at "
+                            + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
+                        }
+                    }, true);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't remove element " + element + " from model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
     }
 
-    public List<INodeType> updateNodeTypes(String[] types) {
+    public List<INodeType> updateNodeTypes(INodeType[] types) {
         return NodeTypeManager.getInstance().addDynamicNodeTypes(types);
     }
 
@@ -97,15 +142,19 @@ public class NetworkElementManager {
      */
     public void createModel(String name, List<INodeType> structure, Map<INodeType, List<PropertyContainer>> typeProperties)
             throws NemManagerOperationException {
+        EventChain eventChain = new EventChain(true);
         try {
             INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
             IPropertyStatisticsModel propertiesModel = model.getPropertyStatistics();
             updateProperties(propertiesModel, typeProperties);
+            model.finishUp();
+
         } catch (ModelException e) {
             LOGGER.error("can't create model", e);
             throw new NemManagerOperationException("can't create model", e);
         }
-        AWEEventManager.getManager().fireDataUpdatedEvent(null);
+        eventChain.addEvent(new DataUpdatedEvent(this));
+        AWEEventManager.getManager().fireEventChain(eventChain);
     }
 
     /**
@@ -142,15 +191,38 @@ public class NetworkElementManager {
      * @param type
      * @param map
      */
-    public void createElement(INetworkModel model, IDataElement parent, INodeType type, Collection<PropertyContainer> properties) {
-        IDataElement parentElement = parent == null ? model.asDataElement() : parent;
-        Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
-        String name = (String)prop.get("name");
-        try {
-            model.createElement(new DynamicNetworkType(type.getId()), parentElement, name, prop);
-        } catch (ModelException e) {
-            LOGGER.error("can't create new element");
-        }
-        AWEEventManager.getManager().fireDataUpdatedEvent(null);
+    public void createElement(final INetworkModel model, IDataElement parent, final INodeType type,
+            Collection<PropertyContainer> properties) {
+        LOGGER.info("Start create new element  from model " + model.getName() + " at " + new Date(System.currentTimeMillis()));
+
+        final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
+        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        final String name = (String)prop.get("name");
+
+        Job job = new Job("Create new element  from model " + model.getName()) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    model.createElement((INetworkElementType)type, parentElement, name, prop);
+                    model.finishUp();
+                    LOGGER.info("Finished creating new element  from model " + model.getName()
+                            + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
+                        }
+                    }, true);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't create new element from model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+
     }
 }

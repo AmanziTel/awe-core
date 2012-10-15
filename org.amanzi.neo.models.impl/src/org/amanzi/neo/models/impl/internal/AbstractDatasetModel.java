@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -160,7 +161,7 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
     public void deleteElement(IDataElement element) throws ModelException {
         assert element != null;
 
-        // TODO KV: implement index removing
+        indexModel.deleteIndex(((DataElement)element).getNode(), element.getNodeType());
 
         super.deleteElement(element);
     }

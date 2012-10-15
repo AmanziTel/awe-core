@@ -13,8 +13,10 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.messages.NemMessages;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
@@ -23,6 +25,9 @@ import org.amanzi.awe.nem.ui.widgets.TypeControlWidget.ITableItemSelectionListen
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -90,8 +95,18 @@ public class InitialNetworkPage extends WizardPage
 
     }
 
-    public List<String> getNetworkStructure() {
-        return typesSelector.getStructure();
+    public List<INodeType> getNetworkStructure() {
+        List<INodeType> types = new ArrayList<INodeType>();
+        for (String type : typesSelector.getStructure()) {
+            INodeType newType;
+            try {
+                newType = NodeTypeManager.getInstance().getType(type);
+            } catch (NodeTypeNotExistsException e) {
+                newType = new DynamicNetworkType(type);
+            }
+            types.add(newType);
+        }
+        return types;
     }
 
     @Override

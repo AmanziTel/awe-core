@@ -14,6 +14,7 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.neo4j.graphdb.Node;
@@ -38,7 +39,7 @@ public interface IIndexService extends IService {
     <T extends Object> MultiPropertyIndex<T> createMultiPropertyIndex(INodeType nodeType, Node node, Class<T> clazz,
             String... properties) throws ServiceException;
 
-    void deleteFromIndexes(Node node, INodeType nodeType);
+    void deleteFromIndexes(Node rootNode, Node node, INodeType nodeType) throws DatabaseException;
 
-    void deleteAll();
+    void deleteAll(Node node) throws DatabaseException;
 }

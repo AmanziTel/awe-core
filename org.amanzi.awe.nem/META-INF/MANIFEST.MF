@@ -6,7 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.models;bundle-version="1.0.0",
  org.amanzi.log4j;bundle-version="1.0.0",
- org.amanzi.awe.ui;bundle-version="1.0.0"
+ org.amanzi.awe.ui;bundle-version="1.0.0",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.1"
 Export-Package: org.amanzi.awe.nem.exceptions,
  org.amanzi.awe.nem.managers.network,
  org.amanzi.awe.nem.managers.properties,

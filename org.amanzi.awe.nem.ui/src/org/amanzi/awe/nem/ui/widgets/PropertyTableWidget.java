@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.ui.widgets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
@@ -53,11 +54,13 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
     private PropertyTable tableViewer;
 
-    private Object bAdd;
+    private Button bAdd;
 
-    private Object bRemove;
+    private Button bRemove;
 
     private List<PropertyContainer> propertyContainer;
+
+    private List<PropertyContainer> requiredProperties;
 
     /**
      * @param parent
@@ -66,6 +69,7 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
      */
     public PropertyTableWidget(Composite parent, ITableChangedWidget listener, List<PropertyContainer> properties) {
         super(parent, SWT.NONE, listener);
+        requiredProperties = new ArrayList<PropertyContainer>(properties);
         this.propertyContainer = properties;
     }
 
@@ -85,6 +89,7 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
         tableViewer = new PropertyTable(tableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, propertyContainer, this);
 
+        tableViewer.getTable().addSelectionListener(this);
         tableViewer.initialize();
 
         Composite buttonComposite = new Composite(widgetComposite, SWT.NONE);
@@ -93,7 +98,7 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
         bAdd = createButton(buttonComposite, NemMessages.ADD);
         bRemove = createButton(buttonComposite, NemMessages.REMOVE);
-
+        bRemove.setEnabled(false);
         return widgetComposite;
     }
 
@@ -114,6 +119,15 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
             IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
             PropertyContainer container = (PropertyContainer)selection.getFirstElement();
             tableViewer.remove(container);
+        }
+        if (e.getSource().equals(tableViewer.getTable())) {
+            IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+            PropertyContainer container = (PropertyContainer)selection.getFirstElement();
+            if (requiredProperties.contains(container)) {
+                bRemove.setEnabled(false);
+            } else {
+                bRemove.setEnabled(true);
+            }
         }
 
     }

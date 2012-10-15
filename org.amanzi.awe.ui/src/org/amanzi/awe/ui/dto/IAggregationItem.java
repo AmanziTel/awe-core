@@ -11,15 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.awe.ui.dto;
 
-import java.util.List;
-
-import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.models.project.IProjectModel;
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.providers.internal.IDatasetModelProvider;
+import org.amanzi.neo.dto.IDataElement;
 
 /**
  * TODO Purpose of
@@ -29,8 +23,8 @@ import org.amanzi.neo.providers.internal.IDatasetModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface INetworkModelProvider extends IDatasetModelProvider<INetworkModel, IProjectModel> {
+public interface IAggregationItem extends IUIItemNew {
 
-    INetworkModel createModel(IProjectModel parent, String name, List<INodeType> structure) throws ModelException;
+    Iterable<IDataElement> getSources();
 
 }

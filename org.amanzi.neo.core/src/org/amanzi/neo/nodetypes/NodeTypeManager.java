@@ -172,22 +172,22 @@ public final class NodeTypeManager {
         }
     }
 
-    public List<INodeType> addDynamicNodeTypes(String... types) {
+    public List<INodeType> addDynamicNodeTypes(INodeType... types) {
         String existedTypes = PREFERENCE_STORE.getDefaultString(DYNAMIC_NODE_TYPES_KEY);
         StringBuilder builder = new StringBuilder(existedTypes);
         List<INodeType> dynamicTypes = new ArrayList<INodeType>();
-        for (String type : types) {
-            if (nodeTypeCache.containsKey(type)) {
-                dynamicTypes.add(nodeTypeCache.get(type));
+        for (INodeType type : types) {
+            try {
+                dynamicTypes.add(getType(type.getId()));
                 continue;
+            } catch (NodeTypeNotExistsException e) {
             }
             if (!builder.toString().isEmpty()) {
                 builder.append(COMMA_SEPARATOR);
             }
-            builder.append(type);
-            INodeType newType = new DynamicNodeType(type);
-            dynamicTypes.add(newType);
-            nodeTypeCache.put(type, newType);
+            builder.append(type.getId());
+            dynamicTypes.add(type);
+            nodeTypeCache.put(type.getId(), type);
         }
         PREFERENCE_STORE.setDefault(DYNAMIC_NODE_TYPES_KEY, builder.toString());
         return dynamicTypes;

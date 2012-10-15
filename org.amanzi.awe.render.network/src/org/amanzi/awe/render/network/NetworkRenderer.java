@@ -52,7 +52,7 @@ public class NetworkRenderer extends AbstractRenderer {
 
     private static final double FULL_CIRCLE = 360.0;
 
-    private static final Color SELECTED_SECTOR_COLOR = Color.BLACK;
+    private static final Color SELECTED_SECTOR_COLOR = Color.CYAN;
 
     /**
      * styler for current renderer
@@ -154,7 +154,7 @@ public class NetworkRenderer extends AbstractRenderer {
         path.closePath();
         destination.setColor(networkRendererStyle.changeColor(SELECTED_SECTOR_COLOR, networkRendererStyle.getAlpha()));
         destination.draw(path);
-        destination.drawString(sector.toString(), (int)a.getEndPoint().getX() + 10, (int)a.getEndPoint().getY());
+        destination.drawString(sector.getName(), (int)a.getEndPoint().getX() + 10, (int)a.getEndPoint().getY());
     }
 
     @Override

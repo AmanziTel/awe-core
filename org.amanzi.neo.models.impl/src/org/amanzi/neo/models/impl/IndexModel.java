@@ -24,6 +24,7 @@ import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IIndexService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.indexes.MultiPropertyIndex;
 import org.apache.log4j.Logger;
@@ -271,7 +272,11 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         assert node != null;
         assert type != null;
 
-        indexService.deleteFromIndexes(node, type);
+        try {
+            indexService.deleteFromIndexes(getRootNode(), node, type);
+        } catch (DatabaseException e) {
+            processException("can't delete node " + node + " from indexes", e);
+        }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("deleteIndex"));
         }
@@ -280,7 +285,11 @@ public class IndexModel extends AbstractModel implements IIndexModel {
     @Override
     public void delete() throws ModelException {
         indexMap.clear();
-        indexService.deleteAll();
+        try {
+            indexService.deleteAll(getRootNode());
+        } catch (DatabaseException e) {
+            processException("can't delete indexes", e);
+        }
     }
 
 }

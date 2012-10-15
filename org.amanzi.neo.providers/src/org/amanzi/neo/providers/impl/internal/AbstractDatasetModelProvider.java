@@ -25,6 +25,10 @@ import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.providers.IGISModelProvider;
 import org.amanzi.neo.providers.IIndexModelProvider;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
+import org.amanzi.neo.providers.impl.GISModelProvider;
+import org.amanzi.neo.providers.impl.IndexModelProvider;
+import org.amanzi.neo.providers.impl.PropertyStatisticsModelProvider;
+import org.amanzi.neo.providers.internal.IDatasetModelProvider;
 import org.amanzi.neo.services.INodeService;
 
 /**
@@ -37,15 +41,15 @@ import org.amanzi.neo.services.INodeService;
  */
 public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P extends IModel, C extends AbstractDatasetModel>
         extends
-            AbstractNamedModelProvider<M, P, C> {
+            AbstractNamedModelProvider<M, P, C> implements IDatasetModelProvider<M, P> {
 
-    private final IIndexModelProvider indexModelProvider;
+    private final IndexModelProvider indexModelProvider;
 
-    private final IPropertyStatisticsModelProvider propertyStatisticsModelProvider;
+    private final PropertyStatisticsModelProvider propertyStatisticsModelProvider;
 
     private final IGeoNodeProperties geoNodeProperties;
 
-    private final IGISModelProvider gisModelProvider;
+    private final GISModelProvider gisModelProvider;
 
     /**
      * @param nodeService
@@ -55,10 +59,10 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
             final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
             final IGeoNodeProperties geoNodeProperties, final IGISModelProvider gisModelProvider) {
         super(nodeService, generalNodeProperties);
-        this.indexModelProvider = indexModelProvider;
-        this.propertyStatisticsModelProvider = propertyStatisticsModelProvider;
+        this.indexModelProvider = (IndexModelProvider)indexModelProvider;
+        this.propertyStatisticsModelProvider = (PropertyStatisticsModelProvider)propertyStatisticsModelProvider;
         this.geoNodeProperties = geoNodeProperties;
-        this.gisModelProvider = gisModelProvider;
+        this.gisModelProvider = (GISModelProvider)gisModelProvider;
     }
 
     @Override
@@ -98,4 +102,18 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
         return geoNodeProperties;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public void deleteModel(M model) throws ModelException {
+        C abstractModel = (C)model;
+        IKey nameKey = new NameKey(model.getName());
+        IKey nodeKey = new NodeKey(abstractModel.getRootNode());
+        IKey multiKey = new MultiKey(nameKey, nodeKey);
+
+        deleteFromCache(nameKey, nodeKey, multiKey);
+        indexModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        propertyStatisticsModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        gisModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        model.delete();
+    }
 }

@@ -103,7 +103,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
                     if (dataElement.getNodeType().equals(NetworkElementType.SITE)) {
                         element = getLocationElement(((DataElement)dataElement).getNode());
-                    } else if (dataElement.getNodeType() instanceof INetworkElementType) {
+                    } else if (dataElement.getNodeType() instanceof NetworkElementType) {
                         if (NetworkElementType.compare(NetworkElementType.SITE, (NetworkElementType)dataElement.getNodeType()) < 0) {
                             IDataElement tempElement = dataElement;
                             while (!tempElement.getNodeType().equals(NetworkElementType.SITE)) {
@@ -512,7 +512,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     private ISectorElement getSectorElement(final Node node) throws ServiceException {
         final SectorElement element = new SectorElement(node);
         element.setNodeType(NetworkElementType.SECTOR);
-        element.setName(getName());
+        element.setName(getNodeService().getNodeName(node));
         element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
         element.setBeamwidth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getBeamwidthProperty(), null,
                 false));
