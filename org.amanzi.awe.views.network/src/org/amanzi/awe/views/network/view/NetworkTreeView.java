@@ -12,12 +12,20 @@
  */
 package org.amanzi.awe.views.network.view;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.network.provider.NetworkTreeContentProvider;
 import org.amanzi.awe.views.treeview.AbstractTreeView;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
@@ -30,7 +38,7 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.0.0
  */
 
-public class NetworkTreeView extends AbstractTreeView {
+public class NetworkTreeView extends AbstractTreeView implements SelectionListener {
 
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
 
@@ -52,6 +60,7 @@ public class NetworkTreeView extends AbstractTreeView {
     public void createPartControl(final Composite parent) {
         setSearchField(new Text(parent, SWT.BORDER));
         super.createPartControl(parent);
+        getTreeViewer().getTree().addSelectionListener(this);
     }
 
     @Override
@@ -63,5 +72,29 @@ public class NetworkTreeView extends AbstractTreeView {
     @Override
     public String getViewId() {
         return NETWORK_TREE_VIEW_ID;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void widgetSelected(SelectionEvent e) {
+        if (e.getSource().equals(getTreeViewer().getTree())) {
+            Object data = e.item.getData();
+            ITreeItem<INetworkModel, IDataElement> item = (ITreeItem<INetworkModel, IDataElement>)data;
+            IDataElement child = item.getChild();
+            INetworkModel model = item.getParent();
+            if (model != null && child.getNodeType().equals(NetworkElementType.SITE)
+                    || child.getNodeType().equals(NetworkElementType.SECTOR)) {
+                Set<IDataElement> elements = new HashSet<IDataElement>();
+                elements.add(child);
+                AWEEventManager.getManager().fireShowOnMapEvent(model, elements, this);
+            }
+        }
+
+    }
+
+    @Override
+    public void widgetDefaultSelected(SelectionEvent e) {
+        // TODO Auto-generated method stub
+
     }
 }
