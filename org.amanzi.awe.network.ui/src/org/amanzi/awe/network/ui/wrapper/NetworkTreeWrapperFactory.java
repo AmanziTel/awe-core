@@ -11,11 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.network.wrapper;
+package org.amanzi.awe.network.ui.wrapper;
 
+import org.amanzi.awe.network.ui.NetworkTreePlugin;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.awe.ui.tree.wrapper.factory.impl.AbstractModelWrapperFactory;
-import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.providers.INetworkModelProvider;
 

@@ -4,10 +4,9 @@ Bundle-Name: Networktree Plug-in
 Bundle-SymbolicName: org.amanzi.awe.network.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-ActivationPolicy: lazy
-Export-Package: org.amanzi.awe.views.network,
- org.amanzi.awe.views.network.provider,
- org.amanzi.awe.views.network.view
+Export-Package: org.amanzi.awe.network.ui,
+ org.amanzi.awe.network.ui.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.amanzi.awe.ui.tree;bundle-version="1.0.0"
-Bundle-Activator: org.amanzi.awe.views.network.NetworkTreePlugin
+Bundle-Activator: org.amanzi.awe.network.ui.NetworkTreePlugin

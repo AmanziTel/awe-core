@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.views.network.view;
+package org.amanzi.awe.network.ui.view;
 
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
@@ -25,7 +25,7 @@ import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
 public class NetworkTreeView extends AbstractAWETreeView {
 
-    private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
+    private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.trees.NetworkTree";
 
     public NetworkTreeView() {
         super();

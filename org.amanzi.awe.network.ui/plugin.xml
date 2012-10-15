@@ -7,8 +7,8 @@
             name="Network Tree"
             icon="icons/network.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.network.view.NetworkTreeView"
-            id="org.amanzi.awe.views.network.views.NetworkTreeView">
+            class="org.amanzi.awe.network.ui.view.NetworkTreeView"
+            id="org.amanzi.trees.NetworkTree">
       </view>
    </extension>
    
@@ -17,21 +17,21 @@
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
          <view
-               id="org.amanzi.awe.views.network.views.NetworkTreeView"
+               id="org.amanzi.trees.NetworkTree"
                relationship="stack"
                relative="net.refractions.udig.project.ui.layerManager"
                visible="true">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.network.views.NetworkTreeView">
+               id="org.amanzi.trees.NetworkTree">
          </viewShortcut>
       </perspectiveExtension>
    </extension>
    <extension
          point="org.amanzi.tree.factories">
       <wrapper-factory
-            class="org.amanzi.awe.views.network.wrapper.NetworkTreeWrapperFactory"
-            tree_id="org.amanzi.awe.views.network.views.NetworkTreeView">
+            class="org.amanzi.awe.network.ui.wrapper.NetworkTreeWrapperFactory"
+            tree_id="org.amanzi.trees.NetworkTree">
       </wrapper-factory>
    </extension>
    
