@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -13,19 +12,5 @@
 	<artifactId>org.amanzi.awe.nem.feature</artifactId>
 	<version>1.0.0.qualifier</version>
 	<packaging>eclipse-feature</packaging>
-	
-=======
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>awe-core</artifactId>
-    <groupId>org.amanzi</groupId>
-    <version>${awe-core-version}</version>
-  </parent>
-  <groupId>org.amanzi</groupId>
-  <artifactId>org.amanzi.awe.nem.feature</artifactId>
-  <version>1.1.1.qualifier</version>
-  <packaging>eclipse-feature</packaging>
->>>>>>> refs/heads/master
+
 </project>
