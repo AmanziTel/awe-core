@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Drive_inquirer
 Bundle-SymbolicName: org.amanzi.awe.drive.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.awe.views.drive.DriveTreePlugin
+Bundle-Activator: org.amanzi.awe.drive.ui.DriveTreePlugin
 Require-Bundle: org.amanzi.awe.ui.tree;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

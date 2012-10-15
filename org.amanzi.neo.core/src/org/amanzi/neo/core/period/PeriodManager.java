@@ -29,7 +29,7 @@ import org.apache.commons.lang3.time.DateUtils;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PeriodManager {
+public final class PeriodManager {
 
     private static final DateFormat HOUR_DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
@@ -43,24 +43,19 @@ public class PeriodManager {
 
     private static final DateFormat YEAR_DATE_FORMAT = new SimpleDateFormat("yyyy");
 
-    private static class InstanceHolder {
-        private static final PeriodManager INSTANCE = new PeriodManager();
-
-    }
-
-    public static PeriodManager getInstance() {
-        return InstanceHolder.INSTANCE;
-    }
-
     private PeriodManager() {
 
     }
 
-    public String getPeriodName(Period period, Date startDate, Date endDate) {
+    public static String getPeriodName(final Period period, final long startTime, final long endTime) {
+        return getPeriodName(period, new Date(startTime), new Date(endTime));
+    }
+
+    public static String getPeriodName(final Period period, final Date startDate, final Date endDate) {
         if (period != null) {
             switch (period) {
             case HOURLY:
-                boolean isSameDay = DateUtils.isSameDay(startDate, endDate);
+                final boolean isSameDay = DateUtils.isSameDay(startDate, endDate);
                 if (isSameDay) {
                     return MessageFormat.format(Messages.hourPeriodPattern, DAY_DATE_FORMAT.format(startDate),
                             HOUR_DATE_FORMAT.format(startDate), HOUR_DATE_FORMAT.format(endDate));
@@ -83,7 +78,8 @@ public class PeriodManager {
         return StringUtils.EMPTY;
     }
 
-    public long getNextStartDate(final Period period, final long endDate, final long currentStartDate) {
+    @Deprecated
+    public static long getNextStartDate(final Period period, final long endDate, final long currentStartDate) {
         long nextStartDate = period.addPeriod(currentStartDate);
         if (!period.equals(Period.HOURLY) && (nextStartDate > endDate)) {
             nextStartDate = endDate;

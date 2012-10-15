@@ -40,11 +40,15 @@ public class AWELabelProvider extends LabelProvider {
             } else {
                 final IModel model = item.castChild(IModel.class);
 
-                return getNameFromModel(model);
+                if (model != null) {
+                    return getNameFromModel(model);
+                }
             }
         } else {
             return getNameFromObject(element);
         }
+
+        return null;
     }
 
     /**

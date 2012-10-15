@@ -39,7 +39,7 @@ public enum Period {
 
         @Override
         public Long getStartTime(final Long time) {
-            GregorianCalendar cl = new GregorianCalendar();
+            final GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.MINUTE, 0);
             cl.set(Calendar.SECOND, 0);
@@ -57,7 +57,7 @@ public enum Period {
 
         @Override
         public Long getStartTime(final Long time) {
-            GregorianCalendar cl = new GregorianCalendar();
+            final GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.HOUR_OF_DAY, 0);
             cl.set(Calendar.MINUTE, 0);
@@ -75,7 +75,7 @@ public enum Period {
 
         @Override
         public Long getStartTime(final Long time) {
-            GregorianCalendar cl = new GregorianCalendar();
+            final GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.DAY_OF_WEEK, cl.getFirstDayOfWeek());
             cl.set(Calendar.HOUR_OF_DAY, 0);
@@ -95,9 +95,9 @@ public enum Period {
 
         @Override
         public Long getStartTime(final Long time) {
-            GregorianCalendar cl = new GregorianCalendar();
+            final GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
-            int dayInMonth = cl.get(Calendar.DAY_OF_MONTH);
+            final int dayInMonth = cl.get(Calendar.DAY_OF_MONTH);
             cl.add(Calendar.DAY_OF_YEAR, 1 - dayInMonth);
             cl.set(Calendar.HOUR_OF_DAY, 0);
             cl.set(Calendar.MINUTE, 0);
@@ -115,7 +115,7 @@ public enum Period {
 
         @Override
         public Long getStartTime(final Long time) {
-            GregorianCalendar cl = new GregorianCalendar();
+            final GregorianCalendar cl = new GregorianCalendar();
             cl.setTimeInMillis(time);
             cl.set(Calendar.MONTH, Calendar.JANUARY);
             cl.set(Calendar.DAY_OF_MONTH, 1);
@@ -194,7 +194,7 @@ public enum Period {
         if (periodId == null) {
             return null;
         }
-        for (Period period : Period.values()) {
+        for (final Period period : Period.values()) {
             if (period.getId().equals(periodId)) {
                 return period;
             }
@@ -227,10 +227,10 @@ public enum Period {
     }
 
     public static Period getHighestPeriod(final long minTime, final long maxTime) {
-        Calendar minDate = Calendar.getInstance();
+        final Calendar minDate = Calendar.getInstance();
         minDate.setTimeInMillis(minTime);
 
-        Calendar maxDate = Calendar.getInstance();
+        final Calendar maxDate = Calendar.getInstance();
         maxDate.setTimeInMillis(maxTime);
 
         // starting with highest period
@@ -242,8 +242,8 @@ public enum Period {
             if (highestPeriod == Period.HOURLY) {
                 result = highestPeriod;
             } else {
-                int minDatePeriod = minDate.get(highestPeriod.getUnderlyingPeriodCalendarField());
-                int maxDatePeriod = maxDate.get(highestPeriod.getUnderlyingPeriodCalendarField());
+                final int minDatePeriod = minDate.get(highestPeriod.getUnderlyingPeriodCalendarField());
+                final int maxDatePeriod = maxDate.get(highestPeriod.getUnderlyingPeriodCalendarField());
 
                 if (minDatePeriod < maxDatePeriod) {
                     result = highestPeriod;
@@ -262,7 +262,7 @@ public enum Period {
      * @return timestamp+ 1 period
      */
     private static Long addOnePeriod(final Long time, final int period) {
-        GregorianCalendar cl = new GregorianCalendar();
+        final GregorianCalendar cl = new GregorianCalendar();
         cl.setTimeInMillis(time);
         cl.add(period, 1);
         return cl.getTimeInMillis();
@@ -287,7 +287,7 @@ public enum Period {
         // TODO: LN: 09.08.2012, algorithm of detecting available periods is in correct since it
         // depends on numbers (at least in month we can have more or less than 30 days)
 
-        List<Period> periods = new ArrayList<Period>();
+        final List<Period> periods = new ArrayList<Period>();
         long time = (endTime - startTime) / (1000 * 60);
 
         if ((time = time / 60) >= 0) {

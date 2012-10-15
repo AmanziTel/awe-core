@@ -5,10 +5,10 @@
          point="org.eclipse.ui.views">
       <view
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.drive.view.DriveTreeView"
+            class="org.amanzi.awe.drive.ui.view.DriveTreeView"
             icon="icons/drive.png"
-            id="org.amanzi.awe.views.drive.DriveTreeView"
-            name="Data">
+            id="org.amanzi.trees.DriveTree"
+            name="Drive Tree">
       </view>
    </extension>
    
@@ -18,14 +18,26 @@
             targetID="org.amanzi.awe.perspective">
          <view
                closeable="true"
-               id="org.amanzi.awe.views.drive.DriveTreeView"
+               id="org.amanzi.trees.DriveTree"
                relationship="stack"
                relative="net.refractions.udig.project.ui.layerManager"
                visible="true">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.drive.DriveTreeView">
+               id="org.amanzi.trees.DriveTree">
          </viewShortcut>
       </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.amanzi.tree.factories">
+      <wrapper-factory
+            class="org.amanzi.awe.drive.ui.wrapper.DriveWrapperFactory">
+         <tree_id
+               refId="org.amanzi.trees.ProjectExplorer">
+         </tree_id>
+         <tree_id
+               refId="org.amanzi.trees.DriveTree">
+         </tree_id>
+      </wrapper-factory>
    </extension>
 </plugin>

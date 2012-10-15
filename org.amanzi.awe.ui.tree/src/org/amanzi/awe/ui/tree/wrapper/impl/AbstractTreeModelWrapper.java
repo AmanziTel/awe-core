@@ -16,7 +16,6 @@ package org.amanzi.awe.ui.tree.wrapper.impl;
 import java.util.Iterator;
 
 import org.amanzi.awe.ui.tree.item.ITreeItem;
-import org.amanzi.awe.ui.tree.item.impl.TreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.ITreeModel;
@@ -31,31 +30,6 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @since 1.0.0
  */
 public abstract class AbstractTreeModelWrapper<T extends ITreeModel> extends AbstractModelWrapper<T> {
-
-    private final class TreeItemIterator implements Iterator<ITreeItem> {
-
-        private final Iterator<IDataElement> dataElements;
-
-        public TreeItemIterator(final Iterator<IDataElement> dataElements) {
-            this.dataElements = dataElements;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return dataElements.hasNext();
-        }
-
-        @Override
-        public ITreeItem next() {
-            return createTreeItem(dataElements.next());
-        }
-
-        @Override
-        public void remove() {
-            dataElements.remove();
-        }
-
-    }
 
     /**
      * @param wrapper
@@ -106,10 +80,6 @@ public abstract class AbstractTreeModelWrapper<T extends ITreeModel> extends Abs
 
         return result;
 
-    }
-
-    private ITreeItem createTreeItem(final IDataElement element) {
-        return new TreeItem(getModel(), element, this);
     }
 
 }

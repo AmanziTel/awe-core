@@ -16,7 +16,9 @@ package org.amanzi.awe.ui.tree.wrapper.impl;
 import java.util.Iterator;
 
 import org.amanzi.awe.ui.tree.item.ITreeItem;
+import org.amanzi.awe.ui.tree.item.impl.TreeItem;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.log4j.Logger;
@@ -32,6 +34,31 @@ import org.apache.log4j.Logger;
 public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTreeWrapper {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractModelWrapper.class);
+
+    protected final class TreeItemIterator implements Iterator<ITreeItem> {
+
+        private final Iterator<IDataElement> dataElements;
+
+        public TreeItemIterator(final Iterator<IDataElement> dataElements) {
+            this.dataElements = dataElements;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return dataElements.hasNext();
+        }
+
+        @Override
+        public ITreeItem next() {
+            return createTreeItem(dataElements.next());
+        }
+
+        @Override
+        public void remove() {
+            dataElements.remove();
+        }
+
+    }
 
     private T model;
 
@@ -76,4 +103,8 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
     }
 
     protected abstract Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException;
+
+    protected ITreeItem createTreeItem(final IDataElement element) {
+        return new TreeItem(getModel(), element, this);
+    }
 }

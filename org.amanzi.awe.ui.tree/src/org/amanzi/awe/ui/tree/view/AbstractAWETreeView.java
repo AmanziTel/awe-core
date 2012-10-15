@@ -101,7 +101,7 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
         return factoryResolver.getWrapperFactories(getViewId());
     }
 
-    private IBaseLabelProvider createLabelProvider() {
+    protected IBaseLabelProvider createLabelProvider() {
         return new AWELabelProvider();
     }
 

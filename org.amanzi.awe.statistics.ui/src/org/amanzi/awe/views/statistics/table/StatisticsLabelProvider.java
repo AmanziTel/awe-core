@@ -98,7 +98,7 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
         }
 
         if (element instanceof IStatisticsRow) {
-            IStatisticsRow statisticsRow = (IStatisticsRow)element;
+            final IStatisticsRow statisticsRow = (IStatisticsRow)element;
 
             if (!statisticsRow.equals(previousRow)) {
                 initializeCellList(statisticsRow);
@@ -112,10 +112,10 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
             case 1:
                 return getStatisticsRowName(statisticsRow);
             default:
-                Number value = cellList.get(columnIndex - 2).getValue();
+                final Number value = cellList.get(columnIndex - 2).getValue();
                 if (value != null) {
-                    float floatValue = value.floatValue();
-                    BigDecimal bd = new BigDecimal(floatValue).setScale(DECIMAL_SIZE, RoundingMode.HALF_EVEN);
+                    final float floatValue = value.floatValue();
+                    final BigDecimal bd = new BigDecimal(floatValue).setScale(DECIMAL_SIZE, RoundingMode.HALF_EVEN);
                     return bd.toString();
                 }
             }
@@ -147,9 +147,9 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
         if (row.isSummury()) {
             return SUMMURY_ROW_LABEL;
         }
-        Date startDate = new Date(row.getStartDate());
-        Date endDate = new Date(row.getEndDate());
-        return PeriodManager.getInstance().getPeriodName(filter.getPeriod(), startDate, endDate);
+        final Date startDate = new Date(row.getStartDate());
+        final Date endDate = new Date(row.getEndDate());
+        return PeriodManager.getPeriodName(filter.getPeriod(), startDate, endDate);
     }
 
     /**

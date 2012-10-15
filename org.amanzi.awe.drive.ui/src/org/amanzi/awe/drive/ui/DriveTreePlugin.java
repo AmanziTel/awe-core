@@ -10,21 +10,18 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.views.drive;
+package org.amanzi.awe.drive.ui;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class DriveTreePlugin extends AbstractUIPlugin {
-
-    public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
+public class DriveTreePlugin extends AbstractProviderPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.amanzi.awe.views.drive";
+    public static final String PLUGIN_ID = "org.amanzi.awe.drive.ui";
 
     // The shared instance
     private static DriveTreePlugin plugin;
@@ -40,7 +37,7 @@ public class DriveTreePlugin extends AbstractUIPlugin {
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(final BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
     }
@@ -50,7 +47,7 @@ public class DriveTreePlugin extends AbstractUIPlugin {
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(final BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
     }
@@ -64,13 +61,8 @@ public class DriveTreePlugin extends AbstractUIPlugin {
         return plugin;
     }
 
-    /**
-     * Returns an image descriptor for the image file at the given plug-in relative path
-     * 
-     * @param path the path
-     * @return the image descriptor
-     */
-    public static ImageDescriptor getImageDescriptor(String path) {
-        return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
     }
 }

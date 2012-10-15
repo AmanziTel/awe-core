@@ -60,8 +60,6 @@ public class StatisticsEngine extends AbstractTransactional {
 
     private static final Logger LOGGER = Logger.getLogger(StatisticsEngine.class);
 
-    private static final PeriodManager PERIOD_MANAGER = PeriodManager.getInstance();
-
     private static final String UNKNOWN_VALUE = "unknown";
 
     private static final Object DATASET_AGGREGATION = "dataset";
@@ -137,7 +135,7 @@ public class StatisticsEngine extends AbstractTransactional {
 
     public static synchronized StatisticsEngine getEngine(final IMeasurementModel measurementModel, final ITemplate template,
             final Period period, final String propertyName) {
-        ID id = new ID(measurementModel, template, period, propertyName);
+        final ID id = new ID(measurementModel, template, period, propertyName);
         StatisticsEngine result = engineCache.get(id);
 
         if (result == null) {
@@ -177,10 +175,10 @@ public class StatisticsEngine extends AbstractTransactional {
             buildStatistics(statisticsModel, monitor);
 
             isSuccess = true;
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             LOGGER.error("An error occured on Statistics Calculation", e);
             throw new UnderlyingModelException(e);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("An error occured on Statistics Calculation", e);
             throw new FatalStatisticsException(e);
         } finally {
@@ -200,7 +198,7 @@ public class StatisticsEngine extends AbstractTransactional {
 
         try {
             calculateStatistics(statisticsModel, period, monitor);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on calculating statistics", e);
         } finally {
             statisticsModel.finishUp();
@@ -209,24 +207,24 @@ public class StatisticsEngine extends AbstractTransactional {
 
     protected void calculateHighLevelStatistics(final IStatisticsModel statisticsModel, final Period currentPeriod,
             final Period previousPeriod, final IProgressMonitor monitor) throws ModelException {
-        String subTaskName = "Period <" + period + ">";
-        IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+        final String subTaskName = "Period <" + period + ">";
+        final IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
         monitor.subTask(subTaskName);
         subProgressMonitor.beginTask(subTaskName, statisticsModel.getLevelCount(DimensionType.TIME, previousPeriod.getId()));
 
         int periodCount = 0;
-        for (IStatisticsRow previousStatisticsRow : statisticsModel.getStatisticsRows(previousPeriod.getId())) {
+        for (final IStatisticsRow previousStatisticsRow : statisticsModel.getStatisticsRows(previousPeriod.getId())) {
 
-            IStatisticsGroup previousStatisticsGroup = previousStatisticsRow.getStatisticsGroup();
+            final IStatisticsGroup previousStatisticsGroup = previousStatisticsRow.getStatisticsGroup();
 
-            IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(),
+            final IStatisticsGroup currentStatisticsGroup = statisticsModel.getStatisticsGroup(currentPeriod.getId(),
                     previousStatisticsGroup.getPropertyValue());
 
             long startTime = currentPeriod.getStartTime(previousStatisticsRow.getStartDate());
             if (startTime < measurementModel.getMinTimestamp()) {
                 startTime = measurementModel.getMinTimestamp();
             }
-            long endTime = PERIOD_MANAGER.getNextStartDate(currentPeriod, measurementModel.getMaxTimestamp(), startTime);
+            final long endTime = PeriodManager.getNextStartDate(currentPeriod, measurementModel.getMaxTimestamp(), startTime);
 
             IStatisticsRow currentStatisticsRow = null;
             if (previousStatisticsRow.isSummury()) {
@@ -236,11 +234,11 @@ public class StatisticsEngine extends AbstractTransactional {
                         endTime);
             }
 
-            for (IStatisticsCell previousStatisticsCell : previousStatisticsRow.getStatisticsCells()) {
-                String columnName = previousStatisticsCell.getName();
-                ITemplateColumn column = template.getColumn(previousStatisticsCell.getName());
+            for (final IStatisticsCell previousStatisticsCell : previousStatisticsRow.getStatisticsCells()) {
+                final String columnName = previousStatisticsCell.getName();
+                final ITemplateColumn column = template.getColumn(previousStatisticsCell.getName());
 
-                Number statisticsValue = previousStatisticsCell.getValue();
+                final Number statisticsValue = previousStatisticsCell.getValue();
                 Number statisticsResult = null;
                 if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
                     statisticsResult = calculateValue(currentStatisticsRow, column, statisticsValue);
@@ -269,7 +267,7 @@ public class StatisticsEngine extends AbstractTransactional {
             monitor.worked(1);
         } else {
             LOGGER.info("Statistics Model didn't contain Period <" + period + ">. Calculate new one");
-            Period underlyingPeriod = period.getUnderlyingPeriod();
+            final Period underlyingPeriod = period.getUnderlyingPeriod();
 
             if (underlyingPeriod != null) {
                 calculateStatistics(statisticsModel, underlyingPeriod, monitor);
@@ -279,10 +277,10 @@ public class StatisticsEngine extends AbstractTransactional {
                 monitor.worked(1);
             } else {
                 long currentStartTime = period.getStartTime(measurementModel.getMinTimestamp());
-                long nextStartTime = PERIOD_MANAGER.getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+                long nextStartTime = PeriodManager.getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
 
-                String subTaskName = "Period <" + period + ">";
-                IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
+                final String subTaskName = "Period <" + period + ">";
+                final IProgressMonitor subProgressMonitor = new SubProgressMonitor(monitor, 1);
                 monitor.subTask(subTaskName);
                 subProgressMonitor.beginTask(subTaskName,
                         measurementModel.getPropertyStatistics().getCount(measurementModel.getMainMeasurementNodeType()));
@@ -290,24 +288,25 @@ public class StatisticsEngine extends AbstractTransactional {
                 int periodCount = 0;
 
                 do {
-                    for (IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
-                        String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
+                    for (final IDataElement dataElement : measurementModel.getElements(currentStartTime, nextStartTime)) {
+                        final String propertyValue = dataElement.contains(propertyName) ? dataElement.get(propertyName).toString()
                                 : propertyName.equals(DATASET_AGGREGATION) ? measurementModel.getName() : UNKNOWN_VALUE;
 
-                        IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
-                        IStatisticsRow summuryRow = statisticsModel.getSummuryRow(statisticsGroup);
-                        IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
+                        final IStatisticsGroup statisticsGroup = statisticsModel.getStatisticsGroup(period.getId(), propertyValue);
+                        final IStatisticsRow summuryRow = statisticsModel.getSummuryRow(statisticsGroup);
+                        final IStatisticsRow statisticsRow = statisticsModel.getStatisticsRow(statisticsGroup, currentStartTime,
                                 nextStartTime);
 
                         try {
-                            Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
+                            final Map<RubySymbol, Object> rubySymbolMap = StatisticsPlugin.getDefault().getRuntimeWrapper()
                                     .toSymbolMap(dataElement.asMap());
-                            IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper().wrap(rubySymbolMap);
-                            Map<String, Object> result = template.calculate(rubyDataElement);
-                            for (Entry<String, Object> statisticsEntry : result.entrySet()) {
-                                ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
+                            final IRubyObject rubyDataElement = StatisticsPlugin.getDefault().getRuntimeWrapper()
+                                    .wrap(rubySymbolMap);
+                            final Map<String, Object> result = template.calculate(rubyDataElement);
+                            for (final Entry<String, Object> statisticsEntry : result.entrySet()) {
+                                final ITemplateColumn column = template.getColumn(statisticsEntry.getKey());
 
-                                Object statisticsValue = statisticsEntry.getValue();
+                                final Object statisticsValue = statisticsEntry.getValue();
 
                                 if (LOGGER.isTraceEnabled()) {
                                     LOGGER.trace("Statistics Calculation result for Cell <" + column.getName() + "> in Row <"
@@ -328,7 +327,7 @@ public class StatisticsEngine extends AbstractTransactional {
                                 statisticsModel.updateStatisticsCell(summuryRow, column.getName(), summuryResult, dataElement);
                                 updateTransaction();
                             }
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
                             LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
                             throw new FatalStatisticsException(e);
                         }
@@ -340,7 +339,7 @@ public class StatisticsEngine extends AbstractTransactional {
                     }
 
                     currentStartTime = nextStartTime;
-                    nextStartTime = PERIOD_MANAGER.getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
+                    nextStartTime = PeriodManager.getNextStartDate(period, measurementModel.getMaxTimestamp(), currentStartTime);
 
                     if (monitor.isCanceled()) {
                         break;
@@ -358,7 +357,7 @@ public class StatisticsEngine extends AbstractTransactional {
     }
 
     private Number calculateValue(final IStatisticsRow statisticsRow, final ITemplateColumn templateColumn, final Number value) {
-        Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(statisticsRow,
+        final Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(statisticsRow,
                 templateColumn);
 
         IAggregationFunction function = functionCache.get(key);
