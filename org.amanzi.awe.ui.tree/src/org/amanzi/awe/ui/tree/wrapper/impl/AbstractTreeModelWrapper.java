@@ -18,6 +18,7 @@ import java.util.Iterator;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.item.impl.TreeItem;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.ITreeModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 
@@ -84,7 +85,14 @@ public abstract class AbstractTreeModelWrapper<T extends ITreeModel> extends Abs
 
     @Override
     protected Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException {
-        final IDataElement dataElement = item.castChild(IDataElement.class);
+        IDataElement dataElement = item.castChild(IDataElement.class);
+
+        if (dataElement == null) {
+            final IModel treeModel = item.castChild(IModel.class);
+            if (treeModel != null) {
+                dataElement = treeModel.asDataElement();
+            }
+        }
 
         Iterator<ITreeItem> result = null;
 

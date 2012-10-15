@@ -15,12 +15,12 @@ package org.amanzi.awe.views.treeview;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.label.AWELabelProvider;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.views.IAWEView;
 import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
-import org.amanzi.awe.views.treeview.provider.impl.CommonTreeViewLabelProvider;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.apache.log4j.Logger;
@@ -52,7 +52,7 @@ public abstract class AbstractTreeView extends ViewPart implements IAWEEventList
 
     private static final Logger LOGGER = Logger.getLogger(AbstractTreeView.class);
 
-    private static final CommonTreeViewLabelProvider LABEL_PROVIDER = new CommonTreeViewLabelProvider();
+    private static final AWELabelProvider LABEL_PROVIDER = new AWELabelProvider();
     private final IContentProvider contentProvider;
     /**
      * event manager
