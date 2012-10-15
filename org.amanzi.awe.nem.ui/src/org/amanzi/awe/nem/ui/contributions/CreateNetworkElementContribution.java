@@ -67,9 +67,9 @@ public class CreateNetworkElementContribution extends ContributionItem {
 
         Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
                 Arrays.asList(model.getNetworkStructure()));
-
-        log("Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
-
+        if (LOGGER.isDebugEnabled()) {
+            log("Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
+        }
         for (final INodeType newType : types) {
             MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
             menuItem.setText(newType.getId());
@@ -107,17 +107,23 @@ public class CreateNetworkElementContribution extends ContributionItem {
      * @return
      */
     private ITreeItem< ? , ? > getSelectedItem() {
-        log("geting selected tree item", LoggerStatus.INFO);
+        if (LOGGER.isDebugEnabled()) {
+            log("geting selected tree item", LoggerStatus.INFO);
+        }
 
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
         if (window == null) {
-            LOGGER.warn("Active window is null");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.warn("Active window is null");
+            }
             return null;
         }
         IStructuredSelection selection = (IStructuredSelection)window.getSelectionService().getSelection();
         if (selection == null) {
-            log("No selection data", LoggerStatus.WARN);
+            if (LOGGER.isDebugEnabled()) {
+                log("No selection data", LoggerStatus.ERROR);
+            }
             return null;
         }
         Object firstElement = selection.getFirstElement();
@@ -126,29 +132,25 @@ public class CreateNetworkElementContribution extends ContributionItem {
             item = (ITreeItem< ? , ? >)firstElement;
             item = MenuUtils.getInstance().getModelFromTreeItem(item) == null ? null : item;
         }
-        log("found ITreeItem parent:" + item.getParent() + " child: " + item.getChild(), LoggerStatus.INFO);
+        if (LOGGER.isDebugEnabled()) {
+            log("found ITreeItem " + item, LoggerStatus.INFO);
+        }
         return item;
     }
 
     private void log(String message, LoggerStatus status) {
-        if (LOGGER.isDebugEnabled()) {
-            switch (status) {
-            case WARN:
-                LOGGER.warn(message);
-                break;
-            case INFO:
-                LOGGER.info(message);
-                break;
-            case ERROR:
-                LOGGER.error(message);
-                break;
-            default:
-                break;
-            }
-        } else {
-            if (status == LoggerStatus.ERROR) {
-                LOGGER.error(message);
-            }
+        switch (status) {
+        case WARN:
+            LOGGER.warn(message);
+            break;
+        case INFO:
+            LOGGER.info(message);
+            break;
+        case ERROR:
+            LOGGER.error(message);
+            break;
+        default:
+            break;
         }
     }
 }

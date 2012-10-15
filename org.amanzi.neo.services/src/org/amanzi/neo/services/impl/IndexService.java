@@ -13,8 +13,11 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IIndexService;
@@ -165,27 +168,42 @@ public class IndexService extends AbstractService implements IIndexService {
     }
 
     @Override
-    public void deleteFromIndexes(final Node node, final INodeType nodeType) {
-        final String key = getIndexKey(node, nodeType);
+    public void deleteFromIndexes(final Node rootNode, final Node node, final INodeType nodeType) throws DatabaseException {
+        final String key = getIndexKey(rootNode, nodeType);
         final Index<Node> result = nodeIndexMap.get(key);
-        if (result != null) {
-            result.remove(node);
+        final Transaction tx = getGraphDb().beginTx();
+        try {
+            if (result != null) {
+                result.remove(node);
+            }
+            tx.success();
+        } catch (final Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
         }
     }
 
     @Override
-    // TODO: LN: 10.10.2012, incorrect - this will delete all indexes in DB (e.g. for all Networks)
-    public void deleteAll() {
+    public void deleteAll(Node rootNode) throws DatabaseException {
         final Transaction tx = getGraphDb().beginTx();
         try {
-            for (final Index<Node> index : nodeIndexMap.values()) {
-                index.delete();
+            String indexMatchPattern = rootNode.getId() + INDEX_SEPARATOR + ".*";
+            List<String> deletableIndexes = new ArrayList<String>();
+            for (Entry<String, Index<Node>> singleIndex : nodeIndexMap.entrySet()) {
+                if (singleIndex.getKey().matches(indexMatchPattern)) {
+                    singleIndex.getValue().delete();
+                    deletableIndexes.add(singleIndex.getKey());
+                }
             }
-            nodeIndexMap.clear();
+            for (String deletableKey : deletableIndexes) {
+                nodeIndexMap.remove(deletableKey);
+            }
             tx.success();
         } catch (final Exception e) {
             tx.failure();
-            // TODO: LN: 10.10.2012, exception should be provided to higher level
+            throw new DatabaseException(e);
         } finally {
             tx.finish();
         }

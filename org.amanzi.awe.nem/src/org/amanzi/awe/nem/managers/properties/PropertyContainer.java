@@ -32,7 +32,7 @@ public class PropertyContainer {
     public PropertyContainer(String name, KnownTypes type) {
         this.name = name;
         this.type = type;
-        value = type.getDefaultValue().toString();
+        value = type.getDefaultValue();
     }
 
     /**

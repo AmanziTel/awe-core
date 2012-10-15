@@ -50,6 +50,8 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     private final PropertyContainer requireNameProperty;
 
+    private List<PropertyContainer> properties;
+
     public PropertyEditorPage(INodeType type) {
         super(type.getId());
         this.type = type;
@@ -72,7 +74,20 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         mainComposite.setLayout(ONE_COLUMN_LAYOU);
         mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        List<PropertyContainer> properties = getTypedProperties();
+        initializeTypes();
+
+        propertyTablWidget = new PropertyTableWidget(mainComposite, this, properties);
+
+        propertyTablWidget.initializeWidget();
+        setControl(mainComposite);
+
+    }
+
+    public void initializeTypes() {
+        if (properties != null && !properties.isEmpty()) {
+            return;
+        }
+        properties = getTypedProperties();
 
         if (!properties.contains(requireNameProperty)) {
             properties.add(requireNameProperty);
@@ -82,11 +97,6 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
                 container.setValue(type.getId());
             }
         }
-
-        propertyTablWidget = new PropertyTableWidget(mainComposite, this, properties);
-
-        propertyTablWidget.initializeWidget();
-        setControl(mainComposite);
 
     }
 
@@ -103,7 +113,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
     }
 
     public List<PropertyContainer> getProperties() {
-        return propertyTablWidget.getProperties();
+        return properties;
     }
 
     @Override

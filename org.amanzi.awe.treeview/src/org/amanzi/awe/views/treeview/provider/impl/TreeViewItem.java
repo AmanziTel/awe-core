@@ -67,4 +67,8 @@ public class TreeViewItem<T extends IModel, E extends Object> implements ITreeIt
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "parent:" + getParent() + " child: " + getChild();
+    }
 }

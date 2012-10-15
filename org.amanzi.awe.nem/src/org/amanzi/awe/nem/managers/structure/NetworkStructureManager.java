@@ -51,7 +51,7 @@ public class NetworkStructureManager {
     public Collection<INodeType> getUnderlineElements(INodeType root, List<INodeType> structure) {
         List<INodeType> undrlines = new ArrayList<INodeType>();
         int index = structure.indexOf(root) + 1;
-        int siteIndex = structure.indexOf(NetworkElementType.SITE);
+        int siteIndex = getElementIndex(structure, NetworkElementType.SITE);
 
         for (int i = index; i != structure.size(); i++) {
             INodeType existed = structure.get(i);
@@ -68,6 +68,20 @@ public class NetworkStructureManager {
 
         }
         return undrlines;
+    }
+
+    /**
+     * @param structure
+     * @param searchableElement
+     * @return
+     */
+    private int getElementIndex(List<INodeType> structure, NetworkElementType searchableElement) {
+        for (int i = 0; i < structure.size(); i++) {
+            if (structure.get(i).getId().equals(searchableElement.getId())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public List<INodeType> getRequiredNetworkElements() {
