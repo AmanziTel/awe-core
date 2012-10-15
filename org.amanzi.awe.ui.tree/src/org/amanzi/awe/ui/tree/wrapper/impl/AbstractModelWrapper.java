@@ -42,7 +42,7 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
     }
 
     protected AbstractModelWrapper(final ITreeWrapper wrapper, final T model) {
-        super(null, null, wrapper);
+        super(null, model, wrapper);
 
         this.model = model;
     }
