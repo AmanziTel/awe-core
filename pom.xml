@@ -125,8 +125,8 @@
 				<module>org.amanzi.awe.statistics.feature</module>
 				<module>org.amanzi.awe.statistics.impl</module>
 				<module>org.amanzi.awe.statistics.ui</module>
-				<module>org.amanzi.awe.treeview</module>
 				<module>org.amanzi.awe.ui.db</module>
+				<module>org.amanzi.awe.ui.tree</module>
 				<module>org.amanzi.awe.ui.udig</module>
 				<module>org.amanzi.awe.views.statistcstree</module>
 			</modules>
