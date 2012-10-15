@@ -56,6 +56,8 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <feature id="org.amanzi.awe.scripting.feature"/>
       <feature id="org.amanzi.awe.statistics.feature"/>
       <feature id="org.amanzi.awe.distribution.feature"/>
+      <feature id="org.amanzi.awe.charts.feature"/>
+      <feature id="org.amanzi.awe.nem.feature"/>
    </features>
 
    <configurations>

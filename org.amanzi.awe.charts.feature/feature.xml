@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.amanzi.awe.distribution.feature"
+      id="org.amanzi.awe.charts.feature"
       label="Feature"
       version="1.0.0.qualifier">
 
@@ -18,32 +18,28 @@
 
    <requires>
       <import feature="org.amanzi.awe.feature" version="1.0.0.qualifier"/>
+      <import feature="org.amanzi.awe.statistics.feature" version="1.1.1.qualifier"/>
    </requires>
 
    <plugin
-         id="org.amanzi.awe.distribution.engine"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.amanzi.awe.distribution.impl"
+         id="org.amanzi.awe.charts.builder"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.distribution.coloring"
+         id="org.amanzi.awe.charts.impl"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.distribution.ui"
+         id="org.amanzi.awe.charts.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

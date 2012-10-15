@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: New
+Bundle-SymbolicName: org.amanzi.awe.statistics.ui;singleton:=true
+Bundle-Version: 1.1.1.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
+ org.amanzi.awe.statistics.engine;bundle-version="1.0.0",
+ org.amanzi.awe.libs;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.amanzi.awe.views.statistics.internal.StatisticsPlugin
+Export-Package: org.amanzi.awe.views.statistics.filter.container.dto

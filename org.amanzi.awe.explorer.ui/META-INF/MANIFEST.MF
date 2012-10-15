@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Explorer
+Bundle-SymbolicName: org.amanzi.awe.explorer.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: net.refractions.udig.project.edit,
+ net.refractions.udig.project.ui,
+ org.amanzi.awe.ui.tree;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: amanzi.org

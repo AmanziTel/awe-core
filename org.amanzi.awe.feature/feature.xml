@@ -157,27 +157,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.views.explorer"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.treeview"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.views.network"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.ui.db"
          download-size="0"
          install-size="0"
@@ -192,13 +171,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.views.drive"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.startup.splash"
          download-size="0"
          install-size="0"
@@ -206,7 +178,32 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.views.properties"
+         id="org.amanzi.awe.drive.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.explorer.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.awe.network.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.awe.properties.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.awe.ui.tree"
          download-size="0"
          install-size="0"
          version="0.0.0"

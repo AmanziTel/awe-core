@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.amanzi.awe.distribution.feature"
+      id="org.amanzi.awe.nem.feature"
       label="Feature"
       version="1.0.0.qualifier">
 
@@ -21,29 +21,17 @@
    </requires>
 
    <plugin
-         id="org.amanzi.awe.distribution.engine"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.amanzi.awe.distribution.impl"
+         id="org.amanzi.awe.nem"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.distribution.coloring"
+         id="org.amanzi.awe.nem.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.distribution.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
 
 </feature>
