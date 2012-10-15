@@ -30,7 +30,7 @@
                   variable="activeMenuSelection">
                <iterate>
                   <instanceof
-                        value="org.amanzi.awe.ui.dto.IUIItem">
+                        value="org.amanzi.awe.ui.dto.IUIItemNew">
                   </instanceof>
                </iterate>
             </with>
