@@ -453,7 +453,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     public String getName() {
         final StringBuilder builder = new StringBuilder();
 
-        builder.append("Distribution <" + propertyName + " - " + super.getName() + ">");
+        builder.append("Distribution for " + getSourceModel().getName() + " {" + propertyName + " - " + super.getName() + "}");
 
         return builder.toString();
     }
