@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 
@@ -63,7 +64,16 @@ public class DataElementPropertySource implements IPropertySource {
         if (id.equals(DataElementPropertyDescriptor.ID_PROPERTY)) {
             return dataElement.getId();
         }
-        return dataElement.get(id.toString());
+
+        Object value = dataElement.get(id.toString());
+
+        if (value.getClass().isArray()) {
+            final Object[] arrayValue = (Object[])value;
+
+            value = ArrayUtils.toString(arrayValue);
+        }
+
+        return value;
     }
 
     @Override
