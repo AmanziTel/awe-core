@@ -21,14 +21,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
-import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.AWEUIPlugin;
+import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
@@ -79,7 +81,7 @@ public class NetworkElementManager {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    model.delete();
+                    networkModelProvider.deleteModel(model);
                     LOGGER.info("Finished removing model " + model + " at " + new Date(System.currentTimeMillis()));
                     ActionUtil.getInstance().runTask(new Runnable() {
 
@@ -107,6 +109,7 @@ public class NetworkElementManager {
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     model.deleteElement(element);
+                    model.finishUp();
                     LOGGER.info("Finished  removing element " + element + " from model " + model + " at "
                             + new Date(System.currentTimeMillis()));
                     ActionUtil.getInstance().runTask(new Runnable() {
@@ -127,7 +130,7 @@ public class NetworkElementManager {
         job.schedule();
     }
 
-    public List<INodeType> updateNodeTypes(String[] types) {
+    public List<INodeType> updateNodeTypes(INodeType[] types) {
         return NodeTypeManager.getInstance().addDynamicNodeTypes(types);
     }
 
@@ -139,15 +142,19 @@ public class NetworkElementManager {
      */
     public void createModel(String name, List<INodeType> structure, Map<INodeType, List<PropertyContainer>> typeProperties)
             throws NemManagerOperationException {
+        EventChain eventChain = new EventChain(true);
         try {
             INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
             IPropertyStatisticsModel propertiesModel = model.getPropertyStatistics();
             updateProperties(propertiesModel, typeProperties);
+            model.finishUp();
+
         } catch (ModelException e) {
             LOGGER.error("can't create model", e);
             throw new NemManagerOperationException("can't create model", e);
         }
-        AWEEventManager.getManager().fireDataUpdatedEvent(null);
+        eventChain.addEvent(new DataUpdatedEvent(this));
+        AWEEventManager.getManager().fireEventChain(eventChain);
     }
 
     /**
@@ -196,7 +203,7 @@ public class NetworkElementManager {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    model.createElement(new DynamicNetworkType(type.getId()), parentElement, name, prop);
+                    model.createElement((INetworkElementType)type, parentElement, name, prop);
                     model.finishUp();
                     LOGGER.info("Finished creating new element  from model " + model.getName()
                             + new Date(System.currentTimeMillis()));

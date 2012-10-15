@@ -86,6 +86,7 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
         try {
             model = (NetworkModel)create(parent, name);
             model.setStructure(structure);
+            model.finishUp();
         } catch (ModelException e) {
             throw e;
         }

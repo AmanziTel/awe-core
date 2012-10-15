@@ -103,7 +103,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
                     if (dataElement.getNodeType().equals(NetworkElementType.SITE)) {
                         element = getLocationElement(((DataElement)dataElement).getNode());
-                    } else if (dataElement.getNodeType() instanceof INetworkElementType) {
+                    } else if (dataElement.getNodeType() instanceof NetworkElementType) {
                         if (NetworkElementType.compare(NetworkElementType.SITE, (NetworkElementType)dataElement.getNodeType()) < 0) {
                             IDataElement tempElement = dataElement;
                             while (!tempElement.getNodeType().equals(NetworkElementType.SITE)) {
@@ -341,8 +341,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
         INodeType currentType = elementType;
 
-        int parentIndex = indexOf(parentType);
-        int currentIndex = indexOf(currentType);
+        int parentIndex = structure.indexOf(parentType);
+        int currentIndex = structure.indexOf(currentType);
 
         if (currentIndex < 0) {
             structure.add(currentType);
@@ -351,24 +351,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             return;
         }
 
-        int lastIndex = indexOf(NetworkElementType.SITE);
+        int lastIndex = structure.indexOf(NetworkElementType.SITE);
         if (parentIndex < lastIndex) {
             structure.add(parentIndex, currentType);
         }
-    }
-
-    /**
-     * @param parentType
-     * @return
-     */
-    private int indexOf(INodeType parentType) {
-        int i = 0;
-        for (INodeType type : structure) {
-            if (parentType.getId().equals(type.getId())) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     @Override
