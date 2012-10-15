@@ -27,6 +27,7 @@ import net.refractions.udig.project.command.CompositeCommand;
 import net.refractions.udig.project.internal.command.navigation.AbstractNavCommand;
 import net.refractions.udig.project.internal.command.navigation.SetViewportBBoxCommand;
 import net.refractions.udig.project.internal.command.navigation.ZoomCommand;
+import net.refractions.udig.project.render.IRenderManager;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
@@ -270,7 +271,11 @@ public class NeoCatalogListener implements IAWEEventListenter {
     }
 
     private void refreshMap() {
-        ApplicationGIS.getActiveMap().getRenderManager().refresh(null);
+        final IRenderManager renderManager = ApplicationGIS.getActiveMap().getRenderManager();
+
+        if (renderManager != null) {
+            renderManager.refresh(null);
+        }
     }
 
     @Override

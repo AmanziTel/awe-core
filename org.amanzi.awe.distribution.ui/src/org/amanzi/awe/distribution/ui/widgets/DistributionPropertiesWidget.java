@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.distribution.widgets;
+package org.amanzi.awe.distribution.ui.widgets;
 
 import java.awt.Color;
 
@@ -19,6 +19,9 @@ import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
+import org.amanzi.awe.distribution.ui.charts.coloring.DistributionColoringContainer;
+import org.amanzi.awe.distribution.ui.widgets.ChartTypeWidget.IChartTypeListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
@@ -31,9 +34,6 @@ import org.amanzi.awe.ui.view.widgets.SpinnerWidget.ISpinnerListener;
 import org.amanzi.awe.ui.view.widgets.TextWidget;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
-import org.amanzi.awe.views.distribution.charts.coloring.DistributionColoringContainer;
-import org.amanzi.awe.views.distribution.widgets.ChartTypeWidget.IChartTypeListener;
-import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;

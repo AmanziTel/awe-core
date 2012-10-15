@@ -21,6 +21,7 @@ import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IRange;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IAnalyzisModel;
+import org.amanzi.neo.models.ITreeModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 
@@ -32,7 +33,7 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalModel> {
+public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalModel>, ITreeModel {
 
     List<IDistributionBar> getDistributionBars() throws ModelException;
 
@@ -58,6 +59,7 @@ public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalM
 
     IAggregationRelation findAggregationRelation(IDataElement dataElement) throws ModelException;
 
-    void updateAggregationRelation(IDataElement dataElement, IAggregationRelation relation, IDistributionBar bar) throws ModelException;
+    void updateAggregationRelation(IDataElement dataElement, IAggregationRelation relation, IDistributionBar bar)
+            throws ModelException;
 
 }

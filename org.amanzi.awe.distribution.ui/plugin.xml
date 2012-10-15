@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="org.amanzi.awe.views.distribution.DistributionView"
+            class="org.amanzi.awe.distribution.ui.DistributionView"
             icon="icons/distribution.png"
             id="org.amanzi.views.distribution"
             name="Distribution Analyzer View"
@@ -25,6 +25,15 @@
                id="org.amanzi.views.distribution">
          </viewShortcut>
       </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.amanzi.tree.factories">
+      <wrapper-factory
+            class="org.amanzi.awe.distribution.ui.wrappers.DistributionWrapperFactory">
+         <tree_id
+               refId="org.amanzi.trees.ProjectExplorer">
+         </tree_id>
+      </wrapper-factory>
    </extension>
 
 </plugin>

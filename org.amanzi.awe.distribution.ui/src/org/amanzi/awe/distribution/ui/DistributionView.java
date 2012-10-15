@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.distribution;
+package org.amanzi.awe.distribution.ui;
 
 import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
@@ -20,23 +20,23 @@ import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
+import org.amanzi.awe.distribution.ui.internal.DistributionPlugin;
+import org.amanzi.awe.distribution.ui.widgets.DistributionChartWidget;
+import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget;
+import org.amanzi.awe.distribution.ui.widgets.DistributionPropertiesWidget;
+import org.amanzi.awe.distribution.ui.widgets.DistributionPropertyWidget;
+import org.amanzi.awe.distribution.ui.widgets.DistributionTypeWidget;
+import org.amanzi.awe.distribution.ui.widgets.SelectComboWidget;
+import org.amanzi.awe.distribution.ui.widgets.DistributionChartWidget.IDistributionChartListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.DistributionDataset;
+import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionTypeWidget.IDistributionTypeListener;
+import org.amanzi.awe.distribution.ui.widgets.SelectComboWidget.ISelectChanged;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
-import org.amanzi.awe.views.distribution.internal.DistributionPlugin;
-import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistributionChartListener;
-import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
-import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
-import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
-import org.amanzi.awe.views.distribution.widgets.DistributionPropertyWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionTypeWidget.IDistributionTypeListener;
-import org.amanzi.awe.views.distribution.widgets.SelectComboWidget;
-import org.amanzi.awe.views.distribution.widgets.SelectComboWidget.ISelectChanged;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;

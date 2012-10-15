@@ -11,15 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.distribution.widgets;
+package org.amanzi.awe.distribution.ui.widgets;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.DistributionDataset;
+import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
-import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.DistributionDataset;
-import org.amanzi.awe.views.distribution.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;

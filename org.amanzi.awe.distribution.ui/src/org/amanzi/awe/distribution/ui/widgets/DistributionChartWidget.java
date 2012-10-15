@@ -11,17 +11,17 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.distribution.widgets;
+package org.amanzi.awe.distribution.ui.widgets;
 
 import java.awt.Color;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
+import org.amanzi.awe.distribution.ui.charts.DistributionBarRenderer;
+import org.amanzi.awe.distribution.ui.charts.DistributionChartDataset;
+import org.amanzi.awe.distribution.ui.widgets.DistributionChartWidget.IDistributionChartListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
-import org.amanzi.awe.views.distribution.charts.DistributionBarRenderer;
-import org.amanzi.awe.views.distribution.charts.DistributionChartDataset;
-import org.amanzi.awe.views.distribution.widgets.DistributionChartWidget.IDistributionChartListener;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;

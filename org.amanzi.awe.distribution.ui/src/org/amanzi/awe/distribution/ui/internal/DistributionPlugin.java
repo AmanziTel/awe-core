@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.distribution.internal;
+package org.amanzi.awe.distribution.ui.internal;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

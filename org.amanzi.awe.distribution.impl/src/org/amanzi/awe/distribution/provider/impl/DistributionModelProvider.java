@@ -13,15 +13,20 @@
 
 package org.amanzi.awe.distribution.provider.impl;
 
+import java.util.Iterator;
+
+import org.amanzi.awe.distribution.model.DistributionNodeType;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.impl.DistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.properties.IDistributionNodeProperties;
 import org.amanzi.awe.distribution.provider.IDistributionModelProvider;
 import org.amanzi.awe.distribution.service.IDistributionService;
+import org.amanzi.awe.distribution.service.impl.DistributionService.DistributionRelationshipType;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
@@ -72,6 +77,44 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
         @Override
         public boolean equals(final Object o) {
             return EqualsBuilder.reflectionEquals(this, o, true);
+        }
+
+    }
+
+    private final class DistributionModelIterator implements Iterator<IDistributionModel> {
+
+        private final Iterator<Node> nodeIterator;
+
+        private final IPropertyStatisticalModel analyzedModel;
+
+        public DistributionModelIterator(final Iterator<Node> nodeIterator, final IPropertyStatisticalModel analyzedModel) {
+            this.nodeIterator = nodeIterator;
+            this.analyzedModel = analyzedModel;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nodeIterator.hasNext();
+        }
+
+        @Override
+        public IDistributionModel next() {
+            try {
+                final DistributionModel result = DistributionModelProvider.this.initializeFromNode(nodeIterator.next());
+
+                initializeDistributionModel(result, analyzedModel);
+
+                return result;
+            } catch (final ModelException e) {
+                LOGGER.error("Error on initalization of Distribution Model", e);
+            }
+
+            return null;
+        }
+
+        @Override
+        public void remove() {
+            nodeIterator.remove();
         }
 
     }
@@ -216,6 +259,37 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
         }
 
         return result;
+    }
+
+    @Override
+    public Iterator<IDistributionModel> findAll(final IPropertyStatisticalModel model) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findAll", model));
+        }
+
+        Iterator<IDistributionModel> result = null;
+
+        final AbstractModel rawModel = (AbstractModel)model;
+
+        try {
+            final Iterator<Node> nodeIterator = nodeService.getChildren(rawModel.getRootNode(),
+                    DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION);
+
+            result = new DistributionModelIterator(nodeIterator, model);
+        } catch (final ServiceException e) {
+            processException("Error on searching for all Distribution models of <" + model + ">", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findAll"));
+        }
+        return result;
+    }
+
+    @Override
+    public Iterator<IDistributionModel> findAll(final IProjectModel projectModel) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

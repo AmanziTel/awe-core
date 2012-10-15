@@ -88,6 +88,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     private final IPropertyStatisticsNodeProperties countNodePropeties;
 
+    private String propertyName;
+
     private Color leftColor;
 
     private Color rightColor;
@@ -118,6 +120,9 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
             leftColor = getColorFromDatabase(rootNode, distributionNodeProperties.getLeftColor(), DEFAULT_LEFT_COLOR);
             rightColor = getColorFromDatabase(rootNode, distributionNodeProperties.getRightColor(), DEFAULT_RIGHT_COLOR);
             middleColor = getColorFromDatabase(rootNode, distributionNodeProperties.getMiddleColor(), DEFAULT_MIDDLE_COLOR);
+
+            propertyName = getNodeService().getNodeProperty(rootNode, distributionNodeProperties.getDistributionPropertyName(),
+                    null, true);
         } catch (final ServiceException e) {
             processException("Error on get default Distribution Model properties", e);
         }
@@ -430,5 +435,26 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
             LOGGER.debug(getFinishLogStatement("updateAggregationRelation"));
         }
 
+    }
+
+    @Override
+    public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append("Distribution <" + propertyName + " - " + super.getName() + ">");
+
+        return builder.toString();
     }
 }

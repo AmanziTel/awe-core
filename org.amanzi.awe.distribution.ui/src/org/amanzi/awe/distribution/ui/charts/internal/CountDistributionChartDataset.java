@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.distribution.charts.internal;
+package org.amanzi.awe.distribution.ui.charts.internal;
 
 import java.util.ArrayList;
 import java.util.List;

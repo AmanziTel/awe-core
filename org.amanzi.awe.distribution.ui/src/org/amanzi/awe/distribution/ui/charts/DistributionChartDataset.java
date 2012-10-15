@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.distribution.charts;
+package org.amanzi.awe.distribution.ui.charts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,9 +20,9 @@ import java.util.Map;
 
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
-import org.amanzi.awe.views.distribution.charts.internal.CountDistributionChartDataset;
-import org.amanzi.awe.views.distribution.charts.internal.IDistributionChartDatasetDelegate;
-import org.amanzi.awe.views.distribution.charts.internal.PercentageDistributionChartDataset;
+import org.amanzi.awe.distribution.ui.charts.internal.CountDistributionChartDataset;
+import org.amanzi.awe.distribution.ui.charts.internal.IDistributionChartDatasetDelegate;
+import org.amanzi.awe.distribution.ui.charts.internal.PercentageDistributionChartDataset;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.AbstractDataset;
 
