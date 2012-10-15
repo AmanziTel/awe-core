@@ -15,9 +15,9 @@ package org.amanzi.awe.views.network.wrapper;
 
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.awe.ui.tree.wrapper.factory.impl.AbstractModelWrapperFactory;
+import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.providers.INetworkModelProvider;
-import org.amanzi.neo.providers.IProjectModelProvider;
 
 /**
  * TODO Purpose of
@@ -33,8 +33,8 @@ public class NetworkTreeWrapperFactory extends AbstractModelWrapperFactory<INetw
      * @param provider
      * @param projectModelProvider
      */
-    public NetworkTreeWrapperFactory(final INetworkModelProvider provider, final IProjectModelProvider projectModelProvider) {
-        super(provider, projectModelProvider);
+    public NetworkTreeWrapperFactory() {
+        super(NetworkTreePlugin.getDefault().getNetworkModelProvider(), NetworkTreePlugin.getDefault().getProjectModelProvider());
     }
 
     @Override

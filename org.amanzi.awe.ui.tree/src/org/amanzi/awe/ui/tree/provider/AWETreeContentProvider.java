@@ -13,7 +13,11 @@
 
 package org.amanzi.awe.ui.tree.provider;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
@@ -32,15 +36,15 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AbstractAWETreeContentProvider implements ITreeContentProvider {
+public class AWETreeContentProvider implements ITreeContentProvider {
 
-    private final ITreeWrapperFactory factory;
+    private final Set<ITreeWrapperFactory> factories;
 
     /**
      * 
      */
-    public AbstractAWETreeContentProvider(final ITreeWrapperFactory factory) {
-        this.factory = factory;
+    public AWETreeContentProvider(final Set<ITreeWrapperFactory> factories) {
+        this.factories = factories;
     }
 
     @Override
@@ -53,7 +57,7 @@ public class AbstractAWETreeContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getElements(final Object inputElement) {
-        return toObject(factory.getWrappers());
+        return getElements();
     }
 
     @Override
@@ -87,6 +91,17 @@ public class AbstractAWETreeContentProvider implements ITreeContentProvider {
         }
 
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object[] getElements() {
+        final List<ITreeWrapper> wrappers = new ArrayList<ITreeWrapper>();
+
+        for (final ITreeWrapperFactory factory : factories) {
+            wrappers.addAll(IteratorUtils.toList(factory.getWrappers()));
+        }
+
+        return toObject(wrappers);
     }
 
     private Pair<ITreeWrapper, ITreeItem> convertObject(final Object element) {
@@ -126,4 +141,7 @@ public class AbstractAWETreeContentProvider implements ITreeContentProvider {
         return IteratorUtils.toArray(itemIterator);
     }
 
+    private <T extends ITreeItem> Object[] toObject(final Collection<T> itemCollection) {
+        return itemCollection.toArray(new Object[itemCollection.size()]);
+    }
 }

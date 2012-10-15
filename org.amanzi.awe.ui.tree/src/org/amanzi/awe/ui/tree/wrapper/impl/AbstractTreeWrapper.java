@@ -42,6 +42,5 @@ public abstract class AbstractTreeWrapper extends TreeItem implements ITreeWrapp
      */
     protected AbstractTreeWrapper(final IModel parent, final Object child, final ITreeWrapper wrapper) {
         super(parent, child, wrapper);
-        // TODO Auto-generated constructor stub
     }
 }

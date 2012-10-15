@@ -27,5 +27,12 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.amanzi.tree.factories">
+      <wrapper-factory
+            class="org.amanzi.awe.views.network.wrapper.NetworkTreeWrapperFactory"
+            tree_id="org.amanzi.awe.views.network.views.NetworkTreeView">
+      </wrapper-factory>
+   </extension>
    
 </plugin>

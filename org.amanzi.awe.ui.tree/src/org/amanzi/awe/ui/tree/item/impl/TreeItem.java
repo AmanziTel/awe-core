@@ -28,7 +28,7 @@ import org.amanzi.neo.models.IModel;
  */
 public class TreeItem extends UIItem implements ITreeItem {
 
-    private final ITreeWrapper wrapper;
+    private ITreeWrapper wrapper;
 
     /**
      * @param parent
@@ -43,6 +43,10 @@ public class TreeItem extends UIItem implements ITreeItem {
     @Override
     public ITreeWrapper getWrapper() {
         return wrapper;
+    }
+
+    protected void setWrapper(final ITreeWrapper wrapper) {
+        this.wrapper = wrapper;
     }
 
 }

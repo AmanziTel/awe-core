@@ -37,6 +37,8 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
 
     protected AbstractModelWrapper(final T model) {
         this(null, model);
+
+        setWrapper(this);
     }
 
     protected AbstractModelWrapper(final ITreeWrapper wrapper, final T model) {
