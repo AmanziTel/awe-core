@@ -33,15 +33,12 @@ public class DataElementPropertySource implements IPropertySource {
 
     private final IDataElement dataElement;
 
-    private final IModel model;
-
     public DataElementPropertySource(final IDataElement dataElement) {
         this(dataElement, null);
     }
 
     public DataElementPropertySource(final IDataElement dataElement, final IModel model) {
         this.dataElement = dataElement;
-        this.model = model;
     }
 
     @Override

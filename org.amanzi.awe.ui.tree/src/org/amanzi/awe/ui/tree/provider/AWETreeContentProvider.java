@@ -98,7 +98,10 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         final List<ITreeWrapper> wrappers = new ArrayList<ITreeWrapper>();
 
         for (final ITreeWrapperFactory factory : factories) {
-            wrappers.addAll(IteratorUtils.toList(factory.getWrappers()));
+            final Iterator<ITreeWrapper> items = factory.getWrappers();
+            if (items != null) {
+                wrappers.addAll(IteratorUtils.toList(items));
+            }
         }
 
         return toObject(wrappers);
