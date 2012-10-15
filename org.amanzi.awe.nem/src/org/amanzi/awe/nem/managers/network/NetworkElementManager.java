@@ -184,15 +184,38 @@ public class NetworkElementManager {
      * @param type
      * @param map
      */
-    public void createElement(INetworkModel model, IDataElement parent, INodeType type, Collection<PropertyContainer> properties) {
-        IDataElement parentElement = parent == null ? model.asDataElement() : parent;
-        Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
-        String name = (String)prop.get("name");
-        try {
-            model.createElement(new DynamicNetworkType(type.getId()), parentElement, name, prop);
-        } catch (ModelException e) {
-            LOGGER.error("can't create new element", e);
-        }
-        AWEEventManager.getManager().fireDataUpdatedEvent(null);
+    public void createElement(final INetworkModel model, IDataElement parent, final INodeType type,
+            Collection<PropertyContainer> properties) {
+        LOGGER.info("Start create new element  from model " + model.getName() + " at " + new Date(System.currentTimeMillis()));
+
+        final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
+        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        final String name = (String)prop.get("name");
+
+        Job job = new Job("Create new element  from model " + model.getName()) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    model.createElement(new DynamicNetworkType(type.getId()), parentElement, name, prop);
+                    model.finishUp();
+                    LOGGER.info("Finished creating new element  from model " + model.getName()
+                            + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
+                        }
+                    }, true);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't create new element from model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+
     }
 }

@@ -341,8 +341,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
         INodeType currentType = elementType;
 
-        int parentIndex = structure.indexOf(parentType);
-        int currentIndex = structure.indexOf(currentType);
+        int parentIndex = indexOf(parentType);
+        int currentIndex = indexOf(currentType);
 
         if (currentIndex < 0) {
             structure.add(currentType);
@@ -351,10 +351,24 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             return;
         }
 
-        int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        int lastIndex = indexOf(NetworkElementType.SITE);
         if (parentIndex < lastIndex) {
             structure.add(parentIndex, currentType);
         }
+    }
+
+    /**
+     * @param parentType
+     * @return
+     */
+    private int indexOf(INodeType parentType) {
+        int i = 0;
+        for (INodeType type : structure) {
+            if (parentType.getId().equals(type.getId())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
