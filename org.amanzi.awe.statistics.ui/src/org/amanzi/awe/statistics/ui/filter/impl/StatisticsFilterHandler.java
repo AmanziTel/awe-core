@@ -16,8 +16,8 @@ package org.amanzi.awe.statistics.ui.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 
 /**
  * TODO Purpose of

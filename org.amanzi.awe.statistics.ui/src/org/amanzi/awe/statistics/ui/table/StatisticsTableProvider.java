@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.statistics.ui.table;
 
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;

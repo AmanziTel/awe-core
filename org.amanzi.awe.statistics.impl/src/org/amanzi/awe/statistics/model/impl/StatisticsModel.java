@@ -32,6 +32,7 @@ import org.amanzi.awe.statistics.dto.impl.StatisticsCell;
 import org.amanzi.awe.statistics.dto.impl.StatisticsGroup;
 import org.amanzi.awe.statistics.dto.impl.StatisticsLevel;
 import org.amanzi.awe.statistics.dto.impl.StatisticsRow;
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.model.StatisticsNodeType;
@@ -82,6 +83,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         private final DimensionType dimension;
 
+        private IStatisticsFilter filter;
+
         /**
          * @param nodeIterator
          */
@@ -93,9 +96,14 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         @Override
         protected IStatisticsLevel createDataElement(final Node node) {
-            return createStatisticsLevel(node, dimension);
-        }
+            StatisticsLevel level = createStatisticsLevel(node, dimension);
 
+            if ((filter != null) && !level.getName().equals(filter.getPeriod())) {
+                return null;
+            }
+
+            return level;
+        }
     }
 
     private class StatisticsRowIterator extends AbstractDataElementIterator<IStatisticsRow> {
@@ -967,18 +975,12 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type));
         }
 
-        Iterator<Node> levels = null;
-
-        try {
-            levels = statisticsService.findAllStatisticsLevelNode(getRootNode(), type);
-        } catch (final ServiceException e) {
-            processException("Error when try to find all levels nodes", e);
-        }
+        Iterable<IStatisticsLevel> result = findAllStatisticsLevels(type, null);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("findAllStatisticsLevels"));
         }
-        return new StatisticsLevelIterator(levels, type).toIterable();
+        return result;
     }
 
     private boolean hasUnderlineSource(final IDataElement element) throws ModelException {
@@ -1108,6 +1110,43 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("getChildren", parentElement));
         }
 
+        Iterable<IDataElement> result = getChildren(parentElement, null);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getChildren"));
+        }
+
+        return result;
+    }
+
+    @Override
+    public String getName() {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(getSourceModel().getName() + " {" + super.getName() + "}");
+
+        return builder.toString();
+    }
+
+    private StatisticsLevel createStatisticsLevel(final Node node, final DimensionType dimension) {
+        final StatisticsLevel result = new StatisticsLevel(node, dimension);
+
+        try {
+            result.setNodeType(StatisticsNodeType.LEVEL);
+            result.setName(getNodeService().getNodeName(node));
+        } catch (final ServiceException e) {
+            LOGGER.error("Error on initializing Statistics Level", e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parentElement, IStatisticsFilter filter) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getChildren", parentElement, filter));
+        }
+
         Iterable<IDataElement> result = null;
 
         if (parentElement.getNodeType().equals(StatisticsNodeType.LEVEL)) {
@@ -1118,7 +1157,12 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         } else if (parentElement.getNodeType().equals(StatisticsNodeType.GROUP)) {
             final IStatisticsGroup group = (IStatisticsGroup)parentElement;
 
-            result = new DataElementConverter<IStatisticsRow>(getStatisticsRows(group.getPeriod()).iterator()).toIterable();
+            if (filter != null) {
+                result = new DataElementConverter<IStatisticsRow>(getStatisticsRowsInTimeRange(group.getPeriod(),
+                        filter.getStartTime(), filter.getEndTime()).iterator()).toIterable();
+            } else {
+                result = new DataElementConverter<IStatisticsRow>(getStatisticsRows(group.getPeriod()).iterator()).toIterable();
+            }
         } else if (parentElement.getNodeType().equals(StatisticsNodeType.S_ROW)) {
             final IStatisticsRow row = (IStatisticsRow)parentElement;
 
@@ -1142,22 +1186,23 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     @Override
-    public String getName() {
-        final StringBuilder builder = new StringBuilder();
+    public Iterable<IStatisticsLevel> findAllStatisticsLevels(DimensionType type, IStatisticsFilter filter) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type, filter));
+        }
 
-        builder.append(getSourceModel().getName() + " {" + super.getName() + "}");
-
-        return builder.toString();
-    }
-
-    private StatisticsLevel createStatisticsLevel(final Node node, final DimensionType dimension) {
-        final StatisticsLevel result = new StatisticsLevel(node, dimension);
+        Iterable<IStatisticsLevel> result = null;
 
         try {
-            result.setNodeType(StatisticsNodeType.LEVEL);
-            result.setName(getNodeService().getNodeName(node));
+            Iterator<Node> levels = statisticsService.findAllStatisticsLevelNode(getRootNode(), type);
+
+            result = new StatisticsLevelIterator(levels, type).toIterable();
         } catch (final ServiceException e) {
-            LOGGER.error("Error on initializing Statistics Level", e);
+            processException("Error when try to find all levels nodes", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findAllStatisticsLevels"));
         }
 
         return result;

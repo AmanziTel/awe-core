@@ -13,8 +13,8 @@
 
 package org.amanzi.awe.views.charts.listener;
 
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;

@@ -10,6 +10,7 @@ Require-Bundle: org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.statistics.dto,
+ org.amanzi.awe.statistics.filter,
  org.amanzi.awe.statistics.impl.internal,
  org.amanzi.awe.statistics.model,
  org.amanzi.awe.statistics.provider

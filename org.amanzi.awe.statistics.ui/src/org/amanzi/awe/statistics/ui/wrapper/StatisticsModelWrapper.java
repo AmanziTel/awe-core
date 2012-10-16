@@ -19,7 +19,9 @@ import java.util.Iterator;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.ui.filter.impl.StatisticsFilterHandler;
 import org.amanzi.awe.statistics.ui.handlers.DimensionHandler;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
@@ -59,12 +61,22 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
 
     @Override
     protected Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException {
-        final IStatisticsModel model = item.castChild(IStatisticsModel.class);
+        IStatisticsModel model = item.castChild(IStatisticsModel.class);
 
         if (model != null) {
+            IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
+
             return new TreeItemIterator(model.findAllStatisticsLevels(DimensionHandler.getInstance().getDimension()).iterator());
         } else {
-            return super.getChildrenInternal(item);
+            model = item.castParent(IStatisticsModel.class);
+
+            IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
+
+            if (filter != null) {
+                return null;
+            } else {
+                return super.getChildrenInternal(item);
+            }
         }
     }
 

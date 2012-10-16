@@ -15,7 +15,7 @@ package org.amanzi.awe.statistics.ui.filter.impl;
 
 import java.util.Collection;
 
-import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.neo.core.period.Period;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

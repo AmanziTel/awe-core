@@ -16,10 +16,10 @@ package org.amanzi.awe.statistics.ui.view;
 import java.util.Date;
 
 import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.template.ITemplate;
-import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.ui.filter.impl.StatisticsFilter;
 import org.amanzi.awe.statistics.ui.internal.StatisticsPlugin;
 import org.amanzi.awe.statistics.ui.table.StatisticsTable;

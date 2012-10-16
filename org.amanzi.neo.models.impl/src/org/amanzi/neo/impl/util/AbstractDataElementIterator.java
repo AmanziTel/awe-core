@@ -30,6 +30,10 @@ public abstract class AbstractDataElementIterator<T extends IDataElement> implem
 
     private Iterator<Node> nodeIterator;
 
+    private T next;
+
+    private boolean computeNext = true;
+
     protected AbstractDataElementIterator(final Iterator<Node> nodeIterator) {
         this.nodeIterator = nodeIterator;
     }
@@ -40,12 +44,25 @@ public abstract class AbstractDataElementIterator<T extends IDataElement> implem
 
     @Override
     public boolean hasNext() {
+        if (((next == null) || computeNext) && nodeIterator.hasNext()) {
+            do {
+                next = createDataElement(nodeIterator.next());
+            } while ((next != null) && nodeIterator.hasNext());
+
+            computeNext = false;
+        }
+
         return nodeIterator.hasNext();
     }
 
     @Override
     public T next() {
-        return createDataElement(nodeIterator.next());
+        T result = next;
+
+        next = null;
+        computeNext = true;
+
+        return result;
     }
 
     protected abstract T createDataElement(Node node);

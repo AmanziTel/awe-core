@@ -19,6 +19,7 @@ import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsLevel;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
+import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IAnalyzisModel;
 import org.amanzi.neo.models.ITreeModel;
@@ -61,6 +62,8 @@ public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel>, ITr
 
     Iterable<IStatisticsLevel> findAllStatisticsLevels(DimensionType type) throws ModelException;
 
+    Iterable<IStatisticsLevel> findAllStatisticsLevels(DimensionType type, IStatisticsFilter filter) throws ModelException;
+
     Iterable<IStatisticsGroup> getAllStatisticsGroups(DimensionType type, String levelName) throws ModelException;
 
     Iterable<IDataElement> getSources(IDataElement cell) throws ModelException;
@@ -72,5 +75,7 @@ public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel>, ITr
     IDataElement getParent(IDataElement childElement, DimensionType dimension) throws ModelException;
 
     Iterable<IStatisticsRow> getStatisticsRowsInTimeRange(String period, long startTime, long endTime) throws ModelException;
+
+    Iterable<IDataElement> getChildren(IDataElement parent, IStatisticsFilter filter) throws ModelException;
 
 }
