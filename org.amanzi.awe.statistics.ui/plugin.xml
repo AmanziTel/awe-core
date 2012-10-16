@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="org.amanzi.awe.views.statistics.StatisticsView"
+            class="org.amanzi.awe.statistics.ui.view.StatisticsView"
             icon="icons/statistics_view.png"
             id="org.amanzi.awe.StatisticsView"
             name="Statistics View"
@@ -28,6 +28,18 @@
                id="org.amanzi.views.distribution">
          </viewShortcut>
       </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.amanzi.tree.factories">
+      <wrapper-factory
+            class="org.amanzi.awe.statistics.ui.wrapper.StatisticsWrapperFactory">
+         <tree_id
+               refId="org.amanzi.trees.AnalyzisTree">
+         </tree_id>
+         <tree_id
+               refId="org.amanzi.trees.ProjectExplorer">
+         </tree_id>
+      </wrapper-factory>
    </extension>
 
 </plugin>

@@ -22,16 +22,16 @@ import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
 import org.amanzi.awe.distribution.ui.internal.DistributionPlugin;
 import org.amanzi.awe.distribution.ui.widgets.DistributionChartWidget;
-import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget;
-import org.amanzi.awe.distribution.ui.widgets.DistributionPropertiesWidget;
-import org.amanzi.awe.distribution.ui.widgets.DistributionPropertyWidget;
-import org.amanzi.awe.distribution.ui.widgets.DistributionTypeWidget;
-import org.amanzi.awe.distribution.ui.widgets.SelectComboWidget;
 import org.amanzi.awe.distribution.ui.widgets.DistributionChartWidget.IDistributionChartListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget;
 import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionPropertiesWidget;
 import org.amanzi.awe.distribution.ui.widgets.DistributionPropertiesWidget.IDistributionPropertiesListener;
+import org.amanzi.awe.distribution.ui.widgets.DistributionPropertyWidget;
+import org.amanzi.awe.distribution.ui.widgets.DistributionTypeWidget;
 import org.amanzi.awe.distribution.ui.widgets.DistributionTypeWidget.IDistributionTypeListener;
+import org.amanzi.awe.distribution.ui.widgets.SelectComboWidget;
 import org.amanzi.awe.distribution.ui.widgets.SelectComboWidget.ISelectChanged;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
@@ -264,10 +264,10 @@ public class DistributionView extends ViewPart
         if (isInitialized && (currentManager != null)) {
             currentManager.setProperty(property);
 
+            selectCombo.setDistributionManager(currentManager);
+
             distributionTypeCombo.setDistributionManager(currentManager);
             distributionTypeCombo.skipSelection();
-
-            selectCombo.setDistributionManager(currentManager);
         }
     }
 
@@ -322,6 +322,8 @@ public class DistributionView extends ViewPart
     public void onSelectChanged(final Select select) {
         if (currentManager != null) {
             currentManager.setSelect(select);
+
+            distributionTypeCombo.fillCombo();
 
             runDistribution();
         }

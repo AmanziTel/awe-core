@@ -57,15 +57,18 @@ public class DistributionManager {
 
         private final NumberDistributionRange numberDistributionType;
 
+        private final Select select;
+
         /**
          * @param model
          * @param nodeType
          * @param propertyName
          */
         public NumberDistributionCacheKey(final IPropertyStatisticalModel model, final INodeType nodeType,
-                final String propertyName, final NumberDistributionRange numberDistributionType) {
+                final String propertyName, final NumberDistributionRange numberDistributionType, final Select select) {
             super(model, nodeType, propertyName);
             this.numberDistributionType = numberDistributionType;
+            this.select = select;
         }
 
     }
@@ -207,7 +210,8 @@ public class DistributionManager {
 
     private IDistributionType< ? > getNumberDistributionType(final NumberDistributionRange numberDistributionType,
             final Select select) {
-        final IDistributionCacheKey key = new NumberDistributionCacheKey(model, nodeType, propertyName, numberDistributionType);
+        final IDistributionCacheKey key = new NumberDistributionCacheKey(model, nodeType, propertyName, numberDistributionType,
+                select);
 
         IDistributionType< ? > result = distributionTypeCache.get(key);
 

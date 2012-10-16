@@ -33,6 +33,9 @@
          <tree_id
                refId="org.amanzi.trees.ProjectExplorer">
          </tree_id>
+         <tree_id
+               refId="org.amanzi.trees.AnalyzisTree">
+         </tree_id>
       </wrapper-factory>
    </extension>
 

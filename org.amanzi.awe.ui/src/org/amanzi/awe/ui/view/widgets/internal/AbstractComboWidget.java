@@ -131,7 +131,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         return selectedItem;
     }
 
-    protected void fillCombo() {
+    public void fillCombo() {
         getControl().removeAll();
         itemsMap.clear();
 

@@ -20,6 +20,7 @@ import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IAnalyzisModel;
+import org.amanzi.neo.models.ITreeModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 
@@ -31,7 +32,7 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel> {
+public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel>, ITreeModel {
 
     IStatisticsGroup getStatisticsGroup(String period, String propertyKey) throws ModelException;
 

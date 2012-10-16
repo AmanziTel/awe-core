@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.analyzis.ui.view.AnalyzisTreeView"
+            icon="icons/analyzis_view.png"
+            id="org.amanzi.trees.AnalyzisTree"
+            name="Analyzis Tree"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.trees.AnalyzisTree"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.project.ui.layerManager"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.trees.AnalyzisTree">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
+
+</plugin>

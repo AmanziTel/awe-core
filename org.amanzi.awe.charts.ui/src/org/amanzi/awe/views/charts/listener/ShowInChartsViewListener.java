@@ -14,12 +14,12 @@
 package org.amanzi.awe.views.charts.listener;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.ui.filter.container.dto.IStatisticsViewFilterContainer;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.views.charts.ChartsView;
-import org.amanzi.awe.views.statistics.filter.container.dto.IStatisticsViewFilterContainer;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 

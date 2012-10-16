@@ -51,7 +51,7 @@ public class SelectComboWidget extends AbstractComboWidget<Select, ISelectChange
 
     public void setDistributionManager(final DistributionManager distributionManager) {
         this.distributionManager = distributionManager;
-        
+
         fillCombo();
     }
 
@@ -64,7 +64,7 @@ public class SelectComboWidget extends AbstractComboWidget<Select, ISelectChange
     }
 
     @Override
-    protected void fillCombo() {
+    public void fillCombo() {
         super.fillCombo();
 
         if (getItems() != null && getItems().size() == 1) {

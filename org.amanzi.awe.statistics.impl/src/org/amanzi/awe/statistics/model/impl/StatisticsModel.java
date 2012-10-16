@@ -139,7 +139,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                             return chain;
                         }
                     };
-                } catch (ModelException e) {
+                } catch (final ModelException e) {
                     LOGGER.error("Error on collecting Sources of Statistics Group", e);
                 }
             }
@@ -148,11 +148,11 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         private List<Iterator<IDataElement>> getIteratorList(final IStatisticsGroup group) throws ModelException {
-            List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+            final List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
 
-            Iterable<IStatisticsRow> rows = getStatisticsRows(group.getPeriod());
+            final Iterable<IStatisticsRow> rows = getStatisticsRows(group.getPeriod());
             if (rows != null) {
-                for (IStatisticsRow sourceRow : rows) {
+                for (final IStatisticsRow sourceRow : rows) {
                     if (sourceRow.getStatisticsGroup().equals(group)) {
                         result.add(statisticsRowSourcesCollectFunction.collectSourceElements(sourceRow).iterator());
                     }
@@ -179,7 +179,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                             return chain;
                         }
                     };
-                } catch (ModelException e) {
+                } catch (final ModelException e) {
                     LOGGER.error("Error on collecting Sources of Statistics Row", e);
                 }
             }
@@ -188,16 +188,16 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         private List<Iterator<IDataElement>> getIteratorList(final IStatisticsRow row) throws ModelException {
-            List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+            final List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
 
-            Iterable<IStatisticsRow> rows = getSourceRows(row);
+            final Iterable<IStatisticsRow> rows = getSourceRows(row);
             if (rows != null) {
-                for (IStatisticsRow sourceRow : rows) {
+                for (final IStatisticsRow sourceRow : rows) {
                     result.addAll(getIteratorList(sourceRow));
                 }
             }
 
-            for (IStatisticsCell cell : row.getStatisticsCells()) {
+            for (final IStatisticsCell cell : row.getStatisticsCells()) {
                 result.add(statisticsCellSourcesCollectFunction.collectSourceElements(cell).iterator());
             }
 
@@ -221,7 +221,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                             return chain;
                         }
                     };
-                } catch (ModelException e) {
+                } catch (final ModelException e) {
                     LOGGER.error("Error on collecting Sources of Statistics Cell", e);
                 }
             }
@@ -230,11 +230,11 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         private List<Iterator<IDataElement>> getIteratorList(final IStatisticsCell cell) throws ModelException {
-            List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+            final List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
 
-            Iterable<IStatisticsCell> cells = getSourceCells(cell);
+            final Iterable<IStatisticsCell> cells = getSourceCells(cell);
             if (cells != null) {
-                for (IStatisticsCell sourceCell : cells) {
+                for (final IStatisticsCell sourceCell : cells) {
                     result.addAll(getIteratorList(sourceCell));
                 }
             }
@@ -300,7 +300,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
             columnNames = new LinkedHashSet<String>(Arrays.asList(getNodeService().getNodeProperty(rootNode,
                     statisticsNodeProperties.getColumnNamesProperty(), ArrayUtils.EMPTY_STRING_ARRAY, false)));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             processException("An error occured on Statistics Model Initialization", e);
         }
 
@@ -318,13 +318,14 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         try {
-            String statisticsName = MessageFormat.format(StatisticsService.STATISTICS_NAME_PATTERN, templateName, propertyName);
+            final String statisticsName = MessageFormat.format(StatisticsService.STATISTICS_NAME_PATTERN, templateName,
+                    propertyName);
 
             super.initialize(parentNode, statisticsName, StatisticsNodeType.STATISTICS);
 
             this.templateName = templateName;
             this.aggregatedProperty = propertyName;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             processException("Exception on initializing Statistics Model", e);
         }
 
@@ -342,7 +343,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
             getNodeService().updateProperty(getRootNode(), statisticsNodeProperties.getColumnNamesProperty(),
                     columnNames.toArray(new String[columnNames.size()]));
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on finishin up Statistics Model", e);
         }
     }
@@ -360,7 +361,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         // TODO: LN: 15.08.2012, validate input
 
-        Pair<String, String> groupKey = new ImmutablePair<String, String>(period, propertyKey);
+        final Pair<String, String> groupKey = new ImmutablePair<String, String>(period, propertyKey);
 
         IStatisticsGroup result = statisticsGroupCache.get(groupKey);
 
@@ -385,13 +386,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         IStatisticsGroup result = null;
 
         try {
-            Node propertyLevel = getStatisticsLevelNode(DimensionType.PROPERTY, propertyKey);
-            Node periodLevel = getStatisticsLevelNode(DimensionType.TIME, period);
+            final Node propertyLevel = getStatisticsLevelNode(DimensionType.PROPERTY, propertyKey);
+            final Node periodLevel = getStatisticsLevelNode(DimensionType.TIME, period);
 
-            Node groupNode = statisticsService.getGroup(propertyLevel, periodLevel);
+            final Node groupNode = statisticsService.getGroup(propertyLevel, periodLevel);
 
             result = createStatisticsGroup(groupNode, period, propertyKey);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on getting StatisticsGroup from Database", e);
         }
 
@@ -410,11 +411,11 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         IStatisticsGroup group = null;
 
         try {
-            String period = statisticsService.getStatisticsLevelName(node, DimensionType.TIME);
-            String propertyKey = statisticsService.getStatisticsLevelName(node, DimensionType.PROPERTY);
+            final String period = statisticsService.getStatisticsLevelName(node, DimensionType.TIME);
+            final String propertyKey = statisticsService.getStatisticsLevelName(node, DimensionType.PROPERTY);
 
             group = createStatisticsGroup(node, period, propertyKey);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on getting StatisticsGroup instance from Node", e);
             return null;
         }
@@ -431,14 +432,14 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         StatisticsGroup result = null;
 
         try {
-            String name = getNodeService().getNodeName(node);
+            final String name = getNodeService().getNodeName(node);
 
             result = new StatisticsGroup(node, statisticsGroupSourcesCollectFunction);
             result.setNodeType(StatisticsNodeType.GROUP);
             result.setName(name);
             result.setPeriod(period);
             result.setPropertyValue(propertyKey);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on converting node to StatisticsGroup", e);
         }
 
@@ -452,7 +453,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("getStatisticsRow", group, startDate, endDate));
         }
 
-        IStatisticsRow result = getStatisticsRow(group, null, startDate, endDate);
+        final IStatisticsRow result = getStatisticsRow(group, null, startDate, endDate);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getStatisticsRow"));
@@ -469,7 +470,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         // TODO: LN: 15.08.2012, validate input
-        Pair<String, Long> key = new ImmutablePair<String, Long>(group.getName(), startDate);
+        final Pair<String, Long> key = new ImmutablePair<String, Long>(group.getName(), startDate);
 
         IStatisticsRow result = statisticsRowCache.get(key);
         if (result == null) {
@@ -479,7 +480,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         if (sourceRow != null) {
             try {
                 statisticsService.addSourceNode(((StatisticsRow)result).getNode(), ((DataElement)sourceRow).getNode());
-            } catch (ServiceException e) {
+            } catch (final ServiceException e) {
                 processException("Can't add source to row " + sourceRow, e);
             }
         }
@@ -497,14 +498,14 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("getStatisticsRowFromDatabase", statisticsGroup, sourceRow, startDate, endDate));
         }
 
-        String name = Long.toString(startDate);
+        final String name = Long.toString(startDate);
 
         IStatisticsRow result = null;
 
         try {
             Node sRowNode = getNodeService().getChildInChainByName(statisticsGroup.getNode(), name, StatisticsNodeType.S_ROW);
             if (sRowNode == null) {
-                Map<String, Object> properties = new HashMap<String, Object>();
+                final Map<String, Object> properties = new HashMap<String, Object>();
 
                 addTimeProperty(properties, timePeriodNodeProperties.getStartDateProperty(),
                         timePeriodNodeProperties.getStartDateTimestampProperty(), startDate);
@@ -516,7 +517,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                 updateSummury((StatisticsRow)getSummuryRow(statisticsGroup), startDate, endDate);
             }
             result = createStatisticsRow(sRowNode, startDate, endDate);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Exception on getting Statistics Row from Database", e);
         }
 
@@ -528,7 +529,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     protected StatisticsRow createStatisticsRow(final Node node, final long startDate, final long endDate) {
-        StatisticsRow row = new StatisticsRow(node, statisticsRowSourcesCollectFunction);
+        final StatisticsRow row = new StatisticsRow(node, statisticsRowSourcesCollectFunction);
 
         row.setNodeType(StatisticsNodeType.S_ROW);
         row.setStartDate(startDate);
@@ -540,19 +541,20 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     protected IStatisticsRow createStatisticsRow(final Node node) {
         StatisticsRow row = null;
         try {
-            long startDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getStartDateTimestampProperty(), null,
-                    true);
-            long endDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getEndDateTimestampProperty(), null,
-                    true);
+            final long startDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getStartDateTimestampProperty(),
+                    null, true);
+            final long endDate = getNodeService().getNodeProperty(node, timePeriodNodeProperties.getEndDateTimestampProperty(),
+                    null, true);
 
             row = createStatisticsRow(node, startDate, endDate);
-            boolean isSummury = getNodeService().getNodeProperty(node, statisticsNodeProperties.isSummuryProperty(), false, false);
-            Node groupNode = getNodeService().getChainParent(node);
-            IStatisticsGroup group = createStatisticsGroupFromNode(groupNode);
+            final boolean isSummury = getNodeService().getNodeProperty(node, statisticsNodeProperties.isSummuryProperty(), false,
+                    false);
+            final Node groupNode = getNodeService().getChainParent(node);
+            final IStatisticsGroup group = createStatisticsGroupFromNode(groupNode);
             row.setSummury(isSummury);
             row.setStatisticsGroup(group);
             row.setStatisticsCells(getStatisticsCells(node));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on getting StatisticsRow Node from Database", e);
             return null;
         }
@@ -561,15 +563,15 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     protected IStatisticsCell createStatisticsCell(final Node node) {
-        StatisticsCell cell = new StatisticsCell(node, statisticsCellSourcesCollectFunction);
+        final StatisticsCell cell = new StatisticsCell(node, statisticsCellSourcesCollectFunction);
         try {
             cell.setName(getNodeService().getNodeName(node));
             cell.setNodeType(getNodeService().getNodeType(node));
             cell.setValue((Number)getNodeService().getNodeProperty(node, statisticsNodeProperties.getValueProperty(), null, false));
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             LOGGER.error("Error on getting StatisticsRow Node from Database", e);
             return null;
-        } catch (NodeTypeNotExistsException e) {
+        } catch (final NodeTypeNotExistsException e) {
             LOGGER.error("Error on getting StatisticsRow Node from Database", e);
             return null;
         }
@@ -579,8 +581,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     private void addTimeProperty(final Map<String, Object> properties, final String timeProperty, final String timestampProperty,
             final long time) {
-        Date date = new Date(time);
-        String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
+        final Date date = new Date(time);
+        final String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
 
         properties.put(timeProperty, dateString);
         properties.put(timestampProperty, time);
@@ -597,7 +599,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                 result = statisticsService.getStatisticsLevel(getRootNode(), dimensionType, key);
 
                 addStatisticsLevelNodeToCache(dimensionType, key, result);
-            } catch (ServiceException e) {
+            } catch (final ServiceException e) {
                 processException("Exception on searching for Statistics Level", e);
             }
         }
@@ -656,12 +658,12 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         try {
             if (value != null) {
                 getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
-                for (IDataElement singleElement : sourceElement) {
-                    DataElement source = (DataElement)singleElement;
+                for (final IDataElement singleElement : sourceElement) {
+                    final DataElement source = (DataElement)singleElement;
                     statisticsService.addSourceNode(statisticsCellNode, source.getNode());
                 }
             }
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on updating value of Statistics Cell <" + name + "> in Row <" + statisticsRow + ">", e);
         }
 
@@ -677,7 +679,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("getStatisticsCellNode", statisticsRow, name));
         }
 
-        Pair<StatisticsRow, String> key = new ImmutablePair<StatisticsRow, String>(statisticsRow, name);
+        final Pair<StatisticsRow, String> key = new ImmutablePair<StatisticsRow, String>(statisticsRow, name);
 
         Node result = statisticsCellNodeCache.get(key);
 
@@ -701,7 +703,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         try {
             result = getNodeService().createNodeInChain(statisticsRow.getNode(), StatisticsNodeType.S_CELL, name);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on creating Statistics Cell Node by name <" + name + "> in Row <" + statisticsRow + ">.", e);
         }
 
@@ -723,7 +725,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         try {
             result = getNodeService().getChildInChainByName(statisticsRow.getNode(), name, StatisticsNodeType.S_CELL);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on searching Statistics Cell Node by name <" + name + "> in Row <" + statisticsRow + ">.", e);
         }
 
@@ -744,10 +746,10 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         Iterable<IStatisticsCell> statisticsCells = null;
 
         try {
-            Iterator<Node> nodeIterator = getNodeService().getChildrenChain(statisticsRowNode);
+            final Iterator<Node> nodeIterator = getNodeService().getChildrenChain(statisticsRowNode);
 
             statisticsCells = new StatisticsCellIterator(nodeIterator).toIterable();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on getting chain of Statistics Cells", e);
         }
 
@@ -764,7 +766,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     @Override
-    public Iterable<IStatisticsRow> getStatisticsRowsInTimeRange(final String period, long startTime, long endTime)
+    public Iterable<IStatisticsRow> getStatisticsRowsInTimeRange(final String period, final long startTime, final long endTime)
             throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getStatisticsRows", period));
@@ -774,11 +776,11 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         Iterable<IStatisticsRow> statisticsRows = null;
 
-        Node periodNode = getStatisticsLevelNode(DimensionType.TIME, period);
+        final Node periodNode = getStatisticsLevelNode(DimensionType.TIME, period);
         try {
-            Iterator<Node> groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
+            final Iterator<Node> groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
 
-            List<Node> allRowsIterator = new ArrayList<Node>();
+            final List<Node> allRowsIterator = new ArrayList<Node>();
             // TODO KV: seems like IteratorUtils.chaindedIterator() works badly, check this
             // solution.
             while (groupNodeIterator.hasNext()) {
@@ -786,7 +788,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                         endTime)));
             }
             statisticsRows = new StatisticsRowIterator(allRowsIterator.iterator()).toIterable();
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on getting chain of Statistics Rows", e);
         }
 
@@ -815,7 +817,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         try {
             return statisticsService.findStatisticsLevel(getRootNode(), dimension, levelName) != null;
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on checking Statistics Level", e);
         }
 
@@ -839,10 +841,10 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("setLevelCount", dimension, levelName, count));
         }
 
-        Node levelNode = getStatisticsLevelNode(dimension, levelName);
+        final Node levelNode = getStatisticsLevelNode(dimension, levelName);
         try {
             getNodeService().updateProperty(levelNode, getGeneralNodeProperties().getSizeProperty(), count);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on updating count for level <" + dimension + ":" + levelName + ">.", e);
         }
 
@@ -859,10 +861,10 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         int result = 0;
 
-        Node levelNode = getStatisticsLevelNode(dimension, levelName);
+        final Node levelNode = getStatisticsLevelNode(dimension, levelName);
         try {
             result = getNodeService().getNodeProperty(levelNode, getGeneralNodeProperties().getSizeProperty(), 0, false);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error on getting count for level <" + dimension + ":" + levelName + ">.", e);
         }
 
@@ -881,7 +883,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
                 row = (StatisticsRow)getStatisticsRowFromDatabase((StatisticsGroup)statisticsGroup, null, Long.MAX_VALUE,
                         Long.MIN_VALUE);
-                Node sRowNode = row.getNode();
+                final Node sRowNode = row.getNode();
                 row.setSummury(true);
                 getNodeService().updateProperty(sRowNode, statisticsNodeProperties.isSummuryProperty(), true);
                 row.setStatisticsGroup(statisticsGroup);
@@ -889,7 +891,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             }
 
             return row;
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't get syummury row from group" + statisticsGroup, e);
         }
         return null;
@@ -912,8 +914,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     private void updateSummuryRowDate(final StatisticsRow row, final long currentDate, final String dateProperty,
             final String dateTimestampProperty) throws ServiceException {
-        Date date = new Date(currentDate);
-        String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
+        final Date date = new Date(currentDate);
+        final String dateString = DateFormatManager.getInstance().getDefaultFormat().format(date);
         getNodeService().updateProperty(row.getNode(), dateProperty, dateString);
         getNodeService().updateProperty(row.getNode(), dateTimestampProperty, currentDate);
     }
@@ -927,11 +929,11 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         // TODO: LN: 20.08.2012, validate input
 
-        Node periodNode = getStatisticsLevelNode(type, levelName);
+        final Node periodNode = getStatisticsLevelNode(type, levelName);
         Iterator<Node> groupNodeIterator = null;
         try {
             groupNodeIterator = getNodeService().getChildren(periodNode, NodeServiceRelationshipType.CHILD);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't find groups", e);
         }
         return new StatisticsGroupIterator(groupNodeIterator).toIterable();
@@ -947,7 +949,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         try {
             levels = statisticsService.findAllStatisticsLevelNode(getRootNode(), type);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Error when try to find all levels nodes", e);
         }
 
@@ -961,16 +963,16 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("hasUnderlineSource", element));
         }
-        DataElement statElement = (DataElement)element;
+        final DataElement statElement = (DataElement)element;
         Iterator<Node> sources = null;
         try {
             sources = statisticsService.getAllSources(statElement.getNode());
             if (sources.hasNext() && element.getNodeType().equals(getNodeService().getNodeType(sources.next()))) {
                 return true;
             }
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't get sources from node " + statElement, e);
-        } catch (NodeTypeNotExistsException e) {
+        } catch (final NodeTypeNotExistsException e) {
             LOGGER.error("can't get node type for", e);
         }
         return false;
@@ -981,14 +983,14 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         if (!hasUnderlineSource(cell)) {
             return null;
         }
-        Iterator<Node> sources = getSourcesNodes(cell);
+        final Iterator<Node> sources = getSourcesNodes(cell);
         return new StatisticsCellIterator(sources).toIterable();
 
     }
 
     @Override
     public Iterable<IDataElement> getSources(final IDataElement cell) throws ModelException {
-        Iterator<Node> sources = getSourcesNodes(cell);
+        final Iterator<Node> sources = getSourcesNodes(cell);
         if (cell.getNodeType().equals(StatisticsNodeType.S_CELL)) {
             return new DataElementIterator(sources, measurementNodeProperties.getEventProperty()).toIterable();
         }
@@ -1000,7 +1002,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         if (!hasUnderlineSource(row)) {
             return null;
         }
-        Iterator<Node> sources = getSourcesNodes(row);
+        final Iterator<Node> sources = getSourcesNodes(row);
         return new StatisticsRowIterator(sources).toIterable();
     }
 
@@ -1009,11 +1011,11 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("getCellSources", element));
         }
 
-        DataElement statCell = (DataElement)element;
+        final DataElement statCell = (DataElement)element;
         Iterator<Node> sources = null;
         try {
             sources = statisticsService.getAllSources(statCell.getNode());
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't get sources from node " + element, e);
         }
 
@@ -1030,22 +1032,22 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         IDataElement result = null;
-        DataElement child = (DataElement)childElement;
+        final DataElement child = (DataElement)childElement;
 
         if (child.getNodeType().equals(StatisticsNodeType.S_CELL)) {
             try {
-                Node parentNode = getNodeService().getChainParent(child.getNode());
+                final Node parentNode = getNodeService().getChainParent(child.getNode());
 
                 result = createStatisticsRow(parentNode);
-            } catch (ServiceException e) {
+            } catch (final ServiceException e) {
                 processException("Error on getting parent of SCell", e);
             }
         } else if (child instanceof IStatisticsRow) {
-            IStatisticsRow childRow = (IStatisticsRow)child;
+            final IStatisticsRow childRow = (IStatisticsRow)child;
 
             result = childRow.getStatisticsGroup();
         } else if (child instanceof IStatisticsGroup) {
-            IStatisticsGroup childGroup = (IStatisticsGroup)child;
+            final IStatisticsGroup childGroup = (IStatisticsGroup)child;
 
             String name = null;
 
@@ -1058,7 +1060,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
                 break;
             }
 
-            Node periodNode = getStatisticsLevelNode(dimension, name);
+            final Node periodNode = getStatisticsLevelNode(dimension, name);
 
             result = getDataElement(periodNode, StatisticsNodeType.LEVEL, name);
         } else if (child.getNodeType().equals(StatisticsNodeType.LEVEL)) {
@@ -1070,5 +1072,17 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         return result;
+    }
+
+    @Override
+    public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
