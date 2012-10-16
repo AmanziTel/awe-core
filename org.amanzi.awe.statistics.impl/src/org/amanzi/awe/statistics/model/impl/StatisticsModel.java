@@ -26,9 +26,11 @@ import java.util.Set;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.dto.IStatisticsLevel;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.dto.impl.StatisticsCell;
 import org.amanzi.awe.statistics.dto.impl.StatisticsGroup;
+import org.amanzi.awe.statistics.dto.impl.StatisticsLevel;
 import org.amanzi.awe.statistics.dto.impl.StatisticsRow;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
@@ -75,6 +77,26 @@ import com.google.common.collect.Lists;
 public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> implements IStatisticsModel {
 
     private final static Logger LOGGER = Logger.getLogger(StatisticsModel.class);
+
+    private class StatisticsLevelIterator extends AbstractDataElementIterator<IStatisticsLevel> {
+
+        private final DimensionType dimension;
+
+        /**
+         * @param nodeIterator
+         */
+        protected StatisticsLevelIterator(final Iterator<Node> nodeIterator, final DimensionType dimension) {
+            super(nodeIterator);
+
+            this.dimension = dimension;
+        }
+
+        @Override
+        protected IStatisticsLevel createDataElement(final Node node) {
+            return createStatisticsLevel(node, dimension);
+        }
+
+    }
 
     private class StatisticsRowIterator extends AbstractDataElementIterator<IStatisticsRow> {
 
@@ -940,7 +962,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     @Override
-    public Iterable<IDataElement> findAllStatisticsLevels(final DimensionType type) throws ModelException {
+    public Iterable<IStatisticsLevel> findAllStatisticsLevels(final DimensionType type) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type));
         }
@@ -954,9 +976,9 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("getLevelCount"));
+            LOGGER.debug(getFinishLogStatement("findAllStatisticsLevels"));
         }
-        return new DataElementIterator(levels).toIterable();
+        return new StatisticsLevelIterator(levels, type).toIterable();
     }
 
     private boolean hasUnderlineSource(final IDataElement element) throws ModelException {
@@ -1082,8 +1104,23 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     @Override
     public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getChildren", parentElement));
+        }
+
+        Iterable<IDataElement> result = null;
+
+        if (parentElement.getNodeType().equals(StatisticsNodeType.LEVEL)) {
+            final IStatisticsLevel level = (IStatisticsLevel)parentElement;
+
+            result = new DataElementConverter<IStatisticsGroup>(getAllStatisticsGroups(level.getDimension(), level.getName())
+                    .iterator()).toIterable();
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getChildren"));
+        }
+        return result;
     }
 
     @Override
@@ -1093,5 +1130,18 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         builder.append(getSourceModel().getName() + " {" + super.getName() + "}");
 
         return builder.toString();
+    }
+
+    private StatisticsLevel createStatisticsLevel(final Node node, final DimensionType dimension) {
+        final StatisticsLevel result = new StatisticsLevel(node, dimension);
+
+        try {
+            result.setNodeType(StatisticsNodeType.LEVEL);
+            result.setName(getNodeService().getNodeName(node));
+        } catch (final ServiceException e) {
+            LOGGER.error("Error on initializing Statistics Level", e);
+        }
+
+        return result;
     }
 }

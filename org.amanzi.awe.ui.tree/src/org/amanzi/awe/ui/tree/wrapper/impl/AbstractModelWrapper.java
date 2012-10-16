@@ -37,9 +37,9 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
 
     protected final class TreeItemIterator implements Iterator<ITreeItem> {
 
-        private final Iterator<IDataElement> dataElements;
+        private final Iterator< ? extends IDataElement> dataElements;
 
-        public TreeItemIterator(final Iterator<IDataElement> dataElements) {
+        public TreeItemIterator(final Iterator< ? extends IDataElement> dataElements) {
             this.dataElements = dataElements;
         }
 

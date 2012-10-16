@@ -79,7 +79,6 @@ public abstract class AbstractTreeModelWrapper<T extends ITreeModel> extends Abs
         }
 
         return result;
-
     }
 
 }

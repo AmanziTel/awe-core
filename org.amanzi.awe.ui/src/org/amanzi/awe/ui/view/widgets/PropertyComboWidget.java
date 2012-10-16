@@ -54,14 +54,14 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
      * @param label
      */
     protected PropertyComboWidget(final Composite parent, final IPropertySelectionListener listener, final String label,
-            final int minimalLabelWidth) {
-        super(parent, listener, label, minimalLabelWidth);
+            final int minimalLabelWidth, final boolean shouldSort) {
+        super(parent, listener, label, minimalLabelWidth, true, shouldSort);
     }
 
     @Override
     protected Collection<String> getItems() {
         if (propertyModel != null) {
-            Set<String> properties = new LinkedHashSet<String>();
+            final Set<String> properties = new LinkedHashSet<String>();
             properties.addAll(defaultProperties);
             if (!defaultProperties.isEmpty()) {
                 properties.add(SEPARATOR);
@@ -85,7 +85,7 @@ public class PropertyComboWidget extends AbstractComboWidget<String, IPropertySe
     }
 
     public void setDefaultProperties(final Iterable<String> properties) {
-        for (String prop : properties) {
+        for (final String prop : properties) {
             defaultProperties.add(prop);
         }
     }

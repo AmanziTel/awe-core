@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
+import org.amanzi.awe.statistics.dto.IStatisticsLevel;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IAnalyzisModel;
@@ -58,7 +59,7 @@ public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel>, ITr
 
     IStatisticsRow getSummuryRow(IStatisticsGroup statisticsGroup) throws ModelException;
 
-    Iterable<IDataElement> findAllStatisticsLevels(DimensionType type) throws ModelException;
+    Iterable<IStatisticsLevel> findAllStatisticsLevels(DimensionType type) throws ModelException;
 
     Iterable<IStatisticsGroup> getAllStatisticsGroups(DimensionType type, String levelName) throws ModelException;
 

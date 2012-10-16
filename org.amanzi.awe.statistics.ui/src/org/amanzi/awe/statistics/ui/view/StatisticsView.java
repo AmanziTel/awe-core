@@ -194,7 +194,7 @@ public class StatisticsView extends ViewPart
         templateCombo.setEnabled(false);
 
         propertyComboWidget = AWEWidgetFactory.getFactory().addPropertyComboWidget(this, "Aggregation:", parent,
-                THIRD_ROW_LABEL_WIDTH);
+                THIRD_ROW_LABEL_WIDTH, false);
         propertyComboWidget.setEnabled(false);
 
         buildButton = new Button(parent, SWT.NONE);

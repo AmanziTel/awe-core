@@ -63,8 +63,8 @@ public final class AWEWidgetFactory {
     }
 
     public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText,
-            final Composite parent, final int minimalLabelWidth) {
-        return initializeWidget(new PropertyComboWidget(parent, listener, labelText, minimalLabelWidth));
+            final Composite parent, final int minimalLabelWidth, final boolean shouldSort) {
+        return initializeWidget(new PropertyComboWidget(parent, listener, labelText, minimalLabelWidth, shouldSort));
     }
 
     public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent,
@@ -80,7 +80,8 @@ public final class AWEWidgetFactory {
         return initializeWidget(new TextWidget(parent, SWT.BORDER | SWT.READ_ONLY, listener, label));
     }
 
-    public TextWidget addStyledTextWidget(final ITextChandedListener listener, int style, final String label, final Composite parent) {
+    public TextWidget addStyledTextWidget(final ITextChandedListener listener, final int style, final String label,
+            final Composite parent) {
         return initializeWidget(new TextWidget(parent, style, listener, label));
     }
 

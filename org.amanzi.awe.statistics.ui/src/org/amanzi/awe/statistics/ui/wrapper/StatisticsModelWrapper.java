@@ -13,8 +13,13 @@
 
 package org.amanzi.awe.statistics.ui.wrapper;
 
+import java.util.Iterator;
+
+import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
+import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
  * TODO Purpose of
@@ -38,4 +43,14 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
         return IStatisticsModel.class;
     }
 
+    @Override
+    protected Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException {
+        final IStatisticsModel model = item.castChild(IStatisticsModel.class);
+
+        if (model != null) {
+            return new TreeItemIterator(model.findAllStatisticsLevels(DimensionType.TIME).iterator());
+        } else {
+            return super.getChildrenInternal(item);
+        }
+    }
 }

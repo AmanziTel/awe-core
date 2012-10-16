@@ -65,6 +65,15 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
 
     private D selectedItem;
 
+    private boolean shouldSort = true;
+
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
+            final boolean withoutListeners, final boolean shouldSort) {
+        this(parent, listener, label, minimalLabelWidth, withoutListeners);
+
+        this.shouldSort = shouldSort;
+    }
+
     /**
      * @param parent
      * @param label
@@ -90,7 +99,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
      * @param label
      */
     protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
-            final boolean widthoutListeners) {
+            final boolean withoutListeners) {
         super(parent, listener, label, minimalLabelWidth);
     }
 
@@ -138,7 +147,10 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         final Collection<D> items = getItems();
         if (items != null) {
             final List<D> itemList = new ArrayList<D>(items);
-            Collections.sort(itemList, itemComparator);
+
+            if (shouldSort) {
+                Collections.sort(itemList, itemComparator);
+            }
             for (final D item : itemList) {
                 final String name = getItemName(item);
 

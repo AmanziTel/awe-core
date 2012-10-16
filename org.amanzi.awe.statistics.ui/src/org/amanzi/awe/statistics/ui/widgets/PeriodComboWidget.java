@@ -45,7 +45,7 @@ public class PeriodComboWidget extends AbstractComboWidget<Period, IPeriodSelect
      */
     public PeriodComboWidget(final Composite parent, final IPeriodSelectionListener listener, final String label,
             final int minimalLabelWidth) {
-        super(parent, listener, label, minimalLabelWidth);
+        super(parent, listener, label, minimalLabelWidth, true, false);
     }
 
     @Override
