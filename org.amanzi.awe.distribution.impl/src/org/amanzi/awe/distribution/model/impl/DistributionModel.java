@@ -24,6 +24,7 @@ import org.amanzi.awe.distribution.dto.impl.AggregationRelation;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.bar.impl.DistributionBar;
+import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
 import org.amanzi.awe.distribution.model.type.IRange;
 import org.amanzi.awe.distribution.properties.IDistributionNodeProperties;
 import org.amanzi.awe.distribution.service.IDistributionService;
@@ -96,6 +97,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     private Color middleColor;
 
+    private Select select;
+
     private final Map<Long, IDistributionBar> distributionBarCache = new HashMap<Long, IDistributionBar>();
 
     /**
@@ -123,6 +126,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
             propertyName = getNodeService().getNodeProperty(rootNode, distributionNodeProperties.getDistributionPropertyName(),
                     null, true);
+            select = Select.valueOf(getNodeService().getNodeProperty(rootNode, distributionNodeProperties.getDistributionSelect(),
+                    null, true).toString());
         } catch (final ServiceException e) {
             processException("Error on get default Distribution Model properties", e);
         }
@@ -453,7 +458,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     public String getName() {
         final StringBuilder builder = new StringBuilder();
 
-        builder.append("Distribution for " + getSourceModel().getName() + " {" + propertyName + " - " + super.getName() + "}");
+        builder.append(getSourceModel().getName() + " {" + propertyName + " - " + super.getName() + " - " + select + "}");
 
         return builder.toString();
     }

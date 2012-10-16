@@ -39,6 +39,8 @@ public class DistributionNodeProperties implements IDistributionNodeProperties {
 
     private static final String MIDDLE_COLOR = "middle_color";
 
+    private static final String SELECT = "select";
+
     @Override
     public String getCurrentDistributionProperty() {
         return CURRENT_DISTRIBUTION_ID;
@@ -72,6 +74,11 @@ public class DistributionNodeProperties implements IDistributionNodeProperties {
     @Override
     public String getMiddleColor() {
         return MIDDLE_COLOR;
+    }
+
+    @Override
+    public String getDistributionSelect() {
+        return SELECT;
     }
 
 }

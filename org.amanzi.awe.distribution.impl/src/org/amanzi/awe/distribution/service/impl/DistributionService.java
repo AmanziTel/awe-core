@@ -104,11 +104,13 @@ public class DistributionService extends AbstractService implements IDistributio
                 distributionType.getNodeType().getId());
         final Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getCurrentDistributionProperty(),
                 distributionType.getPropertyName());
+        final Evaluator selectEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionSelect(),
+                distributionType.getSelect().name());
 
         final Iterator<Node> nodeIterator = nodeService
                 .getChildrenTraversal(DistributionNodeType.DISTRIBUTION_ROOT, DistributionRelationshipType.DISTRIBUTION)
-                .evaluator(nameEvaluator).evaluator(typeEvaluator).evaluator(propertyEvaluator).traverse(rootNode).nodes()
-                .iterator();
+                .evaluator(nameEvaluator).evaluator(typeEvaluator).evaluator(propertyEvaluator).evaluator(selectEvaluator)
+                .traverse(rootNode).nodes().iterator();
 
         Node result = null;
 
@@ -136,6 +138,7 @@ public class DistributionService extends AbstractService implements IDistributio
             properties.put(getGeneralNodeProperties().getNodeNameProperty(), distributionType.getName());
             properties.put(distributionNodeProperties.getDistributionPropertyName(), distributionType.getPropertyName());
             properties.put(distributionNodeProperties.getDistributionNodeType(), distributionType.getNodeType().getId());
+            properties.put(distributionNodeProperties.getDistributionSelect(), distributionType.getSelect().name());
 
             result = nodeService.createNode(rootNode, DistributionNodeType.DISTRIBUTION_ROOT,
                     DistributionRelationshipType.DISTRIBUTION, properties);
