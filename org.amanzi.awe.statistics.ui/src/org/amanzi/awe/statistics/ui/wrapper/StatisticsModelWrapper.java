@@ -19,8 +19,8 @@ import java.util.Iterator;
 
 import org.amanzi.awe.statistics.dto.IStatisticsCell;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
-import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
+import org.amanzi.awe.statistics.ui.handlers.DimensionHandler;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
 import org.amanzi.neo.core.period.Period;
@@ -62,7 +62,7 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
         final IStatisticsModel model = item.castChild(IStatisticsModel.class);
 
         if (model != null) {
-            return new TreeItemIterator(model.findAllStatisticsLevels(DimensionType.TIME).iterator());
+            return new TreeItemIterator(model.findAllStatisticsLevels(DimensionHandler.getInstance().getDimension()).iterator());
         } else {
             return super.getChildrenInternal(item);
         }
