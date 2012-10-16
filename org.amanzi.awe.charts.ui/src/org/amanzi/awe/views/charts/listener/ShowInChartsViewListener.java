@@ -40,7 +40,7 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
 
             if ((showInViewEvent.getParent() instanceof IStatisticsModel)
                     && (showInViewEvent.getElement() instanceof IStatisticsFilter)) {
-                ChartsView view = showStatisticsView();
+                ChartsView view = showChartsView();
 
                 if (view != null) {
                     showInView(view, (IStatisticsModel)showInViewEvent.getParent(),
@@ -55,7 +55,7 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
         return Priority.NORMAL;
     }
 
-    private ChartsView showStatisticsView() {
+    private ChartsView showChartsView() {
         try {
             return (ChartsView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ChartsView.VIEW_ID);
         } catch (PartInitException e) {

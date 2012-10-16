@@ -33,8 +33,8 @@ import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
+import org.amanzi.awe.statistics.ui.filter.impl.StatisticsFilter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.charts.filters.ShowInStatisticsTreeFilter;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -342,7 +342,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         }
 
         AWEEventManager.getManager().fireShowInViewEvent(model,
-                new ShowInStatisticsTreeFilter(groups, startDate, endDate, cellName, container.getPeriod()), this);
+                new StatisticsFilter(container.getPeriod(), startDate, endDate, groups, cellName), this);
     }
 
     @Override
