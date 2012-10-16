@@ -28,9 +28,9 @@ import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.providers.context.ProviderContextImpl;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * TODO Purpose of
@@ -40,7 +40,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractProviderPlugin extends AbstractUIPlugin {
+public abstract class AbstractProviderPlugin extends Plugin {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProviderPlugin.class);
 

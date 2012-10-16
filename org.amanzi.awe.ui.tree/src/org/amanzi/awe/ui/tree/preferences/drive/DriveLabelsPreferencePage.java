@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.drive.ui.preferences;
+package org.amanzi.awe.ui.tree.preferences.drive;
 
-import org.amanzi.awe.drive.ui.DriveTreePlugin;
+import org.amanzi.awe.ui.tree.AWETreePlugin;
 import org.amanzi.awe.ui.tree.preferences.AbstractLabelPreferencePage;
 
 /**
@@ -32,13 +32,13 @@ public class DriveLabelsPreferencePage extends AbstractLabelPreferencePage {
      * @param preferenceStore
      */
     public DriveLabelsPreferencePage() {
-        super("Select template of label for Drive Tree Item", "Drive Tree item label:", DriveTreePlugin.getDefault()
+        super("Select template of label for Drive Tree Item", "Drive Tree item label:", AWETreePlugin.getDefault()
                 .getPreferenceStore());
     }
 
     @Override
     protected String getPreferenceKey() {
-        return DriveLabelsInitialzer.DRIVE_LABEL_TEMPLATE;
+        return DriveLabelsInitializer.DRIVE_LABEL_TEMPLATE;
     }
 
 }

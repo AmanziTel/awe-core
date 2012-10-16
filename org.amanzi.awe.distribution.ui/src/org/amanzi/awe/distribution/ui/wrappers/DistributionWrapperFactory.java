@@ -57,7 +57,13 @@ public class DistributionWrapperFactory implements ITreeWrapperFactory {
         @Override
         public boolean hasNext() {
             if ((distributionModels == null || !distributionModels.hasNext()) && sourceModels.hasNext()) {
-                distributionModels = getDistributionModelsIterator(sourceModels.next());
+                boolean canReturn = false;
+
+                do {
+                    distributionModels = getDistributionModelsIterator(sourceModels.next());
+
+                    canReturn = distributionModels.hasNext();
+                } while (!canReturn && sourceModels.hasNext());
             }
 
             return distributionModels != null && distributionModels.hasNext();

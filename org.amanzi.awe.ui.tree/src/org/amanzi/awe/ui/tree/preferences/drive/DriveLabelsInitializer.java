@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.drive.ui.preferences;
+package org.amanzi.awe.ui.tree.preferences.drive;
 
-import org.amanzi.awe.drive.ui.DriveTreePlugin;
+import org.amanzi.awe.ui.tree.AWETreePlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -25,13 +25,13 @@ import org.eclipse.jface.preference.IPreferenceStore;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveLabelsInitialzer extends AbstractPreferenceInitializer {
+public class DriveLabelsInitializer extends AbstractPreferenceInitializer {
 
     public static final String DRIVE_LABEL_TEMPLATE = "drive_tree.label_template";
 
     @Override
     public void initializeDefaultPreferences() {
-        final IPreferenceStore store = DriveTreePlugin.getDefault().getPreferenceStore();
+        final IPreferenceStore store = AWETreePlugin.getDefault().getPreferenceStore();
 
         store.setDefault(DRIVE_LABEL_TEMPLATE, "#timestamp#");
     }

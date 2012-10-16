@@ -11,8 +11,12 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.ui.tree.item,
  org.amanzi.awe.ui.tree.item.impl,
  org.amanzi.awe.ui.tree.preferences,
+ org.amanzi.awe.ui.tree.preferences.drive,
+ org.amanzi.awe.ui.tree.preferences.network,
  org.amanzi.awe.ui.tree.provider,
  org.amanzi.awe.ui.tree.view,
  org.amanzi.awe.ui.tree.wrapper,
  org.amanzi.awe.ui.tree.wrapper.factory.impl,
  org.amanzi.awe.ui.tree.wrapper.impl
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.amanzi.awe.ui.tree.AWETreePlugin

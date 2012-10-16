@@ -62,6 +62,18 @@ public final class LabelTemplateUtils {
 
             return MessageFormat.format(templateMessage, values);
         }
+
+        public int handleRange(final IDataElement element) {
+            int i = 0;
+
+            for (final String property : propertyNames) {
+                if (element.contains(property)) {
+                    i++;
+                }
+            }
+
+            return i;
+        }
     }
 
     private static String formatTimestamp(final Object timestamp) {

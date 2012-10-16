@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.explorer.ui.preferences;
+package org.amanzi.awe.ui.tree.preferences.network;
 
-import org.amanzi.awe.explorer.ui.ProjectExplorerPlugin;
+import org.amanzi.awe.ui.tree.AWETreePlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -25,15 +25,15 @@ import org.eclipse.jface.preference.IPreferenceStore;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ExplorerLabelsInitialzer extends AbstractPreferenceInitializer {
+public class NetworkLabelsInitializer extends AbstractPreferenceInitializer {
 
-    public static final String EXPLORER_LABEL_TEMPLATE = "project_explorer.label_template";
+    public static final String NETWORK_LABEL_TEMPLATE = "network_tree.label_template";
 
     @Override
     public void initializeDefaultPreferences() {
-        final IPreferenceStore store = ProjectExplorerPlugin.getDefault().getPreferenceStore();
+        final IPreferenceStore store = AWETreePlugin.getDefault().getPreferenceStore();
 
-        store.setDefault(EXPLORER_LABEL_TEMPLATE, "#name#");
+        store.setDefault(NETWORK_LABEL_TEMPLATE, "#name#");
     }
 
 }

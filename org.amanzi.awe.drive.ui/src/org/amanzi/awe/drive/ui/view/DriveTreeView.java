@@ -3,11 +3,9 @@
  */
 package org.amanzi.awe.drive.ui.view;
 
-import org.amanzi.awe.drive.ui.DriveTreePlugin;
-import org.amanzi.awe.drive.ui.preferences.DriveLabelsInitialzer;
 import org.amanzi.awe.drive.ui.provider.DriveLavelProvider;
+import org.amanzi.awe.ui.tree.preferences.drive.DriveLabelsInitializer;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 
 /**
@@ -31,16 +29,12 @@ public class DriveTreeView extends AbstractAWETreeView {
 
     @Override
     protected IBaseLabelProvider createLabelProvider() {
-        return new DriveLavelProvider(getPreferenceStore(), getLabelTemplateKey());
+        return new DriveLavelProvider(getSupporedLabelTemplates());
     }
 
     @Override
-    protected IPreferenceStore getPreferenceStore() {
-        return DriveTreePlugin.getDefault().getPreferenceStore();
+    protected String[] getSupporedLabelTemplates() {
+        return new String[] {DriveLabelsInitializer.DRIVE_LABEL_TEMPLATE};
     }
 
-    @Override
-    protected String getLabelTemplateKey() {
-        return DriveLabelsInitialzer.DRIVE_LABEL_TEMPLATE;
-    }
 }

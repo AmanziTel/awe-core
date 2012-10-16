@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.network.ui.preferences;
+package org.amanzi.awe.ui.tree.preferences.network;
 
-import org.amanzi.awe.network.ui.NetworkTreePlugin;
+import org.amanzi.awe.ui.tree.AWETreePlugin;
 import org.amanzi.awe.ui.tree.preferences.AbstractLabelPreferencePage;
 
 /**
@@ -32,13 +32,13 @@ public class NetworkLabelsPreferencePage extends AbstractLabelPreferencePage {
      * @param preferenceStore
      */
     public NetworkLabelsPreferencePage() {
-        super("Select template of label for Network Tree Item", "Network Tree item label:", NetworkTreePlugin.getDefault()
+        super("Select template of label for Network Tree Item", "Network Tree item label:", AWETreePlugin.getDefault()
                 .getPreferenceStore());
     }
 
     @Override
     protected String getPreferenceKey() {
-        return NetworkLabelsInitialzer.NETWORK_LABEL_TEMPLATE;
+        return NetworkLabelsInitializer.NETWORK_LABEL_TEMPLATE;
     }
 
 }

@@ -10,26 +10,23 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.network.ui;
+package org.amanzi.awe.ui.tree;
 
-import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class NetworkTreePlugin extends AbstractProviderPlugin {
-
-    // The plug-in ID
-    private static final String PLUGIN_ID = "org.amanzi.awe.network.ui";
+public class AWETreePlugin extends AbstractUIPlugin {
 
     // The shared instance
-    private static NetworkTreePlugin plugin;
+    private static AWETreePlugin plugin;
 
     /**
      * The constructor
      */
-    public NetworkTreePlugin() {
+    public AWETreePlugin() {
     }
 
     /*
@@ -57,13 +54,7 @@ public class NetworkTreePlugin extends AbstractProviderPlugin {
      * 
      * @return the shared instance
      */
-    public static NetworkTreePlugin getDefault() {
+    public static AWETreePlugin getDefault() {
         return plugin;
     }
-
-    @Override
-    public String getPluginId() {
-        return PLUGIN_ID;
-    }
-
 }

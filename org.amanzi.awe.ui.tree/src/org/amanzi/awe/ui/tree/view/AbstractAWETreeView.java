@@ -26,7 +26,6 @@ import org.amanzi.awe.ui.views.IAWEView;
 import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -103,7 +102,7 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     }
 
     protected IBaseLabelProvider createLabelProvider() {
-        return new AWETreeLabelProvider(getPreferenceStore(), getLabelTemplateKey());
+        return new AWETreeLabelProvider(getSupporedLabelTemplates());
     }
 
     @Override
@@ -123,6 +122,8 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     protected EventStatus[] getSupportedEvents() {
         return DEFAULT_SUPPORTED_EVENTS;
     }
+
+    protected abstract String[] getSupporedLabelTemplates();
 
     protected void update() {
         treeViewer.refresh();
@@ -154,8 +155,4 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
 
         return super.getAdapter(adapter);
     }
-
-    protected abstract IPreferenceStore getPreferenceStore();
-
-    protected abstract String getLabelTemplateKey();
 }
