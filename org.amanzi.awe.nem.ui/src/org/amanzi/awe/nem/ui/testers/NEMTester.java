@@ -2,13 +2,12 @@ package org.amanzi.awe.nem.ui.testers;
 
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.ui.dto.IUIItemNew;
-import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-public class NemTester extends PropertyTester {
+public class NEMTester extends PropertyTester {
 
     @Override
     public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
@@ -21,8 +20,8 @@ public class NemTester extends PropertyTester {
             return false;
         }
 
-        if (selection.getFirstElement() instanceof ITreeItem) {
-            item = (ITreeItem)selection.getFirstElement();
+        if (selection.getFirstElement() instanceof IUIItemNew) {
+            item = (IUIItemNew)selection.getFirstElement();
         } else {
             return false;
         }

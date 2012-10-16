@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.managers.network;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -113,7 +114,6 @@ public class NetworkElementManager {
                     LOGGER.info("Finished  removing element " + element + " from model " + model + " at "
                             + new Date(System.currentTimeMillis()));
                     ActionUtil.getInstance().runTask(new Runnable() {
-
                         @Override
                         public void run() {
                             AWEEventManager.getManager().fireDataUpdatedEvent(null);
@@ -225,4 +225,42 @@ public class NetworkElementManager {
         job.schedule();
 
     }
+
+    public void copyElement(final INetworkModel model, IDataElement element, final INodeType type,
+            Collection<PropertyContainer> properties) {
+        LOGGER.info("Start copying " + element.getName() + "element  from model " + model.getName() + " at "
+                + new Date(System.currentTimeMillis()));
+        IDataElement parent;
+        try {
+            if (model.asDataElement().equals(element)) {
+                copyNetworkModel(model, properties);
+                return;
+            }
+            parent = model.getParentElement(element);
+        } catch (ModelException e) {
+            LOGGER.error("Can't copy element" + element, e);
+            return;
+        }
+        createElement(model, parent, type, properties);
+    }
+
+    /**
+     * @param model
+     * @param properties
+     */
+    private void copyNetworkModel(INetworkModel model, Collection<PropertyContainer> properties) {
+        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        final String name = (String)prop.get("name");
+        try {
+            INetworkModel newModel = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name,
+                    Arrays.asList(model.getNetworkStructure()));
+            CopyNetworkJob job = new CopyNetworkJob("Copying elements from " + model.getName() + " to " + newModel.getName(),
+                    model, newModel);
+            job.schedule();
+        } catch (ModelException e) {
+            LOGGER.error("can't create model", e);
+        }
+
+    }
+
 }

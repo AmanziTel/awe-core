@@ -80,10 +80,13 @@ public class NetworkTreeView extends AbstractTreeView implements SelectionListen
         if (e.getSource().equals(getTreeViewer().getTree())) {
             Object data = e.item.getData();
             ITreeItem<INetworkModel, IDataElement> item = (ITreeItem<INetworkModel, IDataElement>)data;
-            IDataElement child = item.getChild();
+            IDataElement child = null;
+            if (item.getChild() instanceof IDataElement) {
+                child = item.getChild();
+            }
             INetworkModel model = item.getParent();
-            if (model != null && child.getNodeType().equals(NetworkElementType.SITE)
-                    || child.getNodeType().equals(NetworkElementType.SECTOR)) {
+            if (model != null  && (child.getNodeType().equals(NetworkElementType.SITE)
+                    || child.getNodeType().equals(NetworkElementType.SECTOR))) {
                 Set<IDataElement> elements = new HashSet<IDataElement>();
                 elements.add(child);
                 AWEEventManager.getManager().fireShowOnMapEvent(model, elements, this);

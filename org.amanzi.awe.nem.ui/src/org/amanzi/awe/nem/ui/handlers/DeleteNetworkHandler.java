@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.amanzi.neo.dto.IDataElement;
@@ -18,7 +18,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class DeleteHandler extends AbstractHandler {
+public class DeleteNetworkHandler extends AbstractHandler {
 
     @SuppressWarnings({"unchecked"})
     @Override
@@ -35,25 +35,23 @@ public class DeleteHandler extends AbstractHandler {
 
                         final INetworkModel networkModel = MenuUtils.getModelFromItem(treeItem);
                         final IDataElement dataElement = MenuUtils.getElementFromItem(treeItem);
-
                         if (networkModel != null) {
                             if (dataElement == null) {
                                 if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NemMessages.REMOVE_DIALOG_TITLE,
-                                        MessageFormat.format(NemMessages.REMOVE_MODEL_CONFIRMATION_TEXT, networkModel.getName()))) {
+                                        NEMMessages.REMOVE_DIALOG_TITLE,
+                                        MessageFormat.format(NEMMessages.REMOVE_MODEL_CONFIRMATION_TEXT, networkModel.getName()))) {
                                     NetworkElementManager.getInstance().removeModel(networkModel);
                                 }
                             } else {
                                 if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NemMessages.REMOVE_DIALOG_TITLE, MessageFormat.format(
-                                                NemMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, dataElement.getName(),
+                                        NEMMessages.REMOVE_DIALOG_TITLE, MessageFormat.format(
+                                                NEMMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, dataElement.getName(),
                                                 networkModel.getName()))) {
                                     NetworkElementManager.getInstance().removeElement(networkModel, dataElement);
                                 }
                             }
                         }
                     }
-
                 }
             } catch (final Exception e) {
                 throw new ExecutionException("can't execute action ", e);

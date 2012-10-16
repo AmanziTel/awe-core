@@ -31,7 +31,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public enum MenuProperties {
 
-    IS_DELETABLE("isDeletable"), IS_ADDETABLE("isAddetable");
+    IS_COPYABLE("isCopyable"), IS_DELETABLE("isDeletable"), IS_ADDETABLE("isAddetable");
 
     private String name;
 
@@ -58,6 +58,7 @@ public enum MenuProperties {
             return NetworkStructureManager.getInstance().getUnderlineElements(type, Arrays.asList(model.getNetworkStructure()))
                     .size() > 0;
         case IS_DELETABLE:
+        case IS_COPYABLE:
             return model != null ? true : false;
         default:
             break;

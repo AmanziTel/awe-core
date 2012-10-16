@@ -90,6 +90,17 @@ public enum KnownTypes {
         public Object getDefaultValue() {
             return 0;
         }
+    },
+    OBJECT("OBJECT", Object.class) {
+        @Override
+        public Object parseValue(String value) throws ParsersExceptions {
+            return value;
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return StringUtils.EMPTY;
+        }
     };
 
     private static final String ERROR_MESSAGE_FORMAT = "can't parse value %s to type %s";
@@ -162,4 +173,21 @@ public enum KnownTypes {
      * @return
      */
     public abstract Object getDefaultValue();
+
+    /**
+     * @param value
+     * @return
+     */
+    public static KnownTypes defineClass(Object value) {
+        if (value instanceof String) {
+            return STRING;
+        } else if (value instanceof Integer) {
+            return INTEGER;
+        } else if (value instanceof Long) {
+            return LONG;
+        } else if (value instanceof Double) {
+            return DOUBLE;
+        }
+        return OBJECT;
+    }
 }

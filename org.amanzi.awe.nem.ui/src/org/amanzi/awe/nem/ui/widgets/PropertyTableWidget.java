@@ -17,13 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable;
 import org.amanzi.awe.nem.ui.properties.table.PropertyTable.IPropertyTableListener;
 import org.amanzi.awe.nem.ui.widgets.PropertyCreationDialog.IPropertyDialogListener;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
-import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -48,6 +47,11 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
             SelectionListener,
             IPropertyTableListener,
             IPropertyDialogListener {
+
+    public interface ITableChangedWidget extends AbstractAWEWidget.IAWEWidgetListener {
+        void updateStatus(String message);
+    }
+
     private static final GridLayout TWO_COLUMNS_LAYOUT = new GridLayout(2, false);
 
     private static final GridLayout ONE_COLUMNS_LAYOUT = new GridLayout(1, false);
@@ -58,32 +62,28 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
 
     private Button bRemove;
 
-    private List<PropertyContainer> propertyContainer;
+    private final List<PropertyContainer> propertyContainer;
 
-    private List<PropertyContainer> requiredProperties;
+    private final List<PropertyContainer> requiredProperties;
 
     /**
      * @param parent
      * @param style
      * @param listener
      */
-    public PropertyTableWidget(Composite parent, ITableChangedWidget listener, List<PropertyContainer> properties) {
+    public PropertyTableWidget(final Composite parent, final ITableChangedWidget listener, final List<PropertyContainer> properties) {
         super(parent, SWT.NONE, listener);
         requiredProperties = new ArrayList<PropertyContainer>(properties);
         this.propertyContainer = properties;
     }
 
-    public interface ITableChangedWidget extends IAWEWidgetListener {
-        void updateStatus(String message);
-    }
-
     @Override
-    protected Composite createWidget(Composite parent, int style) {
-        Composite widgetComposite = new Composite(parent, SWT.NONE);
+    protected Composite createWidget(final Composite parent, final int style) {
+        final Composite widgetComposite = new Composite(parent, SWT.NONE);
         widgetComposite.setLayout(TWO_COLUMNS_LAYOUT);
         widgetComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite tableComposite = new Composite(widgetComposite, SWT.NONE);
+        final Composite tableComposite = new Composite(widgetComposite, SWT.NONE);
         tableComposite.setLayout(ONE_COLUMNS_LAYOUT);
         tableComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -92,18 +92,18 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         tableViewer.getTable().addSelectionListener(this);
         tableViewer.initialize();
 
-        Composite buttonComposite = new Composite(widgetComposite, SWT.NONE);
+        final Composite buttonComposite = new Composite(widgetComposite, SWT.NONE);
         buttonComposite.setLayout(ONE_COLUMNS_LAYOUT);
         buttonComposite.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, true));
 
-        bAdd = createButton(buttonComposite, NemMessages.ADD);
-        bRemove = createButton(buttonComposite, NemMessages.REMOVE);
+        bAdd = createButton(buttonComposite, NEMMessages.ADD);
+        bRemove = createButton(buttonComposite, NEMMessages.REMOVE);
         bRemove.setEnabled(false);
         return widgetComposite;
     }
 
-    private Button createButton(Composite buttonComposite, String name) {
-        Button button = new Button(buttonComposite, SWT.PUSH);
+    private Button createButton(final Composite buttonComposite, final String name) {
+        final Button button = new Button(buttonComposite, SWT.PUSH);
         button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         button.setText(name);
         button.addSelectionListener(this);
@@ -111,18 +111,18 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
     }
 
     @Override
-    public void widgetSelected(SelectionEvent e) {
+    public void widgetSelected(final SelectionEvent e) {
         if (e.getSource().equals(bAdd)) {
-            PropertyCreationDialog dialog = new PropertyCreationDialog(getWidget().getShell(), this);
+            final PropertyCreationDialog dialog = new PropertyCreationDialog(getWidget().getShell(), this);
             dialog.open();
         } else if (e.getSource().equals(bRemove)) {
-            IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
-            PropertyContainer container = (PropertyContainer)selection.getFirstElement();
+            final IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+            final PropertyContainer container = (PropertyContainer)selection.getFirstElement();
             tableViewer.remove(container);
-        }
+        } // TODO: LN: 16.10.2012, maybe 'else if' ?
         if (e.getSource().equals(tableViewer.getTable())) {
-            IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
-            PropertyContainer container = (PropertyContainer)selection.getFirstElement();
+            final IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+            final PropertyContainer container = (PropertyContainer)selection.getFirstElement();
             if (requiredProperties.contains(container)) {
                 bRemove.setEnabled(false);
             } else {
@@ -133,14 +133,14 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
     }
 
     @Override
-    public void widgetDefaultSelected(SelectionEvent e) {
+    public void widgetDefaultSelected(final SelectionEvent e) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void onError(String message) {
-        for (ITableChangedWidget listener : getListeners()) {
+    public void onError(final String message) {
+        for (final ITableChangedWidget listener : getListeners()) {
             listener.updateStatus(message);
         }
     }
@@ -153,10 +153,10 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
     }
 
     @Override
-    public void onNewItemCreated(PropertyContainer container) {
+    public void onNewItemCreated(final PropertyContainer container) {
         if (propertyContainer.contains(container)) {
-            MessageDialog.openWarning(tableViewer.getControl().getShell(), NemMessages.PROPERTY_DUPLICATED_TITLE,
-                    NemMessages.PROPERTY_DUPLICATED_MESSAGE);
+            MessageDialog.openWarning(tableViewer.getControl().getShell(), NEMMessages.PROPERTY_DUPLICATED_TITLE,
+                    NEMMessages.PROPERTY_DUPLICATED_MESSAGE);
         } else {
             tableViewer.add(container);
         }

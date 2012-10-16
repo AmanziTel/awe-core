@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget.ITableItemSelectionListener;
@@ -66,8 +66,8 @@ public class InitialNetworkPage extends WizardPage
      * @param pageName
      */
     public InitialNetworkPage() {
-        super(NemMessages.CREATE_NEW_NETWORK);
-        setTitle(NemMessages.CREATE_NEW_NETWORK);
+        super(NEMMessages.CREATE_NEW_NETWORK);
+        setTitle(NEMMessages.CREATE_NEW_NETWORK);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class InitialNetworkPage extends WizardPage
         networkAndCrsComposite.setLayout(TWO_COLUMN_LAYOU);
         networkAndCrsComposite.setLayoutData(getGridData());
 
-        AWEWidgetFactory.getFactory().addStyledTextWidget(this, SWT.BORDER, NemMessages.NETWORK_NAME_LABEL, networkAndCrsComposite);
+        AWEWidgetFactory.getFactory().addStyledTextWidget(this, SWT.BORDER, NEMMessages.NETWORK_NAME_LABEL, networkAndCrsComposite);
 
         AWEWidgetFactory.getFactory().addCRSSelectorWidget(this, networkAndCrsComposite);
 

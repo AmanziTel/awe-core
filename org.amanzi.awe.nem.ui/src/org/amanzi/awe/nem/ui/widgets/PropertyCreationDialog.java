@@ -41,11 +41,11 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
 
     private static final GridLayout ONE_ELEMENT_LAYOUT = new GridLayout(1, false);
 
-    private Text tText;
+    private final Text tText;
 
-    private Combo cTypes;
+    private final Combo cTypes;
 
-    private IPropertyDialogListener listener;
+    private final IPropertyDialogListener listener;
 
     public interface IPropertyDialogListener {
         void onNewItemCreated(PropertyContainer container);
@@ -54,18 +54,18 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
     /**
      * @param parent
      */
-    public PropertyCreationDialog(Shell parent, IPropertyDialogListener listener) {
+    public PropertyCreationDialog(final Shell parent, final IPropertyDialogListener listener) {
         super(parent);
         super.create();
         this.listener = listener;
         getShell().setText("Create new property");
-        Composite controlsComposite = createComposite((Composite)getDialogArea(), TWO_ELEMENT_LAYOUT);
-        Composite labelsCompsoite = createComposite(controlsComposite, ONE_ELEMENT_LAYOUT);
+        final Composite controlsComposite = createComposite((Composite)getDialogArea(), TWO_ELEMENT_LAYOUT);
+        final Composite labelsCompsoite = createComposite(controlsComposite, ONE_ELEMENT_LAYOUT);
 
         createLabel(labelsCompsoite, "Name");
         createLabel(labelsCompsoite, "Type");
 
-        Composite controls = createComposite(controlsComposite, ONE_ELEMENT_LAYOUT);
+        final Composite controls = createComposite(controlsComposite, ONE_ELEMENT_LAYOUT);
         tText = new Text(controls, SWT.BORDER);
         tText.setLayoutData(new GridData(GridData.FILL_BOTH));
         tText.addModifyListener(this);
@@ -83,7 +83,7 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
      *
      */
     private void initTypesCombo() {
-        for (KnownTypes type : KnownTypes.values()) {
+        for (final KnownTypes type : KnownTypes.values()) {
             cTypes.add(type.getId());
         }
     }
@@ -92,8 +92,8 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
      * @param labelsCompsoite
      * @param string
      */
-    private void createLabel(Composite labelsCompsoite, String text) {
-        Label label = new Label(labelsCompsoite, SWT.NONE);
+    private void createLabel(final Composite labelsCompsoite, final String text) {
+        final Label label = new Label(labelsCompsoite, SWT.NONE);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, true));
         label.setText(text);
 
@@ -104,10 +104,10 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
      * @param i
      * @return
      */
-    private Composite createComposite(final Composite parentComposite, GridLayout layot) {
-        Composite composite = new Composite(parentComposite, SWT.NONE);
+    private Composite createComposite(final Composite parentComposite, final GridLayout layot) {
+        final Composite composite = new Composite(parentComposite, SWT.NONE);
         composite.setLayout(layot);
-        GridData data = new GridData(GridData.FILL_BOTH);
+        final GridData data = new GridData(GridData.FILL_BOTH);
         composite.setLayoutData(data);
         return composite;
     }
@@ -119,7 +119,8 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
     }
 
     @Override
-    public void modifyText(ModifyEvent e) {
+    public void modifyText(final ModifyEvent e) {
+        // TODO: LN: 16.10.2012, why not: getButton(OK).setEnabled(!tText.getText().isEmpty());
         if (tText.getText().isEmpty()) {
             getButton(OK).setEnabled(false);
         } else {

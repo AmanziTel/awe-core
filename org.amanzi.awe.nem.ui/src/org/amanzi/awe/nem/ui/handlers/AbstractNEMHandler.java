@@ -32,7 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public abstract class AbstractNemHandler extends AbstractHandler {
+public abstract class AbstractNEMHandler extends AbstractHandler {
 
     @SuppressWarnings({"unchecked"})
     @Override
@@ -59,4 +59,5 @@ public abstract class AbstractNemHandler extends AbstractHandler {
      * @param command
      */
     protected abstract void handleItem(IUIItemNew selectedObject, Command command);
+
 }

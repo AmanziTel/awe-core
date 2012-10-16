@@ -30,7 +30,7 @@ import org.eclipse.ui.PlatformUI;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CreateNewNetwork extends AbstractHandler {
+public class CreateNetworkHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

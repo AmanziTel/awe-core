@@ -14,14 +14,14 @@
                      checkEnabled="false">
                   <iterate>
                      <instanceof
-                           value="org.amanzi.awe.views.treeview.provider.ITreeItem">
+                           value="org.amanzi.awe.ui.dto.IUIItemNew">
                      </instanceof>
                   </iterate>
                </visibleWhen>
             </command>
             <menu
                   id="org.amanzi.awe.nem.createnew"
-                  label="Create new element">
+                  label="Create">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -36,6 +36,19 @@
                      id="org.amanzi.awe.nem.ui.contributions.creationContribution">
                </dynamic>
             </menu>
+            <dynamic
+                  class="org.amanzi.awe.nem.ui.contributions.CopyNetworkElementContribution"
+                  id="org.amanzi.awe.nem.ui.contributions.copy">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeMenuSelection">
+                     <test
+                           property="org.amanzi.awe.nem.ui.isCopyable">
+                     </test>
+                  </with>
+               </visibleWhen>
+            </dynamic>
       </menuContribution>
       <menuContribution
             allPopups="false"
@@ -82,7 +95,7 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.amanzi.awe.nem.ui.handlers.DeleteHandler"
+            class="org.amanzi.awe.nem.ui.handlers.DeleteNetworkHandler"
             commandId="org.amanzi.awe.nem.ui.delete">
          <activeWhen>
             <with
@@ -95,17 +108,17 @@
          </activeWhen>
       </handler>
       <handler
-            class="org.amanzi.awe.nem.ui.handlers.CreateNewNetwork"
+            class="org.amanzi.awe.nem.ui.handlers.CreateNetworkHandler"
             commandId="org.amanzi.awe.nem.ui.createNetwork">
       </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
-            class="org.amanzi.awe.nem.ui.testers.NemTester"
+            class="org.amanzi.awe.nem.ui.testers.NEMTester"
             id="org.amanzi.awe.nem.ui.deletabletester"
             namespace="org.amanzi.awe.nem.ui"
-            properties="isDeletable,isAddetable"
+            properties="isDeletable,isAddetable,isCopyable"
             type="org.eclipse.jface.viewers.IStructuredSelection">
       </propertyTester>
    </extension>
