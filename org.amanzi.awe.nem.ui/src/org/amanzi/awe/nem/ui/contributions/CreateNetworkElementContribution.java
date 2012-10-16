@@ -61,9 +61,9 @@ public class CreateNetworkElementContribution extends ContributionItem {
             return;
         }
 
-        final INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
-        final IDataElement element = MenuUtils.getInstance().getElementFromTreeItem(item);
-        INodeType type = MenuUtils.getInstance().getType(model, element);
+        final INetworkModel model = MenuUtils.getModelFromTreeItem(item);
+        final IDataElement element = MenuUtils.getElementFromTreeItem(item);
+        INodeType type = MenuUtils.getType(model, element);
 
         Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
                 Arrays.asList(model.getNetworkStructure()));
@@ -130,7 +130,7 @@ public class CreateNetworkElementContribution extends ContributionItem {
         ITreeItem< ? , ? > item = null;
         if (firstElement instanceof ITreeItem< ? , ? >) {
             item = (ITreeItem< ? , ? >)firstElement;
-            item = MenuUtils.getInstance().getModelFromTreeItem(item) == null ? null : item;
+            item = MenuUtils.getModelFromTreeItem(item) == null ? null : item;
         }
         if (LOGGER.isDebugEnabled()) {
             log("found ITreeItem " + item, LoggerStatus.INFO);

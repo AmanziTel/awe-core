@@ -27,8 +27,8 @@ public class NemTester extends PropertyTester {
             return false;
         }
 
-        INetworkModel model = MenuUtils.getInstance().getModelFromTreeItem(item);
-        IDataElement elment = MenuUtils.getInstance().getElementFromTreeItem(item);
+        INetworkModel model = MenuUtils.getModelFromTreeItem(item);
+        IDataElement elment = MenuUtils.getElementFromTreeItem(item);
         MenuProperties creatable = MenuProperties.findByName(property);
         if (creatable != null && model != null) {
             return creatable.check(model, elment);

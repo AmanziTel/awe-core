@@ -15,7 +15,6 @@ package org.amanzi.awe.nem.ui.handlers;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.models.IModel;
 import org.eclipse.core.commands.AbstractHandler;
@@ -35,8 +34,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @since 1.0.0
  */
 public abstract class AbstractNemHandler extends AbstractHandler {
-
-    private static final MenuUtils MENU_UTILS = MenuUtils.getInstance();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
@@ -64,10 +61,4 @@ public abstract class AbstractNemHandler extends AbstractHandler {
      */
     protected abstract void handleItem(ITreeItem<IModel, Object> selectedObject, Command command);
 
-    /**
-     * @return Returns the menuUtils.
-     */
-    protected MenuUtils getMenuUtils() {
-        return MENU_UTILS;
-    }
 }

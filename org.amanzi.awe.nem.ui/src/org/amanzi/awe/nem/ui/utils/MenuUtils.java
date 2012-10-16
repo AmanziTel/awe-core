@@ -28,15 +28,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public class MenuUtils {
 
-    private static final class MenuUtilsInstanceHolder {
-        private static final MenuUtils UTILS = new MenuUtils();
-    }
-
-    public static MenuUtils getInstance() {
-        return MenuUtilsInstanceHolder.UTILS;
-    }
-
-    public INetworkModel getModelFromTreeItem(ITreeItem< ? , ? > item) {
+    public static INetworkModel getModelFromTreeItem(ITreeItem< ? , ? > item) {
         if (item.getParent() == null && item.getChild() instanceof INetworkModel) {
             return (INetworkModel)item.getChild();
         } else if (item.getParent() instanceof INetworkModel && item.getChild() instanceof IDataElement) {
@@ -45,7 +37,7 @@ public class MenuUtils {
         return null;
     }
 
-    public IDataElement getElementFromTreeItem(ITreeItem< ? , ? > item) {
+    public static IDataElement getElementFromTreeItem(ITreeItem< ? , ? > item) {
         if (item.getParent() != null && item.getChild() != null) {
             return (IDataElement)item.getChild();
         }
@@ -57,7 +49,7 @@ public class MenuUtils {
      * @param element
      * @return
      */
-    public INodeType getType(INetworkModel model, IDataElement element) {
+    public static INodeType getType(INetworkModel model, IDataElement element) {
         INodeType type;
         if (element == null) {
             type = model.getType();

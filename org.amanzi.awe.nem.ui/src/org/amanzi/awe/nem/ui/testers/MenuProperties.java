@@ -54,7 +54,7 @@ public enum MenuProperties {
             if (model == null) {
                 return false;
             }
-            INodeType type = MenuUtils.getInstance().getType(model, element);
+            INodeType type = MenuUtils.getType(model, element);
             return NetworkStructureManager.getInstance().getUnderlineElements(type, Arrays.asList(model.getNetworkStructure()))
                     .size() > 0;
         case IS_DELETABLE:
