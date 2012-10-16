@@ -24,6 +24,7 @@ import org.amanzi.neo.models.IAnalyzisModel;
 import org.amanzi.neo.models.ITreeModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of
@@ -62,4 +63,7 @@ public interface IDistributionModel extends IAnalyzisModel<IPropertyStatisticalM
     void updateAggregationRelation(IDataElement dataElement, IAggregationRelation relation, IDistributionBar bar)
             throws ModelException;
 
+    String getPropertyName();
+
+    INodeType getDistributionNodeType();
 }

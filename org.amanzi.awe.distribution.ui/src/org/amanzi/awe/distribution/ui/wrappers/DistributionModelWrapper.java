@@ -14,7 +14,9 @@
 package org.amanzi.awe.distribution.ui.wrappers;
 
 import org.amanzi.awe.distribution.model.IDistributionModel;
+import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
+import org.amanzi.neo.dto.IDataElement;
 
 /**
  * TODO Purpose of
@@ -36,6 +38,26 @@ public class DistributionModelWrapper extends AbstractTreeModelWrapper<IDistribu
     @Override
     protected Class<IDistributionModel> getModelClass() {
         return IDistributionModel.class;
+    }
+
+    @Override
+    public String getTitle(final ITreeItem item) {
+        final IDistributionModel model = item.castParent(IDistributionModel.class);
+        final IDataElement element = item.castChild(IDataElement.class);
+
+        String result = null;
+
+        if (model != null && element != null) {
+            if (element.getNodeType().equals(model.getDistributionNodeType())) {
+                return element.get(model.getPropertyName()).toString();
+            }
+        }
+
+        if (result == null) {
+            result = super.getTitle(item);
+        }
+
+        return result;
     }
 
 }

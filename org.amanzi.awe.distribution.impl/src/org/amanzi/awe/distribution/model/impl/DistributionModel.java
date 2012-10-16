@@ -520,4 +520,14 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
         return builder.toString();
     }
+
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    @Override
+    public INodeType getDistributionNodeType() {
+        return distributionNodeType;
+    }
 }
