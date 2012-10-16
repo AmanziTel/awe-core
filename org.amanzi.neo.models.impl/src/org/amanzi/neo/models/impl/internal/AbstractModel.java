@@ -13,11 +13,13 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
+import org.amanzi.neo.impl.util.IDataElementIterator;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
@@ -51,6 +53,46 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
     /** String INITIALIZE_METHOD_NAME field */
     protected static final String INITIALIZE_METHOD_NAME = "initialize";
+
+    protected class DataElementConverter<S extends IDataElement> implements IDataElementIterator<IDataElement> {
+
+        private final Iterator<S> iterator;
+
+        public DataElementConverter(final Collection<S> sourceCollection) {
+            iterator = sourceCollection.iterator();
+        }
+
+        public DataElementConverter(final Iterator<S> sourceIterator) {
+            iterator = sourceIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public IDataElement next() {
+            return iterator.next();
+        }
+
+        @Override
+        public void remove() {
+            iterator.remove();
+        }
+
+        @Override
+        public Iterable<IDataElement> toIterable() {
+            return new Iterable<IDataElement>() {
+
+                @Override
+                public Iterator<IDataElement> iterator() {
+                    return DataElementConverter.this;
+                }
+            };
+        }
+
+    }
 
     protected final class DataElementIterator extends AbstractDataElementIterator<IDataElement> {
         String defaultProperty = getGeneralNodeProperties().getNodeNameProperty();

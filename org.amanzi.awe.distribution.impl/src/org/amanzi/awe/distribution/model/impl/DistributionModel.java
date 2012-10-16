@@ -16,11 +16,13 @@ package org.amanzi.awe.distribution.model.impl;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.distribution.dto.IAggregationRelation;
 import org.amanzi.awe.distribution.dto.impl.AggregationRelation;
+import org.amanzi.awe.distribution.model.DistributionNodeType;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.bar.IDistributionBar;
 import org.amanzi.awe.distribution.model.bar.impl.DistributionBar;
@@ -36,6 +38,8 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractAnalyzisModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
@@ -44,6 +48,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+
+import com.google.common.collect.Iterables;
 
 /**
  * TODO Purpose of
@@ -99,6 +105,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     private Select select;
 
+    private INodeType distributionNodeType;
+
     private final Map<Long, IDistributionBar> distributionBarCache = new HashMap<Long, IDistributionBar>();
 
     /**
@@ -128,7 +136,10 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
                     null, true);
             select = Select.valueOf(getNodeService().getNodeProperty(rootNode, distributionNodeProperties.getDistributionSelect(),
                     null, true).toString());
-        } catch (final ServiceException e) {
+            final String sNodeType = getNodeService().getNodeProperty(rootNode,
+                    distributionNodeProperties.getDistributionNodeType(), null, true);
+            distributionNodeType = NodeTypeManager.getInstance().getType(sNodeType);
+        } catch (final Exception e) {
             processException("Error on get default Distribution Model properties", e);
         }
     }
@@ -174,7 +185,26 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     }
 
     protected void initializeDistributionBars() throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("initializeDistributionBars"));
+        }
 
+        distributionBars = new ArrayList<IDistributionBar>();
+
+        try {
+            final Iterator<Node> distributionNodes = getNodeService().getChildrenChain(getRootNode(),
+                    DistributionNodeType.DISTRIBUTION_BAR);
+
+            while (distributionNodes.hasNext()) {
+                distributionBars.add(createDistributionBar(distributionNodes.next()));
+            }
+        } catch (final ServiceException e) {
+            processException("Error on collecting Distribution Bars from Database", e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("initializeDistributionBars"));
+        }
     }
 
     @Override
@@ -364,6 +394,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         final DistributionBar result = new DistributionBar(distributionBarNode, collectBarSources);
 
         result.setColor(getColorFromDatabase(distributionBarNode, distributionNodeProperties.getBarColor(), null));
+        result.setNodeType(DistributionNodeType.DISTRIBUTION_BAR);
+        result.setName(getNodeService().getNodeName(distributionBarNode));
 
         return result;
     }
@@ -405,7 +437,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         final AggregationRelation result = new AggregationRelation(relationship);
 
         result.setCount(getNodeService().getRelationshipProperty(relationship, countNodePropeties.getCountProperty(), 0, false));
-        result.setValue(getNodeService().getRelationshipProperty(relationship, countNodePropeties.getValuePrefix(), 0, false));
+        result.setValue(getNodeService().getRelationshipProperty(relationship, countNodePropeties.getValuePrefix(), 0d, false));
 
         return result;
     }
@@ -450,8 +482,34 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getChildren", parentElement));
+        }
+
+        Iterable<IDataElement> result = null;
+
+        if (parentElement.equals(asDataElement())) {
+            result = new DataElementConverter<IDistributionBar>(getDistributionBars()).toIterable();
+        } else if (parentElement.getNodeType().equals(DistributionNodeType.DISTRIBUTION_BAR)) {
+            try {
+                final DataElement element = (DataElement)parentElement;
+
+                final Iterator<Node> nodeIterator = getNodeService().getChildren(element.getNode(), distributionNodeType,
+                        DistributionRelationshipType.AGGREGATED);
+
+                result = new DataElementIterator(nodeIterator).toIterable();
+            } catch (final ServiceException e) {
+                processException("Error on collecting Distribution Bar sources", e);
+            }
+        } else {
+            result = Iterables.emptyIterable();
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getChildren"));
+        }
+
+        return result;
     }
 
     @Override

@@ -199,7 +199,8 @@ public class DistributionManager {
         IDistributionType< ? > result = distributionTypeCache.get(key);
 
         if (result == null) {
-            LOGGER.info("Creating DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ">.");
+            LOGGER.info("Creating Enumerated DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName
+                    + ">.");
 
             result = new EnumeratedDistributionType(model, nodeType, propertyName);
             distributionTypeCache.put(key, result);
@@ -216,7 +217,8 @@ public class DistributionManager {
         IDistributionType< ? > result = distributionTypeCache.get(key);
 
         if (result == null) {
-            LOGGER.info("Creating DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ">.");
+            LOGGER.info("Creating Number DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ", "
+                    + select + ">.");
 
             result = new NumberDistributionType(model, nodeType, propertyName, numberDistributionType, select);
             distributionTypeCache.put(key, result);

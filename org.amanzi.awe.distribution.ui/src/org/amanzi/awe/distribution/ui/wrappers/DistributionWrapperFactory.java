@@ -60,7 +60,7 @@ public class DistributionWrapperFactory implements ITreeWrapperFactory {
                 distributionModels = getDistributionModelsIterator(sourceModels.next());
             }
 
-            return distributionModels.hasNext();
+            return distributionModels != null && distributionModels.hasNext();
         }
 
         @Override

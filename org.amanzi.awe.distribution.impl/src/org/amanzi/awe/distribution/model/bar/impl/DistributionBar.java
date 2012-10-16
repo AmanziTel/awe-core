@@ -41,7 +41,6 @@ public class DistributionBar extends SourcedElement implements IDistributionBar 
      */
     public DistributionBar(final Node node, final ICollectFunction collectFunction) {
         super(node, collectFunction);
-        // TODO Auto-generated constructor stub
     }
 
     @Override

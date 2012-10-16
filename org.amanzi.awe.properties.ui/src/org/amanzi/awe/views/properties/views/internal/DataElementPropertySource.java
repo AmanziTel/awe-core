@@ -68,9 +68,7 @@ public class DataElementPropertySource implements IPropertySource {
         Object value = dataElement.get(id.toString());
 
         if (value.getClass().isArray()) {
-            final Object[] arrayValue = (Object[])value;
-
-            value = ArrayUtils.toString(arrayValue);
+            value = ArrayUtils.toString(value);
         }
 
         return value;

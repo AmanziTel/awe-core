@@ -130,7 +130,7 @@ public class MeasurementDistributionEngine extends AbstractDistributionEngine<IM
             relation.setValue(newValue);
             relation.setCount(previousCount + 1);
 
-            model.updateAggregationRelation(null, relation, getDistributionBar(model, dValue));
+            model.updateAggregationRelation(location, relation, getDistributionBar(model, dValue));
         }
 
         private IDistributionBar getDistributionBar(final IDistributionModel model, final Double dValue) {

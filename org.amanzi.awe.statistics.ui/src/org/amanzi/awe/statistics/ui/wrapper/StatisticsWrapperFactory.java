@@ -59,7 +59,7 @@ public class StatisticsWrapperFactory implements ITreeWrapperFactory {
                 statisticsModels = getStatisticsModelsIterator(sourceModels.next());
             }
 
-            return statisticsModels.hasNext();
+            return statisticsModels != null && statisticsModels.hasNext();
         }
 
         @Override
