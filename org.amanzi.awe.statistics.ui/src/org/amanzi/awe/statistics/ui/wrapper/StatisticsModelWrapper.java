@@ -66,7 +66,8 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
         if (model != null) {
             IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
 
-            return new TreeItemIterator(model.findAllStatisticsLevels(DimensionHandler.getInstance().getDimension()).iterator());
+            return new TreeItemIterator(model.findAllStatisticsLevels(DimensionHandler.getInstance().getDimension(), filter)
+                    .iterator());
         } else {
             model = item.castParent(IStatisticsModel.class);
 
