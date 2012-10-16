@@ -21,9 +21,9 @@ import org.eclipse.osgi.util.NLS;
  * Messages for Network Tree
  */
 
-public class NemMessages extends NLS {
+public class NEMMessages extends NLS {
 
-    private static final String BUNDLE_NAME = NemMessages.class.getName();
+    private static final String BUNDLE_NAME = NEMMessages.class.getName();
 
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
 
@@ -75,7 +75,7 @@ public class NemMessages extends NLS {
 
   
 
-    private NemMessages() {
+    private NEMMessages() {
     }
 
     public static ResourceBundle getResourceBundle() {
@@ -87,7 +87,7 @@ public class NemMessages extends NLS {
     }
 
     static {
-        NLS.initializeMessages(BUNDLE_NAME, NemMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, NEMMessages.class);
     }
 
 }

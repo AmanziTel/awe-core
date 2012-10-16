@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.widgets;
 
 import java.util.ArrayList;
 
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget.ITableItemSelectionListener;
 import org.amanzi.awe.nem.ui.widgets.TypesCreationDialog.ITypesCreationDialogListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
@@ -98,10 +98,10 @@ public class TypeControlWidget extends AbstractAWEWidget<Composite, ITableItemSe
         buttonComposite.setLayout(ONE_COLUMNS_LAYOUT);
         buttonComposite.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, true));
 
-        bAdd = createButton(buttonComposite, NemMessages.ADD);
-        bUp = createButton(buttonComposite, NemMessages.UP);
-        bDown = createButton(buttonComposite, NemMessages.DOWN);
-        bRemove = createButton(buttonComposite, NemMessages.REMOVE);
+        bAdd = createButton(buttonComposite, NEMMessages.ADD);
+        bUp = createButton(buttonComposite, NEMMessages.UP);
+        bDown = createButton(buttonComposite, NEMMessages.DOWN);
+        bRemove = createButton(buttonComposite, NEMMessages.REMOVE);
         lStructuredTypes.addSelectionListener(this);
 
         setButtonEnabled(false, bRemove, bUp, bDown);

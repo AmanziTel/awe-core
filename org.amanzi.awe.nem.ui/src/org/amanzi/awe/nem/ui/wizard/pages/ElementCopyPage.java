@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -45,7 +45,7 @@ public class ElementCopyPage extends ElementCreationPage {
     public ElementCopyPage(INodeType type, INetworkModel model, IDataElement parent) {
         super(type, model);
         this.parent = parent;
-        setTitle(MessageFormat.format(NemMessages.ELEMENT_COPY_PAGE, parent.getName()));
+        setTitle(MessageFormat.format(NEMMessages.ELEMENT_COPY_PAGE, parent.getName()));
     }
 
     @Override

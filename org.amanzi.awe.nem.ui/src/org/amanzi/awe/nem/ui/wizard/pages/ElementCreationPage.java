@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -43,7 +43,7 @@ public class ElementCreationPage extends PropertyEditorPage {
     public ElementCreationPage(INodeType type, INetworkModel model) {
         super(type);
         this.model = model;
-        setTitle(MessageFormat.format(NemMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
+        setTitle(MessageFormat.format(NEMMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
     }
 
     @Override

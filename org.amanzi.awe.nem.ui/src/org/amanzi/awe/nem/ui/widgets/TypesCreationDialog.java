@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.widgets;
 
 import java.util.List;
 
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.widgets.TypesCreationDialog.ITypesCreationDialogListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
@@ -70,18 +70,18 @@ public class TypesCreationDialog extends AbstractAWEWidget<Shell, ITypesCreation
     protected Shell createWidget(Composite parent, int style) {
         shell = new Shell(parent.getShell(), SWT.SHELL_TRIM & (~SWT.RESIZE));
         shell.setLayout(TWO_COLUMN_LAYOUT);
-        shell.setText(NemMessages.CREATE_TYPE_IN_STRUCTURE);
+        shell.setText(NEMMessages.CREATE_TYPE_IN_STRUCTURE);
         shell.setSize(SHELL_SIZE);
 
         Label label = new Label(shell, SWT.NONE);
-        label.setText(NemMessages.TYPE);
+        label.setText(NEMMessages.TYPE);
         label.setLayoutData(getGridData());
 
         cNodeTypesCombo = new Combo(shell, SWT.BORDER);
         cNodeTypesCombo.setLayoutData(getGridData());
         fillCombo();
-        bOk = createButton(NemMessages.OK);
-        bCancel = createButton(NemMessages.CANCEL);
+        bOk = createButton(NEMMessages.OK);
+        bCancel = createButton(NEMMessages.CANCEL);
         shell.open();
         return shell;
     }
@@ -134,8 +134,8 @@ public class TypesCreationDialog extends AbstractAWEWidget<Shell, ITypesCreation
             for (ITypesCreationDialogListener listener : getListeners()) {
                 String newType = cNodeTypesCombo.getText();
                 if (alreadySelectedTypes.contains(newType)) {
-                    MessageDialog.openWarning(shell, NemMessages.TYPES_DIALOG_WARNING_TITLE,
-                            NemMessages.TYPES_DIALOG_WARNING_MESSAGE);
+                    MessageDialog.openWarning(shell, NEMMessages.TYPES_DIALOG_WARNING_TITLE,
+                            NEMMessages.TYPES_DIALOG_WARNING_MESSAGE);
                 } else {
                     listener.onNewTypeAdded(newType);
                 }

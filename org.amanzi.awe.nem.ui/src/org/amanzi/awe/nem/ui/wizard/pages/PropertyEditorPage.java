@@ -20,7 +20,7 @@ import java.util.List;
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.NetworkPropertiesManager;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget;
 import org.amanzi.awe.nem.ui.widgets.PropertyTableWidget.ITableChangedWidget;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -57,7 +57,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         super(type.getId());
         this.type = type;
         requireNameProperty = new PropertyContainer("name", KnownTypes.STRING, type.getId());
-        setTitle(MessageFormat.format(NemMessages.PROPERTY_EDITOR_PAGE_TITLE, type.getId()));
+        setTitle(MessageFormat.format(NEMMessages.PROPERTY_EDITOR_PAGE_TITLE, type.getId()));
     }
 
     @Override

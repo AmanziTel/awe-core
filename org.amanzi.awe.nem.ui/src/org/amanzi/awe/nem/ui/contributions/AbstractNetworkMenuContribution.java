@@ -37,6 +37,8 @@ import org.eclipse.ui.PlatformUI;
  */
 public abstract class AbstractNetworkMenuContribution extends ContributionItem {
 
+    // TODO: LN: 16.10.2012, since we using Log4j why don't use Level.INFO etc. instead of new
+    // entities?
     protected enum LoggerStatus {
         WARN, INFO, ERROR;
     }
@@ -45,9 +47,9 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
      * @param model
      * @param newType
      */
-    protected void openWizard(INetworkModel model, IDataElement root, INodeType newType) {
-        IWizard wizard = getWizard(model, root, newType);
-        Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
+    protected void openWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
+        final IWizard wizard = getWizard(model, root, newType);
+        final Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
         wizardDialog.create();
         wizardDialog.open();
 
@@ -66,19 +68,22 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
      * @param wizard
      * @return
      */
-    protected Dialog createDialog(IWorkbenchWindow activeWorkbenchWindow, IWizard wizard) {
+    protected Dialog createDialog(final IWorkbenchWindow activeWorkbenchWindow, final IWizard wizard) {
         return new WizardDialog(activeWorkbenchWindow.getShell(), wizard);
     }
 
     /**
      * @return
      */
-    protected ITreeItem< ? , ? > getSelectedItem(Logger logger) {
+    // TODO: LN: 16.10.2012, class should work with his own LOGGER but not use any provided
+    protected ITreeItem< ? , ? > getSelectedItem(final Logger logger) {
+        // TODO: LN: 16.10.2012, anyway incorrect work with loggers - some messages will be skipped
+        // since it will work only on DEBUG level
         if (logger.isDebugEnabled()) {
             log(logger, "geting selected tree item", LoggerStatus.INFO);
         }
 
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
         if (window == null) {
             if (logger.isDebugEnabled()) {
@@ -86,14 +91,14 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
             }
             return null;
         }
-        IStructuredSelection selection = (IStructuredSelection)window.getSelectionService().getSelection();
+        final IStructuredSelection selection = (IStructuredSelection)window.getSelectionService().getSelection();
         if (selection == null) {
             if (logger.isDebugEnabled()) {
                 log(logger, "No selection data", LoggerStatus.ERROR);
             }
             return null;
         }
-        Object firstElement = selection.getFirstElement();
+        final Object firstElement = selection.getFirstElement();
         ITreeItem< ? , ? > item = null;
         if (firstElement instanceof ITreeItem< ? , ? >) {
             item = (ITreeItem< ? , ? >)firstElement;
@@ -105,7 +110,7 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
         return item;
     }
 
-    protected void log(Logger logger, String message, LoggerStatus status) {
+    protected void log(final Logger logger, final String message, final LoggerStatus status) {
         switch (status) {
         case WARN:
             logger.warn(message);

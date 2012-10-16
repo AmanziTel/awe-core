@@ -13,9 +13,8 @@
 
 package org.amanzi.awe.nem.ui.widgets;
 
-import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
-import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget.IAWEWidgetListener;
 import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -31,20 +30,21 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO: LN: 16.10.2012, move this dialog to org.amanzi.awe.ui
 public class CRSSelectionWidget extends AbstractAWEWidget<Button, ICRSSelectedListener> implements SelectionListener {
 
-    public CRSSelectionWidget(Composite parent, int style, ICRSSelectedListener listener) {
-        super(parent, style, listener);
-    }
-
-    public interface ICRSSelectedListener extends IAWEWidgetListener {
+    public interface ICRSSelectedListener extends AbstractAWEWidget.IAWEWidgetListener {
         void onCRSSelecte();
     }
 
     private Button bCRS;
 
+    public CRSSelectionWidget(final Composite parent, final int style, final ICRSSelectedListener listener) {
+        super(parent, style, listener);
+    }
+
     @Override
-    protected Button createWidget(Composite parent, int style) {
+    protected Button createWidget(final Composite parent, final int style) {
         bCRS = new Button(parent, SWT.PUSH);
         bCRS.addSelectionListener(this);
         bCRS.setText("crs selection");
@@ -53,12 +53,12 @@ public class CRSSelectionWidget extends AbstractAWEWidget<Button, ICRSSelectedLi
     }
 
     @Override
-    public void widgetSelected(SelectionEvent e) {
+    public void widgetSelected(final SelectionEvent e) {
 
     }
 
     @Override
-    public void widgetDefaultSelected(SelectionEvent e) {
+    public void widgetDefaultSelected(final SelectionEvent e) {
         // TODO Auto-generated method stub
 
     }

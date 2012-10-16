@@ -7,7 +7,7 @@ import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-public class NemTester extends PropertyTester {
+public class NEMTester extends PropertyTester {
 
     @SuppressWarnings("rawtypes")
     @Override

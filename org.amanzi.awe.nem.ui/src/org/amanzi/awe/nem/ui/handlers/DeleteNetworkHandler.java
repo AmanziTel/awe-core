@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
-import org.amanzi.awe.nem.ui.messages.NemMessages;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -17,35 +17,37 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-public class DeleteHandler extends AbstractHandler {
+public class DeleteNetworkHandler extends AbstractHandler {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
+    public Object execute(final ExecutionEvent event) throws ExecutionException {
+        final ISelection selection = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().getSelection();
 
         if (selection instanceof IStructuredSelection) {
-            Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
+            final Iterator<Object> selectionIterator = ((IStructuredSelection)selection).iterator();
             try {
                 while (selectionIterator.hasNext()) {
-                    Object selectedObject = selectionIterator.next();
+                    final Object selectedObject = selectionIterator.next();
                     if (selectedObject instanceof ITreeItem) {
-                        ITreeItem treeItem = (ITreeItem)selectedObject;
+                        final ITreeItem treeItem = (ITreeItem)selectedObject;
                         if (treeItem.getParent() instanceof INetworkModel || treeItem.getChild() instanceof INetworkModel) {
+                            // TODO: LN: 16.10.2012, duplication of call for MessageDialog - can be
+                            // moved to single method
                             if (treeItem.getParent() == null) {
-                                INetworkModel model = (INetworkModel)treeItem.getChild();
+                                final INetworkModel model = (INetworkModel)treeItem.getChild();
                                 if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NemMessages.REMOVE_DIALOG_TITLE,
-                                        MessageFormat.format(NemMessages.REMOVE_MODEL_CONFIRMATION_TEXT, model.getName()))) {
+                                        NEMMessages.REMOVE_DIALOG_TITLE,
+                                        MessageFormat.format(NEMMessages.REMOVE_MODEL_CONFIRMATION_TEXT, model.getName()))) {
                                     NetworkElementManager.getInstance().removeModel(model);
                                 }
                             } else if (treeItem.getChild() instanceof IDataElement) {
-                                INetworkModel model = (INetworkModel)treeItem.getParent();
-                                IDataElement element = (IDataElement)treeItem.getChild();
+                                final INetworkModel model = (INetworkModel)treeItem.getParent();
+                                final IDataElement element = (IDataElement)treeItem.getChild();
                                 if (MessageDialog.openConfirm(
                                         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NemMessages.REMOVE_DIALOG_TITLE,
-                                        MessageFormat.format(NemMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, element.getName(),
+                                        NEMMessages.REMOVE_DIALOG_TITLE,
+                                        MessageFormat.format(NEMMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, element.getName(),
                                                 model.getName()))) {
                                     NetworkElementManager.getInstance().removeElement(model, element);
                                 }
@@ -53,7 +55,7 @@ public class DeleteHandler extends AbstractHandler {
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new ExecutionException("can't execute action ", e);
             }
         }
