@@ -49,7 +49,9 @@ public class NemMessages extends NLS {
 
     public static String PROPERTY_EDITOR_PAGE_TITLE;
 
-    public static String PROPERTY_CREATOR_PAGE_TITLE;
+    public static String ELEMENT_CREATION_PAGE_TITLE;
+    
+    public static String ELEMENT_COPY_PAGE;
 
     public static String COLUMN_NAME_LABEL;
 
@@ -70,6 +72,8 @@ public class NemMessages extends NLS {
     public static String REMOVE_MODEL_CONFIRMATION_TEXT;
 
     public static String REMOVE_ELEMENT_CONFIRMATION_TEXT;
+
+  
 
     private NemMessages() {
     }

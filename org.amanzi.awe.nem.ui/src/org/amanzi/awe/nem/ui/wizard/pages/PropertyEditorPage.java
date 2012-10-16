@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         super(type.getId());
         this.type = type;
         requireNameProperty = new PropertyContainer("name", KnownTypes.STRING, type.getId());
-        setTitle(NemMessages.PROPERTY_EDITOR_PAGE_TITLE + " " + type.getId());
+        setTitle(MessageFormat.format(NemMessages.PROPERTY_EDITOR_PAGE_TITLE, type.getId()));
     }
 
     @Override
@@ -80,6 +81,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
         propertyTablWidget.initializeWidget();
         setControl(mainComposite);
+        updateStatus(null);
 
     }
 
@@ -93,9 +95,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
             properties.add(requireNameProperty);
         } else {
             PropertyContainer container = properties.get(properties.indexOf(requireNameProperty));
-            if (StringUtils.isEmpty((String)container.getValue())) {
-                container.setValue(type.getId());
-            }
+            container.setValue(StringUtils.EMPTY);
         }
 
     }
@@ -118,8 +118,10 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     @Override
     public void updateStatus(String message) {
-        if (StringUtils.isEmpty((String)requireNameProperty.getValue())) {
-            message = "required name property can't be empty";
+        for (PropertyContainer container : properties) {
+            if (StringUtils.isEmpty(container.getValue().toString())) {
+                message = "required property can't be empty";
+            }
         }
         this.setErrorMessage(message);
         setPageComplete(StringUtils.isEmpty(message));
@@ -127,5 +129,12 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     public INodeType getType() {
         return type;
+    }
+
+    /**
+     * @return Returns the requireNameProperty.
+     */
+    protected PropertyContainer getRequireNameProperty() {
+        return requireNameProperty;
     }
 }

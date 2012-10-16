@@ -16,7 +16,7 @@ package org.amanzi.awe.nem.ui.wizard;
 import java.util.List;
 
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
-import org.amanzi.awe.nem.ui.wizard.pages.PropertyCreatorPage;
+import org.amanzi.awe.nem.ui.wizard.pages.ElementCreationPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -31,20 +31,20 @@ import org.eclipse.jface.wizard.IWizardPage;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PropertyCreationWizard extends NetworkCreationWizard {
+public class NetworkElementCreationWizard extends NetworkCreationWizard {
 
     private INetworkModel model;
 
     private INodeType type;
 
-    private IDataElement parent;
+    private IDataElement element;
 
-    public PropertyCreationWizard(INetworkModel model, IDataElement parent, INodeType type) {
+    public NetworkElementCreationWizard(INetworkModel model, IDataElement parent, INodeType type) {
         assert model != null;
 
         this.type = type;
         this.model = model;
-        this.parent = parent;
+        this.element = parent == null ? getModel().asDataElement() : parent;
 
         getDataContainer().setName(model.getName());
         getDataContainer().setStructure(type);
@@ -58,10 +58,32 @@ public class PropertyCreationWizard extends NetworkCreationWizard {
 
     @Override
     public void addPages() {
-        addPage(new PropertyCreatorPage(type, model));
+        addPage(new ElementCreationPage(type, model));
     }
 
     protected void handleModelRefreshing(List<INodeType> types) {
-        NetworkElementManager.getInstance().createElement(model, parent, type, getDataContainer().getTypeProperties().get(type));
+        NetworkElementManager.getInstance().createElement(model, element, type, getDataContainer().getTypeProperties().get(type));
     }
+
+    /**
+     * @return Returns the model.
+     */
+    protected INetworkModel getModel() {
+        return model;
+    }
+
+    /**
+     * @return Returns the type.
+     */
+    protected INodeType getType() {
+        return type;
+    }
+
+    /**
+     * @return Returns the element.
+     */
+    protected IDataElement getElement() {
+        return element;
+    }
+
 }

@@ -13,12 +13,8 @@
 
 package org.amanzi.awe.nem.ui.contributions;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
-import org.amanzi.awe.nem.ui.wizard.NetworkElementCreationWizard;
+import org.amanzi.awe.nem.ui.wizard.NetworkElementCopyWizard;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -39,9 +35,8 @@ import org.eclipse.swt.widgets.MenuItem;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CreateNetworkElementContribution extends AbstractNetworkMenuContribution {
-
-    private static final Logger LOGGER = Logger.getLogger(CreateNetworkElementContribution.class);
+public class CopyNetworkElementContribution extends AbstractNetworkMenuContribution {
+    private static final Logger LOGGER = Logger.getLogger(CopyNetworkElementContribution.class);
 
     @Override
     public void fill(Menu menu, int index) {
@@ -53,28 +48,26 @@ public class CreateNetworkElementContribution extends AbstractNetworkMenuContrib
 
         final INetworkModel model = MenuUtils.getModelFromTreeItem(item);
         final IDataElement element = MenuUtils.getElementFromTreeItem(item);
-        INodeType type = MenuUtils.getType(model, element);
+        final INodeType type = MenuUtils.getType(model, element);
+        String itemName = "copy ";
+        if (element == null) {
+            itemName += model.getName();
+        } else {
+            itemName += element.getName();
+        }
 
-        Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
-                Arrays.asList(model.getNetworkStructure()));
-        if (LOGGER.isDebugEnabled()) {
-            log(LOGGER, "Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
-        }
-        for (final INodeType newType : types) {
-            MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
-            menuItem.setText(newType.getId());
-            menuItem.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e) {
-                    openWizard(model, element, newType);
-                }
-            });
-        }
+        MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
+        menuItem.setText(itemName);
+        menuItem.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                openWizard(model, element, type);
+            }
+        });
 
     }
 
     @Override
     protected IWizard getWizard(INetworkModel model, IDataElement root, INodeType type) {
-        return new NetworkElementCreationWizard(model, root, type);
+        return new NetworkElementCopyWizard(model, root, type);
     }
-
 }

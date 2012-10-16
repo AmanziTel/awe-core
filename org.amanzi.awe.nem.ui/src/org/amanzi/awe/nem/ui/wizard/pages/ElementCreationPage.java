@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,21 +33,22 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PropertyCreatorPage extends PropertyEditorPage {
+public class ElementCreationPage extends PropertyEditorPage {
 
     private INetworkModel model;
 
     /**
      * @param pageName
      */
-    public PropertyCreatorPage(INodeType type, INetworkModel model) {
+    public ElementCreationPage(INodeType type, INetworkModel model) {
         super(type);
         this.model = model;
-        setTitle(NemMessages.PROPERTY_CREATOR_PAGE_TITLE + " " + type.getId());
+        setTitle(MessageFormat.format(NemMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
     }
 
     @Override
     protected List<PropertyContainer> getTypedProperties() {
+        List<PropertyContainer> defaultContainers = super.getTypedProperties();
         IPropertyStatisticsModel propertyModel = model.getPropertyStatistics();
         Set<String> properties = propertyModel.getPropertyNames(getType());
         List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
@@ -58,7 +60,11 @@ public class PropertyCreatorPage extends PropertyEditorPage {
             PropertyContainer container = new PropertyContainer(property, type);
             container.setValue(value == null ? type.getDefaultValue() : value);
             containers.add(container);
-
+        }
+        for (PropertyContainer container : defaultContainers) {
+            if (!containers.contains(container)) {
+                containers.add(container);
+            }
         }
         return containers;
     }

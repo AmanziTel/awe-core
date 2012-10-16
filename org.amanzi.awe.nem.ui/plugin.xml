@@ -21,7 +21,7 @@
             </command>
             <menu
                   id="org.amanzi.awe.nem.createnew"
-                  label="Create new element">
+                  label="Create">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -36,6 +36,19 @@
                      id="org.amanzi.awe.nem.ui.contributions.creationContribution">
                </dynamic>
             </menu>
+            <dynamic
+                  class="org.amanzi.awe.nem.ui.contributions.CopyNetworkElementContribution"
+                  id="org.amanzi.awe.nem.ui.contributions.copy">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeMenuSelection">
+                     <test
+                           property="org.amanzi.awe.nem.ui.isCopyable">
+                     </test>
+                  </with>
+               </visibleWhen>
+            </dynamic>
       </menuContribution>
       <menuContribution
             allPopups="false"
@@ -105,7 +118,7 @@
             class="org.amanzi.awe.nem.ui.testers.NemTester"
             id="org.amanzi.awe.nem.ui.deletabletester"
             namespace="org.amanzi.awe.nem.ui"
-            properties="isDeletable,isAddetable"
+            properties="isDeletable,isAddetable,isCopyable"
             type="org.eclipse.jface.viewers.IStructuredSelection">
       </propertyTester>
    </extension>
