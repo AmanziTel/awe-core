@@ -14,7 +14,7 @@
 package org.amanzi.awe.views.charts.listener;
 
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.ui.filter.container.dto.IStatisticsViewFilterContainer;
+import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
@@ -39,12 +39,12 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
             ShowInViewEvent showInViewEvent = (ShowInViewEvent)event;
 
             if ((showInViewEvent.getParent() instanceof IStatisticsModel)
-                    && (showInViewEvent.getElement() instanceof IStatisticsViewFilterContainer)) {
+                    && (showInViewEvent.getElement() instanceof IStatisticsFilter)) {
                 ChartsView view = showStatisticsView();
 
                 if (view != null) {
                     showInView(view, (IStatisticsModel)showInViewEvent.getParent(),
-                            (IStatisticsViewFilterContainer)showInViewEvent.getElement());
+                            (IStatisticsFilter)showInViewEvent.getElement());
                 }
             }
         }
@@ -63,7 +63,7 @@ public class ShowInChartsViewListener implements IAWEEventListenter {
         }
     }
 
-    private void showInView(final ChartsView chartsView, final IStatisticsModel model, final IStatisticsViewFilterContainer filter) {
+    private void showInView(final ChartsView chartsView, final IStatisticsModel model, final IStatisticsFilter filter) {
         chartsView.fireStatisticsChanged(model, filter);
     }
 

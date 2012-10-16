@@ -19,8 +19,8 @@ import org.amanzi.awe.statistics.exceptions.StatisticsEngineException;
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.template.ITemplate;
-import org.amanzi.awe.statistics.ui.filter.container.dto.IStatisticsViewFilterContainer;
-import org.amanzi.awe.statistics.ui.filter.container.dto.impl.StatisticsFilterContainer;
+import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
+import org.amanzi.awe.statistics.ui.filter.impl.StatisticsFilter;
 import org.amanzi.awe.statistics.ui.internal.StatisticsPlugin;
 import org.amanzi.awe.statistics.ui.table.StatisticsTable;
 import org.amanzi.awe.statistics.ui.table.StatisticsTable.IStatisticsTableListener;
@@ -95,14 +95,14 @@ public class StatisticsView extends ViewPart
 
                     @Override
                     public void run() {
-                        updateTable(model, new StatisticsFilterContainer(periodCombo.getPeriod(), startTime.getDate().getTime(),
-                                endTime.getDate().getTime()));
+                        updateTable(model, new StatisticsFilter(periodCombo.getPeriod(), startTime.getDate().getTime(), endTime
+                                .getDate().getTime()));
                         setEnabledItems(true);
                     }
                 }, true);
 
             } catch (final StatisticsEngineException e) {
-                return new Status(IStatus.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
+                return new Status(IStatus.ERROR, StatisticsPlugin.getDefault().getPluginId(), "Error on Statistics Calculation", e);
             } finally {
                 AWEEventManager.getManager().fireDataUpdatedEvent(StatisticsView.this);
             }
@@ -311,7 +311,7 @@ public class StatisticsView extends ViewPart
         widgetSelected(e);
     }
 
-    private void updateTable(final IStatisticsModel statisticsModel, final IStatisticsViewFilterContainer filterContainer) {
+    private void updateTable(final IStatisticsModel statisticsModel, final IStatisticsFilter filterContainer) {
         statisticsTable.updateStatistics(statisticsModel, filterContainer);
     }
 

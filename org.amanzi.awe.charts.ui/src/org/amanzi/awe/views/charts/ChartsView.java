@@ -32,7 +32,7 @@ import org.amanzi.awe.charts.model.provider.IChartModelProvider;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.ui.filter.container.dto.IStatisticsViewFilterContainer;
+import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.views.charts.filters.ShowInStatisticsTreeFilter;
 import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
@@ -92,7 +92,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
 
     private IStatisticsModel model;
 
-    private IStatisticsViewFilterContainer container;
+    private IStatisticsFilter container;
 
     @Override
     public void createPartControl(final Composite parent) {
@@ -186,7 +186,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
      * @param model
      * @param container
      */
-    public void fireStatisticsChanged(final IStatisticsModel model, final IStatisticsViewFilterContainer container) {
+    public void fireStatisticsChanged(final IStatisticsModel model, final IStatisticsFilter container) {
         this.model = model;
         this.container = container;
         List<String> groups;
@@ -229,7 +229,7 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
      * @param model
      * @param container
      */
-    private IChartModel createChartModel(final IStatisticsModel model, final IStatisticsViewFilterContainer container) {
+    private IChartModel createChartModel(final IStatisticsModel model, final IStatisticsFilter container) {
         IChartModelProvider chartProvider = ChartModelPlugin.getDefault().getChartModelProvider();
         IChartDataFilter filter = chartProvider.getChartDataFilter(container.getStartTime(), container.getEndTime(),
                 groupSelectorWidget.getSelected());
@@ -249,13 +249,13 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
      */
     private static class ChartsCahceId {
         private final IChartModel model;
-        private final IStatisticsViewFilterContainer container;
+        private final IStatisticsFilter container;
 
         /**
          * @param model
          * @param container
          */
-        public ChartsCahceId(final IChartModel model, final IStatisticsViewFilterContainer container) {
+        public ChartsCahceId(final IChartModel model, final IStatisticsFilter container) {
             super();
             this.model = model;
             this.container = container;

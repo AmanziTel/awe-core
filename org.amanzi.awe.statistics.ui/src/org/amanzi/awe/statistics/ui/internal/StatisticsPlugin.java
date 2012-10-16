@@ -1,11 +1,19 @@
 package org.amanzi.awe.statistics.ui.internal;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 
-public class StatisticsPlugin extends AbstractUIPlugin {
+/**
+ * TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @since 1.0.0
+ */
+public class StatisticsPlugin extends Plugin {
 
-    public static final String PLUGIN_ID = "org.amanzi.awe.views.statistics";
+    private static final String PLUGIN_ID = "org.amanzi.awe.statistics.ui";
     // The shared instance
     private static StatisticsPlugin plugin;
 
@@ -42,5 +50,9 @@ public class StatisticsPlugin extends AbstractUIPlugin {
      */
     public static StatisticsPlugin getDefault() {
         return plugin;
+    }
+
+    public String getPluginId() {
+        return PLUGIN_ID;
     }
 }

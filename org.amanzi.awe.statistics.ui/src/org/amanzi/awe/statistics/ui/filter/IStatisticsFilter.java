@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.statistcstree.view.filter.container;
+package org.amanzi.awe.statistics.ui.filter;
 
 import java.util.Collection;
 
@@ -25,16 +25,24 @@ import org.amanzi.neo.core.period.Period;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IStatisticsTreeFilterContainer {
+public interface IStatisticsFilter {
+    /**
+     * get period
+     * 
+     * @return
+     */
+    Period getPeriod();
 
-    long getStartTime();
+    /**
+     * getStartTime
+     * 
+     * @return
+     */
+    Long getStartTime();
 
-    long getEndTime();
-
-    Collection<String> getGroupNames();
+    Long getEndTime();
 
     String getCellName();
 
-    Period getPeriod();
-
+    Collection<String> getGroupNames();
 }

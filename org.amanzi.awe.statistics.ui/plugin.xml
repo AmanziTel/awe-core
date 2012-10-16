@@ -41,5 +41,53 @@
          </tree_id>
       </wrapper-factory>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.amanzi.trees.AnalyzisTree">
+         <menu
+               id="org.amanzi.statistics.dimension"
+               label="Statistics Dimension">
+            <command
+                  commandId="org.amanzi.statistics.ChangeDimension"
+                  label="Time"
+                  style="radio">
+               <parameter
+                     name="org.amanzi.statistics.dimension"
+                     value="time">
+               </parameter>
+            </command>
+            <command
+                  commandId="org.amanzi.statistics.ChangeDimension"
+                  label="Property"
+                  style="radio">
+               <parameter
+                     name="org.amanzi.statistics.dimension"
+                     value="property">
+               </parameter>
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.amanzi.statistics.ChangeDimension"
+            name="Change Dimension">
+         <commandParameter
+               id="org.amanzi.statistics.dimension"
+               name="Dimension Type"
+               optional="false">
+         </commandParameter>
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.amanzi.awe.statistics.ui.handlers.ChangeDimensionHandler"
+            commandId="org.amanzi.statistics.ChangeDimension">
+      </handler>
+   </extension>
 
 </plugin>

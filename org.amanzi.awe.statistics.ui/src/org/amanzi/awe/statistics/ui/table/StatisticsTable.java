@@ -23,7 +23,7 @@ import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.dto.IStatisticsRow;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
-import org.amanzi.awe.statistics.ui.filter.container.dto.IStatisticsViewFilterContainer;
+import org.amanzi.awe.statistics.ui.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.ui.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.statistics.ui.table.filters.dialog.FilterDialogEvent;
 import org.amanzi.awe.statistics.ui.table.filters.dialog.FilteringDialog;
@@ -94,7 +94,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     private TableCursor cursor;
 
-    private IStatisticsViewFilterContainer filterContainer;
+    private IStatisticsFilter filterContainer;
 
     /**
      * @param parent
@@ -130,7 +130,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         return scrolledComposite;
     }
 
-    private void updateProviders(final IStatisticsViewFilterContainer filterContainer) {
+    private void updateProviders(final IStatisticsFilter filterContainer) {
         contentProvider.setFilter(filterContainer);
         labelProvider.setFilter(filterContainer);
     }
@@ -146,7 +146,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
         cursor.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
     }
 
-    public void updateStatistics(final IStatisticsModel model, final IStatisticsViewFilterContainer filterContainer) {
+    public void updateStatistics(final IStatisticsModel model, final IStatisticsFilter filterContainer) {
         if (model != null) {
             this.model = model;
             this.filterContainer = filterContainer;
