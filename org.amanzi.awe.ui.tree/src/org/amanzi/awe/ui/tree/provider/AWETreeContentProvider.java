@@ -40,6 +40,8 @@ public class AWETreeContentProvider implements ITreeContentProvider {
 
     private final Set<ITreeWrapperFactory> factories;
 
+    private final List<ITreeWrapper> treeWrappers = new ArrayList<ITreeWrapper>();
+
     /**
      * 
      */
@@ -62,16 +64,16 @@ public class AWETreeContentProvider implements ITreeContentProvider {
 
     @SuppressWarnings("unchecked")
     protected Object[] getElementsInternal(final Object inputElement) {
-        final List<ITreeWrapper> wrappers = new ArrayList<ITreeWrapper>();
+        treeWrappers.clear();
 
         for (final ITreeWrapperFactory factory : factories) {
             final Iterator<ITreeWrapper> items = factory.getWrappers(inputElement);
             if (items != null) {
-                wrappers.addAll(IteratorUtils.toList(items));
+                treeWrappers.addAll(IteratorUtils.toList(items));
             }
         }
 
-        return toObject(wrappers);
+        return toObject(treeWrappers);
     }
 
     @Override
@@ -90,7 +92,17 @@ public class AWETreeContentProvider implements ITreeContentProvider {
         final Pair<ITreeWrapper, ITreeItem> wrapper = convertObject(element);
 
         if (wrapper != null) {
-            return getParent(wrapper.getLeft(), wrapper.getRight());
+            if (wrapper.getLeft() != null) {
+                return getParent(wrapper.getLeft(), wrapper.getRight());
+            } else {
+                for (ITreeWrapper singleWrapper : treeWrappers) {
+                    Object parent = getParent(singleWrapper, wrapper.getRight());
+
+                    if (parent != null) {
+                        return parent;
+                    }
+                }
+            }
         }
 
         return null;
@@ -137,7 +149,7 @@ public class AWETreeContentProvider implements ITreeContentProvider {
     protected boolean hasChildren(final ITreeWrapper wrapper, final ITreeItem item) {
         final Iterator<ITreeItem> iterator = wrapper.getChildren(item);
 
-        return iterator != null && iterator.hasNext();
+        return (iterator != null) && iterator.hasNext();
     }
 
     private <T extends ITreeItem> Object[] toObject(final Iterator<T> itemIterator) {
