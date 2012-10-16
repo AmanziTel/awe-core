@@ -11,12 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.network.ui.wrapper;
+package org.amanzi.awe.drive.ui.preferences;
 
-import org.amanzi.awe.network.ui.NetworkTreePlugin;
-import org.amanzi.awe.network.ui.preferences.NetworkLabelsInitializer;
-import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
-import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.awe.drive.ui.DriveTreePlugin;
+import org.amanzi.awe.ui.tree.preferences.AbstractLabelPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
@@ -27,28 +25,27 @@ import org.eclipse.jface.preference.IPreferenceStore;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NetworkTreeWrapper extends AbstractTreeModelWrapper<INetworkModel> {
+public class DriveLabelsInitializer extends AbstractLabelPreferenceInitializer {
 
-    /**
-     * @param model
-     */
-    public NetworkTreeWrapper(final INetworkModel model) {
-        super(model);
-    }
+    public static final String DRIVE_LABEL_TEMPLATE = "drive_tree.label_template";
 
-    @Override
-    protected Class<INetworkModel> getModelClass() {
-        return INetworkModel.class;
+    public DriveLabelsInitializer() {
+        super();
     }
 
     @Override
     protected String getPreferenceKey() {
-        return NetworkLabelsInitializer.NETWORK_LABEL_TEMPLATE;
+        return DRIVE_LABEL_TEMPLATE;
+    }
+
+    @Override
+    protected String getTemplate() {
+        return "#timestamp#";
     }
 
     @Override
     protected IPreferenceStore getPreferenceStore() {
-        return NetworkTreePlugin.getDefault().getPreferenceStore();
+        return DriveTreePlugin.getDefault().getPreferenceStore();
     }
 
 }

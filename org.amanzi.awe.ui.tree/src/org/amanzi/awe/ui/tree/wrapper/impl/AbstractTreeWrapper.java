@@ -13,9 +13,14 @@
 
 package org.amanzi.awe.ui.tree.wrapper.impl;
 
+import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.item.impl.TreeItem;
+import org.amanzi.awe.ui.tree.label.LabelTemplateUtils;
+import org.amanzi.awe.ui.tree.label.LabelTemplateUtils.LabelTemplate;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * TODO Purpose of
@@ -26,6 +31,8 @@ import org.amanzi.neo.models.IModel;
  * @since 1.0.0
  */
 public abstract class AbstractTreeWrapper extends TreeItem implements ITreeWrapper {
+
+    private LabelTemplate template;
 
     protected AbstractTreeWrapper() {
         this(null, null, null);
@@ -42,5 +49,24 @@ public abstract class AbstractTreeWrapper extends TreeItem implements ITreeWrapp
      */
     protected AbstractTreeWrapper(final IModel parent, final Object child, final ITreeWrapper wrapper) {
         super(parent, child, wrapper);
+
+        if (getPreferenceKey() != null && getPreferenceStore() != null) {
+            template = LabelTemplateUtils.getTemplate(getPreferenceStore().getString(getPreferenceKey()));
+        }
     }
+
+    @Override
+    public String getTitle(final ITreeItem item) {
+        final IDataElement element = item.castChild(IDataElement.class);
+
+        if (element != null && template != null) {
+            return template.toString(element);
+        }
+
+        return null;
+    }
+
+    protected abstract String getPreferenceKey();
+
+    protected abstract IPreferenceStore getPreferenceStore();
 }

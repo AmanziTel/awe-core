@@ -40,4 +40,19 @@
          </tree_id>
       </wrapper-factory>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.drive.ui.preferences.DriveLabelsInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.amanzi.trees.labels"
+            class="org.amanzi.awe.drive.ui.preferences.DriveLabelsPreferencePage"
+            id="org.amanzi.trees.labels.drive"
+            name="Drive Tree Labels">
+      </page>
+   </extension>
 </plugin>

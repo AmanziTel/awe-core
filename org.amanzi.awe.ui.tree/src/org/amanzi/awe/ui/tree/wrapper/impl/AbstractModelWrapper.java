@@ -115,7 +115,7 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
         if (model != null) {
             return model.getName();
         } else {
-            return null;
+            return super.getTitle(item);
         }
     }
 }

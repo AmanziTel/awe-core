@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.tree.preferences.network;
+package org.amanzi.awe.drive.ui.preferences;
 
-import org.amanzi.awe.ui.tree.AWETreePlugin;
+import org.amanzi.awe.drive.ui.DriveTreePlugin;
 import org.amanzi.awe.ui.tree.preferences.AbstractLabelPreferencePage;
 
 /**
@@ -24,21 +24,21 @@ import org.amanzi.awe.ui.tree.preferences.AbstractLabelPreferencePage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NetworkLabelsPreferencePage extends AbstractLabelPreferencePage {
+public class DriveLabelsPreferencePage extends AbstractLabelPreferencePage {
 
     /**
      * @param description
      * @param label
      * @param preferenceStore
      */
-    public NetworkLabelsPreferencePage() {
-        super("Select template of label for Network Tree Item", "Network Tree item label:", AWETreePlugin.getDefault()
+    public DriveLabelsPreferencePage() {
+        super("Select template of label for Drive Tree Item", "Drive Tree item label:", DriveTreePlugin.getDefault()
                 .getPreferenceStore());
     }
 
     @Override
     protected String getPreferenceKey() {
-        return NetworkLabelsInitializer.NETWORK_LABEL_TEMPLATE;
+        return DriveLabelsInitializer.DRIVE_LABEL_TEMPLATE;
     }
 
 }

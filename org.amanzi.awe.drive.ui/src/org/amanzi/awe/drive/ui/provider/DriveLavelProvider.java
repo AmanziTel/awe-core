@@ -16,7 +16,6 @@ package org.amanzi.awe.drive.ui.provider;
 import org.amanzi.awe.drive.ui.item.PeriodItem;
 import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.awe.ui.tree.provider.AWETreeLabelProvider;
-import org.amanzi.neo.core.period.PeriodManager;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -31,16 +30,6 @@ public class DriveLavelProvider extends AWETreeLabelProvider {
 
     public DriveLavelProvider() {
         super();
-    }
-
-    @Override
-    public String getText(final Object element) {
-        if (element instanceof PeriodItem) {
-            final PeriodItem period = (PeriodItem)element;
-            return PeriodManager.getPeriodName(period.getPeriod(), period.getStartTime(), period.getEndTime());
-        } else {
-            return super.getText(element);
-        }
     }
 
     @Override

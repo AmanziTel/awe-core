@@ -17,6 +17,7 @@ import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractTreeModelWrapper;
 import org.amanzi.neo.dto.IDataElement;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * TODO Purpose of
@@ -58,6 +59,16 @@ public class DistributionModelWrapper extends AbstractTreeModelWrapper<IDistribu
         }
 
         return result;
+    }
+
+    @Override
+    protected String getPreferenceKey() {
+        return null;
+    }
+
+    @Override
+    protected IPreferenceStore getPreferenceStore() {
+        return null;
     }
 
 }

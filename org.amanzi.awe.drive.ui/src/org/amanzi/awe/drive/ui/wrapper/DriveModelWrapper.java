@@ -15,7 +15,9 @@ package org.amanzi.awe.drive.ui.wrapper;
 
 import java.util.Iterator;
 
+import org.amanzi.awe.drive.ui.DriveTreePlugin;
 import org.amanzi.awe.drive.ui.item.PeriodItem;
+import org.amanzi.awe.drive.ui.preferences.DriveLabelsInitializer;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractModelWrapper;
 import org.amanzi.neo.core.period.Period;
@@ -23,6 +25,7 @@ import org.amanzi.neo.core.period.PeriodManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * TODO Purpose of
@@ -153,5 +156,15 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
         } else {
             return super.getTitle(item);
         }
+    }
+
+    @Override
+    protected String getPreferenceKey() {
+        return DriveLabelsInitializer.DRIVE_LABEL_TEMPLATE;
+    }
+
+    @Override
+    protected IPreferenceStore getPreferenceStore() {
+        return DriveTreePlugin.getDefault().getPreferenceStore();
     }
 }

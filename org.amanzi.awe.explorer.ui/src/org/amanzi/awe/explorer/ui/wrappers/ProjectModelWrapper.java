@@ -19,6 +19,7 @@ import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractModelWrapper;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.project.IProjectModel;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * TODO Purpose of
@@ -44,6 +45,16 @@ public class ProjectModelWrapper extends AbstractModelWrapper<IProjectModel> {
 
     @Override
     protected Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException {
+        return null;
+    }
+
+    @Override
+    protected String getPreferenceKey() {
+        return null;
+    }
+
+    @Override
+    protected IPreferenceStore getPreferenceStore() {
         return null;
     }
 

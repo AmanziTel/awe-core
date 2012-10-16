@@ -10,27 +10,6 @@
             id="org.amanzi.trees.labels"
             name="Tree Labels">
       </page>
-      <page
-            category="org.amanzi.trees.labels"
-            class="org.amanzi.awe.ui.tree.preferences.network.NetworkLabelsPreferencePage"
-            id="org.amanzi.trees.label.network"
-            name="Network Tree Label">
-      </page>
-      <page
-            category="org.amanzi.trees.labels"
-            class="org.amanzi.awe.ui.tree.preferences.drive.DriveLabelsPreferencePage"
-            id="org.amanzi.trees.label.drive"
-            name="Drive Tree Label">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.amanzi.awe.ui.tree.preferences.drive.DriveLabelsInitializer">
-      </initializer>
-      <initializer
-            class="org.amanzi.awe.ui.tree.preferences.network.NetworkLabelsInitializer">
-      </initializer>
-   </extension>
+   </extension>   
 
 </plugin>

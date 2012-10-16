@@ -27,6 +27,7 @@ import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.core.period.PeriodManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * TODO Purpose of
@@ -115,5 +116,15 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
         }
 
         return MessageFormat.format(CELL_NAME_FORMAT, cell.getName(), DECIMAL_FORMAT.format(value));
+    }
+
+    @Override
+    protected String getPreferenceKey() {
+        return null;
+    }
+
+    @Override
+    protected IPreferenceStore getPreferenceStore() {
+        return null;
     }
 }
