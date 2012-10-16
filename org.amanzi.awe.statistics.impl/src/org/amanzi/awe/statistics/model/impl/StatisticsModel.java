@@ -1115,6 +1115,16 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
             result = new DataElementConverter<IStatisticsGroup>(getAllStatisticsGroups(level.getDimension(), level.getName())
                     .iterator()).toIterable();
+        } else if (parentElement.getNodeType().equals(StatisticsNodeType.GROUP)) {
+            final IStatisticsGroup group = (IStatisticsGroup)parentElement;
+
+            result = new DataElementConverter<IStatisticsRow>(getStatisticsRows(group.getPeriod()).iterator()).toIterable();
+        } else if (parentElement.getNodeType().equals(StatisticsNodeType.S_ROW)) {
+            final IStatisticsRow row = (IStatisticsRow)parentElement;
+
+            result = new DataElementConverter<IStatisticsCell>(row.getStatisticsCells().iterator()).toIterable();
+        } else if (parentElement.getNodeType().equals(StatisticsNodeType.S_CELL)) {
+            result = getSources(parentElement);
         }
 
         if (LOGGER.isDebugEnabled()) {
