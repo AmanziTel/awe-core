@@ -115,6 +115,8 @@ public class DistributionView extends ViewPart
             } catch (final ModelException e) {
                 return new Status(IStatus.ERROR, DistributionPlugin.PLUGIN_ID, "Error on calculating Distribution", e);
             } finally {
+                AWEEventManager.getManager().fireDataUpdatedEvent(DistributionView.this);
+
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override

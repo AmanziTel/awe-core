@@ -25,10 +25,11 @@ import org.amanzi.awe.statistics.ui.internal.StatisticsPlugin;
 import org.amanzi.awe.statistics.ui.table.StatisticsTable;
 import org.amanzi.awe.statistics.ui.table.StatisticsTable.IStatisticsTableListener;
 import org.amanzi.awe.statistics.ui.widgets.PeriodComboWidget;
-import org.amanzi.awe.statistics.ui.widgets.TemplateComboWidget;
 import org.amanzi.awe.statistics.ui.widgets.PeriodComboWidget.IPeriodSelectionListener;
+import org.amanzi.awe.statistics.ui.widgets.TemplateComboWidget;
 import org.amanzi.awe.statistics.ui.widgets.TemplateComboWidget.ITemplateSelectionListener;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget;
@@ -100,8 +101,10 @@ public class StatisticsView extends ViewPart
                     }
                 }, true);
 
-            } catch (StatisticsEngineException e) {
+            } catch (final StatisticsEngineException e) {
                 return new Status(IStatus.ERROR, StatisticsPlugin.PLUGIN_ID, "Error on Statistics Calculation", e);
+            } finally {
+                AWEEventManager.getManager().fireDataUpdatedEvent(StatisticsView.this);
             }
             return Status.OK_STATUS;
         }
@@ -153,14 +156,14 @@ public class StatisticsView extends ViewPart
 
     @Override
     public void createPartControl(final Composite parent) {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+        final ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
         scrolledComposite.setLayout(ONE_ROW_GRID_LAYOUT);
 
-        Composite mainComposite = new Composite(scrolledComposite, SWT.FILL);
+        final Composite mainComposite = new Composite(scrolledComposite, SWT.FILL);
         mainComposite.setLayout(ONE_ROW_GRID_LAYOUT);
         mainComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-        Composite controlsComposite = new Composite(mainComposite, SWT.NONE);
+        final Composite controlsComposite = new Composite(mainComposite, SWT.NONE);
         controlsComposite.setLayout(new GridLayout(4, false));
         controlsComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
@@ -175,7 +178,7 @@ public class StatisticsView extends ViewPart
         scrolledComposite.setExpandVertical(true);
         // TODO KV: should be better solution than static field
         if (MIN_WIDTH == null) {
-            Rectangle clientArea = this.getViewSite().getShell().getClientArea();
+            final Rectangle clientArea = this.getViewSite().getShell().getClientArea();
             MIN_WIDTH = (int)(clientArea.width + (clientArea.width * ADDITIONAL_WIDTH_PERCENTAGE));
         }
         scrolledComposite.setMinSize(MIN_WIDTH, MIN_HEIGHT);
@@ -225,7 +228,7 @@ public class StatisticsView extends ViewPart
 
     // TODO: LN: 09.08.2012, duplicate code
     private TemplateComboWidget addTemplateComboWidget(final Composite parent, final ITemplateSelectionListener listener) {
-        TemplateComboWidget result = new TemplateComboWidget(parent, listener, "Template:", SECOND_ROW_LABEL_WIDTH);
+        final TemplateComboWidget result = new TemplateComboWidget(parent, listener, "Template:", SECOND_ROW_LABEL_WIDTH);
         result.initializeWidget();
 
         return result;
@@ -233,14 +236,14 @@ public class StatisticsView extends ViewPart
 
     // TODO: LN: 09.08.2012, duplicate code
     private PeriodComboWidget addPeriodComboWidget(final Composite parent, final IPeriodSelectionListener listener) {
-        PeriodComboWidget result = new PeriodComboWidget(parent, listener, "Period:", FIRST_ROW_LABEL_WIDTH);
+        final PeriodComboWidget result = new PeriodComboWidget(parent, listener, "Period:", FIRST_ROW_LABEL_WIDTH);
         result.initializeWidget();
 
         return result;
     }
 
     private StatisticsTable addStatisticsTableWidget(final Composite parent, final IStatisticsTableListener listener) {
-        StatisticsTable result = new StatisticsTable(parent, listener);
+        final StatisticsTable result = new StatisticsTable(parent, listener);
         result.initializeWidget();
 
         return result;
@@ -294,12 +297,12 @@ public class StatisticsView extends ViewPart
     private void updateStatistics() {
         if (statisticsManager != null) {
             setEnabledItems(false);
-            StatisticsJob job = new StatisticsJob(statisticsManager);
+            final StatisticsJob job = new StatisticsJob(statisticsManager);
             job.schedule();
         }
     }
 
-    private void setEnabledItems(boolean isEnabled) {
+    private void setEnabledItems(final boolean isEnabled) {
         buildButton.setEnabled(isEnabled);
     }
 
@@ -308,7 +311,7 @@ public class StatisticsView extends ViewPart
         widgetSelected(e);
     }
 
-    private void updateTable(final IStatisticsModel statisticsModel, IStatisticsViewFilterContainer filterContainer) {
+    private void updateTable(final IStatisticsModel statisticsModel, final IStatisticsViewFilterContainer filterContainer) {
         statisticsTable.updateStatistics(statisticsModel, filterContainer);
     }
 

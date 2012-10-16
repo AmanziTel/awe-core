@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.distribution.model.type.impl;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -38,6 +40,8 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
     private static final int DOUBLE_SCALE = 4;
 
     private static final double PRECISION_DELTA = 0.00001;
+
+    private static final NumberFormat DECIMAL_FORMAT = new DecimalFormat("#.###");
 
     private final NumberDistributionRange numberDistributionRange;
 
@@ -107,8 +111,8 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
 
     private String getNumberDistributionRangeName(final double min, final double max) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(min).append(" - ").append(max);
+
+        sb.append(DECIMAL_FORMAT.format(min)).append(" - ").append(DECIMAL_FORMAT.format(max));
         return sb.toString();
     }
-
 }
