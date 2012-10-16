@@ -11,13 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.drive.ui.wrapper;
+package org.amanzi.awe.drive.ui.preferences;
 
 import org.amanzi.awe.drive.ui.DriveTreePlugin;
-import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
-import org.amanzi.awe.ui.tree.wrapper.factory.impl.AbstractModelWrapperFactory;
-import org.amanzi.neo.models.drive.IDriveModel;
-import org.amanzi.neo.providers.IDriveModelProvider;
+import org.amanzi.awe.ui.tree.preferences.AbstractLabelPreferencePage;
 
 /**
  * TODO Purpose of
@@ -27,19 +24,21 @@ import org.amanzi.neo.providers.IDriveModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveWrapperFactory extends AbstractModelWrapperFactory<IDriveModel, IDriveModelProvider> {
+public class DriveLabelsPreferencePage extends AbstractLabelPreferencePage {
 
     /**
-     * @param provider
-     * @param projectModelProvider
+     * @param description
+     * @param label
+     * @param preferenceStore
      */
-    public DriveWrapperFactory() {
-        super(DriveTreePlugin.getDefault().getDriveModelProvider(), DriveTreePlugin.getDefault().getProjectModelProvider());
+    public DriveLabelsPreferencePage() {
+        super("Select template of label for Drive Tree Item", "Drive Tree item label:", DriveTreePlugin.getDefault()
+                .getPreferenceStore());
     }
 
     @Override
-    protected ITreeWrapper createTreeWrapper(final IDriveModel model) {
-        return new DriveModelWrapper(model);
+    protected String getPreferenceKey() {
+        return DriveLabelsInitialzer.DRIVE_LABEL_TEMPLATE;
     }
 
 }

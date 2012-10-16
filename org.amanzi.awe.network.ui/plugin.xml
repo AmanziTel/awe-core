@@ -39,5 +39,20 @@
          </tree_id>
       </wrapper-factory>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.network.ui.preferences.NetworkLabelsInitialzer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.amanzi.trees.labels"
+            class="org.amanzi.awe.network.ui.preferences.NetworkLabelsPreferencePage"
+            id="org.amanzi.trees.labels.network"
+            name="Network Tree Labels">
+      </page>
+   </extension>
    
 </plugin>

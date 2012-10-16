@@ -43,10 +43,10 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
 
         private PeriodItem next;
 
-        public PeriodItemIterator(final Period period, final long startTime) {
+        public PeriodItemIterator(final Period period, final long startTime, final long endTime) {
             this.period = period;
-            this.startTime = period.getStartTime(startTime);
-            this.endTime = period.getEndTime(startTime);
+            this.startTime = startTime;
+            this.endTime = endTime;
         }
 
         @Override
@@ -117,7 +117,7 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
 
             if (!period.getPeriod().equals(Period.HOURLY)) {
                 if (elementsIterator.hasNext()) {
-                    return new PeriodItemIterator(period.getPeriod(), period.getStartTime());
+                    return new PeriodItemIterator(period.getPeriod(), period.getStartTime(), period.getEndTime());
                 }
             } else {
                 return new TreeItemIterator(elementsIterator);
@@ -127,7 +127,7 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
 
             if (model != null) {
                 final Period period = Period.getHighestPeriod(model.getMinTimestamp(), model.getMaxTimestamp());
-                return new PeriodItemIterator(period, model.getMinTimestamp());
+                return new PeriodItemIterator(period, model.getMinTimestamp(), model.getMaxTimestamp());
             }
         }
         return null;

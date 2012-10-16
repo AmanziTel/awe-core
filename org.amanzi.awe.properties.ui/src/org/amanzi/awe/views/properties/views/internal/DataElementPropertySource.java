@@ -14,8 +14,10 @@
 package org.amanzi.awe.views.properties.views.internal;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.amanzi.neo.dateformat.DateFormatManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.apache.commons.lang3.ArrayUtils;
@@ -69,6 +71,8 @@ public class DataElementPropertySource implements IPropertySource {
 
         if (value.getClass().isArray()) {
             value = ArrayUtils.toString(value);
+        } else if (id.toString().contains("timestamp")) {
+            value = DateFormatManager.getInstance().getDefaultFormat().format(new Date((Long)value));
         }
 
         return value;

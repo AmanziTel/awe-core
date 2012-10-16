@@ -28,9 +28,9 @@ import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.providers.context.ProviderContextImpl;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * TODO Purpose of
@@ -40,7 +40,7 @@ import org.eclipse.ui.PlatformUI;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractProviderPlugin extends Plugin {
+public abstract class AbstractProviderPlugin extends AbstractUIPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProviderPlugin.class);
 
@@ -73,7 +73,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
     protected <T extends IModelProvider< ? >> T getModelProvider(final String id) {
         try {
             return getContext().get(id);
-        } catch (ContextException e) {
+        } catch (final ContextException e) {
             logError(e);
         }
 
@@ -83,7 +83,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
     private <T extends INodeProperties> T getNodeProperties(final String id) {
         try {
             return getContext().getProperties(id);
-        } catch (ContextException e) {
+        } catch (final ContextException e) {
             logError(e);
 
             PlatformUI.getWorkbench().close();
@@ -93,7 +93,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
     }
 
     private void logError(final ContextException e) {
-        String message = "An error occured on initialization Provider context";
+        final String message = "An error occured on initialization Provider context";
 
         LOGGER.fatal(message, e);
 

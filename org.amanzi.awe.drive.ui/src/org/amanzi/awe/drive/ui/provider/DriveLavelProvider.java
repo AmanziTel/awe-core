@@ -15,8 +15,9 @@ package org.amanzi.awe.drive.ui.provider;
 
 import org.amanzi.awe.drive.ui.item.PeriodItem;
 import org.amanzi.awe.ui.icons.IconManager;
-import org.amanzi.awe.ui.label.AWELabelProvider;
+import org.amanzi.awe.ui.tree.provider.AWETreeLabelProvider;
 import org.amanzi.neo.core.period.PeriodManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -27,7 +28,16 @@ import org.eclipse.swt.graphics.Image;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DriveLavelProvider extends AWELabelProvider {
+public class DriveLavelProvider extends AWETreeLabelProvider {
+
+    /**
+     * @param store
+     * @param labelTemplateKey
+     */
+    public DriveLavelProvider(final IPreferenceStore store, final String labelTemplateKey) {
+        super(store, labelTemplateKey);
+        // TODO Auto-generated constructor stub
+    }
 
     @Override
     public String getText(final Object element) {

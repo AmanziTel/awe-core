@@ -2,5 +2,14 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.amanzi.tree.factories" name="Tree Wrapper Factory" schema="schema/org.amanzi.tree.factories.exsd"/>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.amanzi.awe.preferences"
+            class="org.amanzi.awe.ui.tree.preferences.internal.TreeLabelsPreferencePage"
+            id="org.amanzi.trees.labels"
+            name="Tree Labels">
+      </page>
+   </extension>
 
 </plugin>

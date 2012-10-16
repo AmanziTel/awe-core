@@ -28,5 +28,11 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.awe.explorer.ui.preferences.ExplorerLabelsInitialzer">
+      </initializer>
+   </extension>
    
 </plugin>

@@ -7,8 +7,11 @@
  */
 package org.amanzi.awe.explorer.ui.view;
 
+import org.amanzi.awe.explorer.ui.ProjectExplorerPlugin;
+import org.amanzi.awe.explorer.ui.preferences.ExplorerLabelsInitialzer;
 import org.amanzi.awe.explorer.ui.provider.ExplorerContentProvider;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 /**
@@ -35,6 +38,16 @@ public class ProjectExplorerView extends AbstractAWETreeView {
     @Override
     protected ITreeContentProvider createContentProvider() {
         return new ExplorerContentProvider(getFactories());
+    }
+
+    @Override
+    protected IPreferenceStore getPreferenceStore() {
+        return ProjectExplorerPlugin.getDefault().getPreferenceStore();
+    }
+
+    @Override
+    protected String getLabelTemplateKey() {
+        return ExplorerLabelsInitialzer.EXPLORER_LABEL_TEMPLATE;
     }
 
 }

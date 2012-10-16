@@ -12,7 +12,10 @@
  */
 package org.amanzi.awe.network.ui.view;
 
+import org.amanzi.awe.network.ui.NetworkTreePlugin;
+import org.amanzi.awe.network.ui.preferences.NetworkLabelsInitialzer;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -34,5 +37,15 @@ public class NetworkTreeView extends AbstractAWETreeView {
     @Override
     public String getViewId() {
         return NETWORK_TREE_VIEW_ID;
+    }
+
+    @Override
+    protected IPreferenceStore getPreferenceStore() {
+        return NetworkTreePlugin.getDefault().getPreferenceStore();
+    }
+
+    @Override
+    protected String getLabelTemplateKey() {
+        return NetworkLabelsInitialzer.NETWORK_LABEL_TEMPLATE;
     }
 }
