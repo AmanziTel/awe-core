@@ -31,4 +31,6 @@ public interface ITreeWrapper extends ITreeItem {
 
     Iterator<ITreeItem> getChildren(ITreeItem item);
 
+    String getTitle(ITreeItem item);
+
 }

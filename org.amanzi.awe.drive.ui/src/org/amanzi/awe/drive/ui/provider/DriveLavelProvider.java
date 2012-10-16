@@ -29,8 +29,8 @@ import org.eclipse.swt.graphics.Image;
  */
 public class DriveLavelProvider extends AWETreeLabelProvider {
 
-    public DriveLavelProvider(final String... templateKeys) {
-        super(templateKeys);
+    public DriveLavelProvider() {
+        super();
     }
 
     @Override

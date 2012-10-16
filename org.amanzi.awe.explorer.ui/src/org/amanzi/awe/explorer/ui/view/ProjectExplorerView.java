@@ -9,7 +9,6 @@ package org.amanzi.awe.explorer.ui.view;
 
 import org.amanzi.awe.explorer.ui.provider.ExplorerContentProvider;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
-import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 /**
@@ -36,11 +35,6 @@ public class ProjectExplorerView extends AbstractAWETreeView {
     @Override
     protected ITreeContentProvider createContentProvider() {
         return new ExplorerContentProvider(getFactories());
-    }
-
-    @Override
-    protected String[] getSupporedLabelTemplates() {
-        return ArrayUtils.EMPTY_STRING_ARRAY;
     }
 
 }

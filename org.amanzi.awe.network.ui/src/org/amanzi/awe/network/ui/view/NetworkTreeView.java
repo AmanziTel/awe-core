@@ -12,7 +12,6 @@
  */
 package org.amanzi.awe.network.ui.view;
 
-import org.amanzi.awe.ui.tree.preferences.network.NetworkLabelsInitializer;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
 /**
@@ -35,10 +34,5 @@ public class NetworkTreeView extends AbstractAWETreeView {
     @Override
     public String getViewId() {
         return NETWORK_TREE_VIEW_ID;
-    }
-
-    @Override
-    protected String[] getSupporedLabelTemplates() {
-        return new String[] {NetworkLabelsInitializer.NETWORK_LABEL_TEMPLATE};
     }
 }

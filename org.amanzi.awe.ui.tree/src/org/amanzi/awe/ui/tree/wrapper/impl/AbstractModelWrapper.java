@@ -107,4 +107,15 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
     protected ITreeItem createTreeItem(final IDataElement element) {
         return new TreeItem(getModel(), element, this);
     }
+
+    @Override
+    public String getTitle(final ITreeItem item) {
+        final IModel model = item.castChild(IModel.class);
+
+        if (model != null) {
+            return model.getName();
+        } else {
+            return null;
+        }
+    }
 }

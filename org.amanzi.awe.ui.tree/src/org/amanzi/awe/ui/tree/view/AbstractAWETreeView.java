@@ -102,7 +102,7 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     }
 
     protected IBaseLabelProvider createLabelProvider() {
-        return new AWETreeLabelProvider(getSupporedLabelTemplates());
+        return new AWETreeLabelProvider();
     }
 
     @Override
@@ -122,8 +122,6 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     protected EventStatus[] getSupportedEvents() {
         return DEFAULT_SUPPORTED_EVENTS;
     }
-
-    protected abstract String[] getSupporedLabelTemplates();
 
     protected void update() {
         treeViewer.refresh();

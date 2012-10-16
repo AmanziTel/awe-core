@@ -13,18 +13,8 @@
 
 package org.amanzi.awe.ui.tree.provider;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.amanzi.awe.ui.label.AWELabelProvider;
-import org.amanzi.awe.ui.tree.AWETreePlugin;
-import org.amanzi.awe.ui.tree.label.LabelTemplateUtils;
-import org.amanzi.awe.ui.tree.label.LabelTemplateUtils.LabelTemplate;
-import org.amanzi.neo.dto.IDataElement;
-import org.apache.commons.lang3.ArrayUtils;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
+import org.amanzi.awe.ui.tree.item.ITreeItem;
 
 /**
  * TODO Purpose of
@@ -34,62 +24,27 @@ import org.eclipse.jface.util.PropertyChangeEvent;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AWETreeLabelProvider extends AWELabelProvider implements IPropertyChangeListener {
+public class AWETreeLabelProvider extends AWELabelProvider {
 
-    private final Map<String, LabelTemplate> templateMap;
-
-    private final String[] templateKeys;
-
-    public AWETreeLabelProvider(final String... templateKeys) {
-        final IPreferenceStore store = AWETreePlugin.getDefault().getPreferenceStore();
-
-        templateMap = new HashMap<String, LabelTemplateUtils.LabelTemplate>(templateKeys.length);
-
-        for (final String key : templateKeys) {
-            final LabelTemplate template = LabelTemplateUtils.getTemplate(store.getString(key));
-
-            templateMap.put(key, template);
-        }
-
-        this.templateKeys = templateKeys;
-
-        store.addPropertyChangeListener(this);
-    }
-
-    /**
-     * @param element
-     * @return
-     */
-    @Override
-    protected String getNameFromDataElement(final IDataElement element) {
-        int range = 0;
-        LabelTemplate actualTemplate = null;
-
-        for (final LabelTemplate template : templateMap.values()) {
-            final int newRange = template.handleRange(element);
-
-            if (newRange > range) {
-                range = newRange;
-                actualTemplate = template;
-            }
-        }
-
-        if (range > 0) {
-            return actualTemplate.toString(element);
-        } else {
-            return super.getNameFromDataElement(element);
-        }
+    public AWETreeLabelProvider() {
+        super();
     }
 
     @Override
-    public void propertyChange(final PropertyChangeEvent event) {
-        if (ArrayUtils.contains(templateKeys, event.getProperty())) {
-            templateMap.put(event.getProperty(), LabelTemplateUtils.getTemplate(event.getNewValue().toString()));
+    public String getText(final Object element) {
+        String result = null;
+
+        if (element instanceof ITreeItem) {
+            final ITreeItem item = (ITreeItem)element;
+
+            result = item.getWrapper().getTitle(item);
         }
+
+        if (result == null) {
+            result = super.getText(element);
+        }
+
+        return result;
     }
 
-    @Override
-    public void dispose() {
-        AWETreePlugin.getDefault().getPreferenceStore().removePropertyChangeListener(this);
-    }
 }

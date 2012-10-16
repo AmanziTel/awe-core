@@ -19,6 +19,7 @@ import org.amanzi.awe.drive.ui.item.PeriodItem;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractModelWrapper;
 import org.amanzi.neo.core.period.Period;
+import org.amanzi.neo.core.period.PeriodManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
@@ -141,6 +142,16 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
         } catch (final ModelException e) {
             // TODO: LN: 15.10.2012, log error
             return false;
+        }
+    }
+
+    @Override
+    public String getTitle(final ITreeItem item) {
+        if (item instanceof PeriodItem) {
+            final PeriodItem period = (PeriodItem)item;
+            return PeriodManager.getPeriodName(period.getPeriod(), period.getStartTime(), period.getEndTime());
+        } else {
+            return super.getTitle(item);
         }
     }
 }

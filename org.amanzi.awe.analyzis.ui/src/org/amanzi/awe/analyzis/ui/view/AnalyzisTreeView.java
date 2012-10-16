@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.analyzis.ui.view;
 
-import org.amanzi.awe.ui.tree.preferences.drive.DriveLabelsInitializer;
-import org.amanzi.awe.ui.tree.preferences.network.NetworkLabelsInitializer;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
 /**
@@ -36,11 +34,6 @@ public class AnalyzisTreeView extends AbstractAWETreeView {
     @Override
     public String getViewId() {
         return VIEW_ID;
-    }
-
-    @Override
-    protected String[] getSupporedLabelTemplates() {
-        return new String[] {NetworkLabelsInitializer.NETWORK_LABEL_TEMPLATE, DriveLabelsInitializer.DRIVE_LABEL_TEMPLATE};
     }
 
 }

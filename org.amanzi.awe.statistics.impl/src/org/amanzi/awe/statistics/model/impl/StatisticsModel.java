@@ -1124,7 +1124,15 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
             result = new DataElementConverter<IStatisticsCell>(row.getStatisticsCells().iterator()).toIterable();
         } else if (parentElement.getNodeType().equals(StatisticsNodeType.S_CELL)) {
-            result = getSources(parentElement);
+            final IStatisticsCell cell = (IStatisticsCell)parentElement;
+
+            final Iterable<IStatisticsCell> sourceCells = getSourceCells(cell);
+
+            if (sourceCells != null) {
+                result = new DataElementConverter<IStatisticsCell>(sourceCells.iterator()).toIterable();
+            } else {
+                result = getSources(cell);
+            }
         }
 
         if (LOGGER.isDebugEnabled()) {
