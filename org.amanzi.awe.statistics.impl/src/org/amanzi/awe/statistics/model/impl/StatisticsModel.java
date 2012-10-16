@@ -1085,4 +1085,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public String getName() {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(getSourceModel().getName() + " {" + super.getName() + "}");
+
+        return builder.toString();
+    }
 }

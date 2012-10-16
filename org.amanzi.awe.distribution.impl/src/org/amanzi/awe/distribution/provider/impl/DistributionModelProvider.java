@@ -26,7 +26,6 @@ import org.amanzi.awe.distribution.service.impl.DistributionService.Distribution
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
-import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
@@ -284,12 +283,6 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
             LOGGER.debug(getFinishLogStatement("findAll"));
         }
         return result;
-    }
-
-    @Override
-    public Iterator<IDistributionModel> findAll(final IProjectModel projectModel) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

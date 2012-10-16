@@ -25,7 +25,7 @@ import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
  */
 public class AnalyzisTreeView extends AbstractAWETreeView {
 
-    private static final String VIEW_ID = "org.amanzi.tree.AnalyzisTree";
+    private static final String VIEW_ID = "org.amanzi.trees.AnalyzisTree";
 
     public AnalyzisTreeView() {
         super();

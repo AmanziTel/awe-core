@@ -18,7 +18,6 @@ import java.util.Iterator;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.providers.internal.IModelProvider;
 
@@ -41,7 +40,5 @@ public interface IDistributionModelProvider extends IModelProvider<IDistribution
             throws ModelException;
 
     Iterator<IDistributionModel> findAll(IPropertyStatisticalModel model) throws ModelException;
-
-    Iterator<IDistributionModel> findAll(IProjectModel projectModel) throws ModelException;
 
 }
