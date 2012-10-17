@@ -103,6 +103,9 @@
         <module>org.amanzi.awe.ui.udig</module>
 	<module>org.amanzi.awe.views.distribution</module>
         <module>org.amanzi.awe.views.explorer</module>
+        <module>org.amanzi.awe.nem</module>
+        <module>org.amanzi.awe.nem.feature</module>
+        <module>org.amanzi.awe.nem.ui</module>
 	<module>org.amanzi.awe.views.drive</module>
 	<module>org.amanzi.awe.views.network</module>
 	<module>org.amanzi.awe.views.properties</module>

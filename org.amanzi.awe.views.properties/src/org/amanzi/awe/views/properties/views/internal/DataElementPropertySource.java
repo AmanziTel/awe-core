@@ -16,8 +16,11 @@ package org.amanzi.awe.views.properties.views.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.internal.IDatasetModel;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 
@@ -76,14 +79,24 @@ public class DataElementPropertySource implements IPropertySource {
 
     @Override
     public void resetPropertyValue(final Object id) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void setPropertyValue(final Object id, final Object value) {
-        // TODO Auto-generated method stub
-
+        if (model instanceof IDatasetModel) {
+            IDatasetModel dataset = (IDatasetModel)model;
+            try {
+                if (!dataElement.get((String)id).getClass().equals(value.getClass())) {
+                    return;
+                }
+                dataset.updateProperty(dataElement, (String)id, value);
+                dataElement.put((String)id, value);
+                AWEEventManager.getManager().fireDataUpdatedEvent(null);
+            } catch (ModelException e) {
+                // TODO KV: handle exception
+            }
+        }
     }
 
 }

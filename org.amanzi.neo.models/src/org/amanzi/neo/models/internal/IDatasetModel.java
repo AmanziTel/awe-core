@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.models.internal;
 
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 
@@ -26,4 +28,5 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
  */
 public interface IDatasetModel extends IPropertyStatisticalModel, IRenderableModel {
 
+    void updateProperty(IDataElement element, String proeprtyName, Object propertyValue) throws ModelException;
 }
