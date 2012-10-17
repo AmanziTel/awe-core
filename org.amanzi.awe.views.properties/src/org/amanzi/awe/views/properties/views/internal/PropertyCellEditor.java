@@ -45,7 +45,11 @@ public class PropertyCellEditor extends TextCellEditor {
     protected Object doGetValue() {
         String newValue = (String)super.doGetValue();
         try {
-            return valueClass.getConstructor(newValue.getClass()).newInstance(newValue);
+            if (valueClass.isArray()) {
+                return newValue.split(",");
+            } else {
+                return valueClass.getConstructor(newValue.getClass()).newInstance(newValue);
+            }
         } catch (Exception e) {
             return newValue;
         }
