@@ -10,7 +10,8 @@ Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reex
  net.refractions.udig.project.ui;bundle-version="1.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.amanzi.awe.ui.dto,
+Export-Package: org.amanzi.awe.ui,
+ org.amanzi.awe.ui.dto,
  org.amanzi.awe.ui.events,
  org.amanzi.awe.ui.events.impl,
  org.amanzi.awe.ui.icons,
