@@ -120,12 +120,7 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
 
     @Override
     public void modifyText(final ModifyEvent e) {
-        // TODO: LN: 16.10.2012, why not: getButton(OK).setEnabled(!tText.getText().isEmpty());
-        if (tText.getText().isEmpty()) {
-            getButton(OK).setEnabled(false);
-        } else {
-            getButton(OK).setEnabled(true);
-        }
+        getButton(OK).setEnabled(!tText.getText().isEmpty());
 
     }
 

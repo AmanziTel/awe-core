@@ -8,6 +8,7 @@ import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.views.treeview.provider.ITreeItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -32,23 +33,17 @@ public class DeleteNetworkHandler extends AbstractHandler {
                     if (selectedObject instanceof ITreeItem) {
                         final ITreeItem treeItem = (ITreeItem)selectedObject;
                         if (treeItem.getParent() instanceof INetworkModel || treeItem.getChild() instanceof INetworkModel) {
-                            // TODO: LN: 16.10.2012, duplication of call for MessageDialog - can be
-                            // moved to single method
                             if (treeItem.getParent() == null) {
                                 final INetworkModel model = (INetworkModel)treeItem.getChild();
-                                if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NEMMessages.REMOVE_DIALOG_TITLE,
-                                        MessageFormat.format(NEMMessages.REMOVE_MODEL_CONFIRMATION_TEXT, model.getName()))) {
+                                if (confirmationDialog(NEMMessages.REMOVE_MODEL_CONFIRMATION_TEXT, model.getName(),
+                                        StringUtils.EMPTY)) {
                                     NetworkElementManager.getInstance().removeModel(model);
                                 }
                             } else if (treeItem.getChild() instanceof IDataElement) {
                                 final INetworkModel model = (INetworkModel)treeItem.getParent();
                                 final IDataElement element = (IDataElement)treeItem.getChild();
-                                if (MessageDialog.openConfirm(
-                                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NEMMessages.REMOVE_DIALOG_TITLE,
-                                        MessageFormat.format(NEMMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, element.getName(),
-                                                model.getName()))) {
+                                if (confirmationDialog(NEMMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, element.getName(),
+                                        model.getName())) {
                                     NetworkElementManager.getInstance().removeElement(model, element);
                                 }
                             }
@@ -60,5 +55,15 @@ public class DeleteNetworkHandler extends AbstractHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * @param remove confirmation text
+     * @param asDataElement
+     * @return
+     */
+    private boolean confirmationDialog(String messageFormat, String name, String modelName) {
+        return MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                NEMMessages.REMOVE_DIALOG_TITLE, MessageFormat.format(messageFormat, name, modelName));
     }
 }
