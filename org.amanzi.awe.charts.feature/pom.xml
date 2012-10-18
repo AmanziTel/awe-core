@@ -11,39 +11,6 @@
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.awe.charts.feature</artifactId>
 	<version>1.0.0.qualifier</version>
-	<packaging>eclipse-feature</packaging>
-
-	<profiles>
-		<profile>
-			<id>jre</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>1.7</version>
-						<executions>
-							<execution>
-								<phase>compile</phase>
-								<configuration>
-									<target>
-										<ant antfile="${basedir}/build.xml">
-											<target name="install_jre" />
-										</ant>
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+	<packaging>eclipse-feature</packaging>	
 
 </project>
