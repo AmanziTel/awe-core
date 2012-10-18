@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.nem.internal;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -24,9 +24,9 @@ import org.osgi.framework.BundleContext;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class NemPlugin extends AbstractUIPlugin {
+public class NemPlugin extends AbstractProviderPlugin {
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.amanzi.awe.nem"; //$NON-NLS-1$
+    private static final String PLUGIN_ID = "org.amanzi.awe.nem"; //$NON-NLS-1$
 
     // The shared instance
     private static NemPlugin plugin;
@@ -48,5 +48,10 @@ public class NemPlugin extends AbstractUIPlugin {
 
     public static NemPlugin getDefault() {
         return plugin;
+    }
+
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
     }
 }

@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
+import org.amanzi.awe.nem.internal.NemPlugin;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
@@ -62,9 +62,9 @@ public class NetworkElementManager {
         return NEMInstanceHolder.NEM_MANAGER;
     }
 
-    private INetworkModelProvider networkModelProvider;
+    private final INetworkModelProvider networkModelProvider;
 
-    private IProjectModelProvider projectModelPovider;
+    private final IProjectModelProvider projectModelPovider;
 
     protected NetworkElementManager(INetworkModelProvider provider, IProjectModelProvider projectModelProvider) {
         this.networkModelProvider = provider;
@@ -72,7 +72,7 @@ public class NetworkElementManager {
     }
 
     private NetworkElementManager() {
-        this(AWEUIPlugin.getDefault().getNetworkModelProvider(), AWEUIPlugin.getDefault().getProjectModelProvider());
+        this(NemPlugin.getDefault().getNetworkModelProvider(), NemPlugin.getDefault().getProjectModelProvider());
     }
 
     public void removeModel(final INetworkModel model) throws ModelException {
