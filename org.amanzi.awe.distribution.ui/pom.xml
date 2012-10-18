@@ -8,7 +8,7 @@
     <version>${awe-core-version}</version>
   </parent>
   <groupId>org.amanzi</groupId>
-  <artifactId>org.amanzi.awe.views.distribution</artifactId>
+  <artifactId>org.amanzi.awe.distribution.ui</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-plugin</packaging>
 </project>
