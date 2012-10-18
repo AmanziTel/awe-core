@@ -5,7 +5,6 @@ Bundle-SymbolicName: org.amanzi.awe.charts.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.awe.charts.builder;bundle-version="1.0.0",
- org.amanzi.awe.statistics.ui;bundle-version="1.1.1",
- org.amanzi.awe.views.statistcstree;bundle-version="1.0.0"
+ org.amanzi.awe.statistics.ui;bundle-version="1.1.1"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
