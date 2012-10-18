@@ -7,7 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.models,
  org.amanzi.neo.models.drive,
  org.amanzi.neo.models.exceptions,
- org.amanzi.neo.models.internal;x-friends:="org.amanzi.neo.providers",
+ org.amanzi.neo.models.internal,
  org.amanzi.neo.models.measurement,
  org.amanzi.neo.models.network,
  org.amanzi.neo.models.project,

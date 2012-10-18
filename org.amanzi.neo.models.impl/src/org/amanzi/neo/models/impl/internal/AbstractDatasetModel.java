@@ -22,6 +22,7 @@ import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.internal.IDatasetModel;
 import org.amanzi.neo.models.render.IGISModel;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
@@ -30,6 +31,8 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -40,7 +43,11 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel, IRenderableModel {
+public abstract class AbstractDatasetModel extends AbstractNamedModel
+        implements
+            IPropertyStatisticalModel,
+            IRenderableModel,
+            IDatasetModel {
 
     protected final class LocationIterator extends AbstractDataElementIterator<ILocationElement> {
 
@@ -96,6 +103,19 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel implements
      */
     public void setIndexModel(final IIndexModel indexModel) {
         this.indexModel = indexModel;
+    }
+
+    @Override
+    public void updateProperty(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
+        assert element != null;
+        assert !StringUtils.isEmpty(propertyName);
+        assert propertyValue != null;
+
+        try {
+            getNodeService().updateProperty(((DataElement)element).getNode(), propertyName, propertyValue);
+        } catch (ServiceException e) {
+            processException("can't update property", e);
+        }
     }
 
     /**

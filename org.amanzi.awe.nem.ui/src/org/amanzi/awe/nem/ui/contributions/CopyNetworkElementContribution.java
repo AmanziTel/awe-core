@@ -49,7 +49,7 @@ public class CopyNetworkElementContribution extends AbstractNetworkMenuContribut
         final INetworkModel model = MenuUtils.getModelFromItem(item);
         final IDataElement element = MenuUtils.getElementFromItem(item);
         final INodeType type = MenuUtils.getType(model, element);
-        String itemName = "copy ";
+        String itemName = "Copy ";
         if (element == null) {
             itemName += model.getName();
         } else {

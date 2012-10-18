@@ -9,6 +9,7 @@ import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.ui.dto.IUIItemNew;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -37,16 +38,13 @@ public class DeleteNetworkHandler extends AbstractHandler {
                         final IDataElement dataElement = MenuUtils.getElementFromItem(treeItem);
                         if (networkModel != null) {
                             if (dataElement == null) {
-                                if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NEMMessages.REMOVE_DIALOG_TITLE,
-                                        MessageFormat.format(NEMMessages.REMOVE_MODEL_CONFIRMATION_TEXT, networkModel.getName()))) {
+                                if (confirmationDialog(NEMMessages.REMOVE_MODEL_CONFIRMATION_TEXT, networkModel.getName(),
+                                        StringUtils.EMPTY)) {
                                     NetworkElementManager.getInstance().removeModel(networkModel);
                                 }
                             } else {
-                                if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                                        NEMMessages.REMOVE_DIALOG_TITLE, MessageFormat.format(
-                                                NEMMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, dataElement.getName(),
-                                                networkModel.getName()))) {
+                                if (confirmationDialog(NEMMessages.REMOVE_ELEMENT_CONFIRMATION_TEXT, dataElement.getName(),
+                                        networkModel.getName())) {
                                     NetworkElementManager.getInstance().removeElement(networkModel, dataElement);
                                 }
                             }
@@ -58,5 +56,15 @@ public class DeleteNetworkHandler extends AbstractHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * @param remove confirmation text
+     * @param asDataElement
+     * @return
+     */
+    private boolean confirmationDialog(String messageFormat, String name, String modelName) {
+        return MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                NEMMessages.REMOVE_DIALOG_TITLE, MessageFormat.format(messageFormat, name, modelName));
     }
 }
