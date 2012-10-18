@@ -128,7 +128,6 @@
 				<module>org.amanzi.awe.ui.db</module>
 				<module>org.amanzi.awe.ui.tree</module>
 				<module>org.amanzi.awe.ui.udig</module>
-				<module>org.amanzi.awe.views.statistcstree</module>
 			</modules>
 		</profile>
 	</profiles>
