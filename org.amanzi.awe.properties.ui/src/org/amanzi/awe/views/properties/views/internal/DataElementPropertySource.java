@@ -14,13 +14,13 @@
 package org.amanzi.awe.views.properties.views.internal;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import org.amanzi.neo.dateformat.DateFormatManager;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
-import org.apache.commons.lang3.ArrayUtils;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.internal.IDatasetModel;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 
@@ -36,12 +36,15 @@ public class DataElementPropertySource implements IPropertySource {
 
     private final IDataElement dataElement;
 
+    private final IModel model;
+
     public DataElementPropertySource(final IDataElement dataElement) {
         this(dataElement, null);
     }
 
     public DataElementPropertySource(final IDataElement dataElement, final IModel model) {
         this.dataElement = dataElement;
+        this.model = model;
     }
 
     @Override
@@ -66,16 +69,7 @@ public class DataElementPropertySource implements IPropertySource {
         if (id.equals(DataElementPropertyDescriptor.ID_PROPERTY)) {
             return dataElement.getId();
         }
-
-        Object value = dataElement.get(id.toString());
-
-        if (value.getClass().isArray()) {
-            value = ArrayUtils.toString(value);
-        } else if (id.toString().contains("timestamp")) {
-            value = DateFormatManager.getInstance().getDefaultFormat().format(new Date((Long)value));
-        }
-
-        return value;
+        return dataElement.get(id.toString());
     }
 
     @Override
@@ -85,14 +79,24 @@ public class DataElementPropertySource implements IPropertySource {
 
     @Override
     public void resetPropertyValue(final Object id) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void setPropertyValue(final Object id, final Object value) {
-        // TODO Auto-generated method stub
-
+        if (model instanceof IDatasetModel) {
+            IDatasetModel dataset = (IDatasetModel)model;
+            try {
+                if (!dataElement.get((String)id).getClass().equals(value.getClass())) {
+                    return;
+                }
+                dataset.updateProperty(dataElement, (String)id, value);
+                dataElement.put((String)id, value);
+                AWEEventManager.getManager().fireDataUpdatedEvent(null);
+            } catch (ModelException e) {
+                // TODO KV: handle exception
+            }
+        }
     }
 
 }

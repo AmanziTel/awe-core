@@ -15,6 +15,9 @@ package org.amanzi.awe.views.properties.views.internal;
 
 import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 /**
@@ -66,4 +69,8 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
         return Category.PROPERTY;
     }
 
+    @Override
+    public CellEditor createPropertyEditor(Composite parent) {
+        return new PropertyCellEditor(parent, SWT.BORDER);
+    }
 }
