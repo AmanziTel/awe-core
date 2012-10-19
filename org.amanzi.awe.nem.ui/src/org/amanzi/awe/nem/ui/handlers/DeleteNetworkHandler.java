@@ -6,7 +6,7 @@ import java.util.Iterator;
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.apache.commons.lang3.StringUtils;
@@ -31,8 +31,8 @@ public class DeleteNetworkHandler extends AbstractHandler {
             try {
                 while (selectionIterator.hasNext()) {
                     final Object selectedObject = selectionIterator.next();
-                    if (selectedObject instanceof IUIItemNew) {
-                        final IUIItemNew treeItem = (IUIItemNew)selectedObject;
+                    if (selectedObject instanceof IUIItem) {
+                        final IUIItem treeItem = (IUIItem)selectedObject;
 
                         final INetworkModel networkModel = MenuUtils.getModelFromItem(treeItem);
                         final IDataElement dataElement = MenuUtils.getElementFromItem(treeItem);

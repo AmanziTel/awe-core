@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.ui.tree.item;
 
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 
 /**
@@ -24,7 +24,7 @@ import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ITreeItem extends IUIItemNew {
+public interface ITreeItem extends IUIItem {
 
     ITreeWrapper getWrapper();
 

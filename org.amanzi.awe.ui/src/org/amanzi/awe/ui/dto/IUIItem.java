@@ -23,9 +23,9 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-@Deprecated
-public interface IUIItem<T extends IModel, E extends Object> {
-    E getChild();
+public interface IUIItem {
 
-    T getParent();
+    <T extends IModel> T castParent(Class<T> clazz);
+
+    <T extends Object> T castChild(Class<T> clazz);
 }

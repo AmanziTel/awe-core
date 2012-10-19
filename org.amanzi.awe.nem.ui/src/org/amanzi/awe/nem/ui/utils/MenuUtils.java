@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.nem.ui.utils;
 
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -32,7 +32,7 @@ public final class MenuUtils {
 
     }
 
-    public static INetworkModel getModelFromItem(final IUIItemNew item) {
+    public static INetworkModel getModelFromItem(final IUIItem item) {
         INetworkModel networkModel = item.castParent(INetworkModel.class);
 
         if (networkModel == null) {
@@ -42,7 +42,7 @@ public final class MenuUtils {
         return networkModel;
     }
 
-    public static IDataElement getElementFromItem(final IUIItemNew item) {
+    public static IDataElement getElementFromItem(final IUIItem item) {
         return item.castChild(IDataElement.class);
     }
 

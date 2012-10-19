@@ -19,7 +19,7 @@ import java.util.Collection;
 import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
 import org.amanzi.awe.nem.ui.wizard.NetworkElementCreationWizard;
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -45,7 +45,7 @@ public class CreateNetworkElementContribution extends AbstractNetworkMenuContrib
 
     @Override
     public void fill(final Menu menu, final int index) {
-        final IUIItemNew item = getSelectedItem(LOGGER);
+        final IUIItem item = getSelectedItem(LOGGER);
 
         if (item == null) {
             return;

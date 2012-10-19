@@ -23,7 +23,7 @@ import org.amanzi.neo.dto.IDataElement;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IAggregationItem extends IUIItemNew {
+public interface IAggregationItem extends IUIItem {
 
     Iterable<IDataElement> getSources();
 

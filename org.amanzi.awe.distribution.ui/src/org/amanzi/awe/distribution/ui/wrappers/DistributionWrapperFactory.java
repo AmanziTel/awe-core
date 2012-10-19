@@ -20,7 +20,7 @@ import java.util.List;
 import org.amanzi.awe.distribution.engine.internal.DistributionEnginePlugin;
 import org.amanzi.awe.distribution.model.IDistributionModel;
 import org.amanzi.awe.distribution.provider.IDistributionModelProvider;
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapperFactory;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -107,8 +107,8 @@ public class DistributionWrapperFactory implements ITreeWrapperFactory {
             if (parent != null) {
                 if (parent.equals(ObjectUtils.NULL)) {
                     projectModel = projectModelProvider.getActiveProjectModel();
-                } else if (parent instanceof IUIItemNew) {
-                    sourceModel = ((IUIItemNew)parent).castChild(IPropertyStatisticalModel.class);
+                } else if (parent instanceof IUIItem) {
+                    sourceModel = ((IUIItem)parent).castChild(IPropertyStatisticalModel.class);
                 }
             }
 

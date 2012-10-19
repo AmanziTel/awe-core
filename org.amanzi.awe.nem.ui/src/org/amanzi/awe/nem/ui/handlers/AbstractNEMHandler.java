@@ -15,7 +15,7 @@ package org.amanzi.awe.nem.ui.handlers;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -43,8 +43,8 @@ public abstract class AbstractNEMHandler extends AbstractHandler {
             try {
                 while (selectionIterator.hasNext()) {
                     final Object selectedObject = selectionIterator.next();
-                    if (selectedObject instanceof IUIItemNew) {
-                        handleItem((IUIItemNew)selectedObject, event.getCommand());
+                    if (selectedObject instanceof IUIItem) {
+                        handleItem((IUIItem)selectedObject, event.getCommand());
                     }
                 }
             } catch (final Exception e) {
@@ -58,6 +58,6 @@ public abstract class AbstractNEMHandler extends AbstractHandler {
      * @param selectedObject
      * @param command
      */
-    protected abstract void handleItem(IUIItemNew selectedObject, Command command);
+    protected abstract void handleItem(IUIItem selectedObject, Command command);
 
 }

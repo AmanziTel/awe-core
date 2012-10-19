@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.ui.dto.impl;
 
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.models.IModel;
 
 /**
@@ -24,7 +24,7 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class UIItem implements IUIItemNew {
+public class UIItem implements IUIItem {
 
     private final IModel parent;
 

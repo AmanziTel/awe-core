@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.ui.label;
 
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.awe.ui.icons.IconManager;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
@@ -30,8 +30,8 @@ public class AWELabelProvider extends LabelProvider {
 
     @Override
     public String getText(final Object element) {
-        if (element instanceof IUIItemNew) {
-            final IUIItemNew item = (IUIItemNew)element;
+        if (element instanceof IUIItem) {
+            final IUIItem item = (IUIItem)element;
 
             final IDataElement dataElement = item.castChild(IDataElement.class);
 
@@ -84,8 +84,8 @@ public class AWELabelProvider extends LabelProvider {
     public Image getImage(final Object element) {
         INodeType nodeType = null;
 
-        if (element instanceof IUIItemNew) {
-            final IUIItemNew item = (IUIItemNew)element;
+        if (element instanceof IUIItem) {
+            final IUIItem item = (IUIItem)element;
 
             final IDataElement dataElement = item.castChild(IDataElement.class);
 

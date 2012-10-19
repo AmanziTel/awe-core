@@ -20,7 +20,7 @@ import java.util.List;
 import org.amanzi.awe.statistics.impl.internal.StatisticsModelPlugin;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapperFactory;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -97,8 +97,8 @@ public class StatisticsWrapperFactory implements ITreeWrapperFactory {
             if (parent != null) {
                 if (parent.equals(ObjectUtils.NULL)) {
                     projectModel = projectModelProvider.getActiveProjectModel();
-                } else if (parent instanceof IUIItemNew) {
-                    sourceModel = ((IUIItemNew)parent).castChild(IMeasurementModel.class);
+                } else if (parent instanceof IUIItem) {
+                    sourceModel = ((IUIItem)parent).castChild(IMeasurementModel.class);
                 }
             }
 

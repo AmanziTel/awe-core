@@ -1,7 +1,7 @@
 package org.amanzi.awe.nem.ui.testers;
 
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.core.expressions.PropertyTester;
@@ -11,7 +11,7 @@ public class NEMTester extends PropertyTester {
 
     @Override
     public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
-        IUIItemNew item;
+        IUIItem item;
         IStructuredSelection selection;
         if (receiver instanceof IStructuredSelection) {
             selection = (IStructuredSelection)receiver;
@@ -20,8 +20,8 @@ public class NEMTester extends PropertyTester {
             return false;
         }
 
-        if (selection.getFirstElement() instanceof IUIItemNew) {
-            item = (IUIItemNew)selection.getFirstElement();
+        if (selection.getFirstElement() instanceof IUIItem) {
+            item = (IUIItem)selection.getFirstElement();
         } else {
             return false;
         }

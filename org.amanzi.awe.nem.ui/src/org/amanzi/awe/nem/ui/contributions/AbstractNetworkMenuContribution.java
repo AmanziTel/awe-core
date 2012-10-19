@@ -14,7 +14,7 @@
 package org.amanzi.awe.nem.ui.contributions;
 
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
-import org.amanzi.awe.ui.dto.IUIItemNew;
+import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -76,7 +76,7 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
      * @return
      */
     // TODO: LN: 16.10.2012, class should work with his own LOGGER but not use any provided
-    protected IUIItemNew getSelectedItem(final Logger logger) {
+    protected IUIItem getSelectedItem(final Logger logger) {
         // TODO: LN: 16.10.2012, anyway incorrect work with loggers - some messages will be skipped
         // since it will work only on DEBUG level
         if (logger.isDebugEnabled()) {
@@ -99,9 +99,9 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
             return null;
         }
         final Object firstElement = selection.getFirstElement();
-        IUIItemNew item = null;
-        if (firstElement instanceof IUIItemNew) {
-            item = (IUIItemNew)firstElement;
+        IUIItem item = null;
+        if (firstElement instanceof IUIItem) {
+            item = (IUIItem)firstElement;
             item = MenuUtils.getModelFromItem(item) == null ? null : item;
         }
         if (logger.isDebugEnabled()) {
