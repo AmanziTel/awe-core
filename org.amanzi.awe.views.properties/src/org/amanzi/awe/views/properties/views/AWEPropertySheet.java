@@ -42,7 +42,6 @@ public class AWEPropertySheet extends PropertySheetPage {
     @Override
     public void createControl(final Composite parent) {
         super.createControl(parent);
-
         for (final IAWEView view : preInitializedView) {
             registerView(view);
         }

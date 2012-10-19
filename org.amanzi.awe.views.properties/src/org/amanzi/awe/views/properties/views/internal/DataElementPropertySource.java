@@ -74,12 +74,13 @@ public class DataElementPropertySource implements IPropertySource {
 
     @Override
     public boolean isPropertySet(final Object id) {
+        // TODO: LN: 19.10.2012, incorrect - please look to javadoc of this method
         return dataElement.contains(id.toString());
     }
 
     @Override
     public void resetPropertyValue(final Object id) {
-
+        // TODO: LN: 19.10.2012, should be implemented
     }
 
     @Override
@@ -88,8 +89,11 @@ public class DataElementPropertySource implements IPropertySource {
             IDatasetModel dataset = (IDatasetModel)model;
             try {
                 if (!dataElement.get((String)id).getClass().equals(value.getClass())) {
+                    // TODO: LN: 19.10.2012, this case should be logged and it should be a Message
+                    // Box with Warning
                     return;
                 }
+                // TODO: LN: 19.10.2012, do we really can change any choosen property?
                 dataset.updateProperty(dataElement, (String)id, value);
                 dataElement.put((String)id, value);
                 AWEEventManager.getManager().fireDataUpdatedEvent(null);

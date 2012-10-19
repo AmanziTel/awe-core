@@ -38,23 +38,16 @@ public class DataElementPropertySourceProvider implements IPropertySourceProvide
         } else if (object instanceof IUIItemNew) {
             final IUIItemNew uiItem = (IUIItemNew)object;
 
-            IModel parent = uiItem.castParent(IModel.class);
+            IDataElement dataElement = uiItem.castChild(IDataElement.class);
+            IModel model = uiItem.castParent(IModel.class);
 
-            IDataElement child = uiItem.castChild(IDataElement.class);
-
-            if (child == null) {
-                final IModel childModel = uiItem.castChild(IModel.class);
-
-                if (childModel != null) {
-                    parent = childModel;
-                    child = childModel.asDataElement();
-                }
-            }
-
-            if (parent != null && child != null) {
-                return new DataElementPropertySource(child, parent);
+            if (dataElement != null) {
+                return new DataElementPropertySource(dataElement, model);
+            } else if (model != null) {
+                return new DataElementPropertySource(model.asDataElement(), model);
             }
         }
         return null;
     }
+
 }
