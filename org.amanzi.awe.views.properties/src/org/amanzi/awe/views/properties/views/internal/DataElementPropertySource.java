@@ -102,7 +102,7 @@ public class DataElementPropertySource implements IPropertySource {
 
     @Override
     public boolean isPropertySet(final Object id) {
-        return dataElement.contains(id.toString());
+        return dataElement.asMap().containsKey(id);
     }
 
     @Override
