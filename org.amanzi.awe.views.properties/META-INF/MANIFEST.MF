@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Property
-Bundle-SymbolicName: org.amanzi.awe.properties.ui;singleton:=true
+Bundle-SymbolicName: org.amanzi.awe.views.properties;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.ui.views;bundle-version="3.6.0";visibility:=reexport,
