@@ -46,11 +46,15 @@ public class PropertyCellEditor extends TextCellEditor {
         String newValue = (String)super.doGetValue();
         try {
             if (valueClass.isArray()) {
+                // TODO: LN: 19.10.2012, is this code handle array of integers (or any non-string
+                // type)
                 return newValue.split(",");
             } else {
+                // TODO: LN: 19.10.2012, how it will handle char properties?
                 return valueClass.getConstructor(newValue.getClass()).newInstance(newValue);
             }
         } catch (Exception e) {
+            // TODO: LN: 19.10.2012, handle exception
             return newValue;
         }
     }
