@@ -111,6 +111,8 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel
         assert !StringUtils.isEmpty(propertyName);
         assert propertyValue != null;
 
+        // TODO: LN: 19.10.2012, what about indexing?
+        // TODO: LN: 19.10.2012, what about updating Property Statistics
         try {
             getNodeService().updateProperty(((DataElement)element).getNode(), propertyName, propertyValue);
         } catch (ServiceException e) {
