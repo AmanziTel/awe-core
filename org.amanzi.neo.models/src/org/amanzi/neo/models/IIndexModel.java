@@ -45,4 +45,6 @@ public interface IIndexModel extends IModel {
     Iterator<Node> getAllNodes(INodeType type) throws ModelException;
 
     void deleteIndex(Node node, INodeType type) throws ModelException;
+
+    void updateIndex(INodeType type, Node node, String propertyName, Object oldValue, Object newValue) throws ModelException;
 }

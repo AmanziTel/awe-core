@@ -7,7 +7,8 @@ Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.ui.views;bundle-version="3.6.0";visibility:=reexport,
  org.eclipse.ui;bundle-version="3.7.0",
  org.amanzi.neo.providers;bundle-version="1.0.0",
- org.amanzi.awe.ui;bundle-version="1.0.0"
+ org.amanzi.awe.ui;bundle-version="1.0.0",
+ org.amanzi.log4j;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.amanzi.awe.views.properties.AWEPropertiesPlugin

@@ -139,4 +139,15 @@ public class StatisticsVault {
         return getNodeTypeVaule(type).getDefaultValue(property);
     }
 
+    /**
+     * @param nodeType
+     * @param propertyName
+     * @param oldValue
+     * @param newValue
+     */
+    public void renameProperty(INodeType nodeType, String propertyName, Object oldValue, Object newValue) {
+        getNodeTypeVaule(nodeType).renameProperty(propertyName, oldValue, newValue);
+
+    }
+
 }

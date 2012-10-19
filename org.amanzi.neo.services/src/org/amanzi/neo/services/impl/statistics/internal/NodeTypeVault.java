@@ -134,4 +134,14 @@ public class NodeTypeVault {
     public Object getDefaultValue(String property) {
         return getPropertyVault(property).getDefaultValue();
     }
+
+    /**
+     * @param propertyName
+     * @param oldValue
+     * @param newValue
+     */
+    public void renameProperty(String propertyName, Object oldValue, Object newValue) {
+        getPropertyVault(propertyName).renameProperty(oldValue, newValue);
+
+    }
 }

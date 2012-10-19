@@ -601,4 +601,62 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public INodeType[] getNetworkStructure() {
         return structure.toArray(new INodeType[structure.size()]);
     }
+
+    @Override
+    protected void updateIndexModel(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
+        if (element.getNodeType().equals(NetworkElementType.SECTOR)) {
+            updateSectorIndex(element, propertyName, propertyValue);
+        } else if (element.getNodeType().equals(NetworkElementType.SITE)) {
+            updateSiteIndex(element, propertyName, propertyValue);
+        } else if (getGeneralNodeProperties().getNodeNameProperty().equals(propertyName)) {
+            getIndexModel().updateIndex(element.getNodeType(), ((DataElement)element).getNode(),
+                    getGeneralNodeProperties().getNodeNameProperty(), element.get(propertyName), propertyValue);
+        }
+
+    }
+
+    /**
+     * @param element
+     * @param propertyName
+     * @param propertyValue
+     * @throws ModelException
+     */
+    private void updateSiteIndex(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
+        Double lat = (Double)element.get(getGeoNodeProperties().getLatitudeProperty());
+        Double lon = (Double)element.get(getGeoNodeProperties().getLongitudeProperty());
+        Node siteNode = ((DataElement)element).getNode();
+        getIndexModel().indexInMultiProperty(NetworkElementType.SITE, siteNode, Double.class,
+                getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
+        if (getGeoNodeProperties().getLatitudeProperty().equals(propertyName)) {
+            updateLocation((Double)propertyValue, lon);
+        } else if (getGeoNodeProperties().getLongitudeProperty().equals(propertyName)) {
+            updateLocation(lat, (Double)propertyValue);
+        }
+
+    }
+
+    /**
+     * @param element
+     * @param propertyName
+     * @param propertyValue
+     * @throws ModelException
+     */
+    private void updateSectorIndex(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
+        DataElement sectorElement = (DataElement)element;
+        Node sectorNode = sectorElement.getNode();
+        if (propertyName.equals(networkNodeProperties.getCIProperty())) {
+            getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getCIProperty(),
+                    sectorElement.get(networkNodeProperties.getCIProperty()), propertyValue);
+        } else if (propertyName.equals(networkNodeProperties.getLACProperty())) {
+            getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getLACProperty(),
+                    sectorElement.get(networkNodeProperties.getLACProperty()), propertyValue);
+        }
+
+    }
+
+    @Override
+    protected boolean isInAppropiatedProperty(String propertyName) {
+        return !getGeoNodeProperties().getLatitudeProperty().equals(propertyName)
+                && !getGeoNodeProperties().getLongitudeProperty().equals(propertyName);
+    }
 }
