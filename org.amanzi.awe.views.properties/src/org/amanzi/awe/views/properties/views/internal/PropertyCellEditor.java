@@ -29,21 +29,21 @@ public class PropertyCellEditor extends TextCellEditor {
      * @param parent
      * @param border
      */
-    public PropertyCellEditor(Composite parent, int border) {
+    public PropertyCellEditor(final Composite parent, final int border) {
         super(parent, border);
     }
 
     private Class< ? > valueClass;
 
     @Override
-    protected void doSetValue(Object value) {
+    protected void doSetValue(final Object value) {
         valueClass = value.getClass();
         text.setText(value.toString());
     }
 
     @Override
     protected Object doGetValue() {
-        String newValue = (String)super.doGetValue();
+        final String newValue = (String)super.doGetValue();
         try {
             if (valueClass.isArray()) {
                 // TODO: LN: 19.10.2012, is this code handle array of integers (or any non-string
@@ -53,7 +53,7 @@ public class PropertyCellEditor extends TextCellEditor {
                 // TODO: LN: 19.10.2012, how it will handle char properties?
                 return valueClass.getConstructor(newValue.getClass()).newInstance(newValue);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // TODO: LN: 19.10.2012, handle exception
             return newValue;
         }

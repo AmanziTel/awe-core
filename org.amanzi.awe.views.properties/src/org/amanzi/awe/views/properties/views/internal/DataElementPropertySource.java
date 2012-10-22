@@ -113,8 +113,11 @@ public class DataElementPropertySource implements IPropertySource {
     @Override
     public void setPropertyValue(final Object id, final Object value) {
         if (model instanceof IDatasetModel) {
-            IDatasetModel dataset = (IDatasetModel)model;
+            final IDatasetModel dataset = (IDatasetModel)model;
             try {
+                // TODO: LN: 22.10.2012, does it make sense to show this message to user? maybe it
+                // will be better to avoid creating CellEditor for non-editable properties (it can
+                // be done in PropertyDescriptor)
                 if (UNEDITABLE_PROPERTIES.contains(id)) {
                     showWarningDialog(PropertiesViewMessages.CANT_EDIT_PROPERTY_TITLE,
                             PropertiesViewMessages.CANT_EDIT_PROPERTY_MESSAGE, value, dataElement.get((String)id), (String)id);
@@ -129,7 +132,7 @@ public class DataElementPropertySource implements IPropertySource {
                 dataset.updateProperty(dataElement, (String)id, value);
                 dataElement.put((String)id, value);
                 AWEEventManager.getManager().fireDataUpdatedEvent(null);
-            } catch (ModelException e) {
+            } catch (final ModelException e) {
                 LOGGER.error("can't update model  property", e);
             }
         }
@@ -142,8 +145,9 @@ public class DataElementPropertySource implements IPropertySource {
      * @param value
      * @param id
      */
-    private void showWarningDialog(String title, String message, Object newValue, Object oldValue, String id) {
-        String oldValueClass = oldValue != null ? oldValue.getClass().getName() : null;
+    private void showWarningDialog(final String title, final String message, final Object newValue, final Object oldValue,
+            final String id) {
+        final String oldValueClass = oldValue != null ? oldValue.getClass().getName() : null;
         MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title,
                 MessageFormat.format(message, id.toString(), newValue.toString(), newValue.getClass().getName(), oldValueClass));
 
