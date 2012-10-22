@@ -85,6 +85,7 @@ public class PropertyCellEditor extends TextCellEditor {
         ArraysConverter converter = ArraysConverter.findByType(oldValue.getClass());
 
         if (converter == null) {
+            LOGGER.error("can't type converter for type" + oldValue.getClass());
             return null;
         }
 
