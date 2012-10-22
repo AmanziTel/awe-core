@@ -47,7 +47,7 @@ public abstract class AbstractDataElementIterator<T extends IDataElement> implem
         if (((next == null) || computeNext) && nodeIterator.hasNext()) {
             do {
                 next = createDataElement(nodeIterator.next());
-            } while ((next != null) && nodeIterator.hasNext());
+            } while ((next == null) && nodeIterator.hasNext());
 
             computeNext = false;
         }
@@ -57,7 +57,7 @@ public abstract class AbstractDataElementIterator<T extends IDataElement> implem
 
     @Override
     public T next() {
-        T result = next;
+        final T result = next;
 
         next = null;
         computeNext = true;
