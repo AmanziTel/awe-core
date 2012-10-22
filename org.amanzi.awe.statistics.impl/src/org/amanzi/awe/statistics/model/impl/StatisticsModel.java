@@ -79,30 +79,72 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     private final static Logger LOGGER = Logger.getLogger(StatisticsModel.class);
 
-    private class StatisticsLevelIterator extends AbstractDataElementIterator<IStatisticsLevel> {
+    protected class StatisticsCellFilteredConverter extends DataElementConverter<IStatisticsCell> {
+
+        private final IStatisticsFilter filter;
+
+        /**
+         * @param sourceCollection
+         */
+        public StatisticsCellFilteredConverter(final Iterator<IStatisticsCell> sourceCollection, final IStatisticsFilter filter) {
+            super(sourceCollection);
+            this.filter = filter;
+        }
+
+        @Override
+        protected IDataElement getNext(final IStatisticsCell element) {
+            return filter == null ? element : ((filter.getCellName().equals(element.getName())) ? element : null);
+        }
+
+    }
+
+    private abstract class AbstractStatisticsFilteredIterator<T extends IDataElement> extends AbstractDataElementIterator<T> {
+
+        private final IStatisticsFilter filter;
+
+        protected AbstractStatisticsFilteredIterator(final Iterator<Node> nodeIterator, final IStatisticsFilter filter) {
+            super(nodeIterator);
+            this.filter = filter;
+        }
+
+        @Override
+        protected T createDataElement(final Node node) {
+            final T result = createDataElementInternal(node);
+
+            if (apply(result, filter)) {
+                return result;
+            }
+
+            return null;
+        }
+
+        protected abstract T createDataElementInternal(Node node);
+
+        protected abstract boolean apply(T element, IStatisticsFilter filter);
+    }
+
+    private class StatisticsLevelIterator extends AbstractStatisticsFilteredIterator<IStatisticsLevel> {
 
         private final DimensionType dimension;
-
-        private IStatisticsFilter filter;
 
         /**
          * @param nodeIterator
          */
-        protected StatisticsLevelIterator(final Iterator<Node> nodeIterator, final DimensionType dimension) {
-            super(nodeIterator);
+        protected StatisticsLevelIterator(final Iterator<Node> nodeIterator, final IStatisticsFilter filter,
+                final DimensionType dimension) {
+            super(nodeIterator, filter);
 
             this.dimension = dimension;
         }
 
         @Override
-        protected IStatisticsLevel createDataElement(final Node node) {
-            StatisticsLevel level = createStatisticsLevel(node, dimension);
+        protected IStatisticsLevel createDataElementInternal(final Node node) {
+            return createStatisticsLevel(node, dimension);
+        }
 
-            if ((filter != null) && !level.getName().equals(filter.getPeriod())) {
-                return null;
-            }
-
-            return level;
+        @Override
+        protected boolean apply(final IStatisticsLevel element, final IStatisticsFilter filter) {
+            return filter == null || element.getName().equals(filter.getPeriod());
         }
     }
 
@@ -138,13 +180,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     }
 
-    private class StatisticsGroupIterator extends AbstractDataElementIterator<IStatisticsGroup> {
+    private class StatisticsGroupIterator extends AbstractStatisticsFilteredIterator<IStatisticsGroup> {
 
         /**
          * @param nodeIterator
          */
-        protected StatisticsGroupIterator(final Iterator<Node> nodeIterator) {
-            super(nodeIterator);
+        protected StatisticsGroupIterator(final Iterator<Node> nodeIterator, final IStatisticsFilter filter) {
+            super(nodeIterator, filter);
         }
 
         @Override
@@ -152,6 +194,15 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             return createStatisticsGroupFromNode(node);
         }
 
+        @Override
+        protected IStatisticsGroup createDataElementInternal(final Node node) {
+            return createStatisticsGroupFromNode(node);
+        }
+
+        @Override
+        protected boolean apply(final IStatisticsGroup element, final IStatisticsFilter filter) {
+            return filter == null || filter.getGroupNames().contains(element.getPropertyValue());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -953,8 +1004,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     @Override
     public Iterable<IStatisticsGroup> getAllStatisticsGroups(final DimensionType type, final String levelName)
             throws ModelException {
+        return getAllStatisticsGroups(type, levelName, null);
+    }
+
+    public Iterable<IStatisticsGroup> getAllStatisticsGroups(final DimensionType type, final String levelName,
+            final IStatisticsFilter filter) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("getStatisticsRows", levelName));
+            LOGGER.debug(getStartLogStatement("getAllStatisticsGroups", type, levelName, filter));
         }
 
         // TODO: LN: 20.08.2012, validate input
@@ -966,7 +1022,12 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         } catch (final ServiceException e) {
             processException("can't find groups", e);
         }
-        return new StatisticsGroupIterator(groupNodeIterator).toIterable();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getAllStatisticsGroups"));
+        }
+
+        return new StatisticsGroupIterator(groupNodeIterator, filter).toIterable();
     }
 
     @Override
@@ -975,7 +1036,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type));
         }
 
-        Iterable<IStatisticsLevel> result = findAllStatisticsLevels(type, null);
+        final Iterable<IStatisticsLevel> result = findAllStatisticsLevels(type, null);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("findAllStatisticsLevels"));
@@ -1110,7 +1171,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             LOGGER.debug(getStartLogStatement("getChildren", parentElement));
         }
 
-        Iterable<IDataElement> result = getChildren(parentElement, null);
+        final Iterable<IDataElement> result = getChildren(parentElement, null);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getChildren"));
@@ -1142,7 +1203,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     @Override
-    public Iterable<IDataElement> getChildren(IDataElement parentElement, IStatisticsFilter filter) throws ModelException {
+    public Iterable<IDataElement> getChildren(final IDataElement parentElement, final IStatisticsFilter filter)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getChildren", parentElement, filter));
         }
@@ -1152,8 +1214,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         if (parentElement.getNodeType().equals(StatisticsNodeType.LEVEL)) {
             final IStatisticsLevel level = (IStatisticsLevel)parentElement;
 
-            result = new DataElementConverter<IStatisticsGroup>(getAllStatisticsGroups(level.getDimension(), level.getName())
-                    .iterator()).toIterable();
+            result = new DataElementConverter<IStatisticsGroup>(getAllStatisticsGroups(level.getDimension(), level.getName(),
+                    filter).iterator()).toIterable();
         } else if (parentElement.getNodeType().equals(StatisticsNodeType.GROUP)) {
             final IStatisticsGroup group = (IStatisticsGroup)parentElement;
 
@@ -1166,7 +1228,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         } else if (parentElement.getNodeType().equals(StatisticsNodeType.S_ROW)) {
             final IStatisticsRow row = (IStatisticsRow)parentElement;
 
-            result = new DataElementConverter<IStatisticsCell>(row.getStatisticsCells().iterator()).toIterable();
+            result = new StatisticsCellFilteredConverter(row.getStatisticsCells().iterator(), filter).toIterable();
         } else if (parentElement.getNodeType().equals(StatisticsNodeType.S_CELL)) {
             final IStatisticsCell cell = (IStatisticsCell)parentElement;
 
@@ -1186,7 +1248,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
     }
 
     @Override
-    public Iterable<IStatisticsLevel> findAllStatisticsLevels(DimensionType type, IStatisticsFilter filter) throws ModelException {
+    public Iterable<IStatisticsLevel> findAllStatisticsLevels(final DimensionType type, final IStatisticsFilter filter)
+            throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("findAllStatisticsLevels", type, filter));
         }
@@ -1194,9 +1257,9 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         Iterable<IStatisticsLevel> result = null;
 
         try {
-            Iterator<Node> levels = statisticsService.findAllStatisticsLevelNode(getRootNode(), type);
+            final Iterator<Node> levels = statisticsService.findAllStatisticsLevelNode(getRootNode(), type);
 
-            result = new StatisticsLevelIterator(levels, type).toIterable();
+            result = new StatisticsLevelIterator(levels, filter, type).toIterable();
         } catch (final ServiceException e) {
             processException("Error when try to find all levels nodes", e);
         }
