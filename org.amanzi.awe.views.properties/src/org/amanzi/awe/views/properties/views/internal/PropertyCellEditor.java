@@ -42,30 +42,6 @@ public class PropertyCellEditor extends TextCellEditor {
         super(parent, border);
     }
 
-    /**
-     * create an array of new values on base of class of first element in previous array
-     * 
-     * @param klass
-     * @param length
-     * @return
-     */
-    private Object[] createNewArray(final Class< ? extends Object> klass, final int length) {
-        if (klass.equals(Integer.class)) {
-            return new Integer[length];
-        } else if (klass.equals(Long.class)) {
-            return new Long[length];
-        } else if (klass.equals(String.class)) {
-            return new String[length];
-        } else if (klass.equals(Double.class)) {
-            return new Double[length];
-        } else if (klass.equals(Float.class)) {
-            return new Float[length];
-        } else if (klass.equals(Character.class)) {
-            return new Character[length];
-        }
-        return null;
-    }
-
     @Override
     protected Object doGetValue() {
         String newValue = (String)super.doGetValue();
@@ -106,24 +82,13 @@ public class PropertyCellEditor extends TextCellEditor {
         String preparedString = prepareStringToConverting(newValue);
         String[] stringArray = preparedString.split(",");
 
-        Object[] oldArray = (Object[])oldValue;
-        Class< ? > expectedClass = oldArray[0].getClass();
-        Object[] newArray = createNewArray(expectedClass, stringArray.length);
+        ArraysConverter converter = ArraysConverter.findByType(oldValue.getClass());
 
-        if (newArray == null) {
+        if (converter == null) {
             return null;
         }
 
-        for (int i = 0; i < stringArray.length; i++) {
-            String newStringValue = stringArray[i];
-            if (expectedClass.equals(Character.class)) {
-                newArray[i] = oldValue.getClass().cast(newValue);
-                continue;
-            }
-            newArray[i] = expectedClass.getConstructor(newStringValue.getClass()).newInstance(newStringValue);
-
-        }
-        return newArray;
+        return converter.convertToArray(stringArray);
     }
 
     /**
