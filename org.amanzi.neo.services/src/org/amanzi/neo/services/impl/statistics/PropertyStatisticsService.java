@@ -268,4 +268,17 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return nodeService.getChildren(node, PropertyStatisticsNodeType.STATISTICS_VAULT);
     }
 
+    @Override
+    public void renameProperty(Node rootNode, INodeType nodeType, String propertyName, Object oldValue, Object newValue)
+            throws ServiceException {
+        Node statisticsNode = getStatisticsNode(rootNode);
+        Node nodeTypeVault = getChildVaultNode(statisticsNode, nodeType.getId());
+        Node propertyVault = getChildVaultNode(nodeTypeVault, propertyName);
+        for (String property : propertyVault.getPropertyKeys()) {
+            if (propertyVault.getProperty(property).equals(oldValue)) {
+                nodeService.updateProperty(propertyVault, property, newValue);
+                break;
+            }
+        }
+    }
 }

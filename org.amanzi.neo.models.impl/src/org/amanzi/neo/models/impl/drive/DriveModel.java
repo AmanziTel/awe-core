@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.models.impl.drive;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.drive.DriveType;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -96,6 +97,18 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
 
     protected IDriveType getDriveType(final String driveType) {
         return DriveType.findById(driveType);
+    }
+
+    @Override
+    protected void updateIndexModel(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
+        // TODO KV: need to implement
+
+    }
+
+    @Override
+    protected boolean isInAppropiatedProperty(String propertyName) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 }

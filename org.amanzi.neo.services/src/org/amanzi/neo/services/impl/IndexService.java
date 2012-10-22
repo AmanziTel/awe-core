@@ -209,4 +209,27 @@ public class IndexService extends AbstractService implements IIndexService {
         }
 
     }
+
+    @Override
+    public void updateIndex(Node rootNode, INodeType nodeType, Node node, String propertyName, Object oldValue, Object newValue) throws DatabaseException {
+        assert rootNode != null;
+        assert nodeType != null;
+        assert !StringUtils.isEmpty(propertyName);
+        assert oldValue != null;
+        assert newValue != null;
+
+        final Transaction tx = getGraphDb().beginTx();
+        try {
+            final Index<Node> index = getIndex(rootNode, nodeType);
+            index.remove(node, propertyName, oldValue);
+            index.add(node, propertyName, newValue);
+            tx.success();
+        } catch (final Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
+    }
 }
