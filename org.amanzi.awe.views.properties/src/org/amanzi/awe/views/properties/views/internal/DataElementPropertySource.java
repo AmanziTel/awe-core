@@ -16,19 +16,15 @@ package org.amanzi.awe.views.properties.views.internal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.amanzi.awe.views.properties.messages.PropertiesViewMessages;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.internal.IDatasetModel;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
@@ -46,19 +42,6 @@ import org.eclipse.ui.views.properties.IPropertySource;
 public class DataElementPropertySource implements IPropertySource {
 
     private static final Logger LOGGER = Logger.getLogger(DataElementPropertySource.class);
-
-    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEPropertiesPlugin.getDefault()
-            .getGeneralNodeProperties();
-
-    private static final Set<String> UNEDITABLE_PROPERTIES = new HashSet<String>();
-
-    static {
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getNodeTypeProperty());
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getLastChildID());
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getParentIDProperty());
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getSizeProperty());
-        UNEDITABLE_PROPERTIES.add(DataElementPropertyDescriptor.ID_PROPERTY);
-    }
 
     private final IDataElement dataElement;
     private final Map<String, Object> resetTableElement;
@@ -102,7 +85,7 @@ public class DataElementPropertySource implements IPropertySource {
 
     @Override
     public boolean isPropertySet(final Object id) {
-        return dataElement.asMap().containsKey(id);
+        return !resetTableElement.get(id).equals(dataElement.get((String)id));
     }
 
     @Override
@@ -115,11 +98,7 @@ public class DataElementPropertySource implements IPropertySource {
         if (model instanceof IDatasetModel) {
             IDatasetModel dataset = (IDatasetModel)model;
             try {
-                if (UNEDITABLE_PROPERTIES.contains(id)) {
-                    showWarningDialog(PropertiesViewMessages.CANT_EDIT_PROPERTY_TITLE,
-                            PropertiesViewMessages.CANT_EDIT_PROPERTY_MESSAGE, value, dataElement.get((String)id), (String)id);
-                    return;
-                } else if (!dataElement.get((String)id).getClass().equals(value.getClass())) {
+                if (!dataElement.get((String)id).getClass().equals(value.getClass())) {
                     showWarningDialog(PropertiesViewMessages.INCORRECT_PROPERTY_TYPE,
                             PropertiesViewMessages.INCORRECT_PROPERTY_TYPE_TEXT, value, dataElement.get((String)id), (String)id);
 

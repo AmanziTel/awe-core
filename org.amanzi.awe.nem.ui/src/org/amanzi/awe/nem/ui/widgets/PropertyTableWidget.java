@@ -119,8 +119,7 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
             final IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
             final PropertyContainer container = (PropertyContainer)selection.getFirstElement();
             tableViewer.remove(container);
-        } // TODO: LN: 16.10.2012, maybe 'else if' ?
-        if (e.getSource().equals(tableViewer.getTable())) {
+        } else if (e.getSource().equals(tableViewer.getTable())) {
             final IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
             final PropertyContainer container = (PropertyContainer)selection.getFirstElement();
             if (requiredProperties.contains(container)) {

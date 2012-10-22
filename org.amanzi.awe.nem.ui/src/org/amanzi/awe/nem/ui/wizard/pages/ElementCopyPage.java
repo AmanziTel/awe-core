@@ -46,6 +46,7 @@ public class ElementCopyPage extends ElementCreationPage {
         super(type, model);
         this.parent = parent;
         setTitle(MessageFormat.format(NEMMessages.ELEMENT_COPY_PAGE, parent.getName()));
+
     }
 
     @Override
@@ -53,7 +54,8 @@ public class ElementCopyPage extends ElementCreationPage {
         List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
 
         for (Entry<String, Object> property : parent.asMap().entrySet()) {
-            if (property.getKey().equals("type") || property.getKey().equals("structure")) {
+            if (property.getKey().equals(getGeneralNodeProperties().getNodeTypeProperty())
+                    || property.getKey().equals(getNetworkNodeProperties().getStuctureProperty())) {
                 continue;
             }
             KnownTypes definedType = KnownTypes.defineClass(property.getValue());

@@ -21,8 +21,11 @@ import java.util.Set;
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 
 /**
@@ -37,6 +40,10 @@ public class ElementCreationPage extends PropertyEditorPage {
 
     private INetworkModel model;
 
+    private final INetworkNodeProperties networkNodeProperties;
+
+    private final IGeneralNodeProperties generalNodeProperties;
+
     /**
      * @param pageName
      */
@@ -44,6 +51,8 @@ public class ElementCreationPage extends PropertyEditorPage {
         super(type);
         this.model = model;
         setTitle(MessageFormat.format(NEMMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
+        this.networkNodeProperties = AWEUIPlugin.getDefault().getNetworkNodeProperties();
+        this.generalNodeProperties = AWEUIPlugin.getDefault().getGeneralNodeProperties();
     }
 
     @Override
@@ -67,5 +76,19 @@ public class ElementCreationPage extends PropertyEditorPage {
             }
         }
         return containers;
+    }
+
+    /**
+     * @return Returns the networkNodeProperties.
+     */
+    protected INetworkNodeProperties getNetworkNodeProperties() {
+        return networkNodeProperties;
+    }
+
+    /**
+     * @return Returns the generalNodeProperties.
+     */
+    protected IGeneralNodeProperties getGeneralNodeProperties() {
+        return generalNodeProperties;
     }
 }

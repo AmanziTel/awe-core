@@ -66,20 +66,15 @@ public class NetworkPropertiesManager {
         }
     }
 
-    private Map<String, List<PropertyContainer>> typesProperties = new HashMap<String, List<PropertyContainer>>();
-
     private Map<KnownTypes, List<String>> propertiesTypes = new HashMap<KnownTypes, List<String>>();
 
     public List<PropertyContainer> getProperties(String type) {
-        List<PropertyContainer> properties = typesProperties.get(type);
-        if (properties == null) {
-            properties = new ArrayList<PropertyContainer>();
-            String[] exitedProperties = getPropertiesForType(type);
-            for (String singleProperty : exitedProperties) {
-                KnownTypes propertyType = getPropertyType(singleProperty);
-                properties.add(new PropertyContainer(singleProperty, propertyType));
-            }
-            typesProperties.put(type, properties);
+        List<PropertyContainer> properties;
+        properties = new ArrayList<PropertyContainer>();
+        String[] exitedProperties = getPropertiesForType(type);
+        for (String singleProperty : exitedProperties) {
+            KnownTypes propertyType = getPropertyType(singleProperty);
+            properties.add(new PropertyContainer(singleProperty, propertyType));
         }
         return properties;
     }

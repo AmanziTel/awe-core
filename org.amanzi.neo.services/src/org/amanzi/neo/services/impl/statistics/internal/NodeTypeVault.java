@@ -144,4 +144,17 @@ public class NodeTypeVault {
         getPropertyVault(propertyName).renameProperty(oldValue, newValue);
 
     }
+
+    /**
+     * @param properties
+     */
+    public void deleteProperties(Map<String, Object> properties) {
+        for (Entry<String, Object> property : properties.entrySet()) {
+            PropertyVault result = propertyVaults.get(property.getKey());
+            if (result != null) {
+                result.removeProperty(property.getValue());
+            }
+        }
+
+    }
 }

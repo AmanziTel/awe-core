@@ -13,6 +13,10 @@
 
 package org.amanzi.awe.views.properties.views.internal;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -25,37 +29,110 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class PropertyCellEditor extends TextCellEditor {
+
+    private static final Logger LOGGER = Logger.getLogger(PropertyCellEditor.class);
+
+    private Object oldValue;
+
     /**
      * @param parent
      * @param border
      */
-    public PropertyCellEditor(Composite parent, int border) {
+    public PropertyCellEditor(final Composite parent, final int border) {
         super(parent, border);
     }
 
-    private Class< ? > valueClass;
-
-    @Override
-    protected void doSetValue(Object value) {
-        valueClass = value.getClass();
-        text.setText(value.toString());
+    /**
+     * create an array of new values on base of class of first element in previous array
+     * 
+     * @param klass
+     * @param length
+     * @return
+     */
+    private Object[] createNewArray(final Class< ? extends Object> klass, final int length) {
+        if (klass.equals(Integer.class)) {
+            return new Integer[length];
+        } else if (klass.equals(Long.class)) {
+            return new Long[length];
+        } else if (klass.equals(String.class)) {
+            return new String[length];
+        } else if (klass.equals(Double.class)) {
+            return new Double[length];
+        } else if (klass.equals(Float.class)) {
+            return new Float[length];
+        } else if (klass.equals(Character.class)) {
+            return new Character[length];
+        }
+        return null;
     }
 
     @Override
     protected Object doGetValue() {
         String newValue = (String)super.doGetValue();
         try {
-            if (valueClass.isArray()) {
-                // TODO: LN: 19.10.2012, is this code handle array of integers (or any non-string
-                // type)
-                return newValue.split(",");
+            if (oldValue.getClass().isArray()) {
+                return performArrayCasting(newValue);
             } else {
-                // TODO: LN: 19.10.2012, how it will handle char properties?
-                return valueClass.getConstructor(newValue.getClass()).newInstance(newValue);
+                if (oldValue.getClass().equals(Character.class)) {
+                    return oldValue.getClass().cast(newValue);
+                }
+                return oldValue.getClass().getConstructor(newValue.getClass()).newInstance(newValue);
             }
         } catch (Exception e) {
-            // TODO: LN: 19.10.2012, handle exception
+            LOGGER.error("Error on casting value ", e);
             return newValue;
         }
+    }
+
+    @Override
+    protected void doSetValue(final Object value) {
+        oldValue = value;
+        text.setText(value.toString());
+    }
+
+    /**
+     * @param newValue
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws SecurityException
+     * @throws IllegalArgumentException
+     */
+    private Object performArrayCasting(final String newValue) throws IllegalArgumentException, SecurityException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+
+        String preparedString = prepareStringToConverting(newValue);
+        String[] stringArray = preparedString.split(",");
+
+        Object[] oldArray = (Object[])oldValue;
+        Class< ? > expectedClass = oldArray[0].getClass();
+        Object[] newArray = createNewArray(expectedClass, stringArray.length);
+
+        if (newArray == null) {
+            return null;
+        }
+
+        for (int i = 0; i < stringArray.length; i++) {
+            String newStringValue = stringArray[i];
+            if (expectedClass.equals(Character.class)) {
+                newArray[i] = oldValue.getClass().cast(newValue);
+                continue;
+            }
+            newArray[i] = expectedClass.getConstructor(newStringValue.getClass()).newInstance(newStringValue);
+
+        }
+        return newArray;
+    }
+
+    /**
+     * @param newValue
+     * @return
+     */
+    private String prepareStringToConverting(String newValue) {
+        newValue = newValue.replace("[", StringUtils.EMPTY);
+        newValue = newValue.replace("]", StringUtils.EMPTY);
+        return newValue;
     }
 }

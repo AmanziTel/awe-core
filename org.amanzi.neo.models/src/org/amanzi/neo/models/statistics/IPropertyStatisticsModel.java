@@ -16,6 +16,7 @@ package org.amanzi.neo.models.statistics;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -53,5 +54,7 @@ public interface IPropertyStatisticsModel extends IModel {
     Object getDefaultValues(INodeType type, String property);
 
     void renameProperty(INodeType nodeType, String propertyName, Object oldValue, Object newValue) throws ModelException;
+
+    void deleteElementProperties(IDataElement element) throws ModelException;
 
 }

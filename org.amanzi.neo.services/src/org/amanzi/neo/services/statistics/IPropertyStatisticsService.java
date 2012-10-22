@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.statistics;
 
+import java.util.Map;
+
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.IService;
@@ -37,5 +39,7 @@ public interface IPropertyStatisticsService extends IService {
 
     void renameProperty(Node rootNode, INodeType nodeType, String propertyName, Object oldValue, Object newValue)
             throws ServiceException;
+
+    void deleteProeprty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException;
 
 }

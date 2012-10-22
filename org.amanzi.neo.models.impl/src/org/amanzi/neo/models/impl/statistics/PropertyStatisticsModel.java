@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
@@ -159,6 +160,16 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
         statisticsVault.renameProperty(nodeType, propertyName, oldValue, newValue);
         try {
             statisticsService.renameProperty(getRootNode(), nodeType, propertyName, oldValue, newValue);
+        } catch (ServiceException e) {
+            processException("Can't update property", e);
+        }
+    }
+
+    @Override
+    public void deleteElementProperties(IDataElement element) throws ModelException {
+        statisticsVault.deleteProeprties(element.getNodeType(), element.asMap());
+        try {
+            statisticsService.deleteProeprty(getRootNode(), element.getNodeType(), element.asMap());
         } catch (ServiceException e) {
             processException("Can't update property", e);
         }
