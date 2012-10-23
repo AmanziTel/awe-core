@@ -38,6 +38,24 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
 
         private String title;
 
+        private static final Set<String> UNEDITABLE_PROPERTIES = new HashSet<String>();
+
+        static {
+            UNEDITABLE_PROPERTIES.add(generalNodeProperties.getNodeTypeProperty());
+            UNEDITABLE_PROPERTIES.add(generalNodeProperties.getLastChildID());
+            UNEDITABLE_PROPERTIES.add(generalNodeProperties.getParentIDProperty());
+            UNEDITABLE_PROPERTIES.add(generalNodeProperties.getSizeProperty());
+            UNEDITABLE_PROPERTIES.add(ID_PROPERTY);
+        }
+
+        protected static Category computeCategory(final String propertyName) {
+            if (UNEDITABLE_PROPERTIES.contains(propertyName)) {
+                return Category.HEADER;
+            } else {
+                return Category.PROPERTY;
+            }
+        }
+
         private Category(final String title) {
             this.title = title;
         }
@@ -48,19 +66,6 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
     }
 
     protected final static String ID_PROPERTY = "id";
-
-    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEPropertiesPlugin.getDefault()
-            .getGeneralNodeProperties();
-
-    private static final Set<String> UNEDITABLE_PROPERTIES = new HashSet<String>();
-
-    static {
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getNodeTypeProperty());
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getLastChildID());
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getParentIDProperty());
-        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getSizeProperty());
-        UNEDITABLE_PROPERTIES.add(ID_PROPERTY);
-    }
 
     private static final IGeneralNodeProperties generalNodeProperties;
 
@@ -78,16 +83,12 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
     }
 
     private Category calculateCategory(final String propertyName) {
-        if (propertyName.equals(generalNodeProperties.getNodeTypeProperty()) || propertyName.equals(ID_PROPERTY)) {
-            return Category.HEADER;
-        }
-
-        return Category.PROPERTY;
+        return Category.computeCategory(propertyName);
     }
 
     @Override
-    public CellEditor createPropertyEditor(Composite parent) {
-        if (UNEDITABLE_PROPERTIES.contains(getId())) {
+    public CellEditor createPropertyEditor(final Composite parent) {
+        if (getCategory().equals(Category.HEADER.getTitle())) {
             return null;
         } else {
             return new PropertyCellEditor(parent, SWT.BORDER);

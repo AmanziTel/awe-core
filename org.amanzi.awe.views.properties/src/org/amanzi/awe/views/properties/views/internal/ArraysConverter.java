@@ -26,73 +26,90 @@ import java.lang.reflect.InvocationTargetException;
 public enum ArraysConverter {
 
     INTEGER_ARRAY(Integer[].class) {
+        private int[] array;
+
         @Override
-        protected Object[] getArray(final int length) {
-            return new Integer[length];
+        protected void addValue(final int i, final String value) {
+            array[i] = new Integer(value);
+
         }
 
         @Override
-        protected Class< ? > getTypedConverter() {
-            return Integer.class;
+        protected Object initArray(final int length) {
+            array = new int[length];
+            return array;
         }
     },
     LONG_ARRAY(Long[].class) {
+        private long[] array;
+
         @Override
-        protected Object[] getArray(final int length) {
-            return new Long[length];
+        protected void addValue(final int i, final String value) {
+            array[i] = new Long(value);
+
         }
 
         @Override
-        protected Class< ? > getTypedConverter() {
-            return Long.class;
+        protected Object initArray(final int length) {
+            array = new long[length];
+            return array;
         }
     },
-    FLOAT_ARRAY(Integer[].class) {
+    FLOAT_ARRAY(Float[].class) {
+        private float[] array;
+
         @Override
-        protected Object[] getArray(final int length) {
-            return new Integer[length];
+        protected void addValue(final int i, final String value) {
+            array[i] = new Float(value);
+
         }
 
         @Override
-        protected Class< ? > getTypedConverter() {
-            return Float.class;
+        protected Object initArray(final int length) {
+            array = new float[length];
+            return array;
         }
     },
     DOUBLE_ARRAY(Double[].class) {
+        private double[] array;
+
         @Override
-        protected Object[] getArray(final int length) {
-            return new Double[length];
+        protected void addValue(final int i, final String value) {
+            array[i] = new Double(value);
         }
 
         @Override
-        protected Class< ? > getTypedConverter() {
-            return Double.class;
+        protected Object initArray(final int length) {
+            array = new double[length];
+            return array;
         }
     },
     STRING_ARRAY(String[].class) {
+        private String[] array;
+
         @Override
-        protected Object[] getArray(final int length) {
-            return new String[length];
+        protected void addValue(final int i, final String value) {
+            array[i] = value;
+
         }
 
         @Override
-        protected Class< ? > getTypedConverter() {
-            return String.class;
+        protected Object initArray(final int length) {
+            array = new String[length];
+            return array;
         }
     },
     CHAR_ARRAY(Character[].class) {
-        @Override
-        protected Object[] getArray(final int length) {
-            return new Character[length];
-        }
+        private char[] array;
 
         @Override
-        protected Class< ? > getTypedConverter() {
-            return Character.class;
+        protected void addValue(final int i, final String value) throws IllegalArgumentException, SecurityException,
+                InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+            array[i] = getValue(value);
+
         }
 
-        @Override
-        protected Object getValue(final String newStringValue) throws IllegalArgumentException, SecurityException,
+        protected Character getValue(final String newStringValue) throws IllegalArgumentException, SecurityException,
                 InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
             if (newStringValue.length() > 1) {
                 throw new IllegalArgumentException("can't cast value " + newStringValue + " to Charracter");
@@ -100,11 +117,17 @@ public enum ArraysConverter {
                 return new Character(newStringValue.charAt(0));
             }
         }
+
+        @Override
+        protected Object initArray(final int length) {
+            array = new char[length];
+            return array;
+        }
     };
 
     public static ArraysConverter findByType(final Class< ? > type) {
         for (ArraysConverter converter : values()) {
-            if (converter.getType().equals(type)) {
+            if (converter.getType().isAssignableFrom(type)) {
                 return converter;
             }
         }
@@ -117,17 +140,18 @@ public enum ArraysConverter {
         this.type = type;
     }
 
-    public Object[] convertToArray(final String[] stringArray) throws IllegalArgumentException, SecurityException,
+    protected abstract void addValue(int i, String value) throws IllegalArgumentException, SecurityException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException;
+
+    public Object convertToArray(final String[] stringArray) throws IllegalArgumentException, SecurityException,
             InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        Object[] newArray = getArray(stringArray.length);
+        Object array = initArray(stringArray.length);
         for (int i = 0; i < stringArray.length; i++) {
             String newStringValue = stringArray[i];
-            newArray[i] = getValue(newStringValue);
+            addValue(i, newStringValue);
         }
-        return newArray;
+        return array;
     }
-
-    protected abstract Object[] getArray(int length);
 
     /**
      * @return Returns the type.
@@ -139,20 +163,7 @@ public enum ArraysConverter {
     /**
      * @return
      */
-    protected abstract Class< ? > getTypedConverter();
 
-    /**
-     * @param newStringValue
-     * @return
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws SecurityException
-     * @throws IllegalArgumentException
-     */
-    protected Object getValue(final String newStringValue) throws IllegalArgumentException, SecurityException,
-            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        return getTypedConverter().getConstructor(newStringValue.getClass()).newInstance(newStringValue);
-    }
+    protected abstract Object initArray(int length);
+
 }
