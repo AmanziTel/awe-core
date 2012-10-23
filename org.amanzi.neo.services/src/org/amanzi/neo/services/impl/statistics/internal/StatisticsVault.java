@@ -150,4 +150,12 @@ public class StatisticsVault {
 
     }
 
+    /**
+     * @param nodeType
+     * @param asMap
+     */
+    public void deleteProeprties(INodeType nodeType, Map<String, Object> properties) {
+        getNodeTypeVaule(nodeType).deleteProperties(properties);
+
+    }
 }

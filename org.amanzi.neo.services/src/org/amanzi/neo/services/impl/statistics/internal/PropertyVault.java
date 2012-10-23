@@ -256,4 +256,21 @@ public class PropertyVault {
         values.put(newValue, count);
 
     }
+
+    /**
+     * @param value
+     */
+    public void removeProperty(Object value) {
+        Integer count = values.get(value);
+        if (count == null) {
+            return;
+        }
+        count--;
+        if (count <= 0) {
+            values.remove(value);
+        } else {
+            values.put(value, count);
+        }
+
+    }
 }

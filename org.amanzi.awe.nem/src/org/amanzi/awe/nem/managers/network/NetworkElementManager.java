@@ -33,6 +33,8 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.providers.INetworkModelProvider;
@@ -66,13 +68,21 @@ public class NetworkElementManager {
 
     private final IProjectModelProvider projectModelPovider;
 
-    protected NetworkElementManager(INetworkModelProvider provider, IProjectModelProvider projectModelProvider) {
+    private final IGeoNodeProperties geoNodeProperties;
+
+    private final IGeneralNodeProperties generalNodeProperties;
+
+    protected NetworkElementManager(INetworkModelProvider provider, IProjectModelProvider projectModelProvider,
+            IGeneralNodeProperties generalNodeProperties, IGeoNodeProperties geoNodeProeprties) {
         this.networkModelProvider = provider;
         this.projectModelPovider = projectModelProvider;
+        this.generalNodeProperties = generalNodeProperties;
+        this.geoNodeProperties = geoNodeProeprties;
     }
 
     private NetworkElementManager() {
-        this(NemPlugin.getDefault().getNetworkModelProvider(), NemPlugin.getDefault().getProjectModelProvider());
+        this(NemPlugin.getDefault().getNetworkModelProvider(), NemPlugin.getDefault().getProjectModelProvider(), NemPlugin
+                .getDefault().getGeneralNodeProperties(), NemPlugin.getDefault().getGeoNodeProperties());
     }
 
     public void removeModel(final INetworkModel model) throws ModelException {
@@ -110,7 +120,6 @@ public class NetworkElementManager {
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     model.deleteElement(element);
-                    model.finishUp();
                     LOGGER.info("Finished  removing element " + element + " from model " + model + " at "
                             + new Date(System.currentTimeMillis()));
                     ActionUtil.getInstance().runTask(new Runnable() {
@@ -164,6 +173,9 @@ public class NetworkElementManager {
     private void updateProperties(IPropertyStatisticsModel propertiesModel, Map<INodeType, List<PropertyContainer>> typeProperties) {
         for (Entry<INodeType, List<PropertyContainer>> properties : typeProperties.entrySet()) {
             Map<String, Object> preparedProeprties = preparePropertiesMapFromContainer(properties.getValue());
+            preparedProeprties.remove(geoNodeProperties.getLatitudeProperty());
+            preparedProeprties.remove(geoNodeProperties.getLongitudeProperty());
+            preparedProeprties.put(generalNodeProperties.getNodeTypeProperty(), properties.getKey().getId());
             propertiesModel.updateDefaultProperties(properties.getKey(), preparedProeprties);
         }
         try {
@@ -197,7 +209,7 @@ public class NetworkElementManager {
 
         final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
         final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
-        final String name = (String)prop.get("name");
+        final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
 
         Job job = new Job("Create new element  from model " + model.getName()) {
             @Override
@@ -250,7 +262,7 @@ public class NetworkElementManager {
      */
     private void copyNetworkModel(INetworkModel model, Collection<PropertyContainer> properties) {
         final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
-        final String name = (String)prop.get("name");
+        final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
         try {
             INetworkModel newModel = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name,
                     Arrays.asList(model.getNetworkStructure()));

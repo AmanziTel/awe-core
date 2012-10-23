@@ -13,6 +13,10 @@
 
 package org.amanzi.awe.views.properties.views.internal;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -25,6 +29,11 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 public class PropertyCellEditor extends TextCellEditor {
+
+    private static final Logger LOGGER = Logger.getLogger(PropertyCellEditor.class);
+
+    private Object oldValue;
+
     /**
      * @param parent
      * @param border
@@ -33,29 +42,63 @@ public class PropertyCellEditor extends TextCellEditor {
         super(parent, border);
     }
 
-    private Class< ? > valueClass;
-
     @Override
-    protected void doSetValue(final Object value) {
-        valueClass = value.getClass();
-        text.setText(value.toString());
+    protected Object doGetValue() {
+        String newValue = (String)super.doGetValue();
+        try {
+            if (oldValue.getClass().isArray()) {
+                return performArrayCasting(newValue);
+            } else {
+                if (oldValue.getClass().equals(Character.class)) {
+                    return oldValue.getClass().cast(newValue);
+                }
+                return oldValue.getClass().getConstructor(newValue.getClass()).newInstance(newValue);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error on casting value ", e);
+            return newValue;
+        }
     }
 
     @Override
-    protected Object doGetValue() {
-        final String newValue = (String)super.doGetValue();
-        try {
-            if (valueClass.isArray()) {
-                // TODO: LN: 19.10.2012, is this code handle array of integers (or any non-string
-                // type)
-                return newValue.split(",");
-            } else {
-                // TODO: LN: 19.10.2012, how it will handle char properties?
-                return valueClass.getConstructor(newValue.getClass()).newInstance(newValue);
-            }
-        } catch (final Exception e) {
-            // TODO: LN: 19.10.2012, handle exception
-            return newValue;
+    protected void doSetValue(final Object value) {
+        oldValue = value;
+        text.setText(value.toString());
+    }
+
+    /**
+     * @param newValue
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws SecurityException
+     * @throws IllegalArgumentException
+     */
+    private Object performArrayCasting(final String newValue) throws IllegalArgumentException, SecurityException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+
+        String preparedString = prepareStringToConverting(newValue);
+        String[] stringArray = preparedString.split(",");
+
+        ArraysConverter converter = ArraysConverter.findByType(oldValue.getClass());
+
+        if (converter == null) {
+            LOGGER.error("can't find converter for type" + oldValue.getClass());
+            return null;
         }
+
+        return converter.convertToArray(stringArray);
+    }
+
+    /**
+     * @param newValue
+     * @return
+     */
+    private String prepareStringToConverting(String newValue) {
+        newValue = newValue.replace("[", StringUtils.EMPTY);
+        newValue = newValue.replace("]", StringUtils.EMPTY);
+        return newValue;
     }
 }

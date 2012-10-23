@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.views.properties.views.internal;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.viewers.CellEditor;
@@ -30,8 +33,6 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
  */
 public class DataElementPropertyDescriptor extends PropertyDescriptor {
 
-    protected final static String ID_PROPERTY = "id";
-
     private enum Category {
         PROPERTY("Properties"), HEADER("General info");
 
@@ -44,6 +45,21 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
         public String getTitle() {
             return title;
         }
+    }
+
+    protected final static String ID_PROPERTY = "id";
+
+    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = AWEPropertiesPlugin.getDefault()
+            .getGeneralNodeProperties();
+
+    private static final Set<String> UNEDITABLE_PROPERTIES = new HashSet<String>();
+
+    static {
+        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getNodeTypeProperty());
+        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getLastChildID());
+        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getParentIDProperty());
+        UNEDITABLE_PROPERTIES.add(GENERAL_NODE_PROPERTIES.getSizeProperty());
+        UNEDITABLE_PROPERTIES.add(ID_PROPERTY);
     }
 
     private static final IGeneralNodeProperties generalNodeProperties;
@@ -71,6 +87,10 @@ public class DataElementPropertyDescriptor extends PropertyDescriptor {
 
     @Override
     public CellEditor createPropertyEditor(Composite parent) {
-        return new PropertyCellEditor(parent, SWT.BORDER);
+        if (UNEDITABLE_PROPERTIES.contains(getId())) {
+            return null;
+        } else {
+            return new PropertyCellEditor(parent, SWT.BORDER);
+        }
     }
 }

@@ -14,7 +14,6 @@
 package org.amanzi.awe.nem.ui.wizard.pages;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
@@ -92,10 +91,13 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         properties = getTypedProperties();
 
         if (!properties.contains(requireNameProperty)) {
-            properties.add(requireNameProperty);
+            properties.add(0, requireNameProperty);
         } else {
+            int nameIndex = properties.indexOf(requireNameProperty);
             PropertyContainer container = properties.get(properties.indexOf(requireNameProperty));
             container.setValue(StringUtils.EMPTY);
+            properties.set(nameIndex, properties.get(0));
+            properties.add(0, container);
         }
 
     }
@@ -104,12 +106,7 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
      * @return
      */
     protected List<PropertyContainer> getTypedProperties() {
-        return new ArrayList<PropertyContainer>() {
-            private static final long serialVersionUID = 2311734283765321434L;
-            {
-                addAll(NetworkPropertiesManager.getInstance().getProperties(type.getId()));
-            }
-        };
+        return NetworkPropertiesManager.getInstance().getProperties(type.getId());
     }
 
     public List<PropertyContainer> getProperties() {

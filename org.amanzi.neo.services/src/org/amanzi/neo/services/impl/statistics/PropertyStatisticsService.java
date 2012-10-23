@@ -53,6 +53,8 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         PROPERTY_STATISTICS;
     }
 
+    private static final String COUNT_PATTERNT = "\\d+.*";
+
     private final INodeService nodeService;
 
     private final IPropertyStatisticsNodeProperties statisticsNodeProperties;
@@ -280,5 +282,62 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
                 break;
             }
         }
+    }
+
+    @Override
+    public void deleteProeprty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException {
+        Node statisticsNode = getStatisticsNode(rootNode);
+        Node nodeTypeVault = getChildVaultNode(statisticsNode, nodeType.getId());
+        for (Entry<String, Object> property : asMap.entrySet()) {
+            Node propertyVault = getChildVaultNode(nodeTypeVault, property.getKey());
+            if (propertyVault == null) {
+                continue;
+            }
+            for (String value : propertyVault.getPropertyKeys()) {
+                if (propertyVault.getProperty(value).equals(property.getValue())
+                        && value.matches(statisticsNodeProperties.getValuePrefix() + "\\d+.*")) {
+                    Integer number = new Integer(value.split(statisticsNodeProperties.getValuePrefix())[1]);
+                    String countProperty = statisticsNodeProperties.getCountPrefix() + number;
+                    Integer count = (Integer)propertyVault.getProperty(countProperty);
+                    count--;
+                    if (count <= 0) {
+                        int size = (Integer)propertyVault.getProperty(getGeneralNodeProperties().getSizeProperty());
+                        nodeService.removeNodeProperty(propertyVault, value, true);
+                        nodeService.removeNodeProperty(propertyVault, countProperty, true);
+                        size--;
+                        if (size < 0) {
+                            size = 0;
+                        }
+                        nodeService.updateProperty(nodeTypeVault, getGeneralNodeProperties().getSizeProperty(), size);
+                        nodeService.updateProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(), size);
+                        renameProperties(propertyVault);
+                    } else {
+                        nodeService.updateProperty(propertyVault, countProperty, count);
+                    }
+                    break;
+                }
+            }
+        }
+
+    }
+
+    /**
+     * @param number
+     * @param propertyVault
+     * @throws ServiceException
+     */
+    private void renameProperties(Node propertyVault) throws ServiceException {
+        int vCount = 0;
+        int cCount = 0;
+        for (String value : propertyVault.getPropertyKeys()) {
+            if (value.matches(statisticsNodeProperties.getValuePrefix() + COUNT_PATTERNT)) {
+                nodeService.renameNodeProperty(propertyVault, value, statisticsNodeProperties.getValuePrefix() + vCount, true);
+                vCount++;
+            } else if (value.matches(statisticsNodeProperties.getCountPrefix() + COUNT_PATTERNT)) {
+                nodeService.renameNodeProperty(propertyVault, value, statisticsNodeProperties.getCountPrefix() + cCount, true);
+                cCount++;
+            }
+        }
+
     }
 }

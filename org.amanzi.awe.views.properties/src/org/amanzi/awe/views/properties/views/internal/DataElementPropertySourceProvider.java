@@ -13,9 +13,6 @@
 
 package org.amanzi.awe.views.properties.views.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
@@ -31,7 +28,9 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
  * @since 1.0.0
  */
 public class DataElementPropertySourceProvider implements IPropertySourceProvider {
-    private final Map<Object, IPropertySource> mapping = new HashMap<Object, IPropertySource>();
+
+    private Long currentItemId;
+    private DataElementPropertySource propertySource;
 
     @Override
     public IPropertySource getPropertySource(final Object object) {
@@ -61,32 +60,23 @@ public class DataElementPropertySourceProvider implements IPropertySourceProvide
      * @param parent
      * @return
      */
-    private IPropertySource getPropertySource(final IDataElement child, final IModel parent) {
-        IPropertySource source = getFromMapping(child);
-        if (source == null) {
-            source = new DataElementPropertySource(child, parent);
-            mapping.put(child, source);
+    private IPropertySource getPropertySource(IDataElement child, IModel parent) {
+        if ((currentItemId == null) || (child.getId() != currentItemId)) {
+            propertySource = new DataElementPropertySource(child, parent);
+            currentItemId = child.getId();
         }
-        return source;
+        return propertySource;
     }
 
     /**
      * @param object
      */
-    private IPropertySource getPopertySource(final IDataElement object) {
-        IPropertySource source = getFromMapping(object);
-        if (source == null) {
-            source = new DataElementPropertySource(object);
-            mapping.put(object, source);
+    private IPropertySource getPopertySource(IDataElement child) {
+        if ((currentItemId == null) || (child.getId() != currentItemId)) {
+            propertySource = new DataElementPropertySource(child);
+            currentItemId = child.getId();
         }
-        return source;
+        return propertySource;
     }
 
-    /**
-     * @param object
-     */
-    private IPropertySource getFromMapping(final Object object) {
-        return mapping.get(object);
-
-    }
 }
