@@ -204,17 +204,16 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.views.properties"
+         id="org.amanzi.awe.analyzis.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.analyzis.ui"
+         id="org.amanzi.awe.properties.ui"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>
