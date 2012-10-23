@@ -61,27 +61,13 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
     }
 
     @Override
-    protected INodeType getModelType() {
-        return NetworkElementType.NETWORK;
-    }
-
-    @Override
     protected NetworkModel createInstance() {
         return new NetworkModel(getNodeService(), getGeneralNodeProperties(), getGeoNodeProperties(), networkNodeProperties);
     }
 
     @Override
-    protected Class< ? extends INetworkModel> getModelClass() {
-        return NetworkModel.class;
-    }
-
-    @Override
-    protected void postInitialize(NetworkModel model) throws ModelException {
-        super.postInitialize(model);
-    }
-
-    @Override
-    public INetworkModel createModel(IProjectModel parent, String name, List<INodeType> structure) throws ModelException {
+    public INetworkModel createModel(final IProjectModel parent, final String name, final List<INodeType> structure)
+            throws ModelException {
         NetworkModel model;
         try {
             model = (NetworkModel)create(parent, name);
@@ -91,6 +77,16 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
             throw e;
         }
         return model;
+    }
+
+    @Override
+    protected Class< ? extends INetworkModel> getModelClass() {
+        return NetworkModel.class;
+    }
+
+    @Override
+    protected INodeType getModelType() {
+        return NetworkElementType.NETWORK;
     }
 
 }

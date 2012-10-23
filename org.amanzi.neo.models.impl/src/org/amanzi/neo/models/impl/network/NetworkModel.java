@@ -176,14 +176,14 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     @Override
     public void initialize(Node rootNode) throws ModelException {
         super.initialize(rootNode);
-        initializeNetworkStructire();
+        initializeNetworkStructure();
     }
 
     /**
      * @param rootNode
      * @throws NodeTypeNotExistsException
      */
-    public void initializeNetworkStructire() {
+    public void initializeNetworkStructure() {
         structure.clear();
         String[] structure = (String[])getRootNode().getProperty(networkNodeProperties.getStuctureProperty());
         for (String element : structure) {
