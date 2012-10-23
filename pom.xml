@@ -95,6 +95,7 @@
 			</activation>
 			<modules>
 				<module>org.amanzi.awe</module>
+				<module>org.amanzi.awe.analyzis.ui</module>
 				<module>org.amanzi.awe.catalog.neo</module>
 				<module>org.amanzi.awe.charts.builder</module>
 				<module>org.amanzi.awe.charts.feature</module>
