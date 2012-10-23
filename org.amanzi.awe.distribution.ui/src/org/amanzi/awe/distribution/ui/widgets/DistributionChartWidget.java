@@ -21,6 +21,7 @@ import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.distribution.ui.charts.DistributionBarRenderer;
 import org.amanzi.awe.distribution.ui.charts.DistributionChartDataset;
 import org.amanzi.awe.distribution.ui.widgets.DistributionChartWidget.IDistributionChartListener;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.eclipse.swt.SWT;
@@ -66,6 +67,8 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
     private DistributionChartDataset dataset;
 
     private IDistributionBar selectedBar;
+
+    private IDistributionModel model;
 
     /**
      * @param parent
@@ -160,6 +163,8 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
 
     public void updateDistribution(final IDistributionModel distributionModel) {
         try {
+            this.model = distributionModel;
+
             distributionChart.setTitle(distributionModel.getName());
             dataset.setDistributionBars(distributionModel.getDistributionBars());
 
@@ -186,6 +191,8 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
 
                 selectedBar = bar;
             }
+
+            AWEEventManager.getManager().fireShowInViewEvent(model, bar, this);
         }
     }
 

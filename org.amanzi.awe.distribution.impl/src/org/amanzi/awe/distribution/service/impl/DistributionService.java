@@ -102,7 +102,7 @@ public class DistributionService extends AbstractService implements IDistributio
                 distributionType.getName());
         final Evaluator typeEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionNodeType(),
                 distributionType.getNodeType().getId());
-        final Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getCurrentDistributionProperty(),
+        final Evaluator propertyEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionPropertyName(),
                 distributionType.getPropertyName());
         final Evaluator selectEvaluator = new PropertyEvaluator(distributionNodeProperties.getDistributionSelect(),
                 distributionType.getSelect().name());

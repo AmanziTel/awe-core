@@ -248,6 +248,7 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
                     range.getColor() == null ? null : convertColorToArray(range.getColor()));
 
             result = new DistributionBar(barNode, collectBarSources);
+            result.setNodeType(DistributionNodeType.DISTRIBUTION_BAR);
 
             if (range.getColor() != null) {
                 result.setColor(range.getColor());
@@ -396,6 +397,8 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         result.setColor(getColorFromDatabase(distributionBarNode, distributionNodeProperties.getBarColor(), null));
         result.setNodeType(DistributionNodeType.DISTRIBUTION_BAR);
         result.setName(getNodeService().getNodeName(distributionBarNode));
+        result.setCount((Integer)getNodeService().getNodeProperty(distributionBarNode,
+                getGeneralNodeProperties().getSizeProperty(), null, true));
 
         return result;
     }
@@ -476,8 +479,20 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
 
     @Override
     public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("getParentElement", childElement));
+        }
+
+        IDataElement result = null;
+
+        if (childElement.getNodeType().equals(DistributionNodeType.DISTRIBUTION_BAR)) {
+            result = asDataElement();
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getParentElement"));
+        }
+        return result;
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.amanzi.awe.filters.impl.RangeFilter;
 import org.amanzi.awe.filters.impl.RangeFilter.RangeFilterType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.math3.util.Precision;
 
@@ -114,5 +115,15 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
 
         sb.append(DECIMAL_FORMAT.format(min)).append(" - ").append(DECIMAL_FORMAT.format(max));
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o instanceof NumberDistributionType) {
+            final NumberDistributionType type = (NumberDistributionType)o;
+            return super.equals(type) && ObjectUtils.equals(numberDistributionRange, type.numberDistributionRange);
+        }
+        
+        return false;
     }
 }

@@ -17,6 +17,8 @@ import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IRange;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * TODO Purpose of
@@ -66,6 +68,23 @@ public abstract class AbstractDistributionType<T extends IRange> implements IDis
     @Override
     public Select getSelect() {
         return select;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, false);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o instanceof AbstractDistributionType) {
+            final AbstractDistributionType< ? > type = (AbstractDistributionType< ? >)o;
+
+            return ObjectUtils.equals(model, type.model) && ObjectUtils.equals(nodeType, type.nodeType)
+                    && ObjectUtils.equals(propertyName, type.propertyName) && ObjectUtils.equals(select, type.select);
+        }
+
+        return false;
     }
 
 }

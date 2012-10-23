@@ -32,7 +32,7 @@ import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
-import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -51,7 +51,6 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
     private static final Logger LOGGER = Logger.getLogger(DistributionModelProvider.class);
 
-    @SuppressWarnings("unused")
     private final static class DistributionCacheKey implements IKey {
 
         private final IDistributionType< ? > distributionType;
@@ -75,7 +74,14 @@ public class DistributionModelProvider extends AbstractModelProvider<Distributio
 
         @Override
         public boolean equals(final Object o) {
-            return EqualsBuilder.reflectionEquals(this, o, true);
+            if (o instanceof DistributionCacheKey) {
+                final DistributionCacheKey key = (DistributionCacheKey)o;
+
+                return ObjectUtils.equals(distributionType, key.distributionType)
+                        && ObjectUtils.equals(sourceModel, key.sourceModel);
+            }
+
+            return false;
         }
 
     }
