@@ -52,7 +52,7 @@ public abstract class AbstractDataElementIterator<T extends IDataElement> implem
             computeNext = false;
         }
 
-        return nodeIterator.hasNext();
+        return next != null;
     }
 
     @Override

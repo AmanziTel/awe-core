@@ -60,6 +60,22 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
     }
 
     @Override
+    protected ITreeItem getParentInternal(final ITreeItem item) throws ModelException {
+        final IDataElement dataElement = item.castChild(IDataElement.class);
+
+        ITreeItem result = null;
+
+        if (dataElement != null) {
+            final IDataElement parent = getModel().getParent(dataElement, DimensionHandler.getInstance().getDimension());
+
+            if (parent != null) {
+                result = createTreeItem(parent);
+            }
+        }
+        return result;
+    }
+
+    @Override
     protected Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException {
         IStatisticsModel model = item.castChild(IStatisticsModel.class);
 

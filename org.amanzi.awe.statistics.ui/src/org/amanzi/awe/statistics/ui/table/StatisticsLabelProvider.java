@@ -69,7 +69,6 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public void dispose() {
-        // TODO Auto-generated method stub
 
     }
 
@@ -85,7 +84,6 @@ public class StatisticsLabelProvider implements ITableLabelProvider, ITableColor
 
     @Override
     public Image getColumnImage(final Object element, final int columnIndex) {
-        // TODO Auto-generated method stub
         return null;
     }
 

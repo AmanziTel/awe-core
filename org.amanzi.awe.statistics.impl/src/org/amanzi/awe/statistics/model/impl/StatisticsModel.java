@@ -1161,8 +1161,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     @Override
     public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+        return getParent(childElement, DimensionType.TIME);
     }
 
     @Override
