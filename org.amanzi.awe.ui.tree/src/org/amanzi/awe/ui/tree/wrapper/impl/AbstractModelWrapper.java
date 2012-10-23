@@ -105,6 +105,9 @@ public abstract class AbstractModelWrapper<T extends IModel> extends AbstractTre
     protected abstract Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException;
 
     protected ITreeItem createTreeItem(final IDataElement element) {
+        if (element.equals(getModel().asDataElement())) {
+            return this;
+        }
         return new TreeItem(getModel(), element, this);
     }
 

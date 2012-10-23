@@ -92,7 +92,7 @@
    <extension
          point="org.amanzi.awe.ui.listeners">
       <listener
-            class="org.amanzi.awe.statistics.ui.filter.impl.StatisticsDrillDown">
+            class="org.amanzi.awe.statistics.ui.drilldown.StatisticsDrillDown">
          <eventStatus
                status="SHOW_IN_VIEW">
          </eventStatus>

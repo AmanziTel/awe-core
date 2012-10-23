@@ -11,4 +11,5 @@ Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.awe.analyzis.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.amanzi.awe.statistics.ui.internal.StatisticsPlugin
-Export-Package: org.amanzi.awe.statistics.ui.filter.impl
+Export-Package: org.amanzi.awe.statistics.ui.drilldown,
+ org.amanzi.awe.statistics.ui.filter.impl

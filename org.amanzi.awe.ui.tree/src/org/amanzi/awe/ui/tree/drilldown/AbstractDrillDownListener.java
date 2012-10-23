@@ -44,10 +44,12 @@ public class AbstractDrillDownListener implements IAWEEventListenter {
         if (event.getStatus().equals(EventStatus.SHOW_IN_VIEW)) {
             final ShowInViewEvent eventImpl = (ShowInViewEvent)event;
 
-            final IAWETreeView view = showView();
+            if (eventImpl.getElement() instanceof IDataElement) {
+                final IAWETreeView view = showView();
 
-            if (view != null) {
-                view.show(eventImpl.getParent(), (IDataElement)eventImpl.getElement());
+                if (view != null) {
+                    view.show(eventImpl.getParent(), (IDataElement)eventImpl.getElement());
+                }
             }
         }
     }

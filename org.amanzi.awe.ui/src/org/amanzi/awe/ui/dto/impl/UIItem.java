@@ -15,6 +15,8 @@ package org.amanzi.awe.ui.dto.impl;
 
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.models.IModel;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * TODO Purpose of
@@ -61,5 +63,21 @@ public class UIItem implements IUIItem {
         builder.append("UIItem {parent: ").append(parent).append(", child: ").append(child).append("}");
 
         return builder.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, false);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o instanceof IUIItem) {
+            final UIItem item = (UIItem)o;
+
+            return ObjectUtils.equals(parent, item.parent) && ObjectUtils.equals(child, item.child);
+        }
+
+        return false;
     }
 }

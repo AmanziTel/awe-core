@@ -80,7 +80,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
                 convertNext = false;
             }
 
-            return iterator.hasNext();
+            return next != null;
         }
 
         protected IDataElement getNext(final S element) {
