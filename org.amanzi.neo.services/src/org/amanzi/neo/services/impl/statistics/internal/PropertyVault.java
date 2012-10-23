@@ -245,4 +245,15 @@ public class PropertyVault {
     public Class< ? > getClassType() {
         return classType == null ? null : classType.getDataClass();
     }
+
+    /**
+     * @param oldValue
+     * @param newValue
+     */
+    public void renameProperty(Object oldValue, Object newValue) {
+        Integer count = values.get(oldValue);
+        values.remove(oldValue);
+        values.put(newValue, count);
+
+    }
 }

@@ -154,4 +154,13 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     }
 
+    @Override
+    public void renameProperty(INodeType nodeType, String propertyName, Object oldValue, Object newValue) throws ModelException {
+        statisticsVault.renameProperty(nodeType, propertyName, oldValue, newValue);
+        try {
+            statisticsService.renameProperty(getRootNode(), nodeType, propertyName, oldValue, newValue);
+        } catch (ServiceException e) {
+            processException("Can't update property", e);
+        }
+    }
 }

@@ -64,17 +64,19 @@ public class StatisticsModelWrapper extends AbstractTreeModelWrapper<IStatistics
         IStatisticsModel model = item.castChild(IStatisticsModel.class);
 
         if (model != null) {
-            IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
+            final IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
 
             return new TreeItemIterator(model.findAllStatisticsLevels(DimensionHandler.getInstance().getDimension(), filter)
                     .iterator());
         } else {
             model = item.castParent(IStatisticsModel.class);
 
-            IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
+            final IStatisticsFilter filter = StatisticsFilterHandler.getInstance().getFilter(model);
 
             if (filter != null) {
-                return null;
+                final IDataElement element = item.castChild(IDataElement.class);
+
+                return new TreeItemIterator(model.getChildren(element, filter).iterator());
             } else {
                 return super.getChildrenInternal(item);
             }

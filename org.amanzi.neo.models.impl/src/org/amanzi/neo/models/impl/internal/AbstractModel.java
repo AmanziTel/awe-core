@@ -58,6 +58,10 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
         private final Iterator<S> iterator;
 
+        private IDataElement next;
+
+        private boolean convertNext = true;
+
         public DataElementConverter(final Collection<S> sourceCollection) {
             iterator = sourceCollection.iterator();
         }
@@ -68,12 +72,29 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
         @Override
         public boolean hasNext() {
+            if ((next == null || convertNext) && iterator.hasNext()) {
+                do {
+                    next = getNext(iterator.next());
+                } while (next == null && iterator.hasNext());
+
+                convertNext = false;
+            }
+
             return iterator.hasNext();
+        }
+
+        protected IDataElement getNext(final S element) {
+            return element;
         }
 
         @Override
         public IDataElement next() {
-            return iterator.next();
+            final IDataElement result = next;
+
+            next = null;
+            convertNext = true;
+
+            return result;
         }
 
         @Override

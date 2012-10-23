@@ -292,4 +292,14 @@ public class IndexModel extends AbstractModel implements IIndexModel {
         }
     }
 
+    @Override
+    public void updateIndex(INodeType type, Node node, String propertyName, Object oldValue, Object newValue) throws ModelException {
+        try {
+            indexService.updateIndex(getRootNode(), type, node, propertyName, oldValue, newValue);
+        } catch (DatabaseException e) {
+            processException("can't update indexes", e);
+        }
+
+    }
+
 }

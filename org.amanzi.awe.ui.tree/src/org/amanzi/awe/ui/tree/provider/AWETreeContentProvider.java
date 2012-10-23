@@ -95,8 +95,8 @@ public class AWETreeContentProvider implements ITreeContentProvider {
             if (wrapper.getLeft() != null) {
                 return getParent(wrapper.getLeft(), wrapper.getRight());
             } else {
-                for (ITreeWrapper singleWrapper : treeWrappers) {
-                    Object parent = getParent(singleWrapper, wrapper.getRight());
+                for (final ITreeWrapper singleWrapper : treeWrappers) {
+                    final Object parent = getParent(singleWrapper, wrapper.getRight());
 
                     if (parent != null) {
                         return parent;

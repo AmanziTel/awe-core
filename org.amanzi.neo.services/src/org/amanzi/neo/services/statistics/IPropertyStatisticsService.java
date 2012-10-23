@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.statistics;
 
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.IService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -33,5 +34,8 @@ public interface IPropertyStatisticsService extends IService {
     void saveStatistics(Node node, StatisticsVault vault) throws ServiceException;
 
     StatisticsVault loadStatistics(Node rootNode) throws ServiceException, NodeTypeNotExistsException;
+
+    void renameProperty(Node rootNode, INodeType nodeType, String propertyName, Object oldValue, Object newValue)
+            throws ServiceException;
 
 }

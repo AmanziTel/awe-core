@@ -19,15 +19,19 @@ import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.tree.item.ITreeItem;
+import org.amanzi.awe.ui.tree.item.impl.TreeItem;
 import org.amanzi.awe.ui.tree.provider.AWETreeContentProvider;
 import org.amanzi.awe.ui.tree.provider.AWETreeLabelProvider;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapperFactory;
-import org.amanzi.awe.ui.views.IAWEView;
 import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -45,7 +49,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventListenter, IAWEView {
+public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventListenter, IAWETreeView {
 
     private static final EventStatus[] DEFAULT_SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
 
@@ -152,5 +156,12 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
         }
 
         return super.getAdapter(adapter);
+    }
+
+    @Override
+    public void show(final IModel model, final IDataElement element) {
+        final ITreeItem treeItem = new TreeItem(model, element, null);
+
+        treeViewer.setSelection(new StructuredSelection(treeItem));
     }
 }

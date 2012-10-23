@@ -109,6 +109,18 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
             // TODO Auto-generated method stub
             return null;
         }
+
+        @Override
+        protected void updateIndexModel(IDataElement element, String propertyName, Object propertyValue) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        protected boolean isInAppropiatedProperty(String propertyName) {
+            // TODO Auto-generated method stub
+            return false;
+        }
     }
 
     private IIndexModel indexModel;

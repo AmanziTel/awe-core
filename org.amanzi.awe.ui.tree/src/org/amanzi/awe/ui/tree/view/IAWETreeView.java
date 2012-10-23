@@ -11,32 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.statistcstree.providers;
+package org.amanzi.awe.ui.tree.view;
 
-import java.util.Iterator;
-
+import org.amanzi.awe.ui.views.IAWEView;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.IModel;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Vladislav_Kondratenko
+ * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsElementIterable implements Iterable<Object> {
+public interface IAWETreeView extends IAWEView {
 
-    private Iterable< ? extends IDataElement> statisticsIterable;
-
-    protected StatisticsElementIterable(Iterable< ? extends IDataElement> statisticsIterable) {
-        this.statisticsIterable = statisticsIterable;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Iterator<Object> iterator() {
-        return (Iterator<Object>)statisticsIterable.iterator();
-    }
+    void show(final IModel model, final IDataElement element);
 
 }

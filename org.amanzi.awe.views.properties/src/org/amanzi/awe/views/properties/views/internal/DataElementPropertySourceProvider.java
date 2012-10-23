@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.views.properties.views.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
@@ -28,11 +31,12 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
  * @since 1.0.0
  */
 public class DataElementPropertySourceProvider implements IPropertySourceProvider {
+    private final Map<Object, IPropertySource> mapping = new HashMap<Object, IPropertySource>();
 
     @Override
     public IPropertySource getPropertySource(final Object object) {
         if (object instanceof IDataElement) {
-            return new DataElementPropertySource((IDataElement)object);
+            return getPopertySource((IDataElement)object);
         } else if (object instanceof IModel) {
             return new DataElementPropertySource(((IModel)object).asDataElement());
         } else if (object instanceof IUIItem) {
@@ -42,12 +46,47 @@ public class DataElementPropertySourceProvider implements IPropertySourceProvide
             IModel model = uiItem.castParent(IModel.class);
 
             if (dataElement != null) {
-                return new DataElementPropertySource(dataElement, model);
-            } else if (model != null) {
-                return new DataElementPropertySource(model.asDataElement(), model);
+                return getPropertySource(dataElement, model);
+            } else if (model == null) {
+                model = uiItem.castChild(IModel.class);
+
+                return getPropertySource(model.asDataElement(), model);
             }
         }
         return null;
     }
 
+    /**
+     * @param child
+     * @param parent
+     * @return
+     */
+    private IPropertySource getPropertySource(final IDataElement child, final IModel parent) {
+        IPropertySource source = getFromMapping(child);
+        if (source == null) {
+            source = new DataElementPropertySource(child, parent);
+            mapping.put(child, source);
+        }
+        return source;
+    }
+
+    /**
+     * @param object
+     */
+    private IPropertySource getPopertySource(final IDataElement object) {
+        IPropertySource source = getFromMapping(object);
+        if (source == null) {
+            source = new DataElementPropertySource(object);
+            mapping.put(object, source);
+        }
+        return source;
+    }
+
+    /**
+     * @param object
+     */
+    private IPropertySource getFromMapping(final Object object) {
+        return mapping.get(object);
+
+    }
 }

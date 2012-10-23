@@ -42,4 +42,6 @@ public interface IIndexService extends IService {
     void deleteFromIndexes(Node rootNode, Node node, INodeType nodeType) throws DatabaseException;
 
     void deleteAll(Node node) throws DatabaseException;
+
+    void updateIndex(Node rootNode, INodeType type, Node node, String propertyName, Object oldValue, Object newValue) throws DatabaseException;
 }

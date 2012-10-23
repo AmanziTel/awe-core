@@ -111,14 +111,22 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel
         assert !StringUtils.isEmpty(propertyName);
         assert propertyValue != null;
 
-        // TODO: LN: 19.10.2012, what about indexing?
-        // TODO: LN: 19.10.2012, what about updating Property Statistics
         try {
             getNodeService().updateProperty(((DataElement)element).getNode(), propertyName, propertyValue);
+            if (isInAppropiatedProperty(propertyName)) {
+                getPropertyStatistics().renameProperty(element.getNodeType(), propertyName, element.get(propertyName),
+                        propertyValue);
+            }
+            updateIndexModel(element, propertyName, propertyValue);
+            finishUp();
         } catch (ServiceException e) {
             processException("can't update property", e);
         }
     }
+
+    protected abstract boolean isInAppropiatedProperty(String propertyName);
+
+    protected abstract void updateIndexModel(IDataElement element, String propertyName, Object propertyValue) throws ModelException;
 
     /**
      * @param propertyStatisticsModel The propertyStatisticsModel to set.
