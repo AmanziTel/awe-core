@@ -21,7 +21,7 @@
                minimized="false"
                relationship="stack"
                relative="net.refractions.udig.project.ui.layerManager"
-               visible="true">
+               visible="false">
          </view>
          <viewShortcut
                id="org.amanzi.trees.AnalyzisTree">
