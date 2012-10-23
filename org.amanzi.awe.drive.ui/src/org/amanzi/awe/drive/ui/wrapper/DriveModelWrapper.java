@@ -18,6 +18,7 @@ import java.util.Iterator;
 import org.amanzi.awe.drive.ui.DriveTreePlugin;
 import org.amanzi.awe.drive.ui.item.PeriodItem;
 import org.amanzi.awe.drive.ui.preferences.DriveLabelsInitializer;
+import org.amanzi.awe.ui.dto.IPeriodItem;
 import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.wrapper.impl.AbstractModelWrapper;
 import org.amanzi.neo.core.period.Period;
@@ -114,7 +115,7 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
     @Override
     protected Iterator<ITreeItem> getChildrenInternal(final ITreeItem item) throws ModelException {
         if (item instanceof PeriodItem) {
-            final PeriodItem period = (PeriodItem)item;
+            final IPeriodItem period = (IPeriodItem)item;
 
             final Iterator<IDataElement> elementsIterator = getModel().getElements(period.getStartTime(), period.getEndTime())
                     .iterator();
@@ -151,7 +152,7 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
     @Override
     public String getTitle(final ITreeItem item) {
         if (item instanceof PeriodItem) {
-            final PeriodItem period = (PeriodItem)item;
+            final IPeriodItem period = (IPeriodItem)item;
             return PeriodManager.getPeriodName(period.getPeriod(), period.getStartTime(), period.getEndTime());
         } else {
             return super.getTitle(item);

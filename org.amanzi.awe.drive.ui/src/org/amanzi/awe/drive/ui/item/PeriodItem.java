@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.drive.ui.item;
 
+import org.amanzi.awe.ui.dto.IPeriodItem;
 import org.amanzi.awe.ui.tree.item.impl.TreeItem;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapper;
 import org.amanzi.neo.core.period.Period;
@@ -26,7 +27,7 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class PeriodItem extends TreeItem {
+public class PeriodItem extends TreeItem implements IPeriodItem {
 
     private final long startTime;
 
@@ -44,14 +45,17 @@ public class PeriodItem extends TreeItem {
         this.startTime = startTime;
     }
 
+    @Override
     public long getStartTime() {
         return startTime;
     }
 
+    @Override
     public long getEndTime() {
         return period.getEndTime(startTime);
     }
 
+    @Override
     public Period getPeriod() {
         return period;
     }
