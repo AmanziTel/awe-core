@@ -23,12 +23,12 @@ package org.amanzi.awe.distribution.model.type.impl;
  */
 public enum NumberDistributionRange {
 
-    I10(9), I50(49);
+    I10(10), I50(50);
 
     /** in NumberDistribution, step of ranges = (max - min) / delta */
     private int delta;
 
-    private NumberDistributionRange(int delta) {
+    private NumberDistributionRange(final int delta) {
         this.delta = delta;
     }
 

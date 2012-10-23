@@ -486,7 +486,17 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
         IDataElement result = null;
 
         if (childElement.getNodeType().equals(DistributionNodeType.DISTRIBUTION_BAR)) {
-            result = asDataElement();
+            try {
+                final DataElement element = (DataElement)childElement;
+
+                final Node parentNode = getNodeService().getChainParent(element.getNode());
+
+                if (parentNode.equals(getRootNode())) {
+                    result = asDataElement();
+                }
+            } catch (final ServiceException e) {
+                processException("Error on computing parent of element", e);
+            }
         }
 
         if (LOGGER.isDebugEnabled()) {
