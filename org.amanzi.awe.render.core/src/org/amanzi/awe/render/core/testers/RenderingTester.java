@@ -13,7 +13,9 @@
 
 package org.amanzi.awe.render.core.testers;
 
+import org.amanzi.awe.render.core.utils.RenderMenuUtils;
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.viewers.IStructuredSelection;
 
 /**
  * TODO Purpose of
@@ -25,9 +27,12 @@ import org.eclipse.core.expressions.PropertyTester;
  */
 public class RenderingTester extends PropertyTester {
 
-    @SuppressWarnings("unchecked")
     @Override
     public boolean test(final Object receiver, final String property, final Object[] args, final Object expectedValue) {
+        if (receiver instanceof IStructuredSelection) {
+            return RenderMenuUtils.getLocationElements((IStructuredSelection)receiver) != null;
+        }
+
         return false;
     }
 

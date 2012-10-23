@@ -15,7 +15,7 @@
                   checkEnabled="false">
                <iterate>
                   <instanceof
-                        value="org.amanzi.awe.views.treeview.provider.ITreeItem">
+                        value="org.amanzi.awe.ui.dto.IUIItem">
                   </instanceof>
                </iterate>
             </visibleWhen>
