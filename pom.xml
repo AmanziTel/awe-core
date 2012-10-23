@@ -116,7 +116,7 @@
 				<module>org.amanzi.awe.network.ui</module>
 				<module>org.amanzi.awe.feature</module>
 				<module>org.amanzi.awe.project</module>
-				<module>org.amanzi.awe.views.properties</module>
+				<module>org.amanzi.awe.properties.ui</module>
 				<module>org.amanzi.awe.render.core</module>
 				<module>org.amanzi.awe.render.drive</module>
 				<module>org.amanzi.awe.render.network</module>
