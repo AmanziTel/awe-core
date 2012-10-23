@@ -62,6 +62,7 @@ public final class RenderMenuUtils {
                     break;
                 }
 
+                incorrect = true;
             }
         }
 
@@ -78,7 +79,9 @@ public final class RenderMenuUtils {
         if (model == null) {
             IAnalyzisModel< ? > analyzisModel = item.castChild(IAnalyzisModel.class);
 
-            model = getRenderableModel(analyzisModel);
+            if (analyzisModel != null) {
+                model = getRenderableModel(analyzisModel);
+            }
 
             if (model == null) {
                 model = item.castParent(IRenderableModel.class);
@@ -86,7 +89,9 @@ public final class RenderMenuUtils {
                 if (model == null) {
                     analyzisModel = item.castParent(IAnalyzisModel.class);
 
-                    model = getRenderableModel(analyzisModel);
+                    if (analyzisModel != null) {
+                        model = getRenderableModel(analyzisModel);
+                    }
                 }
             }
         }

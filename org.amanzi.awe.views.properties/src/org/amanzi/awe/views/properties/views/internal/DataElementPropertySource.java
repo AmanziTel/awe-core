@@ -25,6 +25,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.internal.IDatasetModel;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
@@ -80,7 +81,13 @@ public class DataElementPropertySource implements IPropertySource {
         if (id.equals(DataElementPropertyDescriptor.ID_PROPERTY)) {
             return dataElement.getId();
         }
-        return dataElement.get(id.toString());
+        final Object object = dataElement.get(id.toString());
+
+        if (object != null && object.getClass().isArray()) {
+            return ArrayUtils.toString(object);
+        }
+
+        return object;
     }
 
     @Override
@@ -96,7 +103,7 @@ public class DataElementPropertySource implements IPropertySource {
     @Override
     public void setPropertyValue(final Object id, final Object value) {
         if (model instanceof IDatasetModel) {
-            IDatasetModel dataset = (IDatasetModel)model;
+            final IDatasetModel dataset = (IDatasetModel)model;
             try {
                 if (!dataElement.get((String)id).getClass().equals(value.getClass())) {
                     showWarningDialog(PropertiesViewMessages.INCORRECT_PROPERTY_TYPE,
@@ -108,7 +115,7 @@ public class DataElementPropertySource implements IPropertySource {
                 dataset.updateProperty(dataElement, (String)id, value);
                 dataElement.put((String)id, value);
                 AWEEventManager.getManager().fireDataUpdatedEvent(null);
-            } catch (ModelException e) {
+            } catch (final ModelException e) {
                 LOGGER.error("can't update model  property", e);
             }
         }
@@ -123,7 +130,7 @@ public class DataElementPropertySource implements IPropertySource {
      */
     private void showWarningDialog(final String title, final String message, final Object newValue, final Object oldValue,
             final String id) {
-        String oldValueClass = oldValue != null ? oldValue.getClass().getName() : null;
+        final String oldValueClass = oldValue != null ? oldValue.getClass().getName() : null;
         MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title,
                 MessageFormat.format(message, id.toString(), newValue.toString(), newValue.getClass().getName(), oldValueClass));
 
