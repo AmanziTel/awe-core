@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.awe.nem.internal.NemPlugin;
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
-import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
@@ -38,7 +38,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public class ElementCreationPage extends PropertyEditorPage {
 
-    private INetworkModel model;
+    private final INetworkModel model;
 
     private final INetworkNodeProperties networkNodeProperties;
 
@@ -47,30 +47,30 @@ public class ElementCreationPage extends PropertyEditorPage {
     /**
      * @param pageName
      */
-    public ElementCreationPage(INodeType type, INetworkModel model) {
+    public ElementCreationPage(final INodeType type, final INetworkModel model) {
         super(type);
         this.model = model;
         setTitle(MessageFormat.format(NEMMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
-        this.networkNodeProperties = AWEUIPlugin.getDefault().getNetworkNodeProperties();
-        this.generalNodeProperties = AWEUIPlugin.getDefault().getGeneralNodeProperties();
+        this.networkNodeProperties = NemPlugin.getDefault().getNetworkNodeProperties();
+        this.generalNodeProperties = NemPlugin.getDefault().getGeneralNodeProperties();
     }
 
     @Override
     protected List<PropertyContainer> getTypedProperties() {
-        List<PropertyContainer> defaultContainers = super.getTypedProperties();
-        IPropertyStatisticsModel propertyModel = model.getPropertyStatistics();
-        Set<String> properties = propertyModel.getPropertyNames(getType());
-        List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
+        final List<PropertyContainer> defaultContainers = super.getTypedProperties();
+        final IPropertyStatisticsModel propertyModel = model.getPropertyStatistics();
+        final Set<String> properties = propertyModel.getPropertyNames(getType());
+        final List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
 
-        for (String property : properties) {
-            Object value = propertyModel.getDefaultValues(getType(), property);
-            Class< ? > clazz = propertyModel.getPropertyClass(getType(), property);
-            KnownTypes type = KnownTypes.getTypeByClass(clazz);
-            PropertyContainer container = new PropertyContainer(property, type);
+        for (final String property : properties) {
+            final Object value = propertyModel.getDefaultValues(getType(), property);
+            final Class< ? > clazz = propertyModel.getPropertyClass(getType(), property);
+            final KnownTypes type = KnownTypes.getTypeByClass(clazz);
+            final PropertyContainer container = new PropertyContainer(property, type);
             container.setValue(value == null ? type.getDefaultValue() : value);
             containers.add(container);
         }
-        for (PropertyContainer container : defaultContainers) {
+        for (final PropertyContainer container : defaultContainers) {
             if (!containers.contains(container)) {
                 containers.add(container);
             }

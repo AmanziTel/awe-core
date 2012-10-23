@@ -10,6 +10,7 @@ Require-Bundle: org.amanzi.neo.models;bundle-version="1.0.0",
  org.amanzi.awe.catalog.neo;bundle-version="1.0.1",
  org.amanzi.neo.db;bundle-version="1.0.0"
 Export-Package: org.amanzi.awe.nem.exceptions,
+ org.amanzi.awe.nem.internal,
  org.amanzi.awe.nem.managers.network,
  org.amanzi.awe.nem.managers.properties,
  org.amanzi.awe.nem.managers.structure
