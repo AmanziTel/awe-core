@@ -48,6 +48,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 
+import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -504,10 +505,10 @@ public abstract class AbstractRenderer extends RendererImpl {
         if (selection == null) {
             return false;
         } else {
-            boolean isSelected = elementsOnly ? false : selection.getSelectedLocations().contains(element);
+            boolean isSelected = elementsOnly ? false : Iterables.contains(selection.getSelectedLocations(), element);
 
             if (!isSelected && !locationsOnly) {
-                isSelected |= selection.getSelectedElements().contains(element);
+                isSelected |= Iterables.contains(selection.getSelectedElements(), element);
             }
 
             return isSelected;

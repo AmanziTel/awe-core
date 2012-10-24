@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.catalog.neo.selection;
 
-import java.util.Set;
-
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
@@ -31,14 +29,15 @@ public class Selection implements ISelection {
 
     private final IRenderableModel model;
 
-    private final Set<IDataElement> elements;
+    private final Iterable<IDataElement> elements;
 
-    private final Set<ILocationElement> locations;
+    private final Iterable<ILocationElement> locations;
 
     /**
      * 
      */
-    public Selection(IRenderableModel model, Set<IDataElement> selectedElements, Set<ILocationElement> selectedLocations) {
+    public Selection(final IRenderableModel model, final Iterable<IDataElement> selectedElements,
+            final Iterable<ILocationElement> selectedLocations) {
         this.model = model;
         this.elements = selectedElements;
         this.locations = selectedLocations;
@@ -50,12 +49,12 @@ public class Selection implements ISelection {
     }
 
     @Override
-    public Set<IDataElement> getSelectedElements() {
+    public Iterable<IDataElement> getSelectedElements() {
         return elements;
     }
 
     @Override
-    public Set<ILocationElement> getSelectedLocations() {
+    public Iterable<ILocationElement> getSelectedLocations() {
         return locations;
     }
 
