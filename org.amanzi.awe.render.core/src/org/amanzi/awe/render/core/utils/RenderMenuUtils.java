@@ -15,7 +15,6 @@ package org.amanzi.awe.render.core.utils;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.catalog.neo.selection.Selection;
 import org.amanzi.awe.ui.dto.IPeriodItem;
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
@@ -23,9 +22,10 @@ import org.amanzi.neo.dto.ISourcedElement;
 import org.amanzi.neo.models.IAnalyzisModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
-import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.commons.collections.iterators.SingletonIterator;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
@@ -63,9 +63,8 @@ public final class RenderMenuUtils {
 
     }
 
-    public static Selection getLocationElements(final IStructuredSelection selection) {
+    public static Pair<IRenderableModel, Iterable<IDataElement>> getLocationElements(final IStructuredSelection selection) {
         IRenderableModel renderableModel = null;
-        Iterable<ILocationElement> elementLocations = null;
         boolean incorrect = false;
 
         Iterable<IDataElement> elementsIterable = Iterables.emptyIterable();
@@ -93,21 +92,20 @@ public final class RenderMenuUtils {
                 // check internal elements
                 final Iterable<IDataElement> subIterable = collectDataElements(item, renderableModel);
 
-                if (subIterable == null) {
-                    incorrect = true;
-                    break;
+                if (subIterable != null) {
+                    elementsIterable = Iterables.concat(elementsIterable, subIterable);
                 }
 
-                elementsIterable = Iterables.concat(elementsIterable, subIterable);
             }
         }
 
-        if (!incorrect) {
-            elementLocations = renderableModel.getElementsLocations(elementsIterable);
+        // check element locations
+        if (!incorrect && !Iterables.isEmpty(elementsIterable)) {
+            incorrect = Iterables.isEmpty(renderableModel.getElementsLocations(elementsIterable));
+        }
 
-            if (!Iterables.isEmpty(elementLocations)) {
-                return new Selection(renderableModel, elementsIterable, elementLocations);
-            }
+        if (!incorrect) {
+            return new ImmutablePair<IRenderableModel, Iterable<IDataElement>>(renderableModel, elementsIterable);
         }
 
         return null;

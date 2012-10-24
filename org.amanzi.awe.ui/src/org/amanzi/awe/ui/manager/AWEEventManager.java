@@ -192,11 +192,12 @@ public final class AWEEventManager {
         fireEvent(new ShowInViewEvent(model, element, source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements, final Object source) {
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Iterable<IDataElement> elements,
+            final Object source) {
         fireEvent(new ShowElementsOnMap(model, elements, source), true);
     }
 
-    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Set<IDataElement> elements,
+    public synchronized void fireShowOnMapEvent(final IRenderableModel model, final Iterable<IDataElement> elements,
             final ReferencedEnvelope bounds, final Object source) {
         fireEvent(new ShowElementsOnMap(model, elements, bounds, source), true);
     }

@@ -25,7 +25,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
-import org.amanzi.awe.catalog.neo.selection.ISelection;
+import org.amanzi.awe.catalog.neo.selection.IMapSelection;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
@@ -79,7 +79,7 @@ public abstract class AbstractRenderer extends RendererImpl {
 
     private static final int DEFAULT_DRAW_SIZE = 15;
 
-    private ISelection selection;
+    private IMapSelection selection;
 
     private IColoringInterceptor colorer;
 
@@ -139,7 +139,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         final IGeoResource resource = layer.findGeoResource(GeoResource.class);
 
         // c+v
-        selection = (ISelection)layer.getMap().getBlackboard().get(ISelection.SELECTION_BLACKBOARD_PROPERTY);
+        selection = (IMapSelection)layer.getMap().getBlackboard().get(IMapSelection.SELECTION_BLACKBOARD_PROPERTY);
         if (resource != null) {
             try {
                 renderGeoResource(destination, resource, monitor);

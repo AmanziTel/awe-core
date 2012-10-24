@@ -25,37 +25,14 @@ import org.amanzi.neo.models.render.IRenderableModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class Selection implements ISelection {
+public interface IMapSelection {
 
-    private final IRenderableModel model;
+    public static final String SELECTION_BLACKBOARD_PROPERTY = "model_selection";
 
-    private final Iterable<IDataElement> elements;
+    IRenderableModel getModel();
 
-    private final Iterable<ILocationElement> locations;
+    Iterable<IDataElement> getSelectedElements();
 
-    /**
-     * 
-     */
-    public Selection(final IRenderableModel model, final Iterable<IDataElement> selectedElements,
-            final Iterable<ILocationElement> selectedLocations) {
-        this.model = model;
-        this.elements = selectedElements;
-        this.locations = selectedLocations;
-    }
-
-    @Override
-    public IRenderableModel getModel() {
-        return model;
-    }
-
-    @Override
-    public Iterable<IDataElement> getSelectedElements() {
-        return elements;
-    }
-
-    @Override
-    public Iterable<ILocationElement> getSelectedLocations() {
-        return locations;
-    }
+    Iterable<ILocationElement> getSelectedLocations();
 
 }

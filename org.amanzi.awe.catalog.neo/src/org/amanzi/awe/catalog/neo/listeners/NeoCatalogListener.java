@@ -31,8 +31,8 @@ import net.refractions.udig.project.render.IRenderManager;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
-import org.amanzi.awe.catalog.neo.selection.ISelection;
-import org.amanzi.awe.catalog.neo.selection.Selection;
+import org.amanzi.awe.catalog.neo.selection.IMapSelection;
+import org.amanzi.awe.catalog.neo.selection.MapSelection;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
@@ -87,7 +87,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
         NeoCatalogPlugin.getDefault().updateMapServices();
     }
 
-    protected void showOnMap(final IRenderableModel model, final Set<IDataElement> elements, ReferencedEnvelope bounds) {
+    protected void showOnMap(final IRenderableModel model, final Iterable<IDataElement> elements, ReferencedEnvelope bounds) {
         final boolean computeBounds = bounds == null;
 
         final Iterable<ILocationElement> selectedElements = model.getElementsLocations(elements);
@@ -128,8 +128,8 @@ public class NeoCatalogListener implements IAWEEventListenter {
                 }
             }
 
-            final Selection selection = new Selection(model, elements, selectedLocations);
-            map.getBlackboard().put(ISelection.SELECTION_BLACKBOARD_PROPERTY, selection);
+            final MapSelection selection = new MapSelection(model, elements, selectedLocations);
+            map.getBlackboard().put(IMapSelection.SELECTION_BLACKBOARD_PROPERTY, selection);
 
             if (!selectedLocations.isEmpty()) {
                 executeCommands(layerList, bounds);
