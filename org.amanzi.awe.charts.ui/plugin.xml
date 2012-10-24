@@ -13,7 +13,7 @@
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
-            targetID="*">
+            targetID="org.amanzi.awe.perspective">
          <viewShortcut
                id="org.amanzi.awe.views.ChartsView">
          </viewShortcut>
@@ -21,7 +21,8 @@
                id="org.amanzi.awe.views.ChartsView"
                minimized="false"
                relationship="top"
-               relative="net.refractions.udig.catalog.ui.CatalogView">
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="false">
          </view>
       </perspectiveExtension>
    </extension>
