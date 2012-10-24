@@ -52,10 +52,7 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
     /**
      * @return
      */
-    // TODO: LN: 16.10.2012, class should work with his own LOGGER but not use any provided
     protected IUIItem getSelectedItem(final Logger logger) {
-        // TODO: LN: 16.10.2012, anyway incorrect work with loggers - some messages will be skipped
-        // since it will work only on DEBUG level
         if (logger.isDebugEnabled()) {
             log("geting selected tree item", Level.INFO);
         }
