@@ -16,13 +16,17 @@ package org.amanzi.awe.render.core.utils;
 import java.util.Iterator;
 
 import org.amanzi.awe.catalog.neo.selection.Selection;
+import org.amanzi.awe.ui.dto.IPeriodItem;
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.dto.ISourcedElement;
 import org.amanzi.neo.models.IAnalyzisModel;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
 import org.apache.commons.collections.iterators.SingletonIterator;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
 import com.google.common.collect.Iterables;
@@ -36,6 +40,8 @@ import com.google.common.collect.Iterables;
  * @since 1.0.0
  */
 public final class RenderMenuUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(RenderMenuUtils.class);
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static class SingletonIterable<E> implements Iterable<E> {
@@ -146,7 +152,20 @@ public final class RenderMenuUtils {
             return new SingletonIterable<IDataElement>(dataElement);
         }
 
+        if (item instanceof IPeriodItem && model instanceof IMeasurementModel) {
+            return collectDataElement((IMeasurementModel)model, (IPeriodItem)item);
+        }
+
         return null;
+    }
+
+    private static Iterable<IDataElement> collectDataElement(final IMeasurementModel model, final IPeriodItem item) {
+        try {
+            return model.getElements(item.getStartTime(), item.getEndTime());
+        } catch (final ModelException e) {
+            LOGGER.error(e);
+            return null;
+        }
     }
 
     private static Iterable<IDataElement> collectDataElements(final ISourcedElement element) {
