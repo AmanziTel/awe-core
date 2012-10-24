@@ -130,9 +130,9 @@ public class DataElementPropertySource implements IPropertySource {
      */
     private void showWarningDialog(final String title, final String message, final Object newValue, final Object oldValue,
             final String id) {
-        final String oldValueClass = oldValue != null ? oldValue.getClass().getName() : null;
-        MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title,
-                MessageFormat.format(message, id.toString(), newValue.toString(), newValue.getClass().getName(), oldValueClass));
+        final String oldValueClass = oldValue != null ? oldValue.getClass().getSimpleName() : null;
+        MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, MessageFormat.format(
+                message, id.toString(), newValue.toString(), newValue.getClass().getSimpleName(), oldValueClass));
 
     }
 }

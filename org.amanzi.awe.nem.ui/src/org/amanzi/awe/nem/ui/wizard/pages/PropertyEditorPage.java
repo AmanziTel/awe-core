@@ -172,16 +172,31 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         }
     }
 
+    protected boolean isError(final String message) {
+        if (!StringUtils.isEmpty(message)) {
+            this.setErrorMessage(message);
+            setPageComplete(false);
+            return true;
+        }
+        this.setErrorMessage(null);
+        setPageComplete(true);
+        return false;
+    }
+
     @Override
     public void updateStatus(String message) {
+        if (isError(message)) {
+            return;
+        }
         for (PropertyContainer container : properties) {
             if (StringUtils.isEmpty(container.getValue().toString())) {
-                message = "required property \"" + container.getName() + "\"  can't be empty";
+                isError("required property \"" + container.getName() + "\"  can't be empty");
                 break;
             }
             message = additionalChecking(properties);
+            if (isError(message)) {
+                break;
+            }
         }
-        this.setErrorMessage(message);
-        setPageComplete(StringUtils.isEmpty(message));
     }
 }
