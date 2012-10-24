@@ -138,7 +138,7 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
     }
 
     @Override
-    public void onError(final String message) {
+    public void onUpdate(final String message) {
         for (final ITableChangedWidget listener : getListeners()) {
             listener.updateStatus(message);
         }

@@ -81,6 +81,26 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         return null;
     }
 
+    /**
+     *
+     */
+    private boolean checkTypes() {
+        for (PropertyContainer container : properties) {
+            Object value = container.getType().parse(container.getValue().toString());
+            if (value == null) {
+                if (container.getType().equals(KnownTypes.STRING)) {
+                    isError("required property \"" + container.getName() + "\"  can't be empty");
+                    return false;
+                }
+                isError(container.getType().getErrorMessage());
+                return false;
+            } else {
+                container.setValue(value);
+            }
+        }
+        return true;
+    }
+
     @Override
     public void createControl(final Composite parent) {
         mainComposite = new Composite(parent, SWT.NONE);
@@ -184,19 +204,15 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
     }
 
     @Override
-    public void updateStatus(String message) {
-        if (isError(message)) {
+    public void updateStatus(final String message) {
+        if (!checkTypes()) {
             return;
         }
-        for (PropertyContainer container : properties) {
-            if (StringUtils.isEmpty(container.getValue().toString())) {
-                isError("required property \"" + container.getName() + "\"  can't be empty");
-                break;
-            }
-            message = additionalChecking(properties);
-            if (isError(message)) {
-                break;
-            }
+        if (isError(additionalChecking(properties))) {
+            return;
+        }
+        if (isError(message)) {
+            return;
         }
     }
 }

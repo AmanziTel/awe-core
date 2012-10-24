@@ -36,31 +36,26 @@ import org.eclipse.swt.widgets.Composite;
 public class PropertyTable extends TableViewer {
 
     public interface IPropertyTableListener {
-        void onError(String message);
+        void onUpdate(String message);
     }
 
     private static final int COLUMN_WIDTH = 100;
 
-    private List<PropertyContainer> properties;
+    private final List<PropertyContainer> properties;
 
-    private IPropertyTableListener listener;
+    private final IPropertyTableListener listener;
 
-    public PropertyTable(Composite parent, int style, List<PropertyContainer> properties, IPropertyTableListener listener) {
+    public PropertyTable(final Composite parent, final int style, final List<PropertyContainer> properties,
+            final IPropertyTableListener listener) {
         super(parent, style);
         this.properties = properties;
         this.listener = listener;
     }
 
-    public void initialize() {
-        getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        setContentProvider(new TableContentProvider());
-
-        createColumns();
-
-        fillTable();
-
-        getTable().setHeaderVisible(true);
-        getTable().setLinesVisible(true);
+    @Override
+    public void add(final Object element) {
+        properties.add((PropertyContainer)element);
+        super.add(element);
     }
 
     private void createColumns() {
@@ -78,30 +73,31 @@ public class PropertyTable extends TableViewer {
         column.setEditingSupport(new PropertyEditor(this, columnId));
     }
 
-    @Override
-    public void update(Object element, String[] properties) {
-        PropertyContainer container = (PropertyContainer)element;
-        Object value = container.getType().parse(container.getValue().toString());
-        if (value != null) {
-            container.setValue(value);
-        }
-        listener.onError(container.getType().getErrorMessage());
-        super.update(element, properties);
+    private void fillTable() {
+        this.setInput(properties);
+    }
+
+    public void initialize() {
+        getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        setContentProvider(new TableContentProvider());
+
+        createColumns();
+
+        fillTable();
+
+        getTable().setHeaderVisible(true);
+        getTable().setLinesVisible(true);
     }
 
     @Override
-    public void add(Object element) {
-        properties.add((PropertyContainer)element);
-        super.add(element);
-    }
-
-    @Override
-    public void remove(Object element) {
+    public void remove(final Object element) {
         properties.remove(element);
         super.remove(element);
     }
 
-    private void fillTable() {
-        this.setInput(properties);
+    @Override
+    public void update(final Object element, final String[] properties) {
+        listener.onUpdate(null);
+        super.update(element, properties);
     }
 }
