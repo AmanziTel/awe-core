@@ -177,7 +177,7 @@ public class MultiPropertyIndex<E extends Object> {
             this.max = converter.deserialize(indexNode.getProperty(MAX_PROPERTY));
             this.currentValues = this.min;
             this.indexNode = indexNode;
-            Integer indexLevel = (Integer)indexNode.getProperty(LEVEL_PROPERTY, null);
+            final Integer indexLevel = (Integer)indexNode.getProperty(LEVEL_PROPERTY, null);
             if (this.level != indexLevel) {
                 throw new IllegalArgumentException("Invalid index node passed for level: " + this.level + " != " + indexLevel);
             }
@@ -186,7 +186,7 @@ public class MultiPropertyIndex<E extends Object> {
         private IndexLevel setValues(final E[] values) {
             if (!Arrays.equals(values, currentValues)) {
                 this.currentValues = ArrayUtils.clone(values);
-                int[] newIndices = new int[values.length];
+                final int[] newIndices = new int[values.length];
                 for (int i = 0; i < values.length; i++) {
                     newIndices[i] = converter.indexOf(values[i], origin[i], stepSize);
                 }
@@ -204,7 +204,7 @@ public class MultiPropertyIndex<E extends Object> {
 
         private boolean includes(final E[] values) {
             for (int i = 0; i < values.length; i++) {
-                int vindex = converter.indexOf(values[i], origin[i], stepSize);
+                final int vindex = converter.indexOf(values[i], origin[i], stepSize);
                 if (vindex != indices[i]) {
                     return false;
                 }
@@ -231,10 +231,10 @@ public class MultiPropertyIndex<E extends Object> {
         }
 
         private void searchChildrenOf(final Node parentIndex) {
-            for (Relationship rel : parentIndex.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD,
+            for (final Relationship rel : parentIndex.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD,
                     Direction.OUTGOING)) {
-                Node child = rel.getEndNode();
-                int[] testIndex = (int[])child.getProperty(INDEX_PROPERTY);
+                final Node child = rel.getEndNode();
+                final int[] testIndex = (int[])child.getProperty(INDEX_PROPERTY);
                 if (Arrays.equals(testIndex, indices)) {
                     indexNode = child;
                     break;
@@ -265,13 +265,13 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Float[] deserialize(final Object buffer) throws IOException {
-            float[] data = (float[])buffer;
+            final float[] data = (float[])buffer;
             return ArrayUtils.toObject(data);
         }
 
         @Override
         public Object serialize(final Object[] data) throws IOException {
-            float[] result = new float[data.length];
+            final float[] result = new float[data.length];
             for (int i = 0; i < data.length; i++) {
                 result[i] = (Float)data[i];
             }
@@ -291,13 +291,13 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Double[] deserialize(final Object buffer) throws IOException {
-            double[] data = (double[])buffer;
+            final double[] data = (double[])buffer;
             return ArrayUtils.toObject(data);
         }
 
         @Override
         public Object serialize(final Object[] data) throws IOException {
-            double[] result = new double[data.length];
+            final double[] result = new double[data.length];
             for (int i = 0; i < data.length; i++) {
                 result[i] = (Double)data[i];
             }
@@ -317,13 +317,13 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Integer[] deserialize(final Object buffer) throws IOException {
-            int[] data = (int[])buffer;
+            final int[] data = (int[])buffer;
             return ArrayUtils.toObject(data);
         }
 
         @Override
         public Object serialize(final Object[] data) throws IOException {
-            int[] result = new int[data.length];
+            final int[] result = new int[data.length];
             for (int i = 0; i < data.length; i++) {
                 result[i] = (Integer)data[i];
             }
@@ -343,13 +343,13 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Long[] deserialize(final Object buffer) throws IOException {
-            long[] data = (long[])buffer;
+            final long[] data = (long[])buffer;
             return ArrayUtils.toObject(data);
         }
 
         @Override
         public Object serialize(final Object[] data) throws IOException {
-            long[] result = new long[data.length];
+            final long[] result = new long[data.length];
             for (int i = 0; i < data.length; i++) {
                 result[i] = (Long)data[i];
             }
@@ -392,8 +392,9 @@ public class MultiPropertyIndex<E extends Object> {
             throw new IllegalArgumentException("Index NeoService must exist");
         }
         this.neo = neo;
-        for (Relationship relation : reference.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)) {
-            Node node = relation.getEndNode();
+        for (final Relationship relation : reference.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.INDEX,
+                Direction.OUTGOING)) {
+            final Node node = relation.getEndNode();
             if (node.getProperty("type", "").toString().equals("property_index")
                     && node.getProperty("name", "").toString().equals(name)
                     && Arrays.equals((String[])node.getProperty("properties", null), properties)) {
@@ -409,11 +410,11 @@ public class MultiPropertyIndex<E extends Object> {
             reference.createRelationshipTo(root, PropertyIndex.NeoIndexRelationshipTypes.INDEX);
         } else {
             this.step = (Integer)root.getProperty(STEP_PROPERTY, DEFAULT_STEP);
-            String[] savedProperties = (String[])root.getProperty("properties", null);
+            final String[] savedProperties = (String[])root.getProperty("properties", null);
             if (!Arrays.equals(this.properties, savedProperties)) {
                 throw new IllegalArgumentException("Specified properties do not match saved properties for index " + name);
             }
-            ArrayList<Node> existingLevelNodes = new ArrayList<Node>();
+            final ArrayList<Node> existingLevelNodes = new ArrayList<Node>();
             Node indexNode = getIndexChildOf(this.root);
             while (indexNode != null) {
                 existingLevelNodes.add(0, indexNode);
@@ -424,7 +425,7 @@ public class MultiPropertyIndex<E extends Object> {
             }
             if (levels.size() > 0) {
                 this.origin = Arrays.copyOf(levels.get(0).min, levels.get(0).min.length);
-                E stepSize = converter.stepSize(0, step);
+                final E stepSize = converter.stepSize(0, step);
                 for (int i = 0; i < origin.length; i++) {
                     origin[i] = converter.correctOrig(origin[i], stepSize);
                 }
@@ -442,13 +443,13 @@ public class MultiPropertyIndex<E extends Object> {
      * that should be done by application code.
      */
     public void clear() {
-        ArrayList<Node> toDelete = new ArrayList<Node>();
-        for (Relationship indexRel : this.root.getRelationships(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)) {
-            Node indexNode = indexRel.getEndNode();
+        final ArrayList<Node> toDelete = new ArrayList<Node>();
+        for (final Relationship indexRel : this.root.getRelationships(NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)) {
+            final Node indexNode = indexRel.getEndNode();
             toDelete.add(indexNode);
             while (toDelete.size() > 0) {
-                Node node = toDelete.remove(0);
-                for (Relationship rel : node.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
+                final Node node = toDelete.remove(0);
+                for (final Relationship rel : node.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
                     toDelete.add(rel.getEndNode());
                     rel.delete();
                 }
@@ -460,15 +461,16 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     private Node getIndexChildOf(final Node parent) {
-        for (Relationship rel : parent.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-            Node child = rel.getEndNode();
-            int[] index = (int[])child.getProperty("index", null);
-            Integer level = (Integer)child.getProperty("level", null);
+        for (final Relationship rel : parent
+                .getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
+            final Node child = rel.getEndNode();
+            final int[] index = (int[])child.getProperty("index", null);
+            final Integer level = (Integer)child.getProperty("level", null);
             if ((index != null) && (level != null)) {
                 if (originIndices == null) {
                     originIndices = new int[index.length];
                     // TODO: remove this code only() we are sure initialization is correct
-                    for (int originIndice : originIndices) {
+                    for (final int originIndice : originIndices) {
                         assert originIndice == 0;
                     }
                 }
@@ -481,23 +483,23 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     public synchronized void finishUp() {
-        Transaction tx = neo.beginTx();
+        final Transaction tx = neo.beginTx();
         try {
             flush();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Error on flushing MultiPropertyIndexes", e);
         }
         try {
             if (root != null) {
                 Node highestIndex = null;
-                for (IndexLevel level : levels) {
+                for (final IndexLevel level : levels) {
                     if (level.indexNode != null) {
                         highestIndex = level.indexNode;
                     }
                 }
                 if (highestIndex != null) {
                     // Deleting any previous starting relationships
-                    for (Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD,
+                    for (final Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD,
                             Direction.OUTGOING)) {
                         rel.delete();
                     }
@@ -506,7 +508,7 @@ public class MultiPropertyIndex<E extends Object> {
                 }
             }
             tx.success();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error on writing MultiPropertyIndexes to DB", e);
             tx.failure();
         } finally {
@@ -536,7 +538,7 @@ public class MultiPropertyIndex<E extends Object> {
      * @throws IOException
      */
     public synchronized Node flush() throws IOException {
-        for (Node node : nodesToIndex) {
+        for (final Node node : nodesToIndex) {
             index(node);
         }
         nodesToIndex.clear();
@@ -550,10 +552,10 @@ public class MultiPropertyIndex<E extends Object> {
      * @throws IOException
      */
     private Node index(final Node node) throws IOException {
-        E[] values = getProperties(node);
+        final E[] values = getProperties(node);
 
         boolean valid = true;
-        for (E value : values) {
+        for (final E value : values) {
             if ((value == null) || value.equals("")) {
                 valid = false;
                 break;
@@ -563,7 +565,7 @@ public class MultiPropertyIndex<E extends Object> {
             if (origin == null) {
                 origin = Arrays.copyOf(values, values.length);
             }
-            Node indexNode = getIndexNode(values);
+            final Node indexNode = getIndexNode(values);
             indexNode.createRelationshipTo(node, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
             return indexNode;
         } else {
@@ -592,8 +594,8 @@ public class MultiPropertyIndex<E extends Object> {
             this.max = ArrayUtils.clone(max);
             // First we convert the search range into index ranges for each level of the index
             for (int iLev = 0; iLev < levels.size(); iLev++) {
-                IndexLevel level = MultiPropertyIndex.this.getLevel(iLev);
-                int[] newIndices = new int[origin.length];
+                final IndexLevel level = MultiPropertyIndex.this.getLevel(iLev);
+                final int[] newIndices = new int[origin.length];
                 for (int i = 0; i < origin.length; i++) {
                     newIndices[i] = converter.indexOf(min[i], origin[i], level.stepSize);
                 }
@@ -608,8 +610,8 @@ public class MultiPropertyIndex<E extends Object> {
         private void setTestNode(final Node node) {
             if (!node.equals(currentNode)) {
                 currentNode = node;
-                int[] index = (int[])node.getProperty(INDEX_PROPERTY, null);
-                Integer level = (Integer)node.getProperty(LEVEL_PROPERTY, null);
+                final int[] index = (int[])node.getProperty(INDEX_PROPERTY, null);
+                final Integer level = (Integer)node.getProperty(LEVEL_PROPERTY, null);
                 // Do not traverse further if we are outside the index tree
                 if ((index == null) || (level == null) || (index.length < origin.length)) {
                     nodeIsIndex = false;
@@ -617,7 +619,7 @@ public class MultiPropertyIndex<E extends Object> {
                     if (indexOnEdge) {
                         // Index was on edge, and can contain objects on both sides of the range
                         // Switch to exhaustive testing
-                        E[] values = MultiPropertyIndex.this.getProperties(node);
+                        final E[] values = MultiPropertyIndex.this.getProperties(node);
                         for (int i = 0; i < origin.length; i++) {
                             if (values[i] == null) {
                                 nodeInRange = false;
@@ -638,8 +640,8 @@ public class MultiPropertyIndex<E extends Object> {
                     nodeIsIndex = true;
                     nodeInRange = true;
                     indexOnEdge = false;
-                    int[] minIndex = levelMin.get(level);
-                    int[] maxIndex = levelMax.get(level);
+                    final int[] minIndex = levelMin.get(level);
+                    final int[] maxIndex = levelMax.get(level);
                     for (int i = 0; i < origin.length; i++) {
                         if (index[i] < minIndex[i]) {
                             nodeInRange = false;
@@ -684,8 +686,8 @@ public class MultiPropertyIndex<E extends Object> {
 
         @Override
         public Evaluation evaluate(final Path arg0) {
-            Node lastNode = arg0.endNode();
-            boolean isStartNode = arg0.endNode().equals(arg0.startNode());
+            final Node lastNode = arg0.endNode();
+            final boolean isStartNode = arg0.endNode().equals(arg0.startNode());
 
             return Evaluation.of(isReturnableNode(lastNode, isStartNode), !isStopNode(lastNode, isStartNode));
         }
@@ -694,13 +696,13 @@ public class MultiPropertyIndex<E extends Object> {
     public Traverser searchTraverser(final E[] min, final E[] max, final int resolution) {
         try {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
-            SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, resolution);
+            final SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, resolution);
             // Then we return a traverser using this evaluator
 
-            return Traversal.description().breadthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
+            return Traversal.description().depthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
                     .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator)
                     .traverse(root);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
@@ -708,11 +710,11 @@ public class MultiPropertyIndex<E extends Object> {
     public TraversalDescription searchTraverser(final E[] min, final E[] max) {
         try {
             // Create a Stop/Returnable evaluator that understands the range in terms of the index
-            SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, null);
+            final SearchEvaluator searchEvaluator = new SearchEvaluator(min, max, null);
             // Then we return a traverser using this evaluator
-            return Traversal.description().breadthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
+            return Traversal.description().depthFirst().relationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)
                     .relationships(NeoIndexRelationshipTypes.IND_NEXT, Direction.OUTGOING).evaluator(searchEvaluator);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
@@ -738,7 +740,7 @@ public class MultiPropertyIndex<E extends Object> {
         IndexLevel indexLevel = getLevelIncluding(values);
         // now step down building index all the way to the bottom
         while (indexLevel.level > 0) {
-            IndexLevel lowerLevel = levels.get(indexLevel.level - 1);
+            final IndexLevel lowerLevel = levels.get(indexLevel.level - 1);
             // Set the value in the lower level to the desired value to index, this removes internal
             // node cash, so we much recreate that by finding or creating a new index node
             lowerLevel.setValues(values);
@@ -791,7 +793,7 @@ public class MultiPropertyIndex<E extends Object> {
      */
     private IndexLevel getLevel(final int level) throws IOException {
         while (levels.size() <= level) {
-            int iLev = levels.size();
+            final int iLev = levels.size();
             if (iLev == 0) {
                 // When creating the very first level, use the origin point, and no child index node
                 levels.add(new IndexLevel(iLev, Arrays.copyOf(origin, origin.length), null));
@@ -799,7 +801,7 @@ public class MultiPropertyIndex<E extends Object> {
                 // All higher levels are build on top of the lower levels (using the same current
                 // value as the level below, and linking the index nodes together into the index
                 // tree)
-                IndexLevel lowerLevel = levels.get(iLev - 1);
+                final IndexLevel lowerLevel = levels.get(iLev - 1);
                 levels.add(new IndexLevel(iLev, lowerLevel.currentValues, lowerLevel.indexNode));
             }
         }
@@ -808,7 +810,7 @@ public class MultiPropertyIndex<E extends Object> {
 
     @SuppressWarnings("unchecked")
     private E[] getProperties(final Node node) {
-        Object[] values = new Object[properties.length];
+        final Object[] values = new Object[properties.length];
         for (int i = 0; i < properties.length; i++) {
             values[i] = getProperty(node, properties[i]);
         }

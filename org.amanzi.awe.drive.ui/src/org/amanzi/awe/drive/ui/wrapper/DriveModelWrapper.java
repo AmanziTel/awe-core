@@ -68,7 +68,7 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
             do {
                 final long tempEndTime = period.getUnderlyingPeriod().getEndTime(startTime);
 
-                if (haveLocations(startTime, tempEndTime)) {
+                if (haveElements(startTime, tempEndTime)) {
                     result = new PeriodItem(getModel(), DriveModelWrapper.this, period.getUnderlyingPeriod(), startTime);
                 }
 
@@ -138,7 +138,7 @@ public class DriveModelWrapper extends AbstractModelWrapper<IMeasurementModel> {
         return null;
     }
 
-    private boolean haveLocations(final long startTime, final long endTime) {
+    private boolean haveElements(final long startTime, final long endTime) {
         try {
             final Iterator<IDataElement> elementsIterator = getModel().getElements(startTime, endTime).iterator();
 
