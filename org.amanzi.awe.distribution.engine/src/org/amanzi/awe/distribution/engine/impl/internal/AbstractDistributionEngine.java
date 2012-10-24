@@ -120,11 +120,16 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
                         final IDistributionBar bar = condition.getRight();
 
                         createAggregation(distributionModel, bar, element, distributionType);
+                        updateTransaction();
 
                         break;
                     }
                 }
                 monitor.worked(1);
+
+                if (monitor.isCanceled()) {
+                    break;
+                }
             }
         } finally {
             distributionModel.finishUp();

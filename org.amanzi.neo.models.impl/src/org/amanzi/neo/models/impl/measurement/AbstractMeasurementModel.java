@@ -391,6 +391,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
     @Override
     public Iterable<IDataElement> getChildren(final IDataElement parentElement) throws ModelException {
         assert parentElement != null;
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getChildren", parentElement));
         }
@@ -405,6 +406,7 @@ public abstract class AbstractMeasurementModel extends AbstractDatasetModel impl
         } catch (final ServiceException e) {
             processException("An error occured on search child for parent Element", e);
         }
+
         return result;
     }
 
