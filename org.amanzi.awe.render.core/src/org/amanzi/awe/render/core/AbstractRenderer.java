@@ -25,7 +25,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
-import org.amanzi.awe.catalog.neo.selection.ISelection;
+import org.amanzi.awe.catalog.neo.selection.IMapSelection;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
@@ -48,6 +48,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 
+import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -78,7 +79,7 @@ public abstract class AbstractRenderer extends RendererImpl {
 
     private static final int DEFAULT_DRAW_SIZE = 15;
 
-    private ISelection selection;
+    private IMapSelection selection;
 
     private IColoringInterceptor colorer;
 
@@ -138,7 +139,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         final IGeoResource resource = layer.findGeoResource(GeoResource.class);
 
         // c+v
-        selection = (ISelection)layer.getMap().getBlackboard().get(ISelection.SELECTION_BLACKBOARD_PROPERTY);
+        selection = (IMapSelection)layer.getMap().getBlackboard().get(IMapSelection.SELECTION_BLACKBOARD_PROPERTY);
         if (resource != null) {
             try {
                 renderGeoResource(destination, resource, monitor);
@@ -504,10 +505,10 @@ public abstract class AbstractRenderer extends RendererImpl {
         if (selection == null) {
             return false;
         } else {
-            boolean isSelected = elementsOnly ? false : selection.getSelectedLocations().contains(element);
+            boolean isSelected = elementsOnly ? false : Iterables.contains(selection.getSelectedLocations(), element);
 
             if (!isSelected && !locationsOnly) {
-                isSelected |= selection.getSelectedElements().contains(element);
+                isSelected |= Iterables.contains(selection.getSelectedElements(), element);
             }
 
             return isSelected;

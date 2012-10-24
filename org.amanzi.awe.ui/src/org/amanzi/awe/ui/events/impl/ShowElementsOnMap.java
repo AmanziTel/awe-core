@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.ui.events.impl;
 
-import java.util.Set;
-
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
 import org.amanzi.neo.dto.IDataElement;
@@ -33,7 +31,7 @@ public class ShowElementsOnMap extends AbstractEvent {
 
     private final IRenderableModel model;
 
-    private final Set<IDataElement> elements;
+    private final Iterable<IDataElement> elements;
 
     private final ReferencedEnvelope bounds;
 
@@ -41,8 +39,8 @@ public class ShowElementsOnMap extends AbstractEvent {
      * @param status
      * @param isAsync
      */
-    public ShowElementsOnMap(final IRenderableModel model, final Set<IDataElement> elements, final ReferencedEnvelope bounds,
-            Object source) {
+    public ShowElementsOnMap(final IRenderableModel model, final Iterable<IDataElement> elements, final ReferencedEnvelope bounds,
+            final Object source) {
         super(EventStatus.SHOW_ELEMENTS, true, source);
 
         this.model = model;
@@ -50,7 +48,7 @@ public class ShowElementsOnMap extends AbstractEvent {
         this.bounds = bounds;
     }
 
-    public ShowElementsOnMap(final IRenderableModel model, final Set<IDataElement> elements, Object source) {
+    public ShowElementsOnMap(final IRenderableModel model, final Iterable<IDataElement> elements, final Object source) {
         this(model, elements, null, source);
     }
 
@@ -58,7 +56,7 @@ public class ShowElementsOnMap extends AbstractEvent {
         return model;
     }
 
-    public Set<IDataElement> getElements() {
+    public Iterable<IDataElement> getElements() {
         return elements;
     }
 

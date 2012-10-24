@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.catalog.neo.selection;
 
-import java.util.Set;
-
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.render.IGISModel.ILocationElement;
 import org.amanzi.neo.models.render.IRenderableModel;
@@ -27,36 +25,14 @@ import org.amanzi.neo.models.render.IRenderableModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class Selection implements ISelection {
+public interface IMapSelection {
 
-    private final IRenderableModel model;
+    public static final String SELECTION_BLACKBOARD_PROPERTY = "model_selection";
 
-    private final Set<IDataElement> elements;
+    IRenderableModel getModel();
 
-    private final Set<ILocationElement> locations;
+    Iterable<IDataElement> getSelectedElements();
 
-    /**
-     * 
-     */
-    public Selection(IRenderableModel model, Set<IDataElement> selectedElements, Set<ILocationElement> selectedLocations) {
-        this.model = model;
-        this.elements = selectedElements;
-        this.locations = selectedLocations;
-    }
-
-    @Override
-    public IRenderableModel getModel() {
-        return model;
-    }
-
-    @Override
-    public Set<IDataElement> getSelectedElements() {
-        return elements;
-    }
-
-    @Override
-    public Set<ILocationElement> getSelectedLocations() {
-        return locations;
-    }
+    Iterable<ILocationElement> getSelectedLocations();
 
 }

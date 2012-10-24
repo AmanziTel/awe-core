@@ -14,7 +14,7 @@
                      checkEnabled="false">
                   <iterate>
                      <instanceof
-                           value="org.amanzi.awe.ui.dto.IUIItemNew">
+                           value="org.amanzi.awe.ui.dto.IUIItem">
                      </instanceof>
                   </iterate>
                </visibleWhen>
@@ -52,7 +52,7 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:org.amanzi.awe.views.network.views.NetworkTreeView">
+            locationURI="toolbar:org.amanzi.trees.NetworkTree">
          <command
                commandId="org.amanzi.awe.nem.ui.createNetwork"
                icon="icons/network.png"

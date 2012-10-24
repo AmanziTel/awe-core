@@ -55,7 +55,6 @@ import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
-import org.apache.commons.collections.iterators.IteratorChain;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -205,21 +204,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
     }
 
-    @SuppressWarnings("unchecked")
     private final ICollectFunction statisticsGroupSourcesCollectFunction = new ICollectFunction() {
 
         @Override
         public Iterable<IDataElement> collectSourceElements(final IDataElement element) {
             if (element instanceof IStatisticsGroup) {
                 try {
-                    final IteratorChain chain = new IteratorChain(getIteratorList((IStatisticsGroup)element));
-                    return new Iterable<IDataElement>() {
-
-                        @Override
-                        public Iterator<IDataElement> iterator() {
-                            return chain;
-                        }
-                    };
+                    return getIteratorList((IStatisticsGroup)element);
                 } catch (final ModelException e) {
                     LOGGER.error("Error on collecting Sources of Statistics Group", e);
                 }
@@ -228,14 +219,14 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             return Iterables.emptyIterable();
         }
 
-        private List<Iterator<IDataElement>> getIteratorList(final IStatisticsGroup group) throws ModelException {
-            final List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+        private Iterable<IDataElement> getIteratorList(final IStatisticsGroup group) throws ModelException {
+            Iterable<IDataElement> result = Iterables.emptyIterable();
 
             final Iterable<IStatisticsRow> rows = getStatisticsRows(group.getPeriod());
             if (rows != null) {
                 for (final IStatisticsRow sourceRow : rows) {
                     if (sourceRow.getStatisticsGroup().equals(group)) {
-                        result.add(statisticsRowSourcesCollectFunction.collectSourceElements(sourceRow).iterator());
+                        result = Iterables.concat(result, statisticsRowSourcesCollectFunction.collectSourceElements(sourceRow));
                     }
                 }
             }
@@ -245,21 +236,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     };
 
-    @SuppressWarnings("unchecked")
     private final ICollectFunction statisticsRowSourcesCollectFunction = new ICollectFunction() {
 
         @Override
         public Iterable<IDataElement> collectSourceElements(final IDataElement element) {
             if (element instanceof IStatisticsRow) {
                 try {
-                    final IteratorChain chain = new IteratorChain(getIteratorList((IStatisticsRow)element));
-                    return new Iterable<IDataElement>() {
-
-                        @Override
-                        public Iterator<IDataElement> iterator() {
-                            return chain;
-                        }
-                    };
+                    return getIterable((IStatisticsRow)element);
                 } catch (final ModelException e) {
                     LOGGER.error("Error on collecting Sources of Statistics Row", e);
                 }
@@ -268,18 +251,18 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             return Iterables.emptyIterable();
         }
 
-        private List<Iterator<IDataElement>> getIteratorList(final IStatisticsRow row) throws ModelException {
-            final List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+        private Iterable<IDataElement> getIterable(final IStatisticsRow row) throws ModelException {
+            Iterable<IDataElement> result = Iterables.emptyIterable();
 
             final Iterable<IStatisticsRow> rows = getSourceRows(row);
             if (rows != null) {
                 for (final IStatisticsRow sourceRow : rows) {
-                    result.addAll(getIteratorList(sourceRow));
+                    result = Iterables.concat(result, getIterable(sourceRow));
                 }
             }
 
             for (final IStatisticsCell cell : row.getStatisticsCells()) {
-                result.add(statisticsCellSourcesCollectFunction.collectSourceElements(cell).iterator());
+                result = Iterables.concat(result, statisticsCellSourcesCollectFunction.collectSourceElements(cell));
             }
 
             return result;
@@ -287,21 +270,13 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     };
 
-    @SuppressWarnings("unchecked")
     private final ICollectFunction statisticsCellSourcesCollectFunction = new ICollectFunction() {
 
         @Override
         public Iterable<IDataElement> collectSourceElements(final IDataElement element) {
             if (element instanceof IStatisticsCell) {
                 try {
-                    final IteratorChain chain = new IteratorChain(getIteratorList((IStatisticsCell)element));
-                    return new Iterable<IDataElement>() {
-
-                        @Override
-                        public Iterator<IDataElement> iterator() {
-                            return chain;
-                        }
-                    };
+                    return getIterable((IStatisticsCell)element);
                 } catch (final ModelException e) {
                     LOGGER.error("Error on collecting Sources of Statistics Cell", e);
                 }
@@ -310,17 +285,17 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             return Iterables.emptyIterable();
         }
 
-        private List<Iterator<IDataElement>> getIteratorList(final IStatisticsCell cell) throws ModelException {
-            final List<Iterator<IDataElement>> result = new ArrayList<Iterator<IDataElement>>();
+        private Iterable<IDataElement> getIterable(final IStatisticsCell cell) throws ModelException {
+            Iterable<IDataElement> result = Iterables.emptyIterable();
 
             final Iterable<IStatisticsCell> cells = getSourceCells(cell);
             if (cells != null) {
                 for (final IStatisticsCell sourceCell : cells) {
-                    result.addAll(getIteratorList(sourceCell));
+                    result = Iterables.concat(result, getIterable(sourceCell));
                 }
             }
 
-            result.add(getSources(cell).iterator());
+            result = Iterables.concat(result, getSources(cell));
 
             return result;
         }
