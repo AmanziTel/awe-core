@@ -69,8 +69,8 @@ public class ElementCreationPage extends PropertyEditorPage {
                         (Integer)lacContainer.getValue());
 
                 if (sector != null) {
-                    return "sector " + nameContainer.getValue() + " " + ciContainer.getValue() + " " + lacContainer.getValue()
-                            + " is already exists";
+                    return "sector with name:" + nameContainer.getValue() + ", ci: " + ciContainer.getValue() + " and lac:"
+                            + lacContainer.getValue() + " is already exists in model " + model.getName();
                 }
             } else {
 
@@ -92,6 +92,9 @@ public class ElementCreationPage extends PropertyEditorPage {
         final List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
 
         for (final String property : properties) {
+            if (property.equals(getGeneralNodeProperties().getNodeTypeProperty())) {
+                continue;
+            }
             Object value = propertyModel.getDefaultValues(getType(), property);
             if (property.equals(getNetworkNodeProperties().getCIProperty())
                     || property.equals(getNetworkNodeProperties().getLACProperty())) {
