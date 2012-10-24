@@ -32,6 +32,8 @@ import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * TODO Purpose of
@@ -88,12 +90,18 @@ public class StatisticsManager {
     public Collection<ITemplate> getAvailableTemplates() {
         if ((availableTemplates == null) && (model != null)) {
 
-            availableTemplates = new ArrayList<ITemplate>();
-            for (ITemplate singleTemplate : getAllTemplates()) {
-                if (singleTemplate.canResolve(model)) {
-                    availableTemplates.add(singleTemplate);
+            BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
+
+                @Override
+                public void run() {
+                    availableTemplates = new ArrayList<ITemplate>();
+                    for (final ITemplate singleTemplate : getAllTemplates()) {
+                        if (singleTemplate.canResolve(model)) {
+                            availableTemplates.add(singleTemplate);
+                        }
+                    }
                 }
-            }
+            });
         }
 
         return availableTemplates;
@@ -103,11 +111,11 @@ public class StatisticsManager {
         if (allTemplates == null) {
             allTemplates = new ArrayList<ITemplate>();
 
-            for (File file : getTemplateFiles().values()) {
+            for (final File file : getTemplateFiles().values()) {
                 try {
-                    ITemplate template = (ITemplate)getJRubyWrapper().executeScript(file);
+                    final ITemplate template = (ITemplate)getJRubyWrapper().executeScript(file);
                     allTemplates.add(template);
-                } catch (ScriptingException e) {
+                } catch (final ScriptingException e) {
                     LOGGER.error("Cannot create a Template from file <" + file.getName() + ">", e);
                 }
             }
@@ -120,7 +128,7 @@ public class StatisticsManager {
         if (jRubyWrapper == null) {
             try {
                 jRubyWrapper = StatisticsPlugin.getDefault().getRuntimeWrapper();
-            } catch (ScriptingException e) {
+            } catch (final ScriptingException e) {
                 LOGGER.fatal("Unable to initialize JRuby Environment", e);
             }
         }
