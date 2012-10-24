@@ -27,12 +27,14 @@ import org.apache.commons.io.comparator.NameFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 
@@ -145,13 +147,20 @@ public class DriveDataFileSelector extends AbstractPageWidget<Composite, SelectD
     }
 
     private void transferFiles(final String[] fileNames, final Map<String, File> from, final Map<String, File> to) {
-        for (final String fileName : fileNames) {
-            final File file = from.remove(fileName);
+        BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
 
-            to.put(fileName, file);
-        }
+            @Override
+            public void run() {
+                for (final String fileName : fileNames) {
+                    final File file = from.remove(fileName);
 
-        updateLists();
+                    to.put(fileName, file);
+                }
+
+                updateLists();
+            }
+
+        });
     }
 
     public void setFileFilter(final IOFileFilter filter) {

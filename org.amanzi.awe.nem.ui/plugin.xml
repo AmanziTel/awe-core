@@ -14,7 +14,7 @@
                      checkEnabled="false">
                   <iterate>
                      <instanceof
-                           value="org.amanzi.awe.ui.dto.IUIItemNew">
+                           value="org.amanzi.awe.ui.dto.IUIItem">
                      </instanceof>
                   </iterate>
                </visibleWhen>
