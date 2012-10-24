@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.nem.managers.properties;
 
+
 /**
  * TODO Purpose of
  * <p>
@@ -21,7 +22,7 @@ package org.amanzi.awe.nem.managers.properties;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PropertyContainer {
+public class PropertyContainer implements Comparable<PropertyContainer> {
 
     private Object value;
 
@@ -29,7 +30,7 @@ public class PropertyContainer {
 
     private KnownTypes type;
 
-    public PropertyContainer(String name, KnownTypes type) {
+    public PropertyContainer(final String name, final KnownTypes type) {
         this.name = name;
         this.type = type;
         value = type.getDefaultValue();
@@ -40,9 +41,36 @@ public class PropertyContainer {
      * @param string2
      * @param id
      */
-    public PropertyContainer(String name, KnownTypes type, Object value) {
+    public PropertyContainer(final String name, final KnownTypes type, final Object value) {
         this(name, type);
         this.value = value;
+    }
+
+    @Override
+    public int compareTo(final PropertyContainer o) {
+        return name.compareToIgnoreCase(o.getName());
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PropertyContainer other = (PropertyContainer)obj;
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -60,56 +88,39 @@ public class PropertyContainer {
     }
 
     /**
-     * @param name The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @param type The type to set.
-     */
-    public void setType(KnownTypes type) {
-        this.type = type;
-    }
-
-    /**
      * @return Returns the defaultValue.
      */
     public Object getValue() {
         return value;
     }
 
-    /**
-     * @param defaultValue The defaultValue to set.
-     */
-    public void setValue(Object defaultValue) {
-        this.value = defaultValue;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        PropertyContainer other = (PropertyContainer)obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return true;
+    /**
+     * @param name The name to set.
+     */
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * @param type The type to set.
+     */
+    public void setType(final KnownTypes type) {
+        this.type = type;
+    }
+
+    /**
+     * @param defaultValue The defaultValue to set.
+     */
+    public void setValue(final Object defaultValue) {
+        this.value = defaultValue;
     }
 
 }

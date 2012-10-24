@@ -37,6 +37,10 @@ import org.eclipse.swt.widgets.Text;
  */
 public class PropertyCreationDialog extends Dialog implements ModifyListener {
 
+    public interface IPropertyDialogListener {
+        void onNewItemCreated(PropertyContainer container);
+    }
+
     private static final GridLayout TWO_ELEMENT_LAYOUT = new GridLayout(2, false);
 
     private static final GridLayout ONE_ELEMENT_LAYOUT = new GridLayout(1, false);
@@ -46,10 +50,6 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
     private final Combo cTypes;
 
     private final IPropertyDialogListener listener;
-
-    public interface IPropertyDialogListener {
-        void onNewItemCreated(PropertyContainer container);
-    }
 
     /**
      * @param parent
@@ -80,12 +80,16 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
     }
 
     /**
-     *
+     * @param dialogArea
+     * @param i
+     * @return
      */
-    private void initTypesCombo() {
-        for (final KnownTypes type : KnownTypes.values()) {
-            cTypes.add(type.getId());
-        }
+    private Composite createComposite(final Composite parentComposite, final GridLayout layot) {
+        final Composite composite = new Composite(parentComposite, SWT.NONE);
+        composite.setLayout(layot);
+        final GridData data = new GridData(GridData.FILL_BOTH);
+        composite.setLayoutData(data);
+        return composite;
     }
 
     /**
@@ -100,28 +104,27 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
     }
 
     /**
-     * @param dialogArea
-     * @param i
-     * @return
+     *
      */
-    private Composite createComposite(final Composite parentComposite, final GridLayout layot) {
-        final Composite composite = new Composite(parentComposite, SWT.NONE);
-        composite.setLayout(layot);
-        final GridData data = new GridData(GridData.FILL_BOTH);
-        composite.setLayoutData(data);
-        return composite;
-    }
-
-    @Override
-    protected void okPressed() {
-        listener.onNewItemCreated(new PropertyContainer(tText.getText(), KnownTypes.getTypeById(cTypes.getText())));
-        super.okPressed();
+    private void initTypesCombo() {
+        for (final KnownTypes type : KnownTypes.values()) {
+            if (type.equals(KnownTypes.OBJECT)) {
+                continue;
+            }
+            cTypes.add(type.getId());
+        }
     }
 
     @Override
     public void modifyText(final ModifyEvent e) {
         getButton(OK).setEnabled(!tText.getText().isEmpty());
 
+    }
+
+    @Override
+    protected void okPressed() {
+        listener.onNewItemCreated(new PropertyContainer(tText.getText(), KnownTypes.getTypeById(cTypes.getText())));
+        super.okPressed();
     }
 
 }

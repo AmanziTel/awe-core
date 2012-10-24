@@ -11,17 +11,30 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.ui.events.impl;
+
+import org.amanzi.awe.ui.events.EventStatus;
+import org.amanzi.awe.ui.events.impl.internal.AbstractEvent;
+import org.amanzi.neo.models.render.IGISModel;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public enum EventStatus {
+public class RemoveLayerEvent extends AbstractEvent {
 
-    AWE_STARTED, AWE_STOPPED, PROJECT_CHANGED, DATA_UPDATED, SHOW_IN_VIEW, INITIALISATION, SHOW_GIS, SHOW_ELEMENTS, REFRESH_MAP, REMOVE_GIS;
+    private final IGISModel gisModel;
+
+    public RemoveLayerEvent(final IGISModel model, final Object source) {
+        super(EventStatus.REMOVE_GIS, false, source);
+        this.gisModel = model;
+    }
+
+    public IGISModel getModel() {
+        return gisModel;
+    }
 }

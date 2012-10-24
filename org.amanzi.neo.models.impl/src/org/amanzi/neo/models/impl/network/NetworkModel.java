@@ -433,7 +433,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
         if (!StringUtils.isEmpty(sectorName)) {
             result = findElement(NetworkElementType.SECTOR, sectorName);
-        } else {
+        }
+        if (result == null) {
             final List<Node> ciList = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);
             List<Node> resultList = null;
 

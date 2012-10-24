@@ -93,6 +93,8 @@
                   </enumeration>
                   <enumeration value="REFRESH_MAP">
                   </enumeration>
+                  <enumeration value="REMOVE_GIS">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>

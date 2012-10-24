@@ -83,195 +83,20 @@ public abstract class AbstractRenderer extends RendererImpl {
 
     private IColoringInterceptor colorer;
 
+    protected double calculateCountScaled(final double dataScaled, final long count) {
+        return dataScaled * count / 2;
+    }
+
     /**
-     * initialize default renderer styles;
+     * calculate average between necessary nodes count and size
      * 
+     * @param dbounds
+     * @param resource
      * @return
      */
-    protected abstract AbstractRendererStyles initDefaultRendererStyle();
-
-    /**
-     * prepare scaling value before elements render. Scale is response for the view of renderable
-     * elements
-     * 
-     * @param bounds_transformed
-     * @param data_bounds
-     * @param monitor
-     * @param count
-     */
-    public void setScaling(final Envelope bounds_transformed, final Envelope data_bounds, final IProgressMonitor monitor,
-            final long count) {
-        final double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
-                / (data_bounds.getHeight() * data_bounds.getWidth());
-
-        final double countScaled = calculateCountScaled(dataScaled, count);
-        setDrawLabel(countScaled);
-        if (countScaled < commonStyle.getMaxElementsFull()) {
-            commonStyle.setScale(Scale.LARGE);
-        } else if (countScaled > commonStyle.getMaxElementsLite()) {
-            commonStyle.setScale(Scale.SMALL);
-        } else {
-            commonStyle.setScale(Scale.MEDIUM);
-        }
-        if (commonStyle.getScale().equals(Scale.LARGE) && commonStyle.isScaleSymbols()) {
-            int size = DEFAULT_DRAW_SIZE;
-            size *= (Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled)));
-            size = Math.min(size, commonStyle.getMaxSymbolSize());
-            commonStyle.setLargeElementSize(size);
-        }
-        bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
+    protected double calculateResult(final Envelope dbounds, final IGISModel resource) {
+        return 0d;
     }
-
-    protected double calculateCountScaled(final double dataScaled, final long count) {
-        return (dataScaled * count) / 2;
-    }
-
-    /**
-     * set requirement to draw labels
-     * 
-     * @param countScaled
-     */
-    protected abstract void setDrawLabel(double countScaled);
-
-    @Override
-    public void render(final Graphics2D destination, final IProgressMonitor monitor) throws RenderException {
-        final ILayer layer = getContext().getLayer();
-        final IGeoResource resource = layer.findGeoResource(GeoResource.class);
-
-        // c+v
-        selection = (IMapSelection)layer.getMap().getBlackboard().get(IMapSelection.SELECTION_BLACKBOARD_PROPERTY);
-        if (resource != null) {
-            try {
-                renderGeoResource(destination, resource, monitor);
-            } catch (final ModelException e) {
-                LOGGER.error("Could not render resource.", e);
-            }
-        }
-    }
-
-    /**
-     * render selected georesource
-     * 
-     * @param destination
-     * @param resource
-     * @param monitor
-     * @throws AWEException
-     */
-    private void renderGeoResource(final Graphics2D destination, final IGeoResource resource, IProgressMonitor monitor)
-            throws RenderException, ModelException {
-
-        if (monitor == null) {
-            monitor = new NullProgressMonitor();
-        }
-        // TODO: Get size from info (???)
-        monitor.beginTask("render network sites and sectors: " + resource.getIdentifier(), IProgressMonitor.UNKNOWN);
-
-        try {
-            setStyle(destination);
-            // find a resource to render
-            model = resource.resolve(IGISModel.class, monitor);
-
-            final IColoringInterceptorFactory colorerFactory = ColoringInterceptorsCache.getCache().getFactory(model);
-            if (colorerFactory != null) {
-                colorer = colorerFactory.createInterceptor(model);
-            }
-
-            if ((selection != null) && !selection.getModel().getAllGIS().contains(model)) {
-                selection = null;
-            }
-
-            // get rendering bounds and zoom
-            setCrsTransforms(resource.getInfo(null).getCRS());
-            final Envelope bounds_transformed = getTransformedBounds();
-            final Envelope data_bounds = model.getBounds();
-            Long count;
-            if (bounds_transformed == null) {
-                commonStyle.setScale(Scale.MEDIUM);
-            } else if ((data_bounds != null) && (data_bounds.getHeight() > 0) && (data_bounds.getWidth() > 0)) {
-                count = getRenderableElementCount(model);
-                setScaling(bounds_transformed, data_bounds, monitor, count);
-            }
-            renderElements(destination, bounds_transformed, data_bounds, monitor);
-        } catch (final IOException e) {
-            LOGGER.error("Could not relosve resource.", e);
-            throw new RenderException(e);
-        } catch (final TransformException e) {
-            LOGGER.error("Could not transform bounds.", e);
-            throw new RenderException(e);
-        } catch (final FactoryException e) {
-            LOGGER.error("Could not set CRS transforms.", e);
-            throw new RenderException(e);
-        }
-    }
-
-    /**
-     * render elements from current model
-     * 
-     * @param destination
-     * @throws TransformException
-     * @throws AWEException
-     * @throws NoninvertibleTransformException
-     */
-    private void renderElements(final Graphics2D destination, final Envelope bounds_transformed, final Envelope data_bounds,
-            final IProgressMonitor monitor) throws NoninvertibleTransformException, ModelException, TransformException {
-
-        for (final ILocationElement element : model.getElements(data_bounds)) {
-            final Point point = getPoint(model, element, bounds_transformed);
-            if (point != null) {
-                renderElement(destination, point, element, model);
-            } else {
-                continue;
-            }
-            monitor.worked(1);
-            // count++;
-            if (monitor.isCanceled()) {
-                break;
-            }
-        }
-    }
-
-    /**
-     * Get point
-     * 
-     * @param model
-     * @param element
-     * @param bounds_transformed
-     * @return point or null
-     * @throws TransformException
-     */
-    protected Point getPoint(final IGISModel model, final ILocationElement element, final Envelope bounds_transformed)
-            throws TransformException {
-
-        final Coordinate location = new Coordinate(element.getLongitude(), element.getLatitude());
-        java.awt.Point point = null;
-
-        if ((location != null) && (bounds_transformed != null) && bounds_transformed.contains(location)) {
-            final Coordinate world_location = new Coordinate();
-            try {
-                JTS.transform(location, world_location, transform_d2w);
-            } catch (final Exception e) {
-                JTS.transform(location, world_location, transform_w2d.inverse());
-            }
-            point = getContext().worldToPixel(world_location);
-        }
-        return point;
-    }
-
-    /**
-     * return renderable element count
-     * 
-     * @param model2
-     */
-    protected abstract long getRenderableElementCount(IGISModel model);
-
-    /**
-     * render element based on latitude and longitude values;
-     * 
-     * @param destination
-     * @param point
-     * @param element
-     */
-    protected abstract void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element);
 
     /**
      * draw coordinate element(element which contain latitude and longitude properties for example
@@ -298,23 +123,6 @@ public abstract class AbstractRenderer extends RendererImpl {
         default:
             break;
         }
-    }
-
-    /**
-     * return default element size depends of scale
-     * 
-     * @return
-     */
-    protected int getSize() {
-        switch (commonStyle.getScale()) {
-        case MEDIUM:
-            return commonStyle.getMediumElementSize() / 2;
-        case LARGE:
-            return commonStyle.getLargeElementSize() / 2;
-        default:
-            break;
-        }
-        return 1;
     }
 
     /**
@@ -403,14 +211,151 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected abstract Color getDefaultFillColorByElement(IDataElement element);
 
     /**
-     * set default style to destination
+     * Get point
+     * 
+     * @param model
+     * @param element
+     * @param bounds_transformed
+     * @return point or null
+     * @throws TransformException
      */
-    protected void setStyle(final Graphics2D destination) {
-        if (commonStyle.isAntialiazing()) {
-            destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    protected Point getPoint(final IGISModel model, final ILocationElement element, final Envelope bounds_transformed)
+            throws TransformException {
+
+        final Coordinate location = new Coordinate(element.getLongitude(), element.getLatitude());
+        java.awt.Point point = null;
+
+        if (location != null && bounds_transformed != null && bounds_transformed.contains(location)) {
+            final Coordinate world_location = new Coordinate();
+            try {
+                JTS.transform(location, world_location, transform_d2w);
+            } catch (final Exception e) {
+                JTS.transform(location, world_location, transform_w2d.inverse());
+            }
+            point = getContext().worldToPixel(world_location);
+        }
+        return point;
+    }
+
+    /**
+     * return renderable element count
+     * 
+     * @param model2
+     */
+    protected abstract long getRenderableElementCount(IGISModel model);
+
+    /**
+     * return class which can be resolved with georesource
+     * 
+     * @return
+     */
+    protected abstract Class< ? extends IRenderableModel> getResolvedClass();
+
+    /**
+     * return default element size depends of scale
+     * 
+     * @return
+     */
+    protected int getSize() {
+        switch (commonStyle.getScale()) {
+        case MEDIUM:
+            return commonStyle.getMediumElementSize() / 2;
+        case LARGE:
+            return commonStyle.getLargeElementSize() / 2;
+        default:
+            break;
+        }
+        return 1;
+    }
+
+    /**
+     * get transformed bounds
+     * 
+     * @return
+     * @throws TransformException
+     */
+    private Envelope getTransformedBounds() throws TransformException {
+        ReferencedEnvelope bounds = getRenderBounds();
+        if (bounds == null) {
+            bounds = context.getViewportModel().getBounds();
+        }
+        Envelope bounds_transformed = null;
+        if (bounds != null && transform_w2d != null) {
+            bounds_transformed = JTS.transform(bounds, transform_w2d);
+        }
+        return bounds_transformed;
+    }
+
+    /**
+     * Highlight selected items
+     * 
+     * @param destination
+     * @param point point
+     */
+    protected void highlightSelectedItem(final Graphics2D destination, final java.awt.Point point) {
+        int elementSize = getSize() * 2;
+        final float radius = 60;
+        final float[] fractions = {0.01f, 1.0f};
+        for (; elementSize > 0; elementSize *= 0.8) {
+            final Color[] colors = {commonStyle.changeColor(Color.CYAN, 5), commonStyle.changeColor(Color.WHITE, 5)};
+            destination.setPaint(new RadialGradientPaint(point.x - elementSize / 3, point.y - elementSize / 3, radius, fractions,
+                    colors));
+            destination.fillOval((int)(point.x - elementSize * 2.25), (int)(point.y - elementSize * 2.25), 4 * elementSize,
+                    4 * elementSize);
         }
     }
+
+    /**
+     * initialize default renderer styles;
+     * 
+     * @return
+     */
+    protected abstract AbstractRendererStyles initDefaultRendererStyle();
+
+    protected boolean isSelected(final IDataElement element, final boolean locationsOnly, final boolean elementsOnly) {
+        if (selection == null) {
+            return false;
+        } else {
+            boolean isSelected = elementsOnly ? false : Iterables.contains(selection.getSelectedLocations(), element);
+
+            if (!isSelected && !locationsOnly) {
+                isSelected |= Iterables.contains(selection.getSelectedElements(), element);
+            }
+
+            return isSelected;
+        }
+    }
+
+    @Override
+    public void render(final Graphics2D destination, final IProgressMonitor monitor) throws RenderException {
+        final ILayer layer = getContext().getLayer();
+        final IGeoResource resource = layer.findGeoResource(GeoResource.class);
+
+        // c+v
+        selection = (IMapSelection)layer.getMap().getBlackboard().get(IMapSelection.SELECTION_BLACKBOARD_PROPERTY);
+        if (resource != null) {
+            try {
+                renderGeoResource(destination, resource, monitor);
+            } catch (final ModelException e) {
+                LOGGER.error("Could not render resource.", e);
+            }
+        }
+    }
+
+    @Override
+    public void render(final IProgressMonitor monitor) throws RenderException {
+        final Graphics2D g = getContext().getImage().createGraphics();
+        render(g, monitor);
+    }
+
+    /**
+     * render element based on latitude and longitude values;
+     * 
+     * @param destination
+     * @param point
+     * @param element
+     */
+    protected abstract void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element);
 
     /**
      * render currentElement element (for example site or mp location element)
@@ -422,10 +367,84 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected abstract void renderElement(Graphics2D destination, Point point, ILocationElement element, IGISModel model)
             throws ModelException;
 
-    @Override
-    public void render(final IProgressMonitor monitor) throws RenderException {
-        final Graphics2D g = getContext().getImage().createGraphics();
-        render(g, monitor);
+    /**
+     * render elements from current model
+     * 
+     * @param destination
+     * @throws TransformException
+     * @throws AWEException
+     * @throws NoninvertibleTransformException
+     */
+    private void renderElements(final Graphics2D destination, final Envelope bounds_transformed, final Envelope data_bounds,
+            final IProgressMonitor monitor) throws NoninvertibleTransformException, ModelException, TransformException {
+        for (final ILocationElement element : model.getElements(data_bounds)) {
+            final Point point = getPoint(model, element, bounds_transformed);
+            if (point != null) {
+                renderElement(destination, point, element, model);
+            } else {
+                continue;
+            }
+            monitor.worked(1);
+            // count++;
+            if (monitor.isCanceled()) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * render selected georesource
+     * 
+     * @param destination
+     * @param resource
+     * @param monitor
+     * @throws AWEException
+     */
+    private void renderGeoResource(final Graphics2D destination, final IGeoResource resource, IProgressMonitor monitor)
+            throws RenderException, ModelException {
+
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
+        // TODO: Get size from info (???)
+        monitor.beginTask("render network sites and sectors: " + resource.getIdentifier(), IProgressMonitor.UNKNOWN);
+
+        try {
+            setStyle(destination);
+            // find a resource to render
+            model = resource.resolve(IGISModel.class, monitor);
+
+            final IColoringInterceptorFactory colorerFactory = ColoringInterceptorsCache.getCache().getFactory(model);
+            if (colorerFactory != null) {
+                colorer = colorerFactory.createInterceptor(model);
+            }
+
+            if (selection != null && !selection.getModel().getAllGIS().contains(model)) {
+                selection = null;
+            }
+
+            // get rendering bounds and zoom
+            setCrsTransforms(resource.getInfo(null).getCRS());
+            final Envelope bounds_transformed = getTransformedBounds();
+            final Envelope data_bounds = model.getBounds();
+            Long count;
+            if (bounds_transformed == null) {
+                commonStyle.setScale(Scale.MEDIUM);
+            } else if (data_bounds != null && data_bounds.getHeight() > 0 && data_bounds.getWidth() > 0) {
+                count = getRenderableElementCount(model);
+                setScaling(bounds_transformed, data_bounds, monitor, count);
+            }
+            renderElements(destination, bounds_transformed, data_bounds, monitor);
+        } catch (final IOException e) {
+            LOGGER.error("Could not relosve resource.", e);
+            throw new RenderException(e);
+        } catch (final TransformException e) {
+            LOGGER.error("Could not transform bounds.", e);
+            throw new RenderException(e);
+        } catch (final FactoryException e) {
+            LOGGER.error("Could not set CRS transforms.", e);
+            throw new RenderException(e);
+        }
     }
 
     /**
@@ -447,71 +466,51 @@ public abstract class AbstractRenderer extends RendererImpl {
     }
 
     /**
-     * get transformed bounds
+     * set requirement to draw labels
      * 
-     * @return
-     * @throws TransformException
+     * @param countScaled
      */
-    private Envelope getTransformedBounds() throws TransformException {
-        ReferencedEnvelope bounds = getRenderBounds();
-        if (bounds == null) {
-            bounds = context.getViewportModel().getBounds();
-        }
-        Envelope bounds_transformed = null;
-        if ((bounds != null) && (transform_w2d != null)) {
-            bounds_transformed = JTS.transform(bounds, transform_w2d);
-        }
-        return bounds_transformed;
-    }
+    protected abstract void setDrawLabel(double countScaled);
 
     /**
-     * Highlight selected items
+     * prepare scaling value before elements render. Scale is response for the view of renderable
+     * elements
      * 
-     * @param destination
-     * @param point point
+     * @param bounds_transformed
+     * @param data_bounds
+     * @param monitor
+     * @param count
      */
-    protected void highlightSelectedItem(final Graphics2D destination, final java.awt.Point point) {
-        int elementSize = getSize() * 2;
-        final float radius = 60;
-        final float[] fractions = {0.01f, 1.0f};
-        for (; elementSize > 0; elementSize *= 0.8) {
-            final Color[] colors = {commonStyle.changeColor(Color.CYAN, 5), commonStyle.changeColor(Color.WHITE, 5)};
-            destination.setPaint(new RadialGradientPaint((point.x - (elementSize / 3)), (point.y - (elementSize / 3)), radius,
-                    fractions, colors));
-            destination.fillOval((int)(point.x - (elementSize * 2.25)), (int)(point.y - (elementSize * 2.25)), 4 * elementSize,
-                    4 * elementSize);
-        }
-    }
+    public void setScaling(final Envelope bounds_transformed, final Envelope data_bounds, final IProgressMonitor monitor,
+            final long count) {
+        final double dataScaled = bounds_transformed.getHeight() * bounds_transformed.getWidth()
+                / (data_bounds.getHeight() * data_bounds.getWidth());
 
-    /**
-     * return class which can be resolved with georesource
-     * 
-     * @return
-     */
-    protected abstract Class< ? extends IRenderableModel> getResolvedClass();
-
-    /**
-     * calculate average between necessary nodes count and size
-     * 
-     * @param dbounds
-     * @param resource
-     * @return
-     */
-    protected double calculateResult(final Envelope dbounds, final IGISModel resource) {
-        return 0d;
-    }
-
-    protected boolean isSelected(final IDataElement element, final boolean locationsOnly, final boolean elementsOnly) {
-        if (selection == null) {
-            return false;
+        final double countScaled = calculateCountScaled(dataScaled, count);
+        setDrawLabel(countScaled);
+        if (countScaled < commonStyle.getMaxElementsFull()) {
+            commonStyle.setScale(Scale.LARGE);
+        } else if (countScaled > commonStyle.getMaxElementsLite()) {
+            commonStyle.setScale(Scale.SMALL);
         } else {
-            boolean isSelected = elementsOnly ? false : Iterables.contains(selection.getSelectedLocations(), element);
+            commonStyle.setScale(Scale.MEDIUM);
+        }
+        if (commonStyle.getScale().equals(Scale.LARGE) && commonStyle.isScaleSymbols()) {
+            int size = DEFAULT_DRAW_SIZE;
+            size *= Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled));
+            size = Math.min(size, commonStyle.getMaxSymbolSize());
+            commonStyle.setLargeElementSize(size);
+        }
+        bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
+    }
 
-            if (!isSelected && !locationsOnly) {
-                isSelected |= Iterables.contains(selection.getSelectedElements(), element);
-            }
-
-            return isSelected;
+    /**
+     * set default style to destination
+     */
+    protected void setStyle(final Graphics2D destination) {
+        if (commonStyle.isAntialiazing()) {
+            destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
     }
 }

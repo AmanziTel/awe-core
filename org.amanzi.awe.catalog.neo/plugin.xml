@@ -33,6 +33,9 @@
          <eventStatus
                status="REFRESH_MAP">
          </eventStatus>
+         <eventStatus
+               status="REMOVE_GIS">
+         </eventStatus>
       </listener>
    </extension>
 </plugin>

@@ -34,6 +34,7 @@ import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.selection.IMapSelection;
 import org.amanzi.awe.catalog.neo.selection.MapSelection;
 import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.events.impl.RemoveLayerEvent;
 import org.amanzi.awe.ui.events.impl.ShowElementsOnMap;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -59,6 +60,94 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
     private final static Logger LOGGER = Logger.getLogger(NeoCatalogListener.class);
 
+    /**
+     * Create commands and synchronously execute them
+     * 
+     * @param layerList layers list
+     * @param selectedModel selected model
+     * @param data showOnMapEvent
+     */
+    private void executeCommands(final List<ILayer> layerList, final IGISModel selectedModel) {
+        if (!selectedModel.canRender()) {
+            return;
+        }
+        final List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
+
+        commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
+        commands.add(new ZoomCommand(selectedModel.getBounds()));
+
+        sendCommandsToLayer(layerList, commands);
+    }
+
+    private void executeCommands(final List<ILayer> layerList, final ReferencedEnvelope bounds) {
+        final List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
+
+        commands.add(new SetViewportBBoxCommand(bounds));
+        commands.add(new ZoomCommand(bounds));
+        commands.add(new ZoomCommand(0.80));
+
+        sendCommandsToLayer(layerList, commands);
+    }
+
+    /**
+     * Returns Pair, that contains necessary layer and model
+     * 
+     * @param map map
+     * @param gis model
+     * @return layer or null
+     */
+    private Pair<IGISModel, ILayer> getLayerModelPair(final IMap map, final IGISModel gis) {
+        final Pair<IGISModel, ILayer> resultPair = new MutablePair<IGISModel, ILayer>(gis, null);
+        try {
+            for (final ILayer layer : map.getMapLayers()) {
+                final IGeoResource resource = layer.findGeoResource(IGISModel.class);
+                if (resource == null) {
+                    continue;
+                }
+                final IGISModel resolvedElement = resource.resolve(IGISModel.class, null);
+                if (resolvedElement.getName().equals(gis.getName())) {
+                    // clear previous selected elements
+                    resultPair.setValue(layer);
+                    return resultPair;
+                }
+            }
+            return resultPair;
+        } catch (final IOException e) {
+            LOGGER.error("Error on computing Model->Layer pair", e);
+            return resultPair;
+        }
+    }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.LOW;
+    }
+
+    /**
+     * Get geo resource for model
+     * 
+     * @param service IService
+     * @param map IMap
+     * @param gis Node
+     * @return IGeoResource
+     * @throws IOException
+     */
+    private IGeoResource getResourceForGis(final IService service, final IMap map, final IGISModel gis) throws IOException {
+        if (service != null && getLayerModelPair(map, gis).getRight() == null) {
+            for (final IGeoResource iGeoResource : service.resources(new NullProgressMonitor())) {
+                if (iGeoResource.canResolve(IGISModel.class)) {
+
+                    final IGISModel resolvedElement = iGeoResource.resolve(IGISModel.class, null);
+
+                    if (resolvedElement.getName().equals(gis.getName())) {
+                        return iGeoResource;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
@@ -78,13 +167,86 @@ public class NeoCatalogListener implements IAWEEventListenter {
         case REFRESH_MAP:
             refreshMap();
             break;
+        case REMOVE_GIS:
+            final RemoveLayerEvent removeEvent = (RemoveLayerEvent)event;
+            removeFromMap(removeEvent.getModel());
         default:
             break;
         }
     }
 
-    protected void updateCatalog() {
-        NeoCatalogPlugin.getDefault().updateMapServices();
+    private void refreshMap() {
+        final IRenderManager renderManager = ApplicationGIS.getActiveMap().getRenderManager();
+
+        if (renderManager != null) {
+            renderManager.refresh(null);
+        }
+    }
+
+    /**
+     * @param model
+     */
+    private void removeFromMap(final IGISModel model) {
+        try {
+            final IMap map = ApplicationGIS.getActiveMap();
+            ILayer layer = getLayerModelPair(map, model).getRight();
+            List<IGeoResource> resources = new ArrayList<IGeoResource>();
+            if (layer == null) {
+                return;
+            }
+            map.getMapLayers().remove(layer);
+            for (ILayer singleLayer : map.getMapLayers()) {
+                resources.addAll(singleLayer.getGeoResources());
+            }
+            ApplicationGIS.addLayersToMap(map, resources, -1);
+        } catch (Exception e) {
+            LOGGER.error("can't remove layer", e);
+        }
+    }
+
+    /**
+     * Executes a commands synchronously
+     * 
+     * @param layers layers list
+     * @param commands commands list
+     */
+    private void sendCommandsToLayer(final List<ILayer> layers, final List<AbstractNavCommand> commands) {
+        if (layers.isEmpty()) {
+            return;
+        }
+        final CompositeCommand compositeCommand = new CompositeCommand(commands);
+        for (final ILayer layer : layers) {
+            layer.getMap().executeSyncWithoutUndo(compositeCommand);
+        }
+
+    }
+
+    protected void showOnMap(final IGISModel model) {
+        try {
+            final IService curService = NeoCatalogPlugin.getDefault().getMapService();
+            final IMap map = ApplicationGIS.getActiveMap();
+            final List<ILayer> layerList = new ArrayList<ILayer>();
+            final List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+
+            final IGeoResource iGeoResource = getResourceForGis(curService, map, model);
+            if (iGeoResource != null) {
+                listGeoRes.add(iGeoResource);
+            } else {
+                final Pair<IGISModel, ILayer> pair = getLayerModelPair(map, model);
+                final ILayer layer = pair.getRight();
+
+                if (layer != null) {
+                    layer.refresh(null);
+                    layerList.add(layer);
+                }
+            }
+
+            layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
+
+            executeCommands(layerList, model);
+        } catch (final Exception e) {
+            LOGGER.error("Error on putting model <" + model + "> on a Map", e);
+        }
     }
 
     protected void showOnMap(final IRenderableModel model, final Iterable<IDataElement> elements, ReferencedEnvelope bounds) {
@@ -140,146 +302,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
 
     }
 
-    protected void showOnMap(final IGISModel model) {
-        try {
-            final IService curService = NeoCatalogPlugin.getDefault().getMapService();
-            final IMap map = ApplicationGIS.getActiveMap();
-            final List<ILayer> layerList = new ArrayList<ILayer>();
-            final List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
-
-            if (!model.canRender()) {
-                LOGGER.info("Can't add layer to map because model: " + model.getName() + " doesn't contain locations");
-                return;
-            }
-
-            final IGeoResource iGeoResource = getResourceForGis(curService, map, model);
-            if (iGeoResource != null) {
-                listGeoRes.add(iGeoResource);
-            } else {
-                final Pair<IGISModel, ILayer> pair = getLayerModelPair(map, model);
-                final ILayer layer = pair.getRight();
-
-                if (layer != null) {
-                    layer.refresh(null);
-                    layerList.add(layer);
-                }
-            }
-
-            layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
-
-            executeCommands(layerList, model);
-        } catch (final Exception e) {
-            LOGGER.error("Error on putting model <" + model + "> on a Map", e);
-        }
-    }
-
-    /**
-     * Get geo resource for model
-     * 
-     * @param service IService
-     * @param map IMap
-     * @param gis Node
-     * @return IGeoResource
-     * @throws IOException
-     */
-    private IGeoResource getResourceForGis(final IService service, final IMap map, final IGISModel gis) throws IOException {
-        if ((service != null) && (getLayerModelPair(map, gis).getRight() == null)) {
-            for (final IGeoResource iGeoResource : service.resources(new NullProgressMonitor())) {
-                if (iGeoResource.canResolve(IGISModel.class)) {
-
-                    final IGISModel resolvedElement = iGeoResource.resolve(IGISModel.class, null);
-
-                    if (resolvedElement.getName().equals(gis.getName())) {
-                        return iGeoResource;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns Pair, that contains necessary layer and model
-     * 
-     * @param map map
-     * @param gis model
-     * @return layer or null
-     */
-    private Pair<IGISModel, ILayer> getLayerModelPair(final IMap map, final IGISModel gis) {
-        final Pair<IGISModel, ILayer> resultPair = new MutablePair<IGISModel, ILayer>(gis, null);
-        try {
-            for (final ILayer layer : map.getMapLayers()) {
-                final IGeoResource resource = layer.findGeoResource(IGISModel.class);
-                if (resource == null) {
-                    continue;
-                }
-                final IGISModel resolvedElement = resource.resolve(IGISModel.class, null);
-                if (resolvedElement.getName().equals(gis.getName())) {
-                    // clear previous selected elements
-                    resultPair.setValue(layer);
-                    return resultPair;
-                }
-            }
-            return resultPair;
-        } catch (final IOException e) {
-            LOGGER.error("Error on computing Model->Layer pair", e);
-            return resultPair;
-        }
-    }
-
-    /**
-     * Create commands and synchronously execute them
-     * 
-     * @param layerList layers list
-     * @param selectedModel selected model
-     * @param data showOnMapEvent
-     */
-    private void executeCommands(final List<ILayer> layerList, final IGISModel selectedModel) {
-        final List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
-
-        commands.add(new SetViewportBBoxCommand(selectedModel.getBounds()));
-        commands.add(new ZoomCommand(selectedModel.getBounds()));
-
-        sendCommandsToLayer(layerList, commands);
-    }
-
-    private void executeCommands(final List<ILayer> layerList, final ReferencedEnvelope bounds) {
-        final List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
-
-        commands.add(new SetViewportBBoxCommand(bounds));
-        commands.add(new ZoomCommand(bounds));
-        commands.add(new ZoomCommand(0.80));
-
-        sendCommandsToLayer(layerList, commands);
-    }
-
-    /**
-     * Executes a commands synchronously
-     * 
-     * @param layers layers list
-     * @param commands commands list
-     */
-    private void sendCommandsToLayer(final List<ILayer> layers, final List<AbstractNavCommand> commands) {
-        if (layers.isEmpty()) {
-            return;
-        }
-        final CompositeCommand compositeCommand = new CompositeCommand(commands);
-        for (final ILayer layer : layers) {
-            layer.getMap().executeSyncWithoutUndo(compositeCommand);
-        }
-
-    }
-
-    private void refreshMap() {
-        final IRenderManager renderManager = ApplicationGIS.getActiveMap().getRenderManager();
-
-        if (renderManager != null) {
-            renderManager.refresh(null);
-        }
-    }
-
-    @Override
-    public Priority getPriority() {
-        return Priority.LOW;
+    protected void updateCatalog() {
+        NeoCatalogPlugin.getDefault().updateMapServices();
     }
 }

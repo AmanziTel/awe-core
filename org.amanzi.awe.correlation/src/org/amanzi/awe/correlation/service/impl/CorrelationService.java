@@ -50,7 +50,7 @@ public class CorrelationService implements ICorrelationService {
 
     private static final Logger LOGGER = Logger.getLogger(CorrelationService.class);
 
-    private static final TraversalDescription INCOMIN_PROXIES_TRAVERSAL = Traversal.description().depthFirst()
+    private static final TraversalDescription INCOMING_PROXIES_TRAVERSAL = Traversal.description().depthFirst()
             .evaluator(Evaluators.excludeStartPosition()).relationships(CorrelationRelationshipType.PROXY, Direction.INCOMING);
 
     private final INodeService nodeSerivce;
@@ -79,13 +79,13 @@ public class CorrelationService implements ICorrelationService {
         assert !StringUtils.isEmpty(correlationProperty);
 
         String networkName = nodeSerivce.getNodeName(networkRoot);
-        String measuremerntName = nodeSerivce.getNodeName(measurementRoot);
+        String measurementName = nodeSerivce.getNodeName(measurementRoot);
 
-        String modelName = String.format(CORRELATION_MODEL_NAME_FORMAT, networkName, correlationProperty, measuremerntName,
+        String modelName = String.format(CORRELATION_MODEL_NAME_FORMAT, networkName, correlationProperty, measurementName,
                 correlatedProperty);
 
         Node modelNode = nodeSerivce.createNode(networkRoot, CorrelationTypes.CORRELATION_MODEL,
-                CorrelationRelationshipType.CORRELATION, String.format(modelName, networkName, measuremerntName));
+                CorrelationRelationshipType.CORRELATION, String.format(modelName, networkName, measurementName));
 
         nodeSerivce.updateProperty(modelNode, correlationProperties.getCorrelatedNodeProperty(), correlatedProperty);
         nodeSerivce.updateProperty(modelNode, correlationProperties.getCorrelationNodeProperty(), correlationProperty);
@@ -179,7 +179,7 @@ public class CorrelationService implements ICorrelationService {
 
     public Iterator<Node> findSectorProxies(final Node sectorNode) {
         assert sectorNode != null;
-        return INCOMIN_PROXIES_TRAVERSAL.traverse(sectorNode).nodes().iterator();
+        return INCOMING_PROXIES_TRAVERSAL.traverse(sectorNode).nodes().iterator();
     }
 
     @Override

@@ -25,6 +25,8 @@ import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.internal.NemPlugin;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
+import org.amanzi.awe.ui.events.impl.RemoveLayerEvent;
+import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.ui.util.ActionUtil;
@@ -54,11 +56,11 @@ import org.eclipse.core.runtime.jobs.Job;
  * @since 1.0.0
  */
 public class NetworkElementManager {
-    private static final Logger LOGGER = Logger.getLogger(NetworkElementManager.class);
-
     private static class NEMInstanceHolder {
         private static final NetworkElementManager NEM_MANAGER = new NetworkElementManager();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(NetworkElementManager.class);
 
     public static NetworkElementManager getInstance() {
         return NEMInstanceHolder.NEM_MANAGER;
@@ -72,174 +74,21 @@ public class NetworkElementManager {
 
     private final IGeneralNodeProperties generalNodeProperties;
 
-    protected NetworkElementManager(INetworkModelProvider provider, IProjectModelProvider projectModelProvider,
-            IGeneralNodeProperties generalNodeProperties, IGeoNodeProperties geoNodeProeprties) {
+    private NetworkElementManager() {
+        this(NemPlugin.getDefault().getNetworkModelProvider(), NemPlugin.getDefault().getProjectModelProvider(), NemPlugin
+                .getDefault().getGeneralNodeProperties(), NemPlugin.getDefault().getGeoNodeProperties());
+    }
+
+    protected NetworkElementManager(final INetworkModelProvider provider, final IProjectModelProvider projectModelProvider,
+            final IGeneralNodeProperties generalNodeProperties, final IGeoNodeProperties geoNodeProeprties) {
         this.networkModelProvider = provider;
         this.projectModelPovider = projectModelProvider;
         this.generalNodeProperties = generalNodeProperties;
         this.geoNodeProperties = geoNodeProeprties;
     }
 
-    private NetworkElementManager() {
-        this(NemPlugin.getDefault().getNetworkModelProvider(), NemPlugin.getDefault().getProjectModelProvider(), NemPlugin
-                .getDefault().getGeneralNodeProperties(), NemPlugin.getDefault().getGeoNodeProperties());
-    }
-
-    public void removeModel(final INetworkModel model) throws ModelException {
-        LOGGER.info("Start removing model " + model + " at " + new Date(System.currentTimeMillis()));
-
-        Job job = new Job("removing model " + model.getName()) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    networkModelProvider.deleteModel(model);
-                    LOGGER.info("Finished removing model " + model + " at " + new Date(System.currentTimeMillis()));
-                    ActionUtil.getInstance().runTask(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
-                        }
-                    }, true);
-
-                } catch (Exception e) {
-                    LOGGER.error("Can't remove model " + model, e);
-                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-    }
-
-    public void removeElement(final INetworkModel model, final IDataElement element) throws ModelException {
-        LOGGER.info("Start  removing element " + element + " from model " + model + " at " + new Date(System.currentTimeMillis()));
-
-        Job job = new Job("Removing element" + element.getName() + " from model " + model.getName()) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    model.deleteElement(element);
-                    LOGGER.info("Finished  removing element " + element + " from model " + model + " at "
-                            + new Date(System.currentTimeMillis()));
-                    ActionUtil.getInstance().runTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
-                        }
-                    }, true);
-
-                } catch (Exception e) {
-                    LOGGER.error("Can't remove element " + element + " from model " + model, e);
-                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-    }
-
-    public List<INodeType> updateNodeTypes(INodeType[] types) {
-        return NodeTypeManager.getInstance().addDynamicNodeTypes(types);
-    }
-
-    /**
-     * @param name
-     * @param structure
-     * @param typeProperties
-     * @throws NemManagerOperationException
-     */
-    public void createModel(String name, List<INodeType> structure, Map<INodeType, List<PropertyContainer>> typeProperties)
-            throws NemManagerOperationException {
-        EventChain eventChain = new EventChain(true);
-        try {
-            INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
-            IPropertyStatisticsModel propertiesModel = model.getPropertyStatistics();
-            updateProperties(propertiesModel, typeProperties);
-            model.finishUp();
-
-        } catch (ModelException e) {
-            LOGGER.error("can't create model", e);
-            throw new NemManagerOperationException("can't create model", e);
-        }
-        eventChain.addEvent(new DataUpdatedEvent(this));
-        AWEEventManager.getManager().fireEventChain(eventChain);
-    }
-
-    /**
-     * @param propertiesModel
-     * @param typeProperties
-     */
-    private void updateProperties(IPropertyStatisticsModel propertiesModel, Map<INodeType, List<PropertyContainer>> typeProperties) {
-        for (Entry<INodeType, List<PropertyContainer>> properties : typeProperties.entrySet()) {
-            Map<String, Object> preparedProeprties = preparePropertiesMapFromContainer(properties.getValue());
-            preparedProeprties.remove(geoNodeProperties.getLatitudeProperty());
-            preparedProeprties.remove(geoNodeProperties.getLongitudeProperty());
-            preparedProeprties.put(generalNodeProperties.getNodeTypeProperty(), properties.getKey().getId());
-            propertiesModel.updateDefaultProperties(properties.getKey(), preparedProeprties);
-        }
-        try {
-            propertiesModel.finishUp();
-        } catch (ModelException e) {
-            LOGGER.error("Can't update property statisticsModel ", e);
-        }
-    }
-
-    /**
-     * @param value
-     * @return
-     */
-    private Map<String, Object> preparePropertiesMapFromContainer(Collection<PropertyContainer> containers) {
-        Map<String, Object> properties = new HashMap<String, Object>();
-        for (PropertyContainer container : containers) {
-            properties.put(container.getName(), container.getValue());
-        }
-        return properties;
-    }
-
-    /**
-     * @param model
-     * @param parent
-     * @param type
-     * @param map
-     */
-    public void createElement(final INetworkModel model, IDataElement parent, final INodeType type,
-            Collection<PropertyContainer> properties) {
-        LOGGER.info("Start create new element  from model " + model.getName() + " at " + new Date(System.currentTimeMillis()));
-
-        final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
-        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
-        final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
-
-        Job job = new Job("Create new element  from model " + model.getName()) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    model.createElement((INetworkElementType)type, parentElement, name, prop);
-                    model.finishUp();
-                    LOGGER.info("Finished creating new element  from model " + model.getName()
-                            + new Date(System.currentTimeMillis()));
-                    ActionUtil.getInstance().runTask(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
-                        }
-                    }, true);
-
-                } catch (Exception e) {
-                    LOGGER.error("Can't create new element from model " + model, e);
-                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-
-    }
-
-    public void copyElement(final INetworkModel model, IDataElement element, final INodeType type,
-            Collection<PropertyContainer> properties) {
+    public void copyElement(final INetworkModel model, final IDataElement element, final INodeType type,
+            final Collection<PropertyContainer> properties) {
         LOGGER.info("Start copying " + element.getName() + "element  from model " + model.getName() + " at "
                 + new Date(System.currentTimeMillis()));
         IDataElement parent;
@@ -260,7 +109,7 @@ public class NetworkElementManager {
      * @param model
      * @param properties
      */
-    private void copyNetworkModel(INetworkModel model, Collection<PropertyContainer> properties) {
+    private void copyNetworkModel(final INetworkModel model, final Collection<PropertyContainer> properties) {
         final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
         final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
         try {
@@ -273,6 +122,166 @@ public class NetworkElementManager {
             LOGGER.error("can't create model", e);
         }
 
+    }
+
+    /**
+     * @param model
+     * @param parent
+     * @param type
+     * @param map
+     */
+    public void createElement(final INetworkModel model, final IDataElement parent, final INodeType type,
+            final Collection<PropertyContainer> properties) {
+        LOGGER.info("Start create new element  from model " + model.getName() + " at " + new Date(System.currentTimeMillis()));
+
+        final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
+        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
+
+        Job job = new Job("Create new element  from model " + model.getName()) {
+            @Override
+            protected IStatus run(final IProgressMonitor monitor) {
+                try {
+                    model.createElement((INetworkElementType)type, parentElement, name, prop);
+                    model.finishUp();
+                    LOGGER.info("Finished creating new element  from model " + model.getName()
+                            + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            EventChain chain = new EventChain(false);
+                            chain.addEvent(new DataUpdatedEvent(null));
+                            AWEEventManager.getManager().fireEventChain(chain);
+                        }
+                    }, false);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't create new element from model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+
+    }
+
+    /**
+     * @param name
+     * @param structure
+     * @param typeProperties
+     * @throws NemManagerOperationException
+     */
+    public void createModel(final String name, final List<INodeType> structure,
+            final Map<INodeType, List<PropertyContainer>> typeProperties) throws NemManagerOperationException {
+        EventChain eventChain = new EventChain(false);
+        try {
+            INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
+            IPropertyStatisticsModel propertiesModel = model.getPropertyStatistics();
+            updateProperties(propertiesModel, typeProperties);
+            model.finishUp();
+            eventChain.addEvent(new DataUpdatedEvent(this));
+            eventChain.addEvent(new ShowGISOnMap(model.getMainGIS(), this));
+        } catch (ModelException e) {
+            LOGGER.error("can't create model", e);
+            throw new NemManagerOperationException("can't create model", e);
+        }
+
+        AWEEventManager.getManager().fireEventChain(eventChain);
+    }
+
+    /**
+     * @param value
+     * @return
+     */
+    private Map<String, Object> preparePropertiesMapFromContainer(final Collection<PropertyContainer> containers) {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        for (PropertyContainer container : containers) {
+            properties.put(container.getName(), container.getValue());
+        }
+        return properties;
+    }
+
+    public void removeElement(final INetworkModel model, final IDataElement element) throws ModelException {
+        LOGGER.info("Start  removing element " + element + " from model " + model + " at " + new Date(System.currentTimeMillis()));
+
+        Job job = new Job("Removing element" + element.getName() + " from model " + model.getName()) {
+            @Override
+            protected IStatus run(final IProgressMonitor monitor) {
+                try {
+                    model.deleteElement(element);
+                    LOGGER.info("Finished  removing element " + element + " from model " + model + " at "
+                            + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
+                        }
+                    }, false);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't remove element " + element + " from model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+    }
+
+    public void removeModel(final INetworkModel model) throws ModelException {
+        LOGGER.info("Start removing model " + model + " at " + new Date(System.currentTimeMillis()));
+
+        Job job = new Job("removing model " + model.getName()) {
+            @Override
+            protected IStatus run(final IProgressMonitor monitor) {
+                try {
+                    networkModelProvider.deleteModel(model);
+                    LOGGER.info("Finished removing model " + model + " at " + new Date(System.currentTimeMillis()));
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            EventChain chain = new EventChain(false);
+                            chain.addEvent(new RemoveLayerEvent(model.getMainGIS(), null));
+                            chain.addEvent(new DataUpdatedEvent(null));
+                            AWEEventManager.getManager().fireEventChain(chain);
+                        }
+                    }, false);
+
+                } catch (Exception e) {
+                    LOGGER.error("Can't remove model " + model, e);
+                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Error on deleting element", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+    }
+
+    public List<INodeType> updateNodeTypes(final INodeType[] types) {
+        return NodeTypeManager.getInstance().addDynamicNodeTypes(types);
+    }
+
+    /**
+     * @param propertiesModel
+     * @param typeProperties
+     */
+    private void updateProperties(final IPropertyStatisticsModel propertiesModel,
+            final Map<INodeType, List<PropertyContainer>> typeProperties) {
+        for (Entry<INodeType, List<PropertyContainer>> properties : typeProperties.entrySet()) {
+            Map<String, Object> preparedProeprties = preparePropertiesMapFromContainer(properties.getValue());
+            preparedProeprties.remove(geoNodeProperties.getLatitudeProperty());
+            preparedProeprties.remove(geoNodeProperties.getLongitudeProperty());
+            preparedProeprties.put(generalNodeProperties.getNodeTypeProperty(), properties.getKey().getId());
+            propertiesModel.updateDefaultProperties(properties.getKey(), preparedProeprties);
+        }
+        try {
+            propertiesModel.finishUp();
+        } catch (ModelException e) {
+            LOGGER.error("Can't update property statisticsModel ", e);
+        }
     }
 
 }

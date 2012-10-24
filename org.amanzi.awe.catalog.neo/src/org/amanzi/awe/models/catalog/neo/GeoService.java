@@ -47,6 +47,34 @@ public class GeoService extends IService {
         url = (URL)params.get(GeoServiceExtension.URL_KEY);
     }
 
+    private void addAllGIS(final IRenderableModel model, final List<IGeoResource> resourcesList) {
+        for (IGISModel gisModel : model.getAllGIS()) {
+            if (gisModel.canRender()) {
+                resourcesList.add(new GeoResource(this, gisModel));
+            }
+        }
+    }
+
+    @Override
+    public IServiceInfo createInfo(final IProgressMonitor monitor) throws IOException {
+        return new GeoServiceInfo(this);
+    }
+
+    @Override
+    public Map<String, Serializable> getConnectionParams() {
+        return params;
+    }
+
+    @Override
+    public URL getIdentifier() {
+        return url;
+    }
+
+    @Override
+    public Throwable getMessage() {
+        return message;
+    }
+
     @Override
     public Status getStatus() {
         // did an error occur
@@ -58,24 +86,6 @@ public class GeoService extends IService {
             return Status.NOTCONNECTED;
         }
         return Status.CONNECTED;
-    }
-
-    @Override
-    public Throwable getMessage() {
-        return message;
-    }
-
-    @Override
-    public URL getIdentifier() {
-        return url;
-    }
-
-    private void addAllGIS(final IRenderableModel model, final List<IGeoResource> resourcesList) {
-        for (IGISModel gisModel : model.getAllGIS()) {
-            if (gisModel.canRender()) {
-                resourcesList.add(new GeoResource(this, gisModel));
-            }
-        }
     }
 
     @Override
@@ -105,16 +115,6 @@ public class GeoService extends IService {
             }
         }
         return members;
-    }
-
-    @Override
-    public IServiceInfo createInfo(final IProgressMonitor monitor) throws IOException {
-        return new GeoServiceInfo(this);
-    }
-
-    @Override
-    public Map<String, Serializable> getConnectionParams() {
-        return params;
     }
 
 }
