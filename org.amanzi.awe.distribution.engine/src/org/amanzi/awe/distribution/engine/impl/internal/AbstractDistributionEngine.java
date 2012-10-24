@@ -126,6 +126,10 @@ public class AbstractDistributionEngine<T extends IPropertyStatisticalModel> ext
                     }
                 }
                 monitor.worked(1);
+
+                if (monitor.isCanceled()) {
+                    break;
+                }
             }
         } finally {
             distributionModel.finishUp();
