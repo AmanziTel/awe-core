@@ -25,7 +25,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public enum ArraysConverter {
 
-    INTEGER_ARRAY(Integer[].class) {
+    INTEGER_ARRAY(int[].class) {
         private int[] array;
 
         @Override
@@ -40,7 +40,7 @@ public enum ArraysConverter {
             return array;
         }
     },
-    LONG_ARRAY(Long[].class) {
+    LONG_ARRAY(long[].class) {
         private long[] array;
 
         @Override
@@ -55,7 +55,7 @@ public enum ArraysConverter {
             return array;
         }
     },
-    FLOAT_ARRAY(Float[].class) {
+    FLOAT_ARRAY(float[].class) {
         private float[] array;
 
         @Override
@@ -99,7 +99,7 @@ public enum ArraysConverter {
             return array;
         }
     },
-    CHAR_ARRAY(Character[].class) {
+    CHAR_ARRAY(char[].class) {
         private char[] array;
 
         @Override

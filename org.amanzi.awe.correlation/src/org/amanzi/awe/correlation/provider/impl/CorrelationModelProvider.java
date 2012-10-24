@@ -46,7 +46,7 @@ public class CorrelationModelProvider extends AbstractModelProvider<CorrelationM
             ICorrelationModelProvider {
 
     @SuppressWarnings("unused")
-    private final static class CorrelationModelKey implements IKey {
+    private static final class CorrelationModelKey implements IKey {
 
         private final INetworkModel networkModel;
 
@@ -123,11 +123,11 @@ public class CorrelationModelProvider extends AbstractModelProvider<CorrelationM
         final AbstractModel measurementModel = (AbstractModel)correlatedModel;
 
         try {
-            final Node distributionRoot = correlationService.createCorrelationModelNode(parentModel.getRootNode(),
+            final Node correlationRoot = correlationService.createCorrelationModelNode(parentModel.getRootNode(),
                     measurementModel.getRootNode());
 
-            if (distributionRoot != null) {
-                result = initializeFromNode(distributionRoot);
+            if (correlationRoot != null) {
+                result = initializeFromNode(correlationRoot);
 
                 initializeCorrelationModel(result, networkModel, correlatedModel);
 
