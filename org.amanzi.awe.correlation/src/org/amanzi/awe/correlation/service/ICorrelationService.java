@@ -27,7 +27,17 @@ import org.neo4j.graphdb.Node;
  */
 public interface ICorrelationService extends IService {
 
-    Node createCorrelationModelNode(Node networkRoot, Node measurementRoot) throws ServiceException;
+    Node createCorrelationModelNode(Node networkRoot, Node measurementRoot, String correlationProperty, String correlatedProperty)
+            throws ServiceException;
 
-    Node findCorrelationModelNode(Node networkRoot, Node measurementRoot) throws ServiceException;
+    Node createProxy(Node rootNode, Node sectorNode, Node measurementNode, String measuremntName) throws ServiceException;
+
+    Node findCorrelationModelNode(Node networkRoot, Node measurementRoot, String correlationProperty, String correlatedProperty)
+            throws ServiceException;
+
+    Node findProxy(Node sectorNode, Node measurementNode, String measuremntName) throws ServiceException;
+
+    Node getMeasurementForProxy(Node proxy) throws ServiceException;
+
+    Node getSectorForProxy(Node proxy) throws ServiceException;
 }

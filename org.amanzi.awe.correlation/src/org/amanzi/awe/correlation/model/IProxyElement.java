@@ -14,8 +14,6 @@
 package org.amanzi.awe.correlation.model;
 
 import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
  * TODO Purpose of
@@ -25,13 +23,9 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface ICorrelationModel extends IModel {
+public interface IProxyElement extends IDataElement {
 
-    Iterable<IProxyElement> findAllProxies() throws ModelException;
+    IDataElement getCorrelatedElement();
 
-    String getCorrelatedProperty();
-
-    String getCorrelationProperty();
-
-    IProxyElement getProxy(IDataElement sector, IDataElement correlatedElement) throws ModelException;
+    IDataElement getSectorElement();
 }

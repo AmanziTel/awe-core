@@ -56,7 +56,8 @@ public class CopyNetworkElementContribution extends AbstractNetworkMenuContribut
             itemName += element.getName();
         }
 
-        final MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
+        final MenuItem menuItem = new MenuItem(menu, SWT.PUSH, index);
+
         menuItem.setText(itemName);
         menuItem.addSelectionListener(new SelectionAdapter() {
             @Override

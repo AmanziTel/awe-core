@@ -13,17 +13,30 @@
 
 package org.amanzi.awe.correlation.model.impl;
 
-import org.amanzi.awe.correlation.model.ICorrelationElement;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.amanzi.awe.correlation.model.CorrelationTypes;
 import org.amanzi.awe.correlation.model.ICorrelationModel;
+import org.amanzi.awe.correlation.model.IProxyElement;
+import org.amanzi.awe.correlation.nodeproperties.ICorrelationProperties;
 import org.amanzi.awe.correlation.service.ICorrelationService;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.nodeproperties.IMeasurementNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -34,9 +47,32 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CorrelationModel extends AbstractModel implements ICorrelationModel {
+public class CorrelationModel extends AbstractNamedModel implements ICorrelationModel {
 
-    private final IMeasurementNodeProperties measurementNodeProperties;
+    protected final class ProxyIterator extends AbstractDataElementIterator<IProxyElement> {
+
+        /**
+         * @param nodeIterator
+         */
+        public ProxyIterator(final Iterator<Node> nodeIterator) {
+            super(nodeIterator);
+        }
+
+        @Override
+        protected IProxyElement createDataElement(final Node node) {
+            try {
+                Node sector = correlationService.getSectorForProxy(node);
+                Node measurement = correlationService.getMeasurementForProxy(node);
+
+                return new ProxyElement(getRootNode(), new DataElement(sector), new DataElement(measurement));
+            } catch (ServiceException e) {
+                LOGGER.error("can't create proxyElement", e);
+                return null;
+            }
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(CorrelationModel.class);
 
     private final INetworkNodeProperties networkNodeProperties;
 
@@ -46,37 +82,53 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
 
     private INetworkModel networkModel;
 
-    /**
-     * @param nodeService
-     * @param generalNodeProperties
-     */
+    private final Map<Pair<IDataElement, IDataElement>, IProxyElement> proxiesCache = new HashMap<Pair<IDataElement, IDataElement>, IProxyElement>();
+
+    private final ICorrelationProperties correlationNodeProperties;
+
+    private String correlatedProperty;
+
+    private String correlationProperty;
+
     public CorrelationModel(final ICorrelationService correlationService, final INodeService nodeService,
             final IGeneralNodeProperties generalNodeProperties, final INetworkNodeProperties networkNodeProperties,
-            final IMeasurementNodeProperties measurementNodeProperties) {
+            final ICorrelationProperties correlationNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.networkNodeProperties = networkNodeProperties;
-        this.measurementNodeProperties = measurementNodeProperties;
         this.correlationService = correlationService;
+        this.correlationNodeProperties = correlationNodeProperties;
     }
 
     @Override
-    public Iterable<ICorrelationElement> findAllCorrelations() {
-        // TODO Auto-generated method stub
-        return null;
+    public Iterable<IProxyElement> findAllProxies() throws ModelException {
+        Iterator<Node> proxies = null;
+        try {
+            getNodeService().getChildrenChain(getRootNode());
+        } catch (ServiceException e) {
+            processException("can't get proxies for model " + this, e);
+        }
+        return new ProxyIterator(proxies).toIterable();
     }
 
     @Override
     public void finishUp() throws ModelException {
-        // TODO Auto-generated method stub
-
+        proxiesCache.clear();
     }
 
-    /**
-     * @return Returns the correlationService.
-     */
-    public ICorrelationService getCorrelationService() {
-        return correlationService;
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        return null;
+    }
+
+    @Override
+    public String getCorrelatedProperty() {
+        return correlatedProperty;
+    }
+
+    @Override
+    public String getCorrelationProperty() {
+        return correlationProperty;
     }
 
     /**
@@ -86,11 +138,9 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
         return measurementModel;
     }
 
-    /**
-     * @return Returns the measurementNodeProperties.
-     */
-    public IMeasurementNodeProperties getMeasurementNodeProperties() {
-        return measurementNodeProperties;
+    @Override
+    protected INodeType getModelType() {
+        return CorrelationTypes.CORRELATION_MODEL;
     }
 
     /**
@@ -108,15 +158,52 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
     }
 
     @Override
+    public IProxyElement getProxy(final IDataElement sector, final IDataElement correlatedElement) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("getProxy(" + sector + "," + correlatedElement + ")");
+        }
+        assert sector != null;
+        assert correlatedElement != null;
+
+        Pair<IDataElement, IDataElement> cacheKey = new ImmutablePair<IDataElement, IDataElement>(sector, correlatedElement);
+        IProxyElement element = proxiesCache.get(cacheKey);
+        Node sectorNode = ((DataElement)sector).getNode();
+        Node measurementNode = ((DataElement)correlatedElement).getNode();
+
+        try {
+            if (element == null) {
+                Node proxyNode = correlationService.createProxy(getRootNode(), sectorNode, measurementNode,
+                        measurementModel.getName());
+                element = new ProxyElement(proxyNode, sector, correlatedElement);
+                proxiesCache.put(cacheKey, element);
+            }
+        } catch (ServiceException e) {
+            processException("can't create proxy node for sector " + sector + " and measurement " + correlatedElement, e);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("getProxy(" + sector + "," + correlatedElement + ")"));
+        }
+        return element;
+    }
+
+    @Override
     public void initialize(final Node rootNode) throws ModelException {
-        // TODO Auto-generated method stub
         super.initialize(rootNode);
+        try {
+            this.correlatedProperty = getNodeService().getNodeProperty(rootNode,
+                    correlationNodeProperties.getCorrelatedNodeProperty(), null, true);
+            this.correlationProperty = getNodeService().getNodeProperty(rootNode,
+                    correlationNodeProperties.getCorrelationNodeProperty(), null, true);
+        } catch (ServiceException e) {
+            processException("can't get property from model", e);
+        }
     }
 
     /**
      * @param measurementModel
      */
-    public void setMeasurementModel(final INetworkModel networkModel, final IMeasurementModel measurementModel) {
+    public void setCorrelatedModels(final INetworkModel networkModel, final IMeasurementModel measurementModel) {
         this.networkModel = networkModel;
         this.measurementModel = measurementModel;
     }

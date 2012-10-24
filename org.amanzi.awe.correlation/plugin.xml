@@ -13,6 +13,9 @@
             <serviceReference
                   refId="org.amanzi.service.NodeService">
             </serviceReference>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.correlationProperties">
+            </nodePropertiesReference>
          </parameters>
       </service>
    </extension>
@@ -28,8 +31,6 @@
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.NetworkNodeProperties">
             </nodePropertiesReference>
-            <nodePropertiesReference
-                  refId="org.amanzi.nodeproperties.MeasurementNodeProperties"></nodePropertiesReference>
             <serviceReference
                   refId="org.amanzi.services.correlationService">
             </serviceReference>
@@ -38,6 +39,13 @@
             </nodePropertiesReference>
          </parameters>
       </provider>
+   </extension>
+   <extension
+         point="org.amanzi.nodeproperties">
+      <nodeProperties
+            class="org.amanzi.awe.correlation.nodeproperties.impl.CorrelationProperties"
+            id="org.amanzi.nodeproperties.correlationProperties">
+      </nodeProperties>
    </extension>
 
 </plugin>

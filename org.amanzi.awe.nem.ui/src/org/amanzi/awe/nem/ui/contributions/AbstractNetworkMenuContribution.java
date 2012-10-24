@@ -18,6 +18,7 @@ import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.dialogs.Dialog;
@@ -37,31 +38,7 @@ import org.eclipse.ui.PlatformUI;
  */
 public abstract class AbstractNetworkMenuContribution extends ContributionItem {
 
-    // TODO: LN: 16.10.2012, since we using Log4j why don't use Level.INFO etc. instead of new
-    // entities?
-    protected enum LoggerStatus {
-        WARN, INFO, ERROR;
-    }
-
-    /**
-     * @param model
-     * @param newType
-     */
-    protected void openWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
-        final IWizard wizard = getWizard(model, root, newType);
-        final Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
-        wizardDialog.create();
-        wizardDialog.open();
-
-    }
-
-    /**
-     * @param model
-     * @param root
-     * @param newType
-     * @return
-     */
-    protected abstract IWizard getWizard(INetworkModel model, IDataElement root, INodeType newType);
+    private static final Logger LOGGER = Logger.getLogger(AbstractNetworkMenuContribution.class);
 
     /**
      * @param activeWorkbenchWindow
@@ -80,22 +57,18 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
         // TODO: LN: 16.10.2012, anyway incorrect work with loggers - some messages will be skipped
         // since it will work only on DEBUG level
         if (logger.isDebugEnabled()) {
-            log(logger, "geting selected tree item", LoggerStatus.INFO);
+            log("geting selected tree item", Level.INFO);
         }
 
         final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
         if (window == null) {
-            if (logger.isDebugEnabled()) {
-                log(logger, "Active window is null", LoggerStatus.WARN);
-            }
+            log("Active window is null", Level.WARN);
             return null;
         }
         final IStructuredSelection selection = (IStructuredSelection)window.getSelectionService().getSelection();
         if (selection == null) {
-            if (logger.isDebugEnabled()) {
-                log(logger, "No selection data", LoggerStatus.ERROR);
-            }
+            log("No selection data", Level.ERROR);
             return null;
         }
         final Object firstElement = selection.getFirstElement();
@@ -105,24 +78,38 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
             item = MenuUtils.getModelFromItem(item) == null ? null : item;
         }
         if (logger.isDebugEnabled()) {
-            log(logger, "found ITreeItem " + item, LoggerStatus.INFO);
+            log("found ITreeItem " + item, Level.INFO);
         }
         return item;
     }
 
-    protected void log(final Logger logger, final String message, final LoggerStatus status) {
-        switch (status) {
-        case WARN:
-            logger.warn(message);
-            break;
-        case INFO:
-            logger.info(message);
-            break;
-        case ERROR:
-            logger.error(message);
-            break;
-        default:
-            break;
+    /**
+     * @param model
+     * @param root
+     * @param newType
+     * @return
+     */
+    protected abstract IWizard getWizard(INetworkModel model, IDataElement root, INodeType newType);
+
+    protected void log(final String message, final Level status) {
+        if (status.equals(Level.WARN)) {
+            LOGGER.warn(message);
+        } else if (status.equals(Level.INFO)) {
+            LOGGER.info(message);
+        } else if (status.equals(Level.ERROR)) {
+            LOGGER.error(message);
         }
+    }
+
+    /**
+     * @param model
+     * @param newType
+     */
+    protected void openWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
+        final IWizard wizard = getWizard(model, root, newType);
+        final Dialog wizardDialog = createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), wizard);
+        wizardDialog.create();
+        wizardDialog.open();
+
     }
 }

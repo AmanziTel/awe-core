@@ -11,10 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.correlation.model;
+package org.amanzi.awe.correlation.nodeproperties;
 
-import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.network.INetworkModel.ISectorElement;
+import org.amanzi.neo.nodeproperties.INodeProperties;
 
 /**
  * TODO Purpose of
@@ -24,9 +23,11 @@ import org.amanzi.neo.models.network.INetworkModel.ISectorElement;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface ICorrelationElement extends IDataElement {
+public interface ICorrelationProperties extends INodeProperties {
 
-    IDataElement getCorrelatedElement();
+    String getCorrelatedModelNameProperty();
 
-    ISectorElement getSectorElement();
+    String getCorrelatedNodeProperty();
+
+    String getCorrelationNodeProperty();
 }

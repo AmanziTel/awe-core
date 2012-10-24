@@ -23,6 +23,7 @@ import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
@@ -58,10 +59,10 @@ public class CreateNetworkElementContribution extends AbstractNetworkMenuContrib
         final Collection<INodeType> types = NetworkStructureManager.getInstance().getUnderlineElements(type,
                 Arrays.asList(model.getNetworkStructure()));
         if (LOGGER.isDebugEnabled()) {
-            log(LOGGER, "Underline types " + Arrays.toString(types.toArray()), LoggerStatus.INFO);
+            log("Underline types " + Arrays.toString(types.toArray()), Level.INFO);
         }
         for (final INodeType newType : types) {
-            final MenuItem menuItem = new MenuItem(menu, SWT.CHECK, index);
+            final MenuItem menuItem = new MenuItem(menu, SWT.PUSH, index);
             menuItem.setText(newType.getId());
             menuItem.addSelectionListener(new SelectionAdapter() {
                 @Override

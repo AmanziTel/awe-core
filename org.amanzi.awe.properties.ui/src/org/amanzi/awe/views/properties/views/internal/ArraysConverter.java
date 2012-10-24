@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.views.properties.views.internal;
 
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * TODO Purpose of
@@ -30,7 +29,7 @@ public enum ArraysConverter {
 
         @Override
         protected void addValue(final int i, final String value) {
-            array[i] = new Integer(value);
+            array[i] = Integer.parseInt(value);
 
         }
 
@@ -45,7 +44,7 @@ public enum ArraysConverter {
 
         @Override
         protected void addValue(final int i, final String value) {
-            array[i] = new Long(value);
+            array[i] = Long.parseLong(value);
 
         }
 
@@ -60,7 +59,7 @@ public enum ArraysConverter {
 
         @Override
         protected void addValue(final int i, final String value) {
-            array[i] = new Float(value);
+            array[i] = Float.parseFloat(value);
 
         }
 
@@ -75,7 +74,7 @@ public enum ArraysConverter {
 
         @Override
         protected void addValue(final int i, final String value) {
-            array[i] = new Double(value);
+            array[i] = Double.parseDouble(value);
         }
 
         @Override
@@ -103,14 +102,12 @@ public enum ArraysConverter {
         private char[] array;
 
         @Override
-        protected void addValue(final int i, final String value) throws IllegalArgumentException, SecurityException,
-                InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        protected void addValue(final int i, final String value) throws IllegalArgumentException {
             array[i] = getValue(value);
 
         }
 
-        protected Character getValue(final String newStringValue) throws IllegalArgumentException, SecurityException,
-                InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        protected Character getValue(final String newStringValue) throws IllegalArgumentException {
             if (newStringValue.length() > 1) {
                 throw new IllegalArgumentException("can't cast value " + newStringValue + " to Charracter");
             } else {
@@ -140,11 +137,9 @@ public enum ArraysConverter {
         this.type = type;
     }
 
-    protected abstract void addValue(int i, String value) throws IllegalArgumentException, SecurityException,
-            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException;
+    protected abstract void addValue(int i, String value) throws IllegalArgumentException;
 
-    public Object convertToArray(final String[] stringArray) throws IllegalArgumentException, SecurityException,
-            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    public Object convertToArray(final String[] stringArray) throws IllegalArgumentException {
         Object array = initArray(stringArray.length);
         for (int i = 0; i < stringArray.length; i++) {
             String newStringValue = stringArray[i];
