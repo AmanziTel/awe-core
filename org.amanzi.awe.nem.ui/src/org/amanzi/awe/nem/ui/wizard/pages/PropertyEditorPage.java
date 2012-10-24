@@ -81,26 +81,6 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         return null;
     }
 
-    /**
-     *
-     */
-    private boolean checkTypes() {
-        for (PropertyContainer container : properties) {
-            Object value = container.getType().parse(container.getValue().toString());
-            if (value == null) {
-                if (container.getType().equals(KnownTypes.STRING)) {
-                    isError("required property \"" + container.getName() + "\"  can't be empty");
-                    return false;
-                }
-                isError(container.getType().getErrorMessage());
-                return false;
-            } else {
-                container.setValue(value);
-            }
-        }
-        return true;
-    }
-
     @Override
     public void createControl(final Composite parent) {
         mainComposite = new Composite(parent, SWT.NONE);
@@ -193,19 +173,33 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
     }
 
     protected boolean isError(final String message) {
-        if (!StringUtils.isEmpty(message)) {
-            this.setErrorMessage(message);
-            setPageComplete(false);
-            return true;
+        boolean isError = !StringUtils.isEmpty(message);
+        this.setErrorMessage(message);
+        setPageComplete(!isError);
+        return !StringUtils.isEmpty(message);
+    }
+
+    /**
+     *
+     */
+    private boolean typeFormatError() {
+        for (PropertyContainer container : properties) {
+            Object value = container.getType().parse(container.getValue().toString());
+            if (value == null) {
+                if (container.getType().equals(KnownTypes.STRING)) {
+                    return isError("required property \"" + container.getName() + "\"  can't be empty");
+                }
+                return isError("Wrong " + container.getName() + " value " + container.getType().getErrorMessage());
+            } else {
+                container.setValue(value);
+            }
         }
-        this.setErrorMessage(null);
-        setPageComplete(true);
-        return false;
+        return isError(null);
     }
 
     @Override
     public void updateStatus(final String message) {
-        if (!checkTypes()) {
+        if (typeFormatError()) {
             return;
         }
         if (isError(additionalChecking(properties))) {
