@@ -19,6 +19,8 @@ import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -82,6 +84,10 @@ public abstract class AbstractRenderer extends RendererImpl {
     private IMapSelection selection;
 
     private IColoringInterceptor colorer;
+
+    private Collection<ILocationElement> locationElements;
+
+    private Collection<IDataElement> selectedElements;
 
     protected double calculateCountScaled(final double dataScaled, final long count) {
         return dataScaled * count / 2;
@@ -316,14 +322,32 @@ public abstract class AbstractRenderer extends RendererImpl {
         if (selection == null) {
             return false;
         } else {
-            boolean isSelected = elementsOnly ? false : Iterables.contains(selection.getSelectedLocations(), element);
+            boolean isSelected = elementsOnly ? false : getSelectedLocations().contains(element);
 
             if (!isSelected && !locationsOnly) {
-                isSelected |= Iterables.contains(selection.getSelectedElements(), element);
+                isSelected |= getSelectedElements().contains(element);
             }
 
             return isSelected;
         }
+    }
+
+    private Collection<IDataElement> getSelectedLocations() {
+        if (selectedElements == null) {
+            selectedElements = new ArrayList<IDataElement>();
+            Iterables.addAll(selectedElements, selection.getSelectedElements());
+        }
+
+        return selectedElements;
+    }
+
+    private Collection<ILocationElement> getSelectedElements() {
+        if (locationElements == null) {
+            locationElements = new ArrayList<ILocationElement>();
+            Iterables.addAll(locationElements, selection.getSelectedLocations());
+        }
+
+        return locationElements;
     }
 
     @Override
@@ -333,6 +357,8 @@ public abstract class AbstractRenderer extends RendererImpl {
 
         // c+v
         selection = (IMapSelection)layer.getMap().getBlackboard().get(IMapSelection.SELECTION_BLACKBOARD_PROPERTY);
+        selectedElements = null;
+        locationElements = null;
         if (resource != null) {
             try {
                 renderGeoResource(destination, resource, monitor);

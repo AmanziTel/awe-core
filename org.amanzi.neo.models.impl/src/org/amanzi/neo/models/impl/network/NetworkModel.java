@@ -42,6 +42,7 @@ import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -148,6 +149,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     private final INetworkNodeProperties networkNodeProperties;
+
+    private final LRUMap elementLocationsIteratorCache = new LRUMap(5);
 
     private List<INodeType> structure = new ArrayList<INodeType>() {
         /** long serialVersionUID field */
@@ -552,9 +555,18 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         return structure;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
-        return new ElementLocationIterator(dataElements).toIterable();
+        Iterable<ILocationElement> result = (Iterable<ILocationElement>)elementLocationsIteratorCache.get(dataElements);
+
+        if (result == null) {
+            result = new ElementLocationIterator(dataElements).toIterable();
+
+            elementLocationsIteratorCache.put(dataElements, result);
+        }
+
+        return result;
     }
 
     @Override
