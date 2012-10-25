@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.internal.NemPlugin;
+import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.RemoveLayerEvent;
@@ -145,7 +146,8 @@ public class NetworkElementManager {
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
                 try {
-                    final IDataElement element = model.createElement((INetworkElementType)type, parentElement, name, prop);
+
+                    final IDataElement element = model.createElement(getNetworkType(type), parentElement, name, prop);
                     model.finishUp();
                     LOGGER.info("Finished creating new element  from model " + model.getName()
                             + new Date(System.currentTimeMillis()));
@@ -203,6 +205,16 @@ public class NetworkElementManager {
      */
     public IGeneralNodeProperties getGeneralNodeProperties() {
         return generalNodeProperties;
+    }
+
+    public INetworkElementType getNetworkType(final INodeType type) {
+        INetworkElementType castedType;
+        if (type instanceof INetworkElementType) {
+            castedType = (INetworkElementType)type;
+        } else {
+            castedType = new DynamicNetworkType(type.getId());
+        }
+        return castedType;
     }
 
     /**
@@ -305,5 +317,4 @@ public class NetworkElementManager {
             LOGGER.error("Can't update property statisticsModel ", e);
         }
     }
-
 }

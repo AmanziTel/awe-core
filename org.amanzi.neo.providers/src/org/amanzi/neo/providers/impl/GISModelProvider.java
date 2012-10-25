@@ -91,7 +91,7 @@ public class GISModelProvider extends AbstractNamedModelProvider<IGISModel, IRen
     protected void setCRS(final IGISModel gisModel, final CoordinateReferenceSystem crs) {
         GISModel model = (GISModel)gisModel;
         if (crs == null) {
-            model.updateBounds(-Double.MAX_VALUE, -Double.MAX_VALUE);
+            model.updateBounds(0, 0);
             return;
         }
 

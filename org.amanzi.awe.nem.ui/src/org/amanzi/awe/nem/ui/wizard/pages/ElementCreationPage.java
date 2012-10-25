@@ -18,13 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -76,8 +76,8 @@ public class ElementCreationPage extends PropertyEditorPage {
                             + "  lac: " + lacContainer.getValue() + " has already exists in model " + model.getName();
                 }
             } else {
-
-                sector = model.findElement((INetworkElementType)getType(), (String)nameContainer.getValue());
+                sector = model.findElement(NetworkElementManager.getInstance().getNetworkType(getType()),
+                        (String)nameContainer.getValue());
                 if (sector != null) {
                     return getType() + " width name " + nameContainer.getValue() + " has already exists";
                 }
