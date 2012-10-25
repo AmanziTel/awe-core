@@ -30,9 +30,11 @@ public abstract class AbstractEvent implements IEvent {
 
     private final boolean isAsync;
 
-    private Object source;
+    private final Object source;
 
-    protected AbstractEvent(final EventStatus status, final boolean isAsync, Object source) {
+    private boolean isStopped = false;
+
+    protected AbstractEvent(final EventStatus status, final boolean isAsync, final Object source) {
         this.status = status;
         this.isAsync = isAsync;
         this.source = source;
@@ -65,6 +67,16 @@ public abstract class AbstractEvent implements IEvent {
     @Override
     public boolean isAsync() {
         return isAsync;
+    }
+
+    @Override
+    public void stop() {
+        isStopped = true;
+    }
+
+    @Override
+    public boolean isStopped() {
+        return isStopped;
     }
 
 }

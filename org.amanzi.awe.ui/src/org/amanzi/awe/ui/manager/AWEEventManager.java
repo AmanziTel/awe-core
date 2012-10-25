@@ -154,7 +154,13 @@ public final class AWEEventManager {
         if (inDisplay) {
             runEventListener(event, singleListener);
         } else {
-            singleListener.onEvent(event);
+            runEvent(event, singleListener);
+        }
+    }
+
+    private void runEvent(final IEvent event, final IAWEEventListenter listener) {
+        if (!event.isStopped()) {
+            listener.onEvent(event);
         }
     }
 
@@ -163,7 +169,7 @@ public final class AWEEventManager {
 
             @Override
             public void run() {
-                singleListener.onEvent(event);
+                runEvent(event, singleListener);
             }
         }, event.isAsync());
     }

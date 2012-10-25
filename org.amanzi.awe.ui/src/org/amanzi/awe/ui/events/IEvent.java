@@ -29,4 +29,8 @@ public interface IEvent {
 
     Object getSource();
 
+    void stop();
+
+    boolean isStopped();
+
 }

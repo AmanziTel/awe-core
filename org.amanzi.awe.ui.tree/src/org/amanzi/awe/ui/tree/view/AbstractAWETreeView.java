@@ -164,6 +164,6 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
 
         treeViewer.setSelection(new StructuredSelection(treeItem), true);
 
-        return treeViewer.getSelection() != null;
+        return !treeViewer.getSelection().isEmpty();
     }
 }
