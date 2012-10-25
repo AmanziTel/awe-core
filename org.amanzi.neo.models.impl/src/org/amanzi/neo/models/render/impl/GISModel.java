@@ -76,6 +76,128 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
     }
 
     @Override
+    public boolean canRender() {
+        return sourceModel.getRenderableElementCount() > 0;
+    }
+
+    @Override
+    public boolean canResolve(final Class< ? > clazz) {
+        return clazz.isAssignableFrom(sourceModel.getClass());
+    }
+
+    @Override
+    protected Node createNode(final Node parentNode, final INodeType nodeType, final String name) throws ServiceException {
+        return getNodeService().createNode(parentNode, nodeType, GISRelationType.GIS, name);
+    }
+
+    @Override
+    public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
+        try {
+            if (updateCoordinates) {
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLatitudeProperty(), minLatitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
+                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
+            }
+        } catch (final ServiceException e) {
+            processException("Error on updating GIS Model", e);
+        }
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ReferencedEnvelope getBounds() {
+        final double updatedMinLongitude = minLongitude - (maxLongitude - minLongitude) * 0.05;
+        final double updatedMaxLongitude = maxLongitude + (maxLongitude - minLongitude) * 0.05;
+        final double updatedMinLatitude = minLatitude - (maxLatitude - minLatitude) * 0.05;
+        final double updatedMaxLatitude = maxLatitude + (maxLatitude - minLatitude) * 0.05;
+        return new ReferencedEnvelope(updatedMinLongitude, updatedMaxLongitude, updatedMinLatitude, updatedMaxLatitude, crs);
+    }
+
+    @Override
+    public int getCount() {
+        return sourceModel.getRenderableElementCount();
+    }
+
+    @Override
+    public CoordinateReferenceSystem getCRS() {
+        return crs;
+    }
+
+    protected String getCRSCode() {
+        return crsCode;
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
+        return sourceModel.getElements(bound);
+    }
+
+    /**
+     * @return Returns the maxLatitude.
+     */
+    @Override
+    public double getMaxLatitude() {
+        return maxLatitude;
+    }
+
+    /**
+     * @return Returns the maxLongitude.
+     */
+    @Override
+    public double getMaxLongitude() {
+        return maxLongitude;
+    }
+
+    /**
+     * @return Returns the minLatitude.
+     */
+    @Override
+    public double getMinLatitude() {
+        return minLatitude;
+    }
+
+    /**
+     * @return Returns the minLongitude.
+     */
+    @Override
+    public double getMinLongitude() {
+        return minLongitude;
+    }
+
+    @Override
+    protected INodeType getModelType() {
+        return GISNodeType.GIS;
+    }
+
+    @Override
+    protected Node getParent(final Node rootNode) throws ServiceException {
+        return getNodeService().getParent(rootNode, GISRelationType.GIS);
+    }
+
+    @Override
+    public IRenderableModel getSourceModel() {
+        return sourceModel;
+    }
+
+    @Override
+    public INodeType getSourceType() {
+        return sourceModel.getType();
+    }
+
+    @Override
+    public INodeType getType() {
+        return GISNodeType.GIS;
+    }
+
+    @Override
     public void initialize(final Node rootNode) throws ModelException {
         super.initialize(rootNode);
 
@@ -99,20 +221,28 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         }
     }
 
-    @Override
-    public void finishUp() throws ModelException {
-        LOGGER.info("Finishing up model <" + getName() + ">");
-        try {
-            if (updateCoordinates) {
-                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLatitudeProperty(), maxLatitude);
-                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMaxLongitudeProperty(), maxLongitude);
-                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLatitudeProperty(), minLatitude);
-                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getMinLongitudeProperty(), minLongitude);
-                getNodeService().updateProperty(getRootNode(), geoNodeProperties.getCRSProperty(), getCRSCode());
+    /**
+     * @param crsCode The crsCode to set.
+     */
+    public void setCRS(final CoordinateReferenceSystem crs) {
+        this.crs = crs;
+        this.crsCode = CRSWrapper.fromCRS(crs).getEpsg();
+    }
+
+    protected void setCRS(final String crsCode) {
+        if (!StringUtils.isEmpty(crsCode)) {
+            try {
+                this.crsCode = crsCode;
+                crs = CRS.decode(crsCode);
+            } catch (final FactoryException e) {
+                LOGGER.error("Cannot determinate CRS", e);
             }
-        } catch (final ServiceException e) {
-            processException("Error on updating GIS Model", e);
         }
+    }
+
+    @Override
+    public void setSourceModel(final IRenderableModel sourceModel) {
+        this.sourceModel = sourceModel;
     }
 
     @Override
@@ -128,127 +258,5 @@ public class GISModel extends AbstractNamedModel implements IGISModel {
         }
 
         updateCoordinates = true;
-    }
-
-    @Override
-    protected INodeType getModelType() {
-        return GISNodeType.GIS;
-    }
-
-    @Override
-    public void setSourceModel(final IRenderableModel sourceModel) {
-        this.sourceModel = sourceModel;
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCRS() {
-        return crs;
-    }
-
-    protected String getCRSCode() {
-        return crsCode;
-    }
-
-    protected void setCRS(final String crsCode) {
-        if (!StringUtils.isEmpty(crsCode)) {
-            try {
-                this.crsCode = crsCode;
-                crs = CRS.decode(crsCode);
-            } catch (final FactoryException e) {
-                LOGGER.error("Cannot determinate CRS", e);
-            }
-        }
-    }
-
-    /**
-     * @return Returns the minLatitude.
-     */
-    @Override
-    public double getMinLatitude() {
-        return minLatitude;
-    }
-
-    /**
-     * @return Returns the maxLatitude.
-     */
-    @Override
-    public double getMaxLatitude() {
-        return maxLatitude;
-    }
-
-    /**
-     * @return Returns the minLongitude.
-     */
-    @Override
-    public double getMinLongitude() {
-        return minLongitude;
-    }
-
-    /**
-     * @return Returns the maxLongitude.
-     */
-    @Override
-    public double getMaxLongitude() {
-        return maxLongitude;
-    }
-
-    @Override
-    public ReferencedEnvelope getBounds() {
-        final double updatedMinLongitude = minLongitude - ((maxLongitude - minLongitude) * 0.05);
-        final double updatedMaxLongitude = maxLongitude + ((maxLongitude - minLongitude) * 0.05);
-        final double updatedMinLatitude = minLatitude - ((maxLatitude - minLatitude) * 0.05);
-        final double updatedMaxLatitude = maxLatitude + ((maxLatitude - minLatitude) * 0.05);
-        return new ReferencedEnvelope(updatedMinLongitude, updatedMaxLongitude, updatedMinLatitude, updatedMaxLatitude, crs);
-    }
-
-    @Override
-    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
-        return sourceModel.getElements(bound);
-    }
-
-    @Override
-    public boolean canResolve(final Class< ? > clazz) {
-        return clazz.isAssignableFrom(sourceModel.getClass());
-    }
-
-    @Override
-    public INodeType getType() {
-        return GISNodeType.GIS;
-    }
-
-    @Override
-    public INodeType getSourceType() {
-        return sourceModel.getType();
-    }
-
-    @Override
-    protected Node getParent(final Node rootNode) throws ServiceException {
-        return getNodeService().getParent(rootNode, GISRelationType.GIS);
-    }
-
-    @Override
-    protected Node createNode(final Node parentNode, final INodeType nodeType, final String name) throws ServiceException {
-        return getNodeService().createNode(parentNode, nodeType, GISRelationType.GIS, name);
-    }
-
-    @Override
-    public int getCount() {
-        return sourceModel.getRenderableElementCount();
-    }
-
-    @Override
-    public boolean canRender() {
-        return sourceModel.getRenderableElementCount() > 0;
-    }
-
-    @Override
-    public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public IRenderableModel getSourceModel() {
-        return sourceModel;
     }
 }

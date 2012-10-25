@@ -49,9 +49,9 @@ public class GeoService extends IService {
 
     private void addAllGIS(final IRenderableModel model, final List<IGeoResource> resourcesList) {
         for (IGISModel gisModel : model.getAllGIS()) {
-            if (gisModel.canRender()) {
-                resourcesList.add(new GeoResource(this, gisModel));
-            }
+            // if (gisModel.canRender()) {
+            resourcesList.add(new GeoResource(this, gisModel));
+            // }
         }
     }
 

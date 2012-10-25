@@ -77,6 +77,14 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         this.propertyContainer = properties;
     }
 
+    private Button createButton(final Composite buttonComposite, final String name) {
+        final Button button = new Button(buttonComposite, SWT.PUSH);
+        button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        button.setText(name);
+        button.addSelectionListener(this);
+        return button;
+    }
+
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
         final Composite widgetComposite = new Composite(parent, SWT.NONE);
@@ -102,12 +110,36 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         return widgetComposite;
     }
 
-    private Button createButton(final Composite buttonComposite, final String name) {
-        final Button button = new Button(buttonComposite, SWT.PUSH);
-        button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        button.setText(name);
-        button.addSelectionListener(this);
-        return button;
+    /**
+     * @return
+     */
+    public List<PropertyContainer> getProperties() {
+        return propertyContainer;
+    }
+
+    @Override
+    public void onNewItemCreated(final PropertyContainer container) {
+        if (propertyContainer.contains(container)) {
+            MessageDialog.openWarning(tableViewer.getControl().getShell(), NEMMessages.PROPERTY_DUPLICATED_TITLE,
+                    NEMMessages.PROPERTY_DUPLICATED_MESSAGE);
+        } else {
+            tableViewer.add(container);
+            onUpdate(null);
+        }
+
+    }
+
+    @Override
+    public void onUpdate(final String message) {
+        for (final ITableChangedWidget listener : getListeners()) {
+            listener.updateStatus(message);
+        }
+    }
+
+    @Override
+    public void widgetDefaultSelected(final SelectionEvent e) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
@@ -127,37 +159,6 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
             } else {
                 bRemove.setEnabled(true);
             }
-        }
-
-    }
-
-    @Override
-    public void widgetDefaultSelected(final SelectionEvent e) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onUpdate(final String message) {
-        for (final ITableChangedWidget listener : getListeners()) {
-            listener.updateStatus(message);
-        }
-    }
-
-    /**
-     * @return
-     */
-    public List<PropertyContainer> getProperties() {
-        return propertyContainer;
-    }
-
-    @Override
-    public void onNewItemCreated(final PropertyContainer container) {
-        if (propertyContainer.contains(container)) {
-            MessageDialog.openWarning(tableViewer.getControl().getShell(), NEMMessages.PROPERTY_DUPLICATED_TITLE,
-                    NEMMessages.PROPERTY_DUPLICATED_MESSAGE);
-        } else {
-            tableViewer.add(container);
         }
 
     }

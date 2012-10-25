@@ -20,6 +20,7 @@ import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.internal.IDatasetModelProvider;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -31,6 +32,7 @@ import org.amanzi.neo.providers.internal.IDatasetModelProvider;
  */
 public interface INetworkModelProvider extends IDatasetModelProvider<INetworkModel, IProjectModel> {
 
-    INetworkModel createModel(IProjectModel parent, String name, List<INodeType> structure) throws ModelException;
+    INetworkModel createModel(IProjectModel parent, String name, List<INodeType> structure, CoordinateReferenceSystem crs)
+            throws ModelException;
 
 }

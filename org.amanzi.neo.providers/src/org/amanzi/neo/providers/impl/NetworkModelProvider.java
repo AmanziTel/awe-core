@@ -30,6 +30,7 @@ import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractDatasetModelProvider;
 import org.amanzi.neo.services.INodeService;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -66,11 +67,12 @@ public class NetworkModelProvider extends AbstractDatasetModelProvider<INetworkM
     }
 
     @Override
-    public INetworkModel createModel(final IProjectModel parent, final String name, final List<INodeType> structure)
-            throws ModelException {
+    public INetworkModel createModel(final IProjectModel parent, final String name, final List<INodeType> structure,
+            final CoordinateReferenceSystem crs) throws ModelException {
         NetworkModel model;
         try {
             model = (NetworkModel)create(parent, name);
+            getGisModelProvider().setCRS(model.getMainGIS(), crs);
             model.setStructure(structure);
             model.finishUp();
         } catch (ModelException e) {

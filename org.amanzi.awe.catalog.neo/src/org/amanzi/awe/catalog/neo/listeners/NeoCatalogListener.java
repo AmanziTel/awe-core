@@ -24,9 +24,11 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.command.CompositeCommand;
+import net.refractions.udig.project.internal.Layer;
 import net.refractions.udig.project.internal.command.navigation.AbstractNavCommand;
 import net.refractions.udig.project.internal.command.navigation.SetViewportBBoxCommand;
 import net.refractions.udig.project.internal.command.navigation.ZoomCommand;
+import net.refractions.udig.project.internal.commands.DeleteLayerCommand;
 import net.refractions.udig.project.render.IRenderManager;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
@@ -190,15 +192,10 @@ public class NeoCatalogListener implements IAWEEventListenter {
         try {
             final IMap map = ApplicationGIS.getActiveMap();
             ILayer layer = getLayerModelPair(map, model).getRight();
-            List<IGeoResource> resources = new ArrayList<IGeoResource>();
             if (layer == null) {
                 return;
             }
-            map.getMapLayers().remove(layer);
-            for (ILayer singleLayer : map.getMapLayers()) {
-                resources.addAll(singleLayer.getGeoResources());
-            }
-            ApplicationGIS.addLayersToMap(map, resources, -1);
+            map.executeSyncWithoutUndo(new DeleteLayerCommand((Layer)layer));
         } catch (Exception e) {
             LOGGER.error("can't remove layer", e);
         }
@@ -242,7 +239,9 @@ public class NeoCatalogListener implements IAWEEventListenter {
             }
 
             layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
-
+            if (!model.canRender()) {
+                return;
+            }
             executeCommands(layerList, model);
         } catch (final Exception e) {
             LOGGER.error("Error on putting model <" + model + "> on a Map", e);

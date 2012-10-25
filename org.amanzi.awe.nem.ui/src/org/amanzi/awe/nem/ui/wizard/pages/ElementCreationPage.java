@@ -50,6 +50,7 @@ public class ElementCreationPage extends PropertyEditorPage {
         super(type);
         this.model = model;
         setTitle(MessageFormat.format(NEMMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
+        setCheckForEmptyValues(true);
     }
 
     @Override
@@ -71,8 +72,8 @@ public class ElementCreationPage extends PropertyEditorPage {
                         (Integer)lacContainer.getValue());
 
                 if (sector != null) {
-                    return "sector with name: " + nameContainer.getValue() + ", ci: " + ciContainer.getValue() + " and lac: "
-                            + lacContainer.getValue() + " has already exists in model " + model.getName();
+                    return "sector with name: " + nameContainer.getValue() + ", and(or) with ci: " + ciContainer.getValue()
+                            + "  lac: " + lacContainer.getValue() + " has already exists in model " + model.getName();
                 }
             } else {
 

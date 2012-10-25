@@ -35,18 +35,18 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public class ElementCopyPage extends ElementCreationPage {
 
-    private IDataElement parent;
+    private final IDataElement parent;
 
     /**
      * @param type
      * @param model
      * @param parent
      */
-    public ElementCopyPage(INodeType type, INetworkModel model, IDataElement parent) {
+    public ElementCopyPage(final INodeType type, final INetworkModel model, final IDataElement parent) {
         super(type, model);
         this.parent = parent;
         setTitle(MessageFormat.format(NEMMessages.ELEMENT_COPY_PAGE, parent.getName()));
-
+        setCheckForEmptyValues(true);
     }
 
     @Override

@@ -1,5 +1,5 @@
-/* AWE - Amanzi Wireless Explorer
- * http://awe.amanzi.org
+/*http://awe.amanzi.org
+   AWE - Amanzi Wireless Explorer
  * (C) 2008-2009, AmanziTel AB
  *
  * This library is provided under the terms of the Eclipse Public License
@@ -61,14 +61,18 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
 
     private final IGeneralNodeProperties generalNodeProperties;
 
+    private boolean isCheckForEmpty = false;
+
     public PropertyEditorPage(final INodeType type) {
         super(type.getId());
         this.type = type;
-        requireNameProperty = new PropertyContainer("name", KnownTypes.STRING, type.getId());
         setTitle(MessageFormat.format(NEMMessages.PROPERTY_EDITOR_PAGE_TITLE, type.getId()));
 
         this.networkNodeProperties = NemPlugin.getDefault().getNetworkNodeProperties();
         this.generalNodeProperties = NemPlugin.getDefault().getGeneralNodeProperties();
+
+        requireNameProperty = new PropertyContainer(generalNodeProperties.getNodeNameProperty(), KnownTypes.STRING,
+                KnownTypes.STRING.getDefaultValue());
     }
 
     /**
@@ -179,16 +183,25 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
         return !StringUtils.isEmpty(message);
     }
 
+    protected void setCheckForEmptyValues(final boolean isCheck) {
+        isCheckForEmpty = isCheck;
+    }
+
     /**
      *
      */
     private boolean typeFormatError() {
         for (PropertyContainer container : properties) {
             Object value = container.getType().parse(container.getValue().toString());
-            if (value == null) {
-                if (container.getType().equals(KnownTypes.STRING)) {
+            if (StringUtils.isEmpty(container.getValue().toString())) {
+                if (isCheckForEmpty) {
                     return isError("required property \"" + container.getName() + "\"  can't be empty");
+                } else {
+                    container.setValue(StringUtils.EMPTY);
+                    continue;
                 }
+            }
+            if (value == null && !container.getType().equals(KnownTypes.STRING)) {
                 return isError("Wrong " + container.getName() + " value " + container.getType().getErrorMessage());
             } else {
                 container.setValue(value);

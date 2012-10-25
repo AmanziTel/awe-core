@@ -413,7 +413,9 @@ public abstract class AbstractRenderer extends RendererImpl {
             setStyle(destination);
             // find a resource to render
             model = resource.resolve(IGISModel.class, monitor);
-
+            if (!model.canRender()) {
+                return;
+            }
             final IColoringInterceptorFactory colorerFactory = ColoringInterceptorsCache.getCache().getFactory(model);
             if (colorerFactory != null) {
                 colorer = colorerFactory.createInterceptor(model);
