@@ -28,6 +28,7 @@ import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
 import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -39,6 +40,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public class ElementCreationPage extends PropertyEditorPage {
 
+    private static final Logger LOGGER = Logger.getLogger(ElementCreationPage.class);
     private final INetworkModel model;
 
     /**
@@ -48,6 +50,7 @@ public class ElementCreationPage extends PropertyEditorPage {
         super(type);
         this.model = model;
         setTitle(MessageFormat.format(NEMMessages.ELEMENT_CREATION_PAGE_TITLE, type.getId()));
+        setCheckForEmptyValues(true);
     }
 
     @Override
@@ -69,18 +72,19 @@ public class ElementCreationPage extends PropertyEditorPage {
                         (Integer)lacContainer.getValue());
 
                 if (sector != null) {
-                    return "sector with name:" + nameContainer.getValue() + ", ci: " + ciContainer.getValue() + " and lac:"
-                            + lacContainer.getValue() + " is already exists in model " + model.getName();
+                    return "sector with name: " + nameContainer.getValue() + ", and(or) with ci: " + ciContainer.getValue()
+                            + "  lac: " + lacContainer.getValue() + " has already exists in model " + model.getName();
                 }
             } else {
 
                 sector = model.findElement((INetworkElementType)getType(), (String)nameContainer.getValue());
                 if (sector != null) {
-                    return getType() + " width name " + nameContainer.getValue() + " is already exists";
+                    return getType() + " width name " + nameContainer.getValue() + " has already exists";
                 }
             }
             return null;
         } catch (ModelException e) {
+            LOGGER.error("error while trying to find element", e);
             return "error while trying to find element";
         }
     }

@@ -65,13 +65,27 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
         this.gisModelProvider = (GISModelProvider)gisModelProvider;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected void postInitialize(final C model) throws ModelException {
-        super.postInitialize(model);
+    public void deleteModel(final M model) throws ModelException {
+        C abstractModel = (C)model;
+        IKey nameKey = new NameKey(model.getName());
+        IKey nodeKey = new NodeKey(abstractModel.getRootNode());
+        IKey multiKey = new MultiKey(nameKey, nodeKey);
 
-        initializeIndexes(model);
-        initializePropertyStatistics(model);
-        initializeGIS(model);
+        deleteFromCache(nameKey, nodeKey, multiKey);
+        indexModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        propertyStatisticsModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        gisModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        model.delete();
+    }
+
+    protected IGeoNodeProperties getGeoNodeProperties() {
+        return geoNodeProperties;
+    }
+
+    protected GISModelProvider getGisModelProvider() {
+        return gisModelProvider;
     }
 
     private void initializeGIS(final C model) throws ModelException {
@@ -88,32 +102,22 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
         }
     }
 
-    private void initializePropertyStatistics(final C model) throws ModelException {
-        IPropertyStatisticsModel statisticsModel = propertyStatisticsModelProvider.getPropertyStatistics(model);
-        model.setPropertyStatisticsModel(statisticsModel);
-    }
-
     private void initializeIndexes(final C model) throws ModelException {
         IIndexModel indexModel = indexModelProvider.getIndexModel(model);
         model.setIndexModel(indexModel);
     }
 
-    protected IGeoNodeProperties getGeoNodeProperties() {
-        return geoNodeProperties;
+    private void initializePropertyStatistics(final C model) throws ModelException {
+        IPropertyStatisticsModel statisticsModel = propertyStatisticsModelProvider.getPropertyStatistics(model);
+        model.setPropertyStatisticsModel(statisticsModel);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void deleteModel(M model) throws ModelException {
-        C abstractModel = (C)model;
-        IKey nameKey = new NameKey(model.getName());
-        IKey nodeKey = new NodeKey(abstractModel.getRootNode());
-        IKey multiKey = new MultiKey(nameKey, nodeKey);
+    protected void postInitialize(final C model) throws ModelException {
+        super.postInitialize(model);
 
-        deleteFromCache(nameKey, nodeKey, multiKey);
-        indexModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
-        propertyStatisticsModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
-        gisModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
-        model.delete();
+        initializeIndexes(model);
+        initializePropertyStatistics(model);
+        initializeGIS(model);
     }
 }

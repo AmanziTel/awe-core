@@ -19,7 +19,6 @@ import java.util.List;
 import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
-import org.amanzi.awe.nem.ui.widgets.CRSSelectionWidget.ICRSSelectedListener;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget;
 import org.amanzi.awe.nem.ui.widgets.TypeControlWidget.ITableItemSelectionListener;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
@@ -46,7 +45,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class InitialNetworkPage extends WizardPage
         implements
             ITableItemSelectionListener,
-            ICRSSelectedListener,
             ICRSSelectorListener,
             ITextChandedListener {
 
@@ -62,6 +60,8 @@ public class InitialNetworkPage extends WizardPage
 
     private String networkName;
 
+    private CoordinateReferenceSystem crs;
+
     /**
      * @param pageName
      */
@@ -71,7 +71,12 @@ public class InitialNetworkPage extends WizardPage
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public boolean canFlipToNextPage() {
+        return isCompleate;
+    }
+
+    @Override
+    public void createControl(final Composite parent) {
         setMessage("Fill required fields");
 
         mainComposite = new Composite(parent, SWT.NONE);
@@ -95,6 +100,27 @@ public class InitialNetworkPage extends WizardPage
 
     }
 
+    /**
+     * @return
+     */
+    public CoordinateReferenceSystem getCrs() {
+        return crs;
+    }
+
+    /**
+     * @return
+     */
+    private Object getGridData() {
+        return new GridData(SWT.FILL, SWT.CENTER, true, true);
+    }
+
+    /**
+     * @return
+     */
+    public String getNetworkName() {
+        return networkName;
+    }
+
     public List<INodeType> getNetworkStructure() {
         List<INodeType> types = new ArrayList<INodeType>();
         for (String type : typesSelector.getStructure()) {
@@ -110,30 +136,18 @@ public class InitialNetworkPage extends WizardPage
     }
 
     @Override
-    public boolean canFlipToNextPage() {
-        return isCompleate;
-    }
-
-    /**
-     * @return
-     */
-    private Object getGridData() {
-        return new GridData(SWT.FILL, SWT.CENTER, true, true);
-    }
-
-    @Override
     public boolean isPageComplete() {
         return isCompleate;
     }
 
     @Override
-    public void onCRSSelecte() {
-        // TODO Auto-generated method stub
+    public void onCRSSelected(final CoordinateReferenceSystem crs) {
+        this.crs = crs;
 
     }
 
     @Override
-    public void onStatusUpdate(int code, String message) {
+    public void onStatusUpdate(final int code, final String message) {
         switch (code) {
         case WARNING:
             setErrorMessage(message);
@@ -146,21 +160,8 @@ public class InitialNetworkPage extends WizardPage
 
     }
 
-    /**
-     * @return
-     */
-    public String getNetworkName() {
-        return networkName;
-    }
-
     @Override
-    public void onCRSSelected(CoordinateReferenceSystem crs) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onTextChanged(String name) {
+    public void onTextChanged(final String name) {
         networkName = name;
         if (name.isEmpty()) {
             isCompleate = false;

@@ -28,6 +28,7 @@ import org.amanzi.neo.providers.impl.internal.AbstractNamedModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -54,11 +55,6 @@ public class GISModelProvider extends AbstractNamedModelProvider<IGISModel, IRen
     }
 
     @Override
-    protected INodeType getModelType() {
-        return GISNodeType.GIS;
-    }
-
-    @Override
     protected GISModel createInstance() {
         return new GISModel(getNodeService(), getGeneralNodeProperties(), geoNodeProperties);
     }
@@ -69,18 +65,36 @@ public class GISModelProvider extends AbstractNamedModelProvider<IGISModel, IRen
     }
 
     @Override
-    protected void postInitialize(final GISModel model, final IRenderableModel parent) {
-        model.setSourceModel(parent);
+    protected INodeType getModelType() {
+        return GISNodeType.GIS;
     }
 
     @Override
-    protected Iterator<Node> getNodeIterator(Node parent, INodeType nodeType) throws ServiceException {
+    protected Node getNodeByName(final Node rootNode, final String name, final INodeType modelType) throws ServiceException {
+        return getNodeService().getChildByName(rootNode, name, getModelType(), GISRelationType.GIS);
+    }
+
+    @Override
+    protected Iterator<Node> getNodeIterator(final Node parent, final INodeType nodeType) throws ServiceException {
         return getNodeService().getChildren(parent, getModelType(), GISRelationType.GIS);
     }
 
     @Override
-    protected Node getNodeByName(Node rootNode, String name, INodeType modelType) throws ServiceException {
-        return getNodeService().getChildByName(rootNode, name, getModelType(), GISRelationType.GIS);
+    protected void postInitialize(final GISModel model, final IRenderableModel parent) {
+        model.setSourceModel(parent);
     }
 
+    /**
+     * @param mainGIS
+     * @param crs
+     */
+    protected void setCRS(final IGISModel gisModel, final CoordinateReferenceSystem crs) {
+        GISModel model = (GISModel)gisModel;
+        if (crs == null) {
+            model.updateBounds(-Double.MAX_VALUE, -Double.MAX_VALUE);
+            return;
+        }
+
+        model.setCRS(crs);
+    }
 }

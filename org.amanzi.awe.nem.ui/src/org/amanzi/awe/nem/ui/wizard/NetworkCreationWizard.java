@@ -56,9 +56,11 @@ public class NetworkCreationWizard extends Wizard {
         return true;
     }
 
-    protected void handleModelRefreshing(List<INodeType> types) {
+    protected void handleModelRefreshing(final List<INodeType> types) {
         try {
-            NetworkElementManager.getInstance().createModel(container.getName(), types, container.getTypeProperties());
+            InitialNetworkPage firstPage = (InitialNetworkPage)getPages()[0];
+            NetworkElementManager.getInstance().createModel(container.getName(), types, container.getTypeProperties(),
+                    firstPage.getCrs());
         } catch (NemManagerOperationException e) {
             return;
         }
@@ -67,14 +69,15 @@ public class NetworkCreationWizard extends Wizard {
     /**
      * @param iWizardPage
      */
-    protected void handleFirstPageOnFinish(IWizardPage iWizardPage) {
+    protected void handleFirstPageOnFinish(final IWizardPage iWizardPage) {
         if (getPages()[0] instanceof InitialNetworkPage) {
             initContainerFromStartPage((InitialNetworkPage)getPages()[0]);
             initializeNewPages((InitialNetworkPage)getPages()[0], true);
         }
     }
 
-    public IWizardPage getNextPage(IWizardPage page) {
+    @Override
+    public IWizardPage getNextPage(final IWizardPage page) {
         if (page instanceof InitialNetworkPage) {
             initContainerFromStartPage((InitialNetworkPage)page);
             initializeNewPages((InitialNetworkPage)page, false);
@@ -88,7 +91,7 @@ public class NetworkCreationWizard extends Wizard {
     /**
      * @param page
      */
-    protected void handlePropertyPage(PropertyEditorPage page) {
+    protected void handlePropertyPage(final PropertyEditorPage page) {
         container.putToTypeProperties(page.getType(), page.getProperties());
     }
 
@@ -96,7 +99,7 @@ public class NetworkCreationWizard extends Wizard {
      * @param page
      * @param b
      */
-    private void initializeNewPages(InitialNetworkPage page, boolean isFinished) {
+    private void initializeNewPages(final InitialNetworkPage page, final boolean isFinished) {
         for (int i = 1; i < page.getNetworkStructure().size(); i++) {
 
             INodeType type = page.getNetworkStructure().get(i);
@@ -123,7 +126,7 @@ public class NetworkCreationWizard extends Wizard {
     /**
      * @param page
      */
-    private void initContainerFromStartPage(InitialNetworkPage page) {
+    private void initContainerFromStartPage(final InitialNetworkPage page) {
         getDataContainer().setName(page.getNetworkName());
         getDataContainer().setStructure(page.getNetworkStructure());
 

@@ -46,17 +46,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 public final class NodeTypeManager {
 
-    private static final Logger LOGGER = Logger.getLogger(NodeTypeManager.class);
-
-    private static final String NODE_TYPE_EXTENSION_ID = "org.amanzi.nodetypes";
-
-    private static final String CLASS_ATTRIBUTE = "class";
-
-    private static final String DYNAMIC_NODE_TYPES_KEY = "dynnamic_types";
-
-    private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
-
-    private static final String COMMA_SEPARATOR = ",";
+    private static final class NodeTypeManagerHandler {
+        private static volatile NodeTypeManager instance = new NodeTypeManager();
+    }
 
     @SuppressWarnings("rawtypes")
     private static final class StringToEnumConverter<T extends Enum> {
@@ -73,13 +65,25 @@ public final class NodeTypeManager {
         }
     }
 
-    private static final class NodeTypeManagerHandler {
-        private static volatile NodeTypeManager instance = new NodeTypeManager();
-    }
+    private static final Logger LOGGER = Logger.getLogger(NodeTypeManager.class);
+
+    private static final String NODE_TYPE_EXTENSION_ID = "org.amanzi.nodetypes";
+
+    private static final String CLASS_ATTRIBUTE = "class";
+
+    private static final String DYNAMIC_NODE_TYPES_KEY = "dynnamic_types";
+
+    private static final IPreferenceStore PREFERENCE_STORE = NeoCorePlugin.getDefault().getPreferenceStore();
+
+    private static final String COMMA_SEPARATOR = ",";
 
     private static Set<Class< ? >> registeredNodeTypes = new HashSet<Class< ? >>();
 
     private static Map<String, INodeType> nodeTypeCache = new HashMap<String, INodeType>();
+
+    public static NodeTypeManager getInstance() {
+        return NodeTypeManagerHandler.instance;
+    }
 
     private final IExtensionRegistry registry;
 
@@ -89,19 +93,29 @@ public final class NodeTypeManager {
         initializeNodeTypesFromPreferenceStore();
     }
 
-    public static NodeTypeManager getInstance() {
-        return NodeTypeManagerHandler.instance;
+    public List<INodeType> addDynamicNodeTypes(final INodeType... types) {
+        String existedTypes = PREFERENCE_STORE.getString(DYNAMIC_NODE_TYPES_KEY);
+        StringBuilder builder = new StringBuilder(existedTypes);
+        List<INodeType> dynamicTypes = new ArrayList<INodeType>();
+        for (INodeType type : types) {
+            try {
+                dynamicTypes.add(getType(type.getId()));
+                continue;
+            } catch (NodeTypeNotExistsException e) {
+            }
+            if (!builder.toString().isEmpty()) {
+                builder.append(COMMA_SEPARATOR);
+            }
+            builder.append(type.getId());
+            dynamicTypes.add(type);
+            nodeTypeCache.put(type.getId(), type);
+        }
+        PREFERENCE_STORE.setValue(DYNAMIC_NODE_TYPES_KEY, builder.toString());
+        return dynamicTypes;
     }
 
-    /**
-     * Adds a class, implementing <code>INodeType</code> to the collection of registered classes.
-     * 
-     * @param nodeType a class that implements INodeType interface
-     */
-    public void registerNodeType(final Class< ? > nodeType) {
-        assert nodeType != null;
-
-        registeredNodeTypes.add(nodeType);
+    protected Set<Class< ? >> getRegisteredNodeTypes() {
+        return registeredNodeTypes;
     }
 
     /**
@@ -160,7 +174,7 @@ public final class NodeTypeManager {
     *
     */
     private void initializeNodeTypesFromPreferenceStore() {
-        String dynamicTypesString = PREFERENCE_STORE.getDefaultString(DYNAMIC_NODE_TYPES_KEY);
+        String dynamicTypesString = PREFERENCE_STORE.getString(DYNAMIC_NODE_TYPES_KEY);
         if (StringUtils.isEmpty(dynamicTypesString)) {
             return;
         }
@@ -172,28 +186,14 @@ public final class NodeTypeManager {
         }
     }
 
-    public List<INodeType> addDynamicNodeTypes(INodeType... types) {
-        String existedTypes = PREFERENCE_STORE.getDefaultString(DYNAMIC_NODE_TYPES_KEY);
-        StringBuilder builder = new StringBuilder(existedTypes);
-        List<INodeType> dynamicTypes = new ArrayList<INodeType>();
-        for (INodeType type : types) {
-            try {
-                dynamicTypes.add(getType(type.getId()));
-                continue;
-            } catch (NodeTypeNotExistsException e) {
-            }
-            if (!builder.toString().isEmpty()) {
-                builder.append(COMMA_SEPARATOR);
-            }
-            builder.append(type.getId());
-            dynamicTypes.add(type);
-            nodeTypeCache.put(type.getId(), type);
-        }
-        PREFERENCE_STORE.setDefault(DYNAMIC_NODE_TYPES_KEY, builder.toString());
-        return dynamicTypes;
-    }
+    /**
+     * Adds a class, implementing <code>INodeType</code> to the collection of registered classes.
+     * 
+     * @param nodeType a class that implements INodeType interface
+     */
+    public void registerNodeType(final Class< ? > nodeType) {
+        assert nodeType != null;
 
-    protected Set<Class< ? >> getRegisteredNodeTypes() {
-        return registeredNodeTypes;
+        registeredNodeTypes.add(nodeType);
     }
 }

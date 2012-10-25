@@ -50,7 +50,7 @@ public class NEMMessages extends NLS {
     public static String PROPERTY_EDITOR_PAGE_TITLE;
 
     public static String ELEMENT_CREATION_PAGE_TITLE;
-    
+
     public static String ELEMENT_COPY_PAGE;
 
     public static String COLUMN_NAME_LABEL;
@@ -73,21 +73,21 @@ public class NEMMessages extends NLS {
 
     public static String REMOVE_ELEMENT_CONFIRMATION_TEXT;
 
-  
+    public static String ERROR_ON_CREATING_SYSTEM_PROPERTY_MESSAGE;
 
-    private NEMMessages() {
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, NEMMessages.class);
+    }
+
+    public static String getFormattedString(final String key, final String... args) {
+        return MessageFormat.format(key, (Object[])args);
     }
 
     public static ResourceBundle getResourceBundle() {
         return resourceBundle;
     }
 
-    public static String getFormattedString(String key, String... args) {
-        return MessageFormat.format(key, (Object[])args);
-    }
-
-    static {
-        NLS.initializeMessages(BUNDLE_NAME, NEMMessages.class);
+    private NEMMessages() {
     }
 
 }

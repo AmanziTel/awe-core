@@ -13,9 +13,16 @@
 
 package org.amanzi.awe.nem.ui.widgets;
 
+import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -50,6 +57,16 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
     private final Combo cTypes;
 
     private final IPropertyDialogListener listener;
+
+    private static final Set<String> SYSTEM_PROPERTIES = new HashSet<String>();
+
+    static {
+        SYSTEM_PROPERTIES.add(NetworkElementManager.getInstance().getGeneralNodeProperties().getNodeTypeProperty());
+        SYSTEM_PROPERTIES.add(NetworkElementManager.getInstance().getGeneralNodeProperties().getLastChildID());
+        SYSTEM_PROPERTIES.add(NetworkElementManager.getInstance().getGeneralNodeProperties().getParentIDProperty());
+        SYSTEM_PROPERTIES.add(NetworkElementManager.getInstance().getGeneralNodeProperties().getSizeProperty());
+        SYSTEM_PROPERTIES.add("id");
+    }
 
     /**
      * @param parent
@@ -123,8 +140,12 @@ public class PropertyCreationDialog extends Dialog implements ModifyListener {
 
     @Override
     protected void okPressed() {
+        if (SYSTEM_PROPERTIES.contains(tText.getText())) {
+            MessageDialog.openError(getShell(), "Unable to create pre-defined system property",
+                    MessageFormat.format(NEMMessages.ERROR_ON_CREATING_SYSTEM_PROPERTY_MESSAGE, tText.getText()));
+            return;
+        }
         listener.onNewItemCreated(new PropertyContainer(tText.getText(), KnownTypes.getTypeById(cTypes.getText())));
         super.okPressed();
     }
-
 }

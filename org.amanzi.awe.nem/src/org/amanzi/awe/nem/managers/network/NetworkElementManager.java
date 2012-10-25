@@ -27,6 +27,7 @@ import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.ui.events.impl.DataUpdatedEvent;
 import org.amanzi.awe.ui.events.impl.RemoveLayerEvent;
 import org.amanzi.awe.ui.events.impl.ShowGISOnMap;
+import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.amanzi.awe.ui.manager.EventChain;
 import org.amanzi.awe.ui.util.ActionUtil;
@@ -47,6 +48,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * TODO Purpose of
@@ -115,7 +117,7 @@ public class NetworkElementManager {
         final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
         try {
             INetworkModel newModel = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name,
-                    Arrays.asList(model.getNetworkStructure()));
+                    Arrays.asList(model.getNetworkStructure()), null);
             CopyNetworkJob job = new CopyNetworkJob("Copying elements from " + model.getName() + " to " + newModel.getName(),
                     model, newModel);
             job.schedule();
@@ -143,7 +145,7 @@ public class NetworkElementManager {
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
                 try {
-                    model.createElement((INetworkElementType)type, parentElement, name, prop);
+                    final IDataElement element = model.createElement((INetworkElementType)type, parentElement, name, prop);
                     model.finishUp();
                     LOGGER.info("Finished creating new element  from model " + model.getName()
                             + new Date(System.currentTimeMillis()));
@@ -153,9 +155,11 @@ public class NetworkElementManager {
                         public void run() {
                             EventChain chain = new EventChain(false);
                             chain.addEvent(new DataUpdatedEvent(null));
+                            // chain.addEvent(new ShowGISOnMap(model.getMainGIS(), null));
+                            chain.addEvent(new ShowInViewEvent(model, element, null));
                             AWEEventManager.getManager().fireEventChain(chain);
                         }
-                    }, false);
+                    }, true);
 
                 } catch (Exception e) {
                     LOGGER.error("Can't create new element from model " + model, e);
@@ -175,10 +179,12 @@ public class NetworkElementManager {
      * @throws NemManagerOperationException
      */
     public void createModel(final String name, final List<INodeType> structure,
-            final Map<INodeType, List<PropertyContainer>> typeProperties) throws NemManagerOperationException {
+            final Map<INodeType, List<PropertyContainer>> typeProperties, final CoordinateReferenceSystem coordinateReferenceSystem)
+            throws NemManagerOperationException {
         EventChain eventChain = new EventChain(false);
         try {
-            INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure);
+            INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure,
+                    coordinateReferenceSystem);
             IPropertyStatisticsModel propertiesModel = model.getPropertyStatistics();
             updateProperties(propertiesModel, typeProperties);
             model.finishUp();
@@ -190,6 +196,13 @@ public class NetworkElementManager {
         }
 
         AWEEventManager.getManager().fireEventChain(eventChain);
+    }
+
+    /**
+     * @return Returns the generalNodeProperties.
+     */
+    public IGeneralNodeProperties getGeneralNodeProperties() {
+        return generalNodeProperties;
     }
 
     /**
