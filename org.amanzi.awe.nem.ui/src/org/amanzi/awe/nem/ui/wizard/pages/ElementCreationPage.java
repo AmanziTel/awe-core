@@ -96,10 +96,6 @@ public class ElementCreationPage extends PropertyEditorPage {
                 continue;
             }
             Object value = propertyModel.getDefaultValues(getType(), property);
-            if (property.equals(getNetworkNodeProperties().getCIProperty())
-                    || property.equals(getNetworkNodeProperties().getLACProperty())) {
-                value = null;
-            }
             final Class< ? > clazz = propertyModel.getPropertyClass(getType(), property);
             final KnownTypes type = KnownTypes.getTypeByClass(clazz);
             final PropertyContainer container = new PropertyContainer(property, type);

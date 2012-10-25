@@ -34,6 +34,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.INetworkModel.INetworkElementType;
+import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.IGeoNodeProperties;
@@ -110,7 +111,7 @@ public class NetworkElementManager {
      * @param properties
      */
     private void copyNetworkModel(final INetworkModel model, final Collection<PropertyContainer> properties) {
-        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties, NetworkElementType.NETWORK);
         final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
         try {
             INetworkModel newModel = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name,
@@ -135,7 +136,7 @@ public class NetworkElementManager {
         LOGGER.info("Start create new element  from model " + model.getName() + " at " + new Date(System.currentTimeMillis()));
 
         final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
-        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties);
+        final Map<String, Object> prop = preparePropertiesMapFromContainer(properties, type);
         final String name = (String)prop.get(generalNodeProperties.getNodeNameProperty());
 
         Job job = new Job("Create new element  from model " + model.getName()) {
@@ -195,10 +196,18 @@ public class NetworkElementManager {
      * @param value
      * @return
      */
-    private Map<String, Object> preparePropertiesMapFromContainer(final Collection<PropertyContainer> containers) {
+    private Map<String, Object> preparePropertiesMapFromContainer(final Collection<PropertyContainer> containers,
+            final INodeType type) {
         Map<String, Object> properties = new HashMap<String, Object>();
+        boolean isTypeExists = false;
         for (PropertyContainer container : containers) {
+            if (container.getName().equals(generalNodeProperties.getNodeTypeProperty())) {
+                isTypeExists = true;
+            }
             properties.put(container.getName(), container.getValue());
+        }
+        if (!isTypeExists) {
+            properties.put(generalNodeProperties.getNodeTypeProperty(), type.getId());
         }
         return properties;
     }
@@ -271,7 +280,7 @@ public class NetworkElementManager {
     private void updateProperties(final IPropertyStatisticsModel propertiesModel,
             final Map<INodeType, List<PropertyContainer>> typeProperties) {
         for (Entry<INodeType, List<PropertyContainer>> properties : typeProperties.entrySet()) {
-            Map<String, Object> preparedProeprties = preparePropertiesMapFromContainer(properties.getValue());
+            Map<String, Object> preparedProeprties = preparePropertiesMapFromContainer(properties.getValue(), properties.getKey());
             preparedProeprties.remove(geoNodeProperties.getLatitudeProperty());
             preparedProeprties.remove(geoNodeProperties.getLongitudeProperty());
             preparedProeprties.put(generalNodeProperties.getNodeTypeProperty(), properties.getKey().getId());

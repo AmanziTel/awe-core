@@ -169,7 +169,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     public void deleteElementProperties(IDataElement element) throws ModelException {
         statisticsVault.deleteProeprties(element.getNodeType(), element.asMap());
         try {
-            statisticsService.deleteProeprty(getRootNode(), element.getNodeType(), element.asMap());
+            statisticsService.deleteProperty(getRootNode(), element.getNodeType(), element.asMap());
         } catch (ServiceException e) {
             processException("Can't update property", e);
         }

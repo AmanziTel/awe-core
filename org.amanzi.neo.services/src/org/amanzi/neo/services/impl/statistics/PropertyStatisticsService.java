@@ -285,7 +285,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
     }
 
     @Override
-    public void deleteProeprty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException {
+    public void deleteProperty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException {
         Node statisticsNode = getStatisticsNode(rootNode);
         Node nodeTypeVault = getChildVaultNode(statisticsNode, nodeType.getId());
         for (Entry<String, Object> property : asMap.entrySet()) {

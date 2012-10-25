@@ -40,6 +40,6 @@ public interface IPropertyStatisticsService extends IService {
     void renameProperty(Node rootNode, INodeType nodeType, String propertyName, Object oldValue, Object newValue)
             throws ServiceException;
 
-    void deleteProeprty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException;
+    void deleteProperty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException;
 
 }
