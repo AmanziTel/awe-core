@@ -159,8 +159,17 @@ public final class AWEEventManager {
     }
 
     private void runEvent(final IEvent event, final IAWEEventListenter listener) {
+        final long before = System.currentTimeMillis();
+
         if (!event.isStopped()) {
             listener.onEvent(event);
+        }
+
+        final long after = System.currentTimeMillis();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Event <" + event + "> was handled by <" + listener.getClass().getSimpleName() + "> during "
+                    + (after - before) + " ms.");
         }
     }
 

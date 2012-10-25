@@ -79,4 +79,9 @@ public abstract class AbstractEvent implements IEvent {
         return isStopped;
     }
 
+    @Override
+    public String toString() {
+        return status.name();
+    }
+
 }
