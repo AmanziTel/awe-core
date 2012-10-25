@@ -89,14 +89,5 @@
             commandId="org.amanzi.statistics.ChangeDimension">
       </handler>
    </extension>
-   <extension
-         point="org.amanzi.awe.ui.listeners">
-      <listener
-            class="org.amanzi.awe.statistics.ui.drilldown.StatisticsDrillDown">
-         <eventStatus
-               status="SHOW_IN_VIEW">
-         </eventStatus>
-      </listener>
-   </extension>
 
 </plugin>
