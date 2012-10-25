@@ -4,6 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            category="org.amanzi.awe.views"
             class="org.amanzi.awe.statistics.ui.view.StatisticsView"
             icon="icons/statistics_view.png"
             id="org.amanzi.awe.StatisticsView"

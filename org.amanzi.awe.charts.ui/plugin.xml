@@ -4,6 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            category="org.amanzi.awe.views"
             class="org.amanzi.awe.views.charts.ChartsView"
             id="org.amanzi.awe.views.ChartsView"
             name="Charts View"
