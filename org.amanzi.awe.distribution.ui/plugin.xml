@@ -38,5 +38,14 @@
          </tree_id>
       </wrapper-factory>
    </extension>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.distribution.ui.drilldown.DistributionDrillDown">
+         <eventStatus
+               status="SHOW_IN_VIEW">
+         </eventStatus>
+      </listener>
+   </extension>
 
 </plugin>

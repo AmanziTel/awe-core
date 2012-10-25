@@ -56,16 +56,18 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         DataElement result = null;
 
         try {
-            Node childNode = ((DataElement)childElement).getNode();
+            final Node childNode = ((DataElement)childElement).getNode();
 
-            Node parentNode = getParent(childNode);
+            final Node parentNode = getParent(childNode);
 
-            result = new DataElement(parentNode);
+            if (parentNode != null) {
+                result = new DataElement(parentNode);
 
-            result.setNodeType(getNodeService().getNodeType(parentNode));
-        } catch (ServiceException e) {
+                result.setNodeType(getNodeService().getNodeType(parentNode));
+            }
+        } catch (final ServiceException e) {
             processException("An error occured on searching for a Parent Element", e);
-        } catch (NodeTypeNotExistsException e) {
+        } catch (final NodeTypeNotExistsException e) {
             processException("An error occured on initializing child element", e);
         }
 
@@ -82,27 +84,27 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getChildren", parentElement));
         }
-        Node parentNode = ((DataElement)parentElement).getNode();
+        final Node parentNode = ((DataElement)parentElement).getNode();
         Iterator<Node> childs = null;
         try {
             childs = getNodeService().getChildren(parentNode);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Service exception found", e);
         }
         return new DataElementIterator(childs).toIterable();
     }
 
     @Override
-    public void deleteElement(IDataElement element) throws ModelException {
+    public void deleteElement(final IDataElement element) throws ModelException {
         assert element != null;
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("deleteElement", element));
         }
 
-        Node parentNode = ((DataElement)element).getNode();
+        final Node parentNode = ((DataElement)element).getNode();
         try {
             getNodeService().deleteChain(parentNode);
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("Can't delete element" + e, e);
         }
 
