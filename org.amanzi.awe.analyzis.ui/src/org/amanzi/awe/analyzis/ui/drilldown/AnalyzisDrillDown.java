@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.ui.drilldown;
+package org.amanzi.awe.analyzis.ui.drilldown;
 
 import org.amanzi.awe.analyzis.ui.view.AnalyzisTreeView;
 import org.amanzi.awe.ui.tree.drilldown.AbstractDrillDownListener;
@@ -24,12 +24,12 @@ import org.amanzi.awe.ui.tree.drilldown.AbstractDrillDownListener;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsDrillDown extends AbstractDrillDownListener {
+public class AnalyzisDrillDown extends AbstractDrillDownListener {
 
     /**
      * @param viewId
      */
-    public StatisticsDrillDown() {
+    public AnalyzisDrillDown() {
         super(AnalyzisTreeView.VIEW_ID);
     }
 

@@ -32,4 +32,9 @@ public class NetworkDrillDown extends AbstractDrillDownListener {
     public NetworkDrillDown() {
         super(NetworkTreeView.NETWORK_TREE_VIEW_ID);
     }
+
+    @Override
+    public Priority getPriority() {
+        return Priority.HIGH;
+    }
 }
