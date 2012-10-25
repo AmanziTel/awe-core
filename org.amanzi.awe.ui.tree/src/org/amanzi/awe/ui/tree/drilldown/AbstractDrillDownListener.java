@@ -45,10 +45,12 @@ public class AbstractDrillDownListener implements IAWEEventListenter {
             final ShowInViewEvent eventImpl = (ShowInViewEvent)event;
 
             if (eventImpl.getElement() instanceof IDataElement) {
-                final IAWETreeView view = showView();
+                final IAWETreeView view = findView();
 
                 if (view != null) {
-                    view.show(eventImpl.getParent(), (IDataElement)eventImpl.getElement());
+                    if (view.show(eventImpl.getParent(), (IDataElement)eventImpl.getElement())) {
+                        showView();
+                    }
                 }
             }
         }
@@ -59,17 +61,22 @@ public class AbstractDrillDownListener implements IAWEEventListenter {
         return Priority.NORMAL;
     }
 
-    private IAWETreeView showView() {
+    private IAWETreeView findView() {
+
+        final IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(viewId);
+
+        if (view instanceof IAWETreeView) {
+            return (IAWETreeView)view;
+        }
+
+        return null;
+    }
+
+    private void showView() {
         try {
-            final IViewPart view = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(viewId);
-
-            if (view instanceof IAWETreeView) {
-                return (IAWETreeView)view;
-            }
-
-            return null;
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(viewId);
         } catch (final PartInitException e) {
-            return null;
+            // do nothing
         }
     }
 

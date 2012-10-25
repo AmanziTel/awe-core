@@ -159,9 +159,11 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     }
 
     @Override
-    public void show(final IModel model, final IDataElement element) {
+    public boolean show(final IModel model, final IDataElement element) {
         final ITreeItem treeItem = new TreeItem(model, element, null);
 
         treeViewer.setSelection(new StructuredSelection(treeItem), true);
+
+        return treeViewer.getSelection() != null;
     }
 }

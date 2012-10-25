@@ -11,11 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.tree.view;
+package org.amanzi.awe.network.ui.drilldown;
 
-import org.amanzi.awe.ui.views.IAWEView;
-import org.amanzi.neo.dto.IDataElement;
-import org.amanzi.neo.models.IModel;
+import org.amanzi.awe.network.ui.view.NetworkTreeView;
+import org.amanzi.awe.ui.tree.drilldown.AbstractDrillDownListener;
 
 /**
  * TODO Purpose of
@@ -25,8 +24,12 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IAWETreeView extends IAWEView {
+public class NetworkDrillDown extends AbstractDrillDownListener {
 
-    boolean show(final IModel model, final IDataElement element);
-
+    /**
+     * @param viewId
+     */
+    public NetworkDrillDown() {
+        super(NetworkTreeView.NETWORK_TREE_VIEW_ID);
+    }
 }
