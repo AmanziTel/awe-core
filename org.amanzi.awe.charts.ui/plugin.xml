@@ -5,7 +5,7 @@
          point="org.eclipse.ui.views">
       <view
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.charts.ChartsView"
+            class="org.amanzi.awe.charts.ui.ChartsView"
             id="org.amanzi.awe.views.ChartsView"
             name="Charts View"
             restorable="true">
@@ -30,7 +30,7 @@
    <extension
          point="org.amanzi.awe.ui.listeners">
       <listener
-            class="org.amanzi.awe.views.charts.listener.ShowInChartsViewListener">
+            class="org.amanzi.awe.charts.ui.listener.ShowInChartsViewListener">
          <eventStatus
                status="SHOW_IN_VIEW">
          </eventStatus>

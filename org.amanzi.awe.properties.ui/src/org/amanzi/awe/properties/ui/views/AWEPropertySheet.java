@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.properties.views;
+package org.amanzi.awe.properties.ui.views;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.properties.ui.views.internal.DataElementPropertySourceProvider;
 import org.amanzi.awe.ui.views.IAWEView;
-import org.amanzi.awe.views.properties.views.internal.DataElementPropertySourceProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 

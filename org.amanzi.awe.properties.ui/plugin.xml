@@ -23,7 +23,7 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.amanzi.awe.views.properties.handler.ShowPropertiesHandler"
+            class="org.amanzi.awe.properties.ui.handler.ShowPropertiesHandler"
             commandId="org.amanzi.awe.showProperties">
          <activeWhen>
             <with

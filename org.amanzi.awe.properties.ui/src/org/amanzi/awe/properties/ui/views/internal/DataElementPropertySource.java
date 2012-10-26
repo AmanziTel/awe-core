@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.properties.views.internal;
+package org.amanzi.awe.properties.ui.views.internal;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.properties.ui.messages.PropertiesViewMessages;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.properties.messages.PropertiesViewMessages;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;

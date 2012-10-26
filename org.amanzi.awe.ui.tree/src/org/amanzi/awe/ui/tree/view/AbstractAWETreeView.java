@@ -15,6 +15,7 @@ package org.amanzi.awe.ui.tree.view;
 
 import java.util.Set;
 
+import org.amanzi.awe.properties.ui.AWEPropertiesPlugin;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -24,7 +25,6 @@ import org.amanzi.awe.ui.tree.item.impl.TreeItem;
 import org.amanzi.awe.ui.tree.provider.AWETreeContentProvider;
 import org.amanzi.awe.ui.tree.provider.AWETreeLabelProvider;
 import org.amanzi.awe.ui.tree.wrapper.ITreeWrapperFactory;
-import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.apache.commons.lang3.ObjectUtils;

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.properties.handler;
+package org.amanzi.awe.properties.ui.handler;
 
 import org.amanzi.awe.ui.util.ActionUtil;
 import org.eclipse.core.commands.AbstractHandler;

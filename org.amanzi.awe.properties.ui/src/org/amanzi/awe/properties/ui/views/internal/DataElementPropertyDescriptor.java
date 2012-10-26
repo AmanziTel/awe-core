@@ -11,12 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.properties.views.internal;
+package org.amanzi.awe.properties.ui.views.internal;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.awe.views.properties.AWEPropertiesPlugin;
+import org.amanzi.awe.properties.ui.AWEPropertiesPlugin;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
