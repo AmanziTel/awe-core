@@ -13,9 +13,12 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.amanzi.awe.nem.managers.network.NetworkElementManager;
 import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.structure.NetworkStructureManager;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
@@ -27,6 +30,7 @@ import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -59,7 +63,7 @@ public class InitialNetworkPage extends WizardPage
     private TypeControlWidget typesSelector;
 
     private String networkName;
-
+    private final Set<String> existedNetwork;
     private CoordinateReferenceSystem crs;
 
     /**
@@ -68,6 +72,7 @@ public class InitialNetworkPage extends WizardPage
     public InitialNetworkPage() {
         super(NEMMessages.CREATE_NEW_NETWORK);
         setTitle(NEMMessages.CREATE_NEW_NETWORK);
+        existedNetwork = NetworkElementManager.getInstance().getExistedNetworkNames();
     }
 
     @Override
@@ -97,6 +102,7 @@ public class InitialNetworkPage extends WizardPage
                 .getRequiredNetworkElements());
         typesSelector.initializeWidget();
         setControl(mainComposite);
+        onTextChanged(null);
 
     }
 
@@ -136,11 +142,6 @@ public class InitialNetworkPage extends WizardPage
     }
 
     @Override
-    public boolean isPageComplete() {
-        return isCompleate;
-    }
-
-    @Override
     public void onCRSSelected(final CoordinateReferenceSystem crs) {
         this.crs = crs;
 
@@ -163,10 +164,16 @@ public class InitialNetworkPage extends WizardPage
     @Override
     public void onTextChanged(final String name) {
         networkName = name;
-        if (name.isEmpty()) {
+        if (StringUtils.isEmpty(name)) {
+            setErrorMessage(NEMMessages.ENTER_NETWORK_NAME);
             isCompleate = false;
+        } else if (existedNetwork.contains(networkName)) {
+            setErrorMessage(MessageFormat.format(NEMMessages.NETWORK_ALREADY_EXIST, networkName));
+            isCompleate = false;
+        } else {
+            isCompleate = true;
+            setErrorMessage(null);
         }
-        isCompleate = true;
         setPageComplete(isCompleate);
 
     }

@@ -13,10 +13,12 @@
 
 package org.amanzi.awe.nem.ui.wizard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
+import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -34,6 +36,7 @@ import org.eclipse.jface.wizard.Wizard;
 public class NetworkCreationWizard extends Wizard {
 
     private NetworkDataContainer container;
+    private List<String> pagesOrder;
 
     public NetworkCreationWizard() {
         setForcePreviousAndNextButtons(true);
@@ -44,25 +47,60 @@ public class NetworkCreationWizard extends Wizard {
         addPage(new InitialNetworkPage());
     }
 
-    @Override
-    public boolean performFinish() {
-        if (getPages().length == 1) {
-            handleFirstPageOnFinish(getPages()[0]);
+    /**
+     * @param name
+     * @return
+     */
+    private IWizardPage computeNextPage(final String name) {
+        if (name.equals(NEMMessages.CREATE_NEW_NETWORK)) {
+            return getPage(pagesOrder.get(0));
         }
-
-        List<INodeType> types = NetworkElementManager.getInstance().updateNodeTypes(
-                getDataContainer().getStructure().toArray(new INodeType[getDataContainer().getStructure().size()]));;
-        handleModelRefreshing(types);
-        return true;
+        int currentPageIndex = pagesOrder.indexOf(name);
+        if (currentPageIndex == pagesOrder.size() - 1) {
+            return null;
+        }
+        String nextPageName = pagesOrder.get(++currentPageIndex);
+        return getPage(nextPageName);
     }
 
-    protected void handleModelRefreshing(final List<INodeType> types) {
-        try {
-            InitialNetworkPage firstPage = (InitialNetworkPage)getPages()[0];
-            NetworkElementManager.getInstance().createModel(container.getName(), types, container.getTypeProperties(),
-                    firstPage.getCrs());
-        } catch (NemManagerOperationException e) {
-            return;
+    /**
+     * @param name
+     * @return
+     */
+    private IWizardPage computePreviousPage(final String name) {
+        int currentPageIndex = pagesOrder.indexOf(name);
+        if (currentPageIndex <= 0) {
+            return getPage(NEMMessages.CREATE_NEW_NETWORK);
+        }
+        String previousPageName = pagesOrder.get(--currentPageIndex);
+        return getPage(previousPageName);
+    }
+
+    protected NetworkDataContainer getDataContainer() {
+        if (container == null) {
+            container = new NetworkDataContainer();
+        }
+        return container;
+    }
+
+    @Override
+    public IWizardPage getNextPage(final IWizardPage page) {
+        if (page instanceof InitialNetworkPage) {
+            initContainerFromStartPage((InitialNetworkPage)page);
+            initializeNewPages((InitialNetworkPage)page, false);
+        } else {
+            handlePropertyPage((PropertyEditorPage)page);
+
+        }
+        return computeNextPage(page.getName());
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(final IWizardPage page) {
+        if (page instanceof InitialNetworkPage) {
+            return null;
+        } else {
+            return computePreviousPage(page.getName());
         }
     }
 
@@ -76,16 +114,14 @@ public class NetworkCreationWizard extends Wizard {
         }
     }
 
-    @Override
-    public IWizardPage getNextPage(final IWizardPage page) {
-        if (page instanceof InitialNetworkPage) {
-            initContainerFromStartPage((InitialNetworkPage)page);
-            initializeNewPages((InitialNetworkPage)page, false);
-        } else {
-            handlePropertyPage((PropertyEditorPage)page);
-
+    protected void handleModelRefreshing(final List<INodeType> types) {
+        try {
+            InitialNetworkPage firstPage = (InitialNetworkPage)getPages()[0];
+            NetworkElementManager.getInstance().createModel(container.getName(), types, container.getTypeProperties(),
+                    firstPage.getCrs());
+        } catch (NemManagerOperationException e) {
+            return;
         }
-        return super.getNextPage(page);
     }
 
     /**
@@ -97,12 +133,22 @@ public class NetworkCreationWizard extends Wizard {
 
     /**
      * @param page
+     */
+    private void initContainerFromStartPage(final InitialNetworkPage page) {
+        getDataContainer().setName(page.getNetworkName());
+        getDataContainer().setStructure(page.getNetworkStructure());
+
+    }
+
+    /**
+     * @param page
      * @param b
      */
     private void initializeNewPages(final InitialNetworkPage page, final boolean isFinished) {
+        pagesOrder = new ArrayList<String>();
         for (int i = 1; i < page.getNetworkStructure().size(); i++) {
-
             INodeType type = page.getNetworkStructure().get(i);
+            pagesOrder.add(type.getId());
             if (getPage(type.getId()) == null) {
                 PropertyEditorPage propertyPage = new PropertyEditorPage(type);
                 propertyPage.initializeTypes();
@@ -113,23 +159,18 @@ public class NetworkCreationWizard extends Wizard {
                 }
             }
         }
-
     }
 
-    protected NetworkDataContainer getDataContainer() {
-        if (container == null) {
-            container = new NetworkDataContainer();
+    @Override
+    public boolean performFinish() {
+        if (getPages().length == 1) {
+            handleFirstPageOnFinish(getPages()[0]);
         }
-        return container;
-    }
 
-    /**
-     * @param page
-     */
-    private void initContainerFromStartPage(final InitialNetworkPage page) {
-        getDataContainer().setName(page.getNetworkName());
-        getDataContainer().setStructure(page.getNetworkStructure());
-
+        List<INodeType> types = NetworkElementManager.getInstance().updateNodeTypes(
+                getDataContainer().getStructure().toArray(new INodeType[getDataContainer().getStructure().size()]));;
+        handleModelRefreshing(types);
+        return true;
     }
 
 }

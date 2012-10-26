@@ -75,6 +75,10 @@ public class NEMMessages extends NLS {
 
     public static String ERROR_ON_CREATING_SYSTEM_PROPERTY_MESSAGE;
 
+    public static String NETWORK_ALREADY_EXIST;
+
+    public static String ENTER_NETWORK_NAME;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, NEMMessages.class);
     }

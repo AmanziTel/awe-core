@@ -17,9 +17,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
 import org.amanzi.awe.nem.internal.NemPlugin;
@@ -200,6 +202,19 @@ public class NetworkElementManager {
         AWEEventManager.getManager().fireEventChain(eventChain);
     }
 
+    public Set<String> getExistedNetworkNames() {
+        Set<String> names = new HashSet<String>();
+        try {
+            for (INetworkModel model : networkModelProvider.findAll(projectModelPovider.getActiveProjectModel())) {
+                names.add(model.getName());
+            }
+
+        } catch (ModelException e) {
+            LOGGER.error("can't find network", e);
+        }
+        return names;
+    }
+
     /**
      * @return Returns the generalNodeProperties.
      */
@@ -252,7 +267,7 @@ public class NetworkElementManager {
                         public void run() {
                             AWEEventManager.getManager().fireDataUpdatedEvent(null);
                         }
-                    }, false);
+                    }, true);
 
                 } catch (Exception e) {
                     LOGGER.error("Can't remove element " + element + " from model " + model, e);

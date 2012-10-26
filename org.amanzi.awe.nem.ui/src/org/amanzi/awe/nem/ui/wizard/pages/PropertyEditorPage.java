@@ -29,7 +29,6 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -113,14 +112,6 @@ public class PropertyEditorPage extends WizardPage implements ITableChangedWidge
      */
     protected INetworkNodeProperties getNetworkNodeProperties() {
         return networkNodeProperties;
-    }
-
-    @Override
-    public IWizardPage getPreviousPage() {
-        if (super.getPreviousPage() != null && super.getPreviousPage() instanceof InitialNetworkPage) {
-            return null;
-        }
-        return super.getPreviousPage();
     }
 
     public List<PropertyContainer> getProperties() {
