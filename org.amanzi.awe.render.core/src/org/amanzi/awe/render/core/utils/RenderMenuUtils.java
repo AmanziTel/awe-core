@@ -84,7 +84,7 @@ public final class RenderMenuUtils {
                 // check model is same for all elements
                 if (renderableModel == null) {
                     renderableModel = itemModel;
-                } else if (itemModel.equals(renderableModel)) {
+                } else if (!itemModel.equals(renderableModel)) {
                     incorrect = true;
                     break;
                 }

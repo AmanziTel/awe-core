@@ -154,7 +154,22 @@ public final class AWEEventManager {
         if (inDisplay) {
             runEventListener(event, singleListener);
         } else {
-            singleListener.onEvent(event);
+            runEvent(event, singleListener);
+        }
+    }
+
+    private void runEvent(final IEvent event, final IAWEEventListenter listener) {
+        final long before = System.currentTimeMillis();
+
+        if (!event.isStopped()) {
+            listener.onEvent(event);
+        }
+
+        final long after = System.currentTimeMillis();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Event <" + event + "> was handled by <" + listener.getClass().getSimpleName() + "> during "
+                    + (after - before) + " ms.");
         }
     }
 
@@ -163,7 +178,7 @@ public final class AWEEventManager {
 
             @Override
             public void run() {
-                singleListener.onEvent(event);
+                runEvent(event, singleListener);
             }
         }, event.isAsync());
     }

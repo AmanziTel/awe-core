@@ -107,10 +107,10 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     @Override
     protected ScrolledComposite createWidget(final Composite parent, final int style) {
-        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, style);
+        final ScrolledComposite scrolledComposite = new ScrolledComposite(parent, style);
         scrolledComposite.setLayout(new GridLayout(1, false));
 
-        Composite composite = new Composite(scrolledComposite, SWT.FILL);
+        final Composite composite = new Composite(scrolledComposite, SWT.FILL);
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -153,7 +153,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
             updateProviders(filterContainer);
             initStatisticsGroups();
             updateTable(tableViewer.getTable());
-            EventChain eventChain = new EventChain(false);
+            final EventChain eventChain = new EventChain(false);
             eventChain.addEvent(new DataUpdatedEvent(null));
             eventChain.addEvent(new ShowInViewEvent(model, filterContainer, this));
             AWEEventManager.getManager().fireEventChain(eventChain);
@@ -167,8 +167,8 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
      * @param direction
      */
     private void updateSorting(final TableColumn currentColumn, final Integer direction) {
-        Table table = tableViewer.getTable();
-        int columnNumber = columns.indexOf(currentColumn);
+        final Table table = tableViewer.getTable();
+        final int columnNumber = columns.indexOf(currentColumn);
         Integer sortDirection = direction;
         if (sortDirection == null) {
             sortDirection = table.getSortDirection();
@@ -186,12 +186,12 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     private void initStatisticsGroups() {
         groups = new HashSet<String>();
         try {
-            Iterable<IStatisticsGroup> statGroups = model.getAllStatisticsGroups(DimensionType.TIME, filterContainer.getPeriod()
-                    .getId());
-            for (IStatisticsGroup group : statGroups) {
+            final Iterable<IStatisticsGroup> statGroups = model.getAllStatisticsGroups(DimensionType.TIME, filterContainer
+                    .getPeriod().getId());
+            for (final IStatisticsGroup group : statGroups) {
                 groups.add(group.getPropertyValue());
             }
-        } catch (ModelException e) {
+        } catch (final ModelException e) {
             // TODO KV: handle exception;
         }
 
@@ -208,15 +208,15 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     private void updateColumns(final Table table) {
-        TableLayout tableLayout = new TableLayout();
+        final TableLayout tableLayout = new TableLayout();
 
-        Set<String> columns = model.getColumns();
-        int weight = (100 / columns.size()) + 2;
+        final Set<String> columns = model.getColumns();
+        final int weight = (100 / columns.size()) + 2;
         addWorkaroundColumn(table, tableLayout);
         createTableColumn(table, tableLayout, "Aggregation", weight);
         createTableColumn(table, tableLayout, "Total", weight);
 
-        for (String column : columns) {
+        for (final String column : columns) {
             createTableColumn(table, tableLayout, column, weight);
         }
         table.setLayout(tableLayout);
@@ -238,7 +238,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
             @Override
             public void widgetSelected(final SelectionEvent e) {
                 if (table.getColumn(1).equals(column)) {
-                    FilteringDialog filterDialog = new FilteringDialog(tableViewer, column, groups);
+                    final FilteringDialog filterDialog = new FilteringDialog(tableViewer, column, groups);
                     filterDialog.open();
                 } else {
                     updateSorting(column, null);
@@ -254,7 +254,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     private void clearTable(final Table table) {
-        for (TableColumn column : table.getColumns()) {
+        for (final TableColumn column : table.getColumns()) {
             column.dispose();
         }
         tableViewer.setInput(null);
@@ -266,7 +266,7 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     @Override
     public void handleEvent(final Event event) {
         if (event instanceof FilterDialogEvent) {
-            FilterDialogEvent filterEvent = (FilterDialogEvent)event;
+            final FilterDialogEvent filterEvent = (FilterDialogEvent)event;
             tableViewer.setFilters(filterEvent.getFilters());
             updateSorting(filterEvent.getColumn(), filterEvent.getDirection());
         }
@@ -274,8 +274,8 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
     }
 
     private void drillDown() {
-        int column = cursor.getColumn() - 1;
-        IStatisticsRow statisticsRow = (IStatisticsRow)cursor.getRow().getData();
+        final int column = cursor.getColumn() - 1;
+        final IStatisticsRow statisticsRow = (IStatisticsRow)cursor.getRow().getData();
 
         if ((cursor.getRow() != null) && (cursor.getRow().getData() instanceof IStatisticsRow)) {
             drillDown(statisticsRow, column);
@@ -290,9 +290,9 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
 
     private void drillDown(final IStatisticsRow row, final int column) {
         if (model != null) {
-            IMeasurementModel sourceModel = model.getSourceModel();
+            final IMeasurementModel sourceModel = model.getSourceModel();
 
-            Set<IDataElement> elements = new HashSet<IDataElement>();
+            Iterable<IDataElement> elements = Iterables.emptyIterable();
 
             IDataElement elementToShow = null;
 
@@ -300,35 +300,35 @@ public class StatisticsTable extends AbstractAWEWidget<ScrolledComposite, IStati
                 switch (labelProvider.getCellType(row, column)) {
                 case SUMMARY:
                     if (column < 2) {
-                        Iterables.addAll(elements, row.getSources());
+                        elements = Iterables.concat(elements, row.getSources());
 
                         elementToShow = row;
 
                         break;
                     }
                 case KPI:
-                    IStatisticsCell cell = Iterables.get(row.getStatisticsCells(), column - 2);
+                    final IStatisticsCell cell = Iterables.get(row.getStatisticsCells(), column - 2);
 
-                    Iterables.addAll(elements, cell.getSources());
+                    elements = Iterables.concat(elements, cell.getSources());
 
                     elementToShow = cell;
 
                     break;
                 case PERIOD:
-                    Iterables.addAll(elements, row.getSources());
+                    elements = Iterables.concat(elements, row.getSources());
 
                     elementToShow = row;
 
                     break;
                 case PROPERTY:
-                    Iterables.addAll(elements, row.getStatisticsGroup().getSources());
+                    elements = Iterables.concat(elements, row.getStatisticsGroup().getSources());
 
                     elementToShow = row.getStatisticsGroup();
 
                     break;
                 }
 
-                EventChain eventChain = new EventChain(true);
+                final EventChain eventChain = new EventChain(true);
 
                 eventChain.addEvent(new ShowElementsOnMap(sourceModel, elements, this));
                 eventChain.addEvent(new ShowInViewEvent(model, elementToShow, this));

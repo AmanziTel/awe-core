@@ -54,5 +54,14 @@
             name="Network Tree Labels">
       </page>
    </extension>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.network.ui.drilldown.NetworkDrillDown">
+         <eventStatus
+               status="SHOW_IN_VIEW">
+         </eventStatus>
+      </listener>
+   </extension>
    
 </plugin>

@@ -7,7 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.awe.distribution.engine;bundle-version="1.0.0",
  org.amanzi.awe.libs;bundle-version="1.0.0",
- org.amanzi.awe.ui.tree;bundle-version="1.0.0",
- org.amanzi.awe.analyzis.ui;bundle-version="1.0.0"
+ org.amanzi.awe.ui.tree;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.amanzi.awe.distribution.ui.internal.DistributionPlugin

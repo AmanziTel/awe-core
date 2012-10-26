@@ -27,6 +27,6 @@ import org.amanzi.neo.models.IModel;
  */
 public interface IAWETreeView extends IAWEView {
 
-    void show(final IModel model, final IDataElement element);
+    boolean show(final IModel model, final IDataElement element);
 
 }

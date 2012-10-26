@@ -11,9 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.ui.drilldown;
+package org.amanzi.awe.network.ui.drilldown;
 
-import org.amanzi.awe.analyzis.ui.view.AnalyzisTreeView;
+import org.amanzi.awe.network.ui.view.NetworkTreeView;
 import org.amanzi.awe.ui.tree.drilldown.AbstractDrillDownListener;
 
 /**
@@ -24,13 +24,17 @@ import org.amanzi.awe.ui.tree.drilldown.AbstractDrillDownListener;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsDrillDown extends AbstractDrillDownListener {
+public class NetworkDrillDown extends AbstractDrillDownListener {
 
     /**
      * @param viewId
      */
-    public StatisticsDrillDown() {
-        super(AnalyzisTreeView.VIEW_ID);
+    public NetworkDrillDown() {
+        super(NetworkTreeView.NETWORK_TREE_VIEW_ID);
     }
 
+    @Override
+    public Priority getPriority() {
+        return Priority.HIGH;
+    }
 }

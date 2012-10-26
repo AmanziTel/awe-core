@@ -42,6 +42,7 @@ import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -149,6 +150,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private final INetworkNodeProperties networkNodeProperties;
 
+    private final LRUMap elementLocationsIteratorCache = new LRUMap(5);
+
     private List<INodeType> structure = new ArrayList<INodeType>() {
         /** long serialVersionUID field */
         private static final long serialVersionUID = 7149098047373556881L;
@@ -174,7 +177,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public void initialize(Node rootNode) throws ModelException {
+    public void initialize(final Node rootNode) throws ModelException {
         super.initialize(rootNode);
         initializeNetworkStructure();
     }
@@ -185,12 +188,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      */
     public void initializeNetworkStructure() {
         structure.clear();
-        String[] structure = (String[])getRootNode().getProperty(networkNodeProperties.getStuctureProperty());
-        for (String element : structure) {
+        final String[] structure = (String[])getRootNode().getProperty(networkNodeProperties.getStuctureProperty());
+        for (final String element : structure) {
             INodeType type;
             try {
                 type = NodeTypeManager.getInstance().getType(element);
-            } catch (NodeTypeNotExistsException e) {
+            } catch (final NodeTypeNotExistsException e) {
                 LOGGER.error("can't find node type " + element, e);
                 continue;
             }
@@ -199,12 +202,12 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     }
 
-    public void setStructure(List<INodeType> structure) throws ModelException {
+    public void setStructure(final List<INodeType> structure) throws ModelException {
         this.structure = structure;
         try {
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
                     structureToStringArrayFormat());
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't setStructure to network", e);
         }
 
@@ -302,8 +305,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         DataElement result = null;
 
         try {
-            Node parentNode = ((DataElement)parent).getNode();
-            Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name, properties);
+            final Node parentNode = ((DataElement)parent).getNode();
+            final Node node = getNodeService().createNode(parentNode, elementType, NodeServiceRelationshipType.CHILD, name,
+                    properties);
 
             updateNetworkStructure(parent, elementType);
 
@@ -312,6 +316,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             getPropertyStatisticsModel().indexElement(elementType, removeIgnoredProperties(properties));
 
             result = new DataElement(node);
+            result.setName(name);
+            result.setNodeType(elementType);
         } catch (final ServiceException e) {
             processException("An error occured on creating new Network Element", e);
         }
@@ -328,21 +334,21 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      * @param elementType
      * @throws ServiceException
      */
-    private void updateNetworkStructure(IDataElement parent, INetworkElementType elementType) throws ServiceException {
+    private void updateNetworkStructure(final IDataElement parent, final INetworkElementType elementType) throws ServiceException {
         INodeType parentType;
         try {
             parentType = getNodeService().getNodeType(((DataElement)parent).getNode());
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             throw e;
-        } catch (NodeTypeNotExistsException e) {
+        } catch (final NodeTypeNotExistsException e) {
             LOGGER.error("can't get parent node type", e);
             return;
 
         }
-        INodeType currentType = elementType;
+        final INodeType currentType = elementType;
 
-        int parentIndex = structure.indexOf(parentType);
-        int currentIndex = structure.indexOf(currentType);
+        final int parentIndex = structure.indexOf(parentType);
+        final int currentIndex = structure.indexOf(currentType);
 
         if (currentIndex < 0) {
             structure.add(currentType);
@@ -351,7 +357,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             return;
         }
 
-        int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        final int lastIndex = structure.indexOf(NetworkElementType.SITE);
         if (parentIndex < lastIndex) {
             structure.add(parentIndex, currentType);
         }
@@ -533,25 +539,34 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
                     structureToStringArrayFormat());
-        } catch (ServiceException e) {
+        } catch (final ServiceException e) {
             processException("can't set structure properties", e);
         }
         super.finishUp();
     }
 
     private String[] structureToStringArrayFormat() {
-        String[] structure = new String[this.structure.size()];
+        final String[] structure = new String[this.structure.size()];
         int i = 0;
-        for (INodeType type : this.structure) {
+        for (final INodeType type : this.structure) {
             structure[i] = type.getId();
             i++;
         }
         return structure;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
-        return new ElementLocationIterator(dataElements).toIterable();
+        Iterable<ILocationElement> result = (Iterable<ILocationElement>)elementLocationsIteratorCache.get(dataElements);
+
+        if (result == null) {
+            result = new ElementLocationIterator(dataElements).toIterable();
+
+            elementLocationsIteratorCache.put(dataElements, result);
+        }
+
+        return result;
     }
 
     @Override
@@ -604,7 +619,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    protected void updateIndexModel(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
+    protected void updateIndexModel(final IDataElement element, final String propertyName, final Object propertyValue)
+            throws ModelException {
         if (element.getNodeType().equals(NetworkElementType.SECTOR)) {
             updateSectorIndex(element, propertyName, propertyValue);
         } else if (element.getNodeType().equals(NetworkElementType.SITE)) {
@@ -622,10 +638,11 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      * @param propertyValue
      * @throws ModelException
      */
-    private void updateSiteIndex(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
-        Double lat = (Double)element.get(getGeoNodeProperties().getLatitudeProperty());
-        Double lon = (Double)element.get(getGeoNodeProperties().getLongitudeProperty());
-        Node siteNode = ((DataElement)element).getNode();
+    private void updateSiteIndex(final IDataElement element, final String propertyName, final Object propertyValue)
+            throws ModelException {
+        final Double lat = (Double)element.get(getGeoNodeProperties().getLatitudeProperty());
+        final Double lon = (Double)element.get(getGeoNodeProperties().getLongitudeProperty());
+        final Node siteNode = ((DataElement)element).getNode();
         getIndexModel().indexInMultiProperty(NetworkElementType.SITE, siteNode, Double.class,
                 getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
         if (getGeoNodeProperties().getLatitudeProperty().equals(propertyName)) {
@@ -642,9 +659,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
      * @param propertyValue
      * @throws ModelException
      */
-    private void updateSectorIndex(IDataElement element, String propertyName, Object propertyValue) throws ModelException {
-        DataElement sectorElement = (DataElement)element;
-        Node sectorNode = sectorElement.getNode();
+    private void updateSectorIndex(final IDataElement element, final String propertyName, final Object propertyValue)
+            throws ModelException {
+        final DataElement sectorElement = (DataElement)element;
+        final Node sectorNode = sectorElement.getNode();
         if (propertyName.equals(networkNodeProperties.getCIProperty())) {
             getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getCIProperty(),
                     sectorElement.get(networkNodeProperties.getCIProperty()), propertyValue);
@@ -656,7 +674,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    protected boolean isInAppropiatedProperty(String propertyName) {
+    protected boolean isInAppropiatedProperty(final String propertyName) {
         return !getGeoNodeProperties().getLatitudeProperty().equals(propertyName)
                 && !getGeoNodeProperties().getLongitudeProperty().equals(propertyName);
     }

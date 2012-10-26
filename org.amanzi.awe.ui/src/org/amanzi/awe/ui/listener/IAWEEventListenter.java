@@ -33,7 +33,7 @@ public interface IAWEEventListenter {
         }
 
         public static Priority[] getSortedPriorities() {
-            Priority[] result = ArrayUtils.clone(values());
+            final Priority[] result = ArrayUtils.clone(values());
 
             Arrays.sort(result, new Comparator<Priority>() {
 

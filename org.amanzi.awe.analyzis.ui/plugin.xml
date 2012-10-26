@@ -28,5 +28,14 @@
          </viewShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.analyzis.ui.drilldown.AnalyzisDrillDown">
+         <eventStatus
+               status="SHOW_IN_VIEW">
+         </eventStatus>
+      </listener>
+   </extension>
 
 </plugin>

@@ -25,7 +25,7 @@ import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
 
 public class NetworkTreeView extends AbstractAWETreeView {
 
-    private static final String NETWORK_TREE_VIEW_ID = "org.amanzi.trees.NetworkTree";
+    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.trees.NetworkTree";
 
     public NetworkTreeView() {
         super();

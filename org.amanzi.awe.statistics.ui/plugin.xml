@@ -4,6 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            category="org.amanzi.awe.views"
             class="org.amanzi.awe.statistics.ui.view.StatisticsView"
             icon="icons/statistics_view.png"
             id="org.amanzi.awe.StatisticsView"
@@ -88,15 +89,6 @@
             class="org.amanzi.awe.statistics.ui.handlers.ChangeDimensionHandler"
             commandId="org.amanzi.statistics.ChangeDimension">
       </handler>
-   </extension>
-   <extension
-         point="org.amanzi.awe.ui.listeners">
-      <listener
-            class="org.amanzi.awe.statistics.ui.drilldown.StatisticsDrillDown">
-         <eventStatus
-               status="SHOW_IN_VIEW">
-         </eventStatus>
-      </listener>
    </extension>
 
 </plugin>

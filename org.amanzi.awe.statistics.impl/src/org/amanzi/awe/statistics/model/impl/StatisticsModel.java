@@ -252,20 +252,21 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         private Iterable<IDataElement> getIterable(final IStatisticsRow row) throws ModelException {
-            Iterable<IDataElement> result = Iterables.emptyIterable();
-
             final Iterable<IStatisticsRow> rows = getSourceRows(row);
+
+            final List<Iterable<IDataElement>> iterableList = new ArrayList<Iterable<IDataElement>>();
+
             if (rows != null) {
                 for (final IStatisticsRow sourceRow : rows) {
-                    result = Iterables.concat(result, getIterable(sourceRow));
+                    iterableList.add(getIterable(sourceRow));
                 }
             }
 
             for (final IStatisticsCell cell : row.getStatisticsCells()) {
-                result = Iterables.concat(result, statisticsCellSourcesCollectFunction.collectSourceElements(cell));
+                iterableList.add(statisticsCellSourcesCollectFunction.collectSourceElements(cell));
             }
 
-            return result;
+            return Iterables.concat(iterableList);
         }
 
     };
@@ -286,18 +287,20 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         private Iterable<IDataElement> getIterable(final IStatisticsCell cell) throws ModelException {
-            Iterable<IDataElement> result = Iterables.emptyIterable();
-
             final Iterable<IStatisticsCell> cells = getSourceCells(cell);
+
+            final List<Iterable<IDataElement>> iterableList = new ArrayList<Iterable<IDataElement>>();
+
             if (cells != null) {
+
                 for (final IStatisticsCell sourceCell : cells) {
-                    result = Iterables.concat(result, getIterable(sourceCell));
+                    iterableList.add(getIterable(sourceCell));
                 }
             }
 
-            result = Iterables.concat(result, getSources(cell));
+            iterableList.add(getSources(cell));
 
-            return result;
+            return Iterables.concat(iterableList);
         }
 
     };
