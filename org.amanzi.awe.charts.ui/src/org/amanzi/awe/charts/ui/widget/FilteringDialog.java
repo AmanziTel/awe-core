@@ -11,13 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.charts.widget;
+package org.amanzi.awe.charts.ui.widget;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.amanzi.awe.charts.ui.widget.FilteringDialog.IDialogSelectorListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
-import org.amanzi.awe.views.charts.widget.FilteringDialog.IDialogSelectorListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;

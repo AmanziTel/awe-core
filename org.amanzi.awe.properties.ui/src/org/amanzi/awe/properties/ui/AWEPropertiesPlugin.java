@@ -1,4 +1,4 @@
-package org.amanzi.awe.views.properties;
+package org.amanzi.awe.properties.ui;
 
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
@@ -13,8 +13,8 @@ package org.amanzi.awe.views.properties;
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+import org.amanzi.awe.properties.ui.views.AWEPropertySheet;
 import org.amanzi.awe.ui.views.IAWEView;
-import org.amanzi.awe.views.properties.views.AWEPropertySheet;
 import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.osgi.framework.BundleContext;

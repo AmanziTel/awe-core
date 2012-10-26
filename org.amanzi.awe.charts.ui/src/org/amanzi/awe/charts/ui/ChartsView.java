@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.charts;
+package org.amanzi.awe.charts.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,14 +29,14 @@ import org.amanzi.awe.charts.model.IChartDataFilter;
 import org.amanzi.awe.charts.model.IChartModel;
 import org.amanzi.awe.charts.model.IRangeAxis;
 import org.amanzi.awe.charts.model.provider.IChartModelProvider;
+import org.amanzi.awe.charts.ui.widget.ItemsSelectorWidget;
+import org.amanzi.awe.charts.ui.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.amanzi.awe.statistics.dto.IStatisticsGroup;
 import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.DimensionType;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.statistics.ui.filter.impl.StatisticsFilter;
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget;
-import org.amanzi.awe.views.charts.widget.ItemsSelectorWidget.ItemSelectedListener;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;

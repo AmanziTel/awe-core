@@ -27,8 +27,8 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
+import org.amanzi.awe.catalog.neo.resource.GeoResource;
 import org.amanzi.awe.catalog.neo.selection.IMapSelection;
-import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.awe.render.core.coloring.IColoringInterceptor;
 import org.amanzi.awe.render.core.coloring.IColoringInterceptorFactory;

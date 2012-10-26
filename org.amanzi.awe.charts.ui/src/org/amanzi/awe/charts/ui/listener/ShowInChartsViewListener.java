@@ -11,15 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.charts.listener;
+package org.amanzi.awe.charts.ui.listener;
 
+import org.amanzi.awe.charts.ui.ChartsView;
 import org.amanzi.awe.statistics.filter.IStatisticsFilter;
 import org.amanzi.awe.statistics.model.IStatisticsModel;
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.impl.ShowInViewEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
-import org.amanzi.awe.views.charts.ChartsView;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 

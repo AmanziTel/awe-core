@@ -10,7 +10,7 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.models.catalog.neo;
+package org.amanzi.awe.catalog.neo.resource;
 
 import java.io.File;
 import java.io.IOException;
