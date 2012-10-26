@@ -20,6 +20,7 @@ import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -61,9 +62,14 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
             final Node parentNode = getParent(childNode);
 
             if (parentNode != null) {
-                result = new DataElement(parentNode);
+                final INodeType nodeType = getNodeService().getNodeType(parentNode);
 
-                result.setNodeType(getNodeService().getNodeType(parentNode));
+                if (nodeType.equals(getType()) && parentNode.equals(getRootNode())) {
+                    result = new DataElement(parentNode);
+
+                    result.setName(getNodeService().getNodeName(parentNode));
+                    result.setNodeType(nodeType);
+                }
             }
         } catch (final ServiceException e) {
             processException("An error occured on searching for a Parent Element", e);
