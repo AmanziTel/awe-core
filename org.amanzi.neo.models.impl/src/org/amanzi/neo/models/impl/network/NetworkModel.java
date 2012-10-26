@@ -59,8 +59,6 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public class NetworkModel extends AbstractDatasetModel implements INetworkModel {
 
-    private static final Logger LOGGER = Logger.getLogger(NetworkModel.class);
-
     // TODO: LN: 12.09.2012, duplicates AbstractMeasurementModel.ElementLocationIterator
     private final class ElementLocationIterator implements IDataElementIterator<ILocationElement> {
 
@@ -86,20 +84,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             return nextElement != null;
         }
 
-        @Override
-        public ILocationElement next() {
-            if (moveToNext) {
-                nextElement = moveToNext();
-            }
-
-            moveToNext = true;
-            return nextElement;
-        }
-
         private ILocationElement moveToNext() {
             try {
                 ILocationElement element = null;
-                while (dataElements.hasNext() && (element == null)) {
+                while (dataElements.hasNext() && element == null) {
                     final IDataElement dataElement = dataElements.next();
 
                     if (dataElement.getNodeType().equals(NetworkElementType.SITE)) {
@@ -131,6 +119,16 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         @Override
+        public ILocationElement next() {
+            if (moveToNext) {
+                nextElement = moveToNext();
+            }
+
+            moveToNext = true;
+            return nextElement;
+        }
+
+        @Override
         public void remove() {
             dataElements.remove();
         }
@@ -147,6 +145,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
     }
+
+    private static final Logger LOGGER = Logger.getLogger(NetworkModel.class);
 
     private final INetworkNodeProperties networkNodeProperties;
 
@@ -169,131 +169,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             final IGeoNodeProperties geoNodeProperties, final INetworkNodeProperties networkNodeProperties) {
         super(nodeService, generalNodeProperties, geoNodeProperties);
         this.networkNodeProperties = networkNodeProperties;
-    }
-
-    @Override
-    protected INodeType getModelType() {
-        return NetworkElementType.NETWORK;
-    }
-
-    @Override
-    public void initialize(final Node rootNode) throws ModelException {
-        super.initialize(rootNode);
-        initializeNetworkStructure();
-    }
-
-    /**
-     * @param rootNode
-     * @throws NodeTypeNotExistsException
-     */
-    public void initializeNetworkStructure() {
-        structure.clear();
-        final String[] structure = (String[])getRootNode().getProperty(networkNodeProperties.getStuctureProperty());
-        for (final String element : structure) {
-            INodeType type;
-            try {
-                type = NodeTypeManager.getInstance().getType(element);
-            } catch (final NodeTypeNotExistsException e) {
-                LOGGER.error("can't find node type " + element, e);
-                continue;
-            }
-            this.structure.add(type);
-        }
-
-    }
-
-    public void setStructure(final List<INodeType> structure) throws ModelException {
-        this.structure = structure;
-        try {
-            getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
-                    structureToStringArrayFormat());
-        } catch (final ServiceException e) {
-            processException("can't setStructure to network", e);
-        }
-
-    }
-
-    @Override
-    public IDataElement findElement(final INetworkElementType elementType, final String elementName) throws ModelException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("findElement", elementType, elementName));
-        }
-
-        // validate input
-        if (elementType == null) {
-            throw new ParameterInconsistencyException("elementType");
-        }
-
-        if (StringUtils.isEmpty(elementName)) {
-            throw new ParameterInconsistencyException("elementName", elementName);
-        }
-
-        IDataElement result = null;
-
-        final Node elementNode = getIndexModel().getSingleNode(elementType, getGeneralNodeProperties().getNodeNameProperty(),
-                elementName);
-
-        if (elementNode != null) {
-            result = new DataElement(elementNode);
-        }
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("findElement"));
-        }
-        return result;
-    }
-
-    protected IDataElement createSite(final IDataElement parent, final String name, final Double latitude, final Double longitude,
-            final Map<String, Object> properties) throws ModelException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("createSite", parent, name, latitude, longitude, properties));
-        }
-
-        // validate input
-        if (latitude == null) {
-            throw new ParameterInconsistencyException(getGeoNodeProperties().getLatitudeProperty());
-        }
-        if (longitude == null) {
-            throw new ParameterInconsistencyException(getGeoNodeProperties().getLongitudeProperty());
-        }
-
-        final DataElement result = createDefaultElement(NetworkElementType.SITE, parent, name, properties);
-
-        if (result != null) {
-            getIndexModel().indexInMultiProperty(NetworkElementType.SITE, result.getNode(), Double.class,
-                    getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
-            updateLocation(latitude, longitude);
-        }
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("createSite"));
-        }
-
-        return result;
-    }
-
-    protected IDataElement createSector(final IDataElement parent, final String name, final Integer lac, final Integer ci,
-            final Map<String, Object> properties) throws ModelException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("createSector", parent, name, lac, ci, properties));
-        }
-
-        final DataElement result = createDefaultElement(NetworkElementType.SECTOR, parent, name, properties);
-
-        if (result != null) {
-            if (ci != null) {
-                getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getCIProperty(), ci);
-            }
-            if (lac != null) {
-                getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getLACProperty(), lac);
-            }
-        }
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("createSector"));
-        }
-
-        return result;
     }
 
     protected DataElement createDefaultElement(final INetworkElementType elementType, final IDataElement parent, final String name,
@@ -327,40 +202,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         return result;
-    }
-
-    /**
-     * @param parent
-     * @param elementType
-     * @throws ServiceException
-     */
-    private void updateNetworkStructure(final IDataElement parent, final INetworkElementType elementType) throws ServiceException {
-        INodeType parentType;
-        try {
-            parentType = getNodeService().getNodeType(((DataElement)parent).getNode());
-        } catch (final ServiceException e) {
-            throw e;
-        } catch (final NodeTypeNotExistsException e) {
-            LOGGER.error("can't get parent node type", e);
-            return;
-
-        }
-        final INodeType currentType = elementType;
-
-        final int parentIndex = structure.indexOf(parentType);
-        final int currentIndex = structure.indexOf(currentType);
-
-        if (currentIndex < 0) {
-            structure.add(currentType);
-            return;
-        } else if (currentIndex > 0 && parentIndex >= 0) {
-            return;
-        }
-
-        final int lastIndex = structure.indexOf(NetworkElementType.SITE);
-        if (parentIndex < lastIndex) {
-            structure.add(parentIndex, currentType);
-        }
     }
 
     @Override
@@ -407,17 +248,87 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         return result;
     }
 
-    protected Map<String, Object> removeIgnoredProperties(final Map<String, Object> properties) {
-        properties.remove(getGeoNodeProperties().getLatitudeProperty());
-        properties.remove(getGeoNodeProperties().getLongitudeProperty());
+    protected IDataElement createSector(final IDataElement parent, final String name, final Integer lac, final Integer ci,
+            final Map<String, Object> properties) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createSector", parent, name, lac, ci, properties));
+        }
 
-        return properties;
+        final DataElement result = createDefaultElement(NetworkElementType.SECTOR, parent, name, properties);
+
+        if (result != null) {
+            if (ci != null) {
+                getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getCIProperty(), ci);
+            }
+            if (lac != null) {
+                getIndexModel().index(NetworkElementType.SECTOR, result.getNode(), networkNodeProperties.getLACProperty(), lac);
+            }
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createSector"));
+        }
+
+        return result;
+    }
+
+    protected IDataElement createSite(final IDataElement parent, final String name, final Double latitude, final Double longitude,
+            final Map<String, Object> properties) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("createSite", parent, name, latitude, longitude, properties));
+        }
+
+        // validate input
+        if (latitude == null) {
+            throw new ParameterInconsistencyException(getGeoNodeProperties().getLatitudeProperty());
+        }
+        if (longitude == null) {
+            throw new ParameterInconsistencyException(getGeoNodeProperties().getLongitudeProperty());
+        }
+
+        final DataElement result = createDefaultElement(NetworkElementType.SITE, parent, name, properties);
+
+        if (result != null) {
+            getIndexModel().indexInMultiProperty(NetworkElementType.SITE, result.getNode(), Double.class,
+                    getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
+            updateLocation(latitude, longitude);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("createSite"));
+        }
+
+        return result;
     }
 
     @Override
-    public IDataElement replaceChild(final IDataElement child, final IDataElement newParent) throws ModelException {
-        // TODO Auto-generated method stub
-        return null;
+    public IDataElement findElement(final INetworkElementType elementType, final String elementName) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findElement", elementType, elementName));
+        }
+
+        // validate input
+        if (elementType == null) {
+            throw new ParameterInconsistencyException("elementType");
+        }
+
+        if (StringUtils.isEmpty(elementName)) {
+            throw new ParameterInconsistencyException("elementName", elementName);
+        }
+
+        IDataElement result = null;
+
+        final Node elementNode = getIndexModel().getSingleNode(elementType, getGeneralNodeProperties().getNodeNameProperty(),
+                elementName);
+
+        if (elementNode != null) {
+            result = new DataElement(elementNode);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findElement"));
+        }
+        return result;
     }
 
     @SuppressWarnings("unchecked")
@@ -428,10 +339,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         // validate input
-        if (StringUtils.isEmpty(sectorName) && (ci == null) && (lac == null)) {
+        if (StringUtils.isEmpty(sectorName) && ci == null && lac == null) {
             throw new ParameterInconsistencyException(getGeneralNodeProperties().getNodeNameProperty(), sectorName);
         }
-        if ((ci == null) && StringUtils.isEmpty(sectorName)) {
+        if (ci == null && StringUtils.isEmpty(sectorName)) {
             throw new ParameterInconsistencyException(networkNodeProperties.getCIProperty(), ci);
         }
 
@@ -451,9 +362,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
                 resultList = new ArrayList<Node>(CollectionUtils.intersection(ciList, lacNodes));
             }
 
-            if ((resultList != null) && !resultList.isEmpty()) {
+            if (resultList != null && !resultList.isEmpty()) {
                 result = new DataElement(resultList.get(0));
-            } else if (!ciList.isEmpty()) {
+            } else if (!ciList.isEmpty() && lac == null) {
                 result = new DataElement(ciList.get(0));
             }
         }
@@ -462,74 +373,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             LOGGER.debug(getFinishLogStatement("findElement"));
         }
         return result;
-    }
-
-    private List<Node> getNodeListFromIndex(final INodeType nodeType, final String propertyName, final Object value)
-            throws ModelException {
-        final List<Node> result = new ArrayList<Node>();
-
-        CollectionUtils.addAll(result, getIndexModel().getNodes(nodeType, propertyName, value));
-
-        return result;
-    }
-
-    @Override
-    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
-        final Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
-        final Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
-
-        final Iterator<Node> nodeIterator = getIndexModel().getNodes(NetworkElementType.SITE, Double.class, min, max,
-                getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
-
-        return new LocationIterator(nodeIterator).toIterable();
-    }
-
-    @Override
-    public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected ILocationElement getLocationElement(final Node node) {
-        final SiteElement site = new SiteElement(node);
-        site.setNodeType(NetworkElementType.SITE);
-
-        try {
-            site.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitudeProperty(), null,
-                    true));
-            site.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
-                    true));
-
-            final Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR,
-                    NodeServiceRelationshipType.CHILD);
-            while (sectorNodes.hasNext()) {
-                site.addSector(getSectorElement(sectorNodes.next()));
-            }
-
-        } catch (final ServiceException e) {
-            LOGGER.error("Unable to create a SiteElement from node", e);
-
-            return null;
-        }
-
-        return site;
-    }
-
-    private ISectorElement getSectorElement(final Node node) throws ServiceException {
-        final SectorElement element = new SectorElement(node);
-        element.setNodeType(NetworkElementType.SECTOR);
-        element.setName(getNodeService().getNodeName(node));
-        element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
-        element.setBeamwidth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getBeamwidthProperty(), null,
-                false));
-
-        return element;
-    }
-
-    @Override
-    public int getRenderableElementCount() {
-        return getPropertyStatistics().getCount(NetworkElementType.SITE);
     }
 
     @Override
@@ -543,30 +386,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             processException("can't set structure properties", e);
         }
         super.finishUp();
-    }
-
-    private String[] structureToStringArrayFormat() {
-        final String[] structure = new String[this.structure.size()];
-        int i = 0;
-        for (final INodeType type : this.structure) {
-            structure[i] = type.getId();
-            i++;
-        }
-        return structure;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
-        Iterable<ILocationElement> result = (Iterable<ILocationElement>)elementLocationsIteratorCache.get(dataElements);
-
-        if (result == null) {
-            result = new ElementLocationIterator(dataElements).toIterable();
-
-            elementLocationsIteratorCache.put(dataElements, result);
-        }
-
-        return result;
     }
 
     @Override
@@ -614,8 +433,161 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound) throws ModelException {
+        final Double[] min = new Double[] {bound.getMinY(), bound.getMinX()};
+        final Double[] max = new Double[] {bound.getMaxY(), bound.getMaxX()};
+
+        final Iterator<Node> nodeIterator = getIndexModel().getNodes(NetworkElementType.SITE, Double.class, min, max,
+                getGeoNodeProperties().getLatitudeProperty(), getGeoNodeProperties().getLongitudeProperty());
+
+        return new LocationIterator(nodeIterator).toIterable();
+    }
+
+    @Override
+    public Iterable<ILocationElement> getElements(final Envelope bound, final IFilter filter) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Iterable<ILocationElement> getElementsLocations(final Iterable<IDataElement> dataElements) {
+        Iterable<ILocationElement> result = (Iterable<ILocationElement>)elementLocationsIteratorCache.get(dataElements);
+
+        if (result == null) {
+            result = new ElementLocationIterator(dataElements).toIterable();
+
+            elementLocationsIteratorCache.put(dataElements, result);
+        }
+
+        return result;
+    }
+
+    @Override
+    protected ILocationElement getLocationElement(final Node node) {
+        final SiteElement site = new SiteElement(node);
+        site.setNodeType(NetworkElementType.SITE);
+
+        try {
+            site.setLatitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLatitudeProperty(), null,
+                    true));
+            site.setLongitude((Double)getNodeService().getNodeProperty(node, getGeoNodeProperties().getLongitudeProperty(), null,
+                    true));
+
+            final Iterator<Node> sectorNodes = getNodeService().getChildren(node, NetworkElementType.SECTOR,
+                    NodeServiceRelationshipType.CHILD);
+            while (sectorNodes.hasNext()) {
+                site.addSector(getSectorElement(sectorNodes.next()));
+            }
+
+        } catch (final ServiceException e) {
+            LOGGER.error("Unable to create a SiteElement from node", e);
+
+            return null;
+        }
+
+        return site;
+    }
+
+    @Override
+    protected INodeType getModelType() {
+        return NetworkElementType.NETWORK;
+    }
+
+    @Override
     public INodeType[] getNetworkStructure() {
         return structure.toArray(new INodeType[structure.size()]);
+    }
+
+    private List<Node> getNodeListFromIndex(final INodeType nodeType, final String propertyName, final Object value)
+            throws ModelException {
+        final List<Node> result = new ArrayList<Node>();
+
+        CollectionUtils.addAll(result, getIndexModel().getNodes(nodeType, propertyName, value));
+
+        return result;
+    }
+
+    @Override
+    public int getRenderableElementCount() {
+        return getPropertyStatistics().getCount(NetworkElementType.SITE);
+    }
+
+    private ISectorElement getSectorElement(final Node node) throws ServiceException {
+        final SectorElement element = new SectorElement(node);
+        element.setNodeType(NetworkElementType.SECTOR);
+        element.setName(getNodeService().getNodeName(node));
+        element.setAzimuth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getAzimuthProperty(), null, false));
+        element.setBeamwidth((Double)getNodeService().getNodeProperty(node, networkNodeProperties.getBeamwidthProperty(), null,
+                false));
+
+        return element;
+    }
+
+    @Override
+    public void initialize(final Node rootNode) throws ModelException {
+        super.initialize(rootNode);
+        initializeNetworkStructure();
+    }
+
+    /**
+     * @param rootNode
+     * @throws NodeTypeNotExistsException
+     */
+    public void initializeNetworkStructure() {
+        structure.clear();
+        final String[] structure = (String[])getRootNode().getProperty(networkNodeProperties.getStuctureProperty());
+        for (final String element : structure) {
+            INodeType type;
+            try {
+                type = NodeTypeManager.getInstance().getType(element);
+            } catch (final NodeTypeNotExistsException e) {
+                LOGGER.error("can't find node type " + element, e);
+                continue;
+            }
+            this.structure.add(type);
+        }
+
+    }
+
+    @Override
+    protected boolean isInAppropiatedProperty(final String propertyName) {
+        return !getGeoNodeProperties().getLatitudeProperty().equals(propertyName)
+                && !getGeoNodeProperties().getLongitudeProperty().equals(propertyName);
+    }
+
+    protected Map<String, Object> removeIgnoredProperties(final Map<String, Object> properties) {
+        properties.remove(getGeoNodeProperties().getLatitudeProperty());
+        properties.remove(getGeoNodeProperties().getLongitudeProperty());
+
+        return properties;
+    }
+
+    @Override
+    public IDataElement replaceChild(final IDataElement child, final IDataElement newParent) throws ModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setStructure(final List<INodeType> structure) throws ModelException {
+        this.structure = structure;
+        try {
+            getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
+                    structureToStringArrayFormat());
+        } catch (final ServiceException e) {
+            processException("can't setStructure to network", e);
+        }
+
+    }
+
+    private String[] structureToStringArrayFormat() {
+        final String[] structure = new String[this.structure.size()];
+        int i = 0;
+        for (final INodeType type : this.structure) {
+            structure[i] = type.getId();
+            i++;
+        }
+        return structure;
     }
 
     @Override
@@ -628,6 +600,60 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         } else if (getGeneralNodeProperties().getNodeNameProperty().equals(propertyName)) {
             getIndexModel().updateIndex(element.getNodeType(), ((DataElement)element).getNode(),
                     getGeneralNodeProperties().getNodeNameProperty(), element.get(propertyName), propertyValue);
+        }
+
+    }
+
+    /**
+     * @param parent
+     * @param elementType
+     * @throws ServiceException
+     */
+    private void updateNetworkStructure(final IDataElement parent, final INetworkElementType elementType) throws ServiceException {
+        INodeType parentType;
+        try {
+            parentType = getNodeService().getNodeType(((DataElement)parent).getNode());
+        } catch (final ServiceException e) {
+            throw e;
+        } catch (final NodeTypeNotExistsException e) {
+            LOGGER.error("can't get parent node type", e);
+            return;
+
+        }
+        final INodeType currentType = elementType;
+
+        final int parentIndex = structure.indexOf(parentType);
+        final int currentIndex = structure.indexOf(currentType);
+
+        if (currentIndex < 0) {
+            structure.add(currentType);
+            return;
+        } else if (currentIndex > 0 && parentIndex >= 0) {
+            return;
+        }
+
+        final int lastIndex = structure.indexOf(NetworkElementType.SITE);
+        if (parentIndex < lastIndex) {
+            structure.add(parentIndex, currentType);
+        }
+    }
+
+    /**
+     * @param element
+     * @param propertyName
+     * @param propertyValue
+     * @throws ModelException
+     */
+    private void updateSectorIndex(final IDataElement element, final String propertyName, final Object propertyValue)
+            throws ModelException {
+        final DataElement sectorElement = (DataElement)element;
+        final Node sectorNode = sectorElement.getNode();
+        if (propertyName.equals(networkNodeProperties.getCIProperty())) {
+            getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getCIProperty(),
+                    sectorElement.get(networkNodeProperties.getCIProperty()), propertyValue);
+        } else if (propertyName.equals(networkNodeProperties.getLACProperty())) {
+            getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getLACProperty(),
+                    sectorElement.get(networkNodeProperties.getLACProperty()), propertyValue);
         }
 
     }
@@ -651,31 +677,5 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             updateLocation(lat, (Double)propertyValue);
         }
 
-    }
-
-    /**
-     * @param element
-     * @param propertyName
-     * @param propertyValue
-     * @throws ModelException
-     */
-    private void updateSectorIndex(final IDataElement element, final String propertyName, final Object propertyValue)
-            throws ModelException {
-        final DataElement sectorElement = (DataElement)element;
-        final Node sectorNode = sectorElement.getNode();
-        if (propertyName.equals(networkNodeProperties.getCIProperty())) {
-            getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getCIProperty(),
-                    sectorElement.get(networkNodeProperties.getCIProperty()), propertyValue);
-        } else if (propertyName.equals(networkNodeProperties.getLACProperty())) {
-            getIndexModel().updateIndex(NetworkElementType.SECTOR, sectorNode, networkNodeProperties.getLACProperty(),
-                    sectorElement.get(networkNodeProperties.getLACProperty()), propertyValue);
-        }
-
-    }
-
-    @Override
-    protected boolean isInAppropiatedProperty(final String propertyName) {
-        return !getGeoNodeProperties().getLatitudeProperty().equals(propertyName)
-                && !getGeoNodeProperties().getLongitudeProperty().equals(propertyName);
     }
 }
