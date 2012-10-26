@@ -20,6 +20,7 @@ import org.amanzi.awe.nem.ui.wizard.pages.ElementCopyPage;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -31,7 +32,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public class NetworkElementCopyWizard extends NetworkElementCreationWizard {
 
-    public NetworkElementCopyWizard(INetworkModel model, IDataElement parent, INodeType type) {
+    public NetworkElementCopyWizard(final INetworkModel model, final IDataElement parent, final INodeType type) {
         super(model, parent, type);
     }
 
@@ -40,9 +41,10 @@ public class NetworkElementCopyWizard extends NetworkElementCreationWizard {
         addPage(new ElementCopyPage(getType(), getModel(), getElement()));
     }
 
-    protected void handleModelRefreshing(List<INodeType> types) {
+    @Override
+    protected void handleModelRefreshing(final List<INodeType> types, final IProgressMonitor monitor) {
         NetworkElementManager.getInstance().copyElement(getModel(), getElement(), getType(),
-                getDataContainer().getTypeProperties().get(getType()));
+                getDataContainer().getTypeProperties().get(getType()), monitor);
     }
 
 }

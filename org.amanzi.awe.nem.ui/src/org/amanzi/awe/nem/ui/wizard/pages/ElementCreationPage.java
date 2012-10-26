@@ -79,7 +79,7 @@ public class ElementCreationPage extends PropertyEditorPage {
                 sector = model.findElement(NetworkElementManager.getInstance().getNetworkType(getType()),
                         (String)nameContainer.getValue());
                 if (sector != null) {
-                    return getType() + " width name " + nameContainer.getValue() + " has already exists";
+                    return getType() + " with name " + nameContainer.getValue() + " has already exists";
                 }
             }
             return null;

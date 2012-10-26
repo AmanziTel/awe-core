@@ -94,9 +94,10 @@ public class NetworkElementManager {
     }
 
     public void copyElement(final INetworkModel model, final IDataElement element, final INodeType type,
-            final Collection<PropertyContainer> properties) {
+            final Collection<PropertyContainer> properties, final IProgressMonitor monitor) {
         LOGGER.info("Start copying " + element.getName() + "element  from model " + model.getName() + " at "
                 + new Date(System.currentTimeMillis()));
+        monitor.subTask("copying element");
         IDataElement parent;
         try {
             if (model.asDataElement().equals(element)) {
@@ -108,7 +109,7 @@ public class NetworkElementManager {
             LOGGER.error("Can't copy element" + element, e);
             return;
         }
-        createElement(model, parent, type, properties);
+        createElement(model, parent, type, properties, monitor);
     }
 
     /**
@@ -134,11 +135,14 @@ public class NetworkElementManager {
      * @param model
      * @param parent
      * @param type
+     * @param monitor
      * @param map
      */
     public void createElement(final INetworkModel model, final IDataElement parent, final INodeType type,
-            final Collection<PropertyContainer> properties) {
+            final Collection<PropertyContainer> properties, final IProgressMonitor monitor) {
         LOGGER.info("Start create new element  from model " + model.getName() + " at " + new Date(System.currentTimeMillis()));
+
+        monitor.subTask("creating element " + type.getId());
 
         final IDataElement parentElement = parent == null ? model.asDataElement() : parent;
         final Map<String, Object> prop = preparePropertiesMapFromContainer(properties, type);
@@ -180,11 +184,15 @@ public class NetworkElementManager {
      * @param name
      * @param structure
      * @param typeProperties
+     * @param monitor
      * @throws NemManagerOperationException
      */
     public void createModel(final String name, final List<INodeType> structure,
-            final Map<INodeType, List<PropertyContainer>> typeProperties, final CoordinateReferenceSystem coordinateReferenceSystem)
+            final Map<INodeType, List<PropertyContainer>> typeProperties,
+            final CoordinateReferenceSystem coordinateReferenceSystem, final IProgressMonitor monitor)
             throws NemManagerOperationException {
+        monitor.setTaskName("Creation network model" + name);
+
         EventChain eventChain = new EventChain(false);
         try {
             INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure,
@@ -254,7 +262,7 @@ public class NetworkElementManager {
 
     public void removeElement(final INetworkModel model, final IDataElement element) throws ModelException {
         LOGGER.info("Start  removing element " + element + " from model " + model + " at " + new Date(System.currentTimeMillis()));
-
+        final IDataElement parentElement = model.getParentElement(element);
         Job job = new Job("Removing element" + element.getName() + " from model " + model.getName()) {
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
@@ -265,9 +273,12 @@ public class NetworkElementManager {
                     ActionUtil.getInstance().runTask(new Runnable() {
                         @Override
                         public void run() {
-                            AWEEventManager.getManager().fireDataUpdatedEvent(null);
+                            EventChain chain = new EventChain(false);
+                            chain.addEvent(new DataUpdatedEvent(null));
+                            chain.addEvent(new ShowInViewEvent(model, parentElement, null));
+                            AWEEventManager.getManager().fireEventChain(chain);
                         }
-                    }, true);
+                    }, false);
 
                 } catch (Exception e) {
                     LOGGER.error("Can't remove element " + element + " from model " + model, e);

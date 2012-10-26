@@ -22,6 +22,10 @@ import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.wizard.pages.InitialNetworkPage;
 import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -114,11 +118,11 @@ public class NetworkCreationWizard extends Wizard {
         }
     }
 
-    protected void handleModelRefreshing(final List<INodeType> types) {
+    protected void handleModelRefreshing(final List<INodeType> types, final IProgressMonitor monitor) {
         try {
             InitialNetworkPage firstPage = (InitialNetworkPage)getPages()[0];
             NetworkElementManager.getInstance().createModel(container.getName(), types, container.getTypeProperties(),
-                    firstPage.getCrs());
+                    firstPage.getCrs(), monitor);
         } catch (NemManagerOperationException e) {
             return;
         }
@@ -167,9 +171,17 @@ public class NetworkCreationWizard extends Wizard {
             handleFirstPageOnFinish(getPages()[0]);
         }
 
-        List<INodeType> types = NetworkElementManager.getInstance().updateNodeTypes(
-                getDataContainer().getStructure().toArray(new INodeType[getDataContainer().getStructure().size()]));;
-        handleModelRefreshing(types);
+        final List<INodeType> types = NetworkElementManager.getInstance().updateNodeTypes(
+                getDataContainer().getStructure().toArray(new INodeType[getDataContainer().getStructure().size()]));
+        Job job = new Job("Finishup NEM opertion") {
+
+            @Override
+            protected IStatus run(final IProgressMonitor monitor) {
+                handleModelRefreshing(types, monitor);
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
         return true;
     }
 

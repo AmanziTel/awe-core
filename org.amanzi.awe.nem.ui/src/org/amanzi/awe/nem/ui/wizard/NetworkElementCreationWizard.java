@@ -21,6 +21,7 @@ import org.amanzi.awe.nem.ui.wizard.pages.PropertyEditorPage;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.wizard.IWizardPage;
 
 /**
@@ -33,13 +34,13 @@ import org.eclipse.jface.wizard.IWizardPage;
  */
 public class NetworkElementCreationWizard extends NetworkCreationWizard {
 
-    private INetworkModel model;
+    private final INetworkModel model;
 
-    private INodeType type;
+    private final INodeType type;
 
-    private IDataElement element;
+    private final IDataElement element;
 
-    public NetworkElementCreationWizard(INetworkModel model, IDataElement parent, INodeType type) {
+    public NetworkElementCreationWizard(final INetworkModel model, final IDataElement parent, final INodeType type) {
         assert model != null;
 
         this.type = type;
@@ -52,17 +53,15 @@ public class NetworkElementCreationWizard extends NetworkCreationWizard {
     }
 
     @Override
-    protected void handleFirstPageOnFinish(IWizardPage page) {
-        handlePropertyPage((PropertyEditorPage)page);
-    }
-
-    @Override
     public void addPages() {
         addPage(new ElementCreationPage(type, model));
     }
 
-    protected void handleModelRefreshing(List<INodeType> types) {
-        NetworkElementManager.getInstance().createElement(model, element, type, getDataContainer().getTypeProperties().get(type));
+    /**
+     * @return Returns the element.
+     */
+    protected IDataElement getElement() {
+        return element;
     }
 
     /**
@@ -79,11 +78,15 @@ public class NetworkElementCreationWizard extends NetworkCreationWizard {
         return type;
     }
 
-    /**
-     * @return Returns the element.
-     */
-    protected IDataElement getElement() {
-        return element;
+    @Override
+    protected void handleFirstPageOnFinish(final IWizardPage page) {
+        handlePropertyPage((PropertyEditorPage)page);
+    }
+
+    @Override
+    protected void handleModelRefreshing(final List<INodeType> types, final IProgressMonitor monitor) {
+        NetworkElementManager.getInstance().createElement(model, element, type, getDataContainer().getTypeProperties().get(type),
+                monitor);
     }
 
 }
