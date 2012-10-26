@@ -1,12 +1,16 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Services
-Bundle-SymbolicName: org.amanzi.neo.db
+Bundle-SymbolicName: org.amanzi.neo.db;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport,
- org.neo4j;bundle-version="1.8.0";visibility:=reexport
-Export-Package: org.amanzi.neo.db.manager,
+ org.neo4j;bundle-version="1.8.0";visibility:=reexport,
+ org.eclipse.ui;bundle-version="3.7.0"
+Export-Package: org.amanzi.neo.db.internal,
+ org.amanzi.neo.db.manager,
  org.amanzi.neo.db.manager.events,
  org.amanzi.neo.db.manager.impl;x-friends:="org.amanzi.neo.db.testing,org.amanzi.neo.services.testing"
 Bundle-Vendor: amanzi.org
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.amanzi.neo.db.internal.DatabasePlugin

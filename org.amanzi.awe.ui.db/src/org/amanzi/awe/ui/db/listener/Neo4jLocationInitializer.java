@@ -30,6 +30,11 @@ import org.eclipse.ui.PlatformUI;
  */
 public class Neo4jLocationInitializer implements IAWEEventListenter {
     @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
+    }
+
+    @Override
     public void onEvent(final IEvent event) {
         switch (event.getStatus()) {
         case INITIALISATION:
@@ -65,10 +70,5 @@ public class Neo4jLocationInitializer implements IAWEEventListenter {
             }
 
         }
-    }
-
-    @Override
-    public Priority getPriority() {
-        return Priority.NORMAL;
     }
 }

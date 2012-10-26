@@ -34,6 +34,8 @@ public class PropertyCellEditor extends TextCellEditor {
 
     private Object oldValue;
 
+    private Object castedObject;
+
     /**
      * @param parent
      * @param border
@@ -45,25 +47,40 @@ public class PropertyCellEditor extends TextCellEditor {
     @Override
     protected Object doGetValue() {
         String newValue = (String)super.doGetValue();
+        if (castedObject != null && castedObject.toString().equals(newValue)) {
+            return castedObject;
+        }
         try {
             if (oldValue.getClass().isArray()) {
-                return performArrayCasting(newValue);
+                castedObject = performArrayCasting(newValue);
             } else {
                 if (oldValue.getClass().equals(Character.class)) {
-                    return oldValue.getClass().cast(newValue);
+                    castedObject = oldValue.getClass().cast(newValue);
                 }
-                return oldValue.getClass().getConstructor(newValue.getClass()).newInstance(newValue);
+                castedObject = oldValue.getClass().getConstructor(newValue.getClass()).newInstance(newValue);
             }
         } catch (Exception e) {
             LOGGER.error("Error on casting value ", e);
-            return newValue;
+            castedObject = newValue;
+            return castedObject;
         }
+        return castedObject;
     }
 
     @Override
     protected void doSetValue(final Object value) {
         oldValue = value;
         text.setText(value.toString());
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return null;
+    }
+
+    @Override
+    public boolean isValueValid() {
+        return castedObject == null || !castedObject.toString().equals(doGetValue());
     }
 
     /**

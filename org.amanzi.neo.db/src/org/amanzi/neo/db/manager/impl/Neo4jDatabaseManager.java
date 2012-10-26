@@ -16,6 +16,7 @@ package org.amanzi.neo.db.manager.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.db.internal.DatabasePlugin;
 import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -58,39 +59,19 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     private GraphDatabaseService dbService;
 
     /**
-     * Full constructor - need on input all parameters of Database
-     * 
-     * @param databaseLocation location of database
-     * @param accessType access type for connection
-     * @param memoryMapping memory mapping parameters
+     * Default constructor All parameters set as a default
      */
-    public Neo4jDatabaseManager(String databaseLocation, AccessType accessType, Map<String, String> memoryMapping) {
-        this.databaseLocation = databaseLocation;
-        this.accessType = accessType;
-        this.memoryMapping = memoryMapping;
-
-        LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
-                + "accessType = <" + accessType + ">");
+    public Neo4jDatabaseManager() {
+        this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType(), DEFAULT_MEMORY_MAPPING);
     }
 
     /**
-     * Custom constructor - set default Memory Mappings
+     * Custom constructor - need only access type of database connection
      * 
-     * @param databaseLocation location of database
-     * @param accessType access type for connection
+     * @param accessType access type of database connection
      */
-    public Neo4jDatabaseManager(String databaseLocation, AccessType accessType) {
-        this(databaseLocation, accessType, DEFAULT_MEMORY_MAPPING);
-    }
-
-    /**
-     * Custom constructor - set default Access Type for connection
-     * 
-     * @param databaseLocation location of database
-     * @param memoryMapping memory mapping parameters
-     */
-    public Neo4jDatabaseManager(String databaseLocation, Map<String, String> memoryMapping) {
-        this(databaseLocation, AccessType.getDefaulAccessType(), memoryMapping);
+    public Neo4jDatabaseManager(final AccessType accessType) {
+        this(getDefaultDatabaseLocation(), accessType);
     }
 
     /**
@@ -99,26 +80,8 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * @param accessType access type for connection
      * @param memoryMapping memory mapping parameters
      */
-    public Neo4jDatabaseManager(AccessType accessType, Map<String, String> memoryMapping) {
+    public Neo4jDatabaseManager(final AccessType accessType, final Map<String, String> memoryMapping) {
         this(getDefaultDatabaseLocation(), accessType, memoryMapping);
-    }
-
-    /**
-     * Custom constructor - need only database location
-     * 
-     * @param databaseLocation location of database
-     */
-    public Neo4jDatabaseManager(String databaseLocation) {
-        this(databaseLocation, AccessType.getDefaulAccessType());
-    }
-
-    /**
-     * Custom constructor - need only access type of database connection
-     * 
-     * @param accessType access type of database connection
-     */
-    public Neo4jDatabaseManager(AccessType accessType) {
-        this(getDefaultDatabaseLocation(), accessType);
     }
 
     /**
@@ -126,15 +89,69 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * 
      * @param memoryMapping memory mapping parameters
      */
-    public Neo4jDatabaseManager(Map<String, String> memoryMapping) {
+    public Neo4jDatabaseManager(final Map<String, String> memoryMapping) {
         this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType(), memoryMapping);
     }
 
     /**
-     * Default constructor All parameters set as a default
+     * Custom constructor - need only database location
+     * 
+     * @param databaseLocation location of database
      */
-    public Neo4jDatabaseManager() {
-        this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType(), DEFAULT_MEMORY_MAPPING);
+    public Neo4jDatabaseManager(final String databaseLocation) {
+        this(databaseLocation, AccessType.getDefaulAccessType());
+    }
+
+    /**
+     * Custom constructor - set default Memory Mappings
+     * 
+     * @param databaseLocation location of database
+     * @param accessType access type for connection
+     */
+    public Neo4jDatabaseManager(final String databaseLocation, final AccessType accessType) {
+        this(databaseLocation, accessType, DEFAULT_MEMORY_MAPPING);
+    }
+
+    /**
+     * Full constructor - need on input all parameters of Database
+     * 
+     * @param databaseLocation location of database
+     * @param accessType access type for connection
+     * @param memoryMapping memory mapping parameters
+     */
+    public Neo4jDatabaseManager(final String databaseLocation, final AccessType accessType, final Map<String, String> memoryMapping) {
+        this.databaseLocation = databaseLocation;
+        this.accessType = accessType;
+        this.memoryMapping = memoryMapping;
+        DatabasePlugin.getInstance().getPreferenceStore()
+                .setValue(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION, databaseLocation);
+        LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
+                + "accessType = <" + accessType + ">");
+    }
+
+    /**
+     * Custom constructor - set default Access Type for connection
+     * 
+     * @param databaseLocation location of database
+     * @param memoryMapping memory mapping parameters
+     */
+    public Neo4jDatabaseManager(final String databaseLocation, final Map<String, String> memoryMapping) {
+        this(databaseLocation, AccessType.getDefaulAccessType(), memoryMapping);
+    }
+
+    @Override
+    public void commitMainTransaction() {
+        LOGGER.info("Commit with Database Manager");
+
+        fireEvent(EventType.BEFORE_FULL_COMMIT);
+        // do nothing - Neo4jDatabaseManager have no main transaction.
+        // Handling on transaction should be controlled by user
+        fireEvent(EventType.AFTER_FULL_COMMIT);
+    }
+
+    @Override
+    public AccessType getAccessType() {
+        return accessType;
     }
 
     @Override
@@ -155,40 +172,6 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
         return memoryMapping;
     }
 
-    @Override
-    public void commitMainTransaction() {
-        LOGGER.info("Commit with Database Manager");
-
-        fireEvent(EventType.BEFORE_FULL_COMMIT);
-        // do nothing - Neo4jDatabaseManager have no main transaction.
-        // Handling on transaction should be controlled by user
-        fireEvent(EventType.AFTER_FULL_COMMIT);
-    }
-
-    @Override
-    public void rollbackMainTransaction() {
-        LOGGER.info("Commit with Database Manager");
-
-        fireEvent(EventType.BEFORE_FULL_ROLLBACK);
-        // do nothing - Neo4jDatabaseManager have no main transaction.
-        // Handling on transaction should be controlled by user
-        fireEvent(EventType.AFTER_FULL_ROLLBACK);
-    }
-
-    @Override
-    public AccessType getAccessType() {
-        return accessType;
-    }
-
-    @Override
-    public synchronized void setDatabaseService(GraphDatabaseService service) {
-        shutdown();
-
-        fireEvent(EventType.BEFORE_STARTUP);
-        dbService = service;
-        fireEvent(EventType.AFTER_STARTUP);
-    }
-
     /**
      * Initializes DB connection
      */
@@ -207,6 +190,25 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
             break;
         }
 
+        fireEvent(EventType.AFTER_STARTUP);
+    }
+
+    @Override
+    public void rollbackMainTransaction() {
+        LOGGER.info("Commit with Database Manager");
+
+        fireEvent(EventType.BEFORE_FULL_ROLLBACK);
+        // do nothing - Neo4jDatabaseManager have no main transaction.
+        // Handling on transaction should be controlled by user
+        fireEvent(EventType.AFTER_FULL_ROLLBACK);
+    }
+
+    @Override
+    public synchronized void setDatabaseService(final GraphDatabaseService service) {
+        shutdown();
+
+        fireEvent(EventType.BEFORE_STARTUP);
+        dbService = service;
         fireEvent(EventType.AFTER_STARTUP);
     }
 
