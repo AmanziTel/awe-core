@@ -32,8 +32,7 @@ import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.custom.BusyIndicator;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.core.runtime.SubProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -87,38 +86,54 @@ public class StatisticsManager {
         return result;
     }
 
-    public Collection<ITemplate> getAvailableTemplates() {
+    public Collection<ITemplate> getAvailableTemplates(final IProgressMonitor monitor) {
         if ((availableTemplates == null) && (model != null)) {
+            monitor.beginTask("Computing available Statistics Templates", 2);
 
-            BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
+            availableTemplates = new ArrayList<ITemplate>();
 
-                @Override
-                public void run() {
-                    availableTemplates = new ArrayList<ITemplate>();
-                    for (final ITemplate singleTemplate : getAllTemplates()) {
-                        if (singleTemplate.canResolve(model)) {
-                            availableTemplates.add(singleTemplate);
-                        }
-                    }
+            final SubProgressMonitor templateFilesMonitor = new SubProgressMonitor(monitor, 1);
+            final Collection<ITemplate> allTemplates = getAllTemplates(templateFilesMonitor);
+
+            monitor.worked(1);
+
+            final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, 1);
+            subMonitor.beginTask("Resolving Statistics Templates for Model", allTemplates.size());
+
+            for (final ITemplate singleTemplate : allTemplates) {
+                if (singleTemplate.canResolve(model)) {
+                    availableTemplates.add(singleTemplate);
                 }
-            });
-        }
+                subMonitor.worked(1);
+            }
+            subMonitor.done();
 
+            monitor.worked(1);
+            monitor.done();
+        }
         return availableTemplates;
     }
 
-    private static Collection<ITemplate> getAllTemplates() {
+    private static Collection<ITemplate> getAllTemplates(final IProgressMonitor monitor) {
         if (allTemplates == null) {
+
             allTemplates = new ArrayList<ITemplate>();
 
-            for (final File file : getTemplateFiles().values()) {
+            final Collection<File> templateFiles = getTemplateFiles().values();
+
+            monitor.beginTask("Computing Templates from Files", templateFiles.size());
+
+            for (final File file : templateFiles) {
                 try {
                     final ITemplate template = (ITemplate)getJRubyWrapper().executeScript(file);
                     allTemplates.add(template);
                 } catch (final ScriptingException e) {
                     LOGGER.error("Cannot create a Template from file <" + file.getName() + ">", e);
                 }
+                monitor.worked(1);
             }
+
+            monitor.done();
         }
 
         return allTemplates;

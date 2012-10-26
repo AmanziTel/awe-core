@@ -13,12 +13,16 @@
 
 package org.amanzi.awe.statistics.ui.widgets;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 import org.amanzi.awe.statistics.manager.StatisticsManager;
 import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.statistics.ui.widgets.TemplateComboWidget.ITemplateSelectionListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -51,7 +55,22 @@ public class TemplateComboWidget extends AbstractComboWidget<ITemplate, ITemplat
     @Override
     protected Collection<ITemplate> getItems() {
         if (statisticsManager != null) {
-            return statisticsManager.getAvailableTemplates();
+            final ProgressMonitorDialog monitor = new ProgressMonitorDialog(getControl().getShell());
+
+            try {
+                monitor.run(false, false, new IRunnableWithProgress() {
+
+                    @Override
+                    public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        statisticsManager.getAvailableTemplates(monitor);
+                    }
+                });
+            } catch (final InterruptedException e) {
+
+            } catch (final InvocationTargetException e) {
+
+            }
+            return statisticsManager.getAvailableTemplates(null);
         }
 
         return null;
