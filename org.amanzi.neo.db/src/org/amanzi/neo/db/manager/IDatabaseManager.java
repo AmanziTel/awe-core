@@ -53,11 +53,40 @@ public interface IDatabaseManager {
     }
 
     /**
+     * Add new database event listener
+     */
+    void addDatabaseEventListener(IDatabaseEventListener listener);
+
+    /**
+     * Commits all Transactions
+     */
+    void commitMainTransaction();
+
+    /**
+     * Commit transaction in current Thread
+     */
+    void commitThreadTransaction();
+
+    /**
+     * Finishes transaction in current Thread
+     */
+    void finishThreadTransaction();
+
+    /**
+     * Returns type of Database Connection
+     * 
+     * @return
+     */
+    AccessType getAccessType();
+
+    /**
      * Returns Database Service
      * 
      * @return
      */
     GraphDatabaseService getDatabaseService();
+
+    String getDefaultLocation();
 
     /**
      * Returns location of Database
@@ -74,9 +103,16 @@ public interface IDatabaseManager {
     Map<String, String> getMemoryMapping();
 
     /**
-     * Commits all Transactions
+     * return true if database location is already used
+     * 
+     * @return
      */
-    void commitMainTransaction();
+    boolean isAlreadyUsed();
+
+    /**
+     * Removes new database event listener
+     */
+    void removeDatabaseEventListener(IDatabaseEventListener listener);
 
     /**
      * Rolls back all Transactions
@@ -84,31 +120,9 @@ public interface IDatabaseManager {
     void rollbackMainTransaction();
 
     /**
-     * Start transaction in current Thread
-     */
-    void startThreadTransaction();
-
-    /**
-     * Commit transaction in current Thread
-     */
-    void commitThreadTransaction();
-
-    /**
      * Rollsback transaction in current Thread
      */
     void rollbackThreadTransaction();
-
-    /**
-     * Finishes transaction in current Thread
-     */
-    void finishThreadTransaction();
-
-    /**
-     * Returns type of Database Connection
-     * 
-     * @return
-     */
-    AccessType getAccessType();
 
     /**
      * Set a Graph Database Service to manager
@@ -123,19 +137,7 @@ public interface IDatabaseManager {
     void shutdown();
 
     /**
-     * Add new database event listener
+     * Start transaction in current Thread
      */
-    void addDatabaseEventListener(IDatabaseEventListener listener);
-
-    /**
-     * Removes new database event listener
-     */
-    void removeDatabaseEventListener(IDatabaseEventListener listener);
-
-    /**
-     * return true if database location is already used
-     * 
-     * @return
-     */
-    boolean isAlreadyUsed();
+    void startThreadTransaction();
 }

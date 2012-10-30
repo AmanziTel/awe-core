@@ -163,6 +163,11 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     }
 
     @Override
+    public String getDefaultLocation() {
+        return computeDefaultLocation();
+    }
+
+    @Override
     public String getLocation() {
         return databaseLocation;
     }

@@ -29,23 +29,24 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
  * @author craig
  */
 public class Application extends UDIGApplication {
-
-    /**
-     * Create the AWE workbench advisor by using the UDIGWorkbenchAdvisor with only the perspective
-     * changed to match the AWE requirements.
-     * 
-     * @see net.refractions.udig.internal.ui.UDIGApplication#createWorkbenchAdvisor()
-     */
-    @Override
-    protected WorkbenchAdvisor createWorkbenchAdvisor() {
-        return new AWEWorkbenchAdvivsor();
-    }
-
     private class AWEWorkbenchAdvivsor extends UDIGWorkbenchAdvisor {
+
+        @Override
+        public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(final IWorkbenchWindowConfigurer configurer) {
+            return super.createWorkbenchWindowAdvisor(configurer);
+        }
 
         @Override
         public String getInitialWindowPerspectiveId() {
             return PerspectiveFactory.AWE_PERSPECTIVE;
+        }
+
+        @Override
+        public void initialize(final IWorkbenchConfigurer configurer) {
+            super.initialize(configurer);
+
+            AWEEventManager.getManager().fireInitialiseEvent();
+            configurer.setSaveAndRestore(true);
         }
 
         @Override
@@ -59,19 +60,17 @@ public class Application extends UDIGApplication {
             AWEEventManager.getManager().fireAWEStoppedEvent();
             return super.preShutdown();
         }
-
-        @Override
-        public void initialize(IWorkbenchConfigurer configurer) {
-            super.initialize(configurer);
-
-            AWEEventManager.getManager().fireInitialiseEvent();
-            configurer.setSaveAndRestore(true);
-        }
-
-        @Override
-        public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
-            configurer.setShowPerspectiveBar(true);
-            return super.createWorkbenchWindowAdvisor(configurer);
-        }
     }
+
+    /**
+     * /** Create the AWE workbench advisor by using the UDIGWorkbenchAdvisor with only the
+     * perspective changed to match the AWE requirements.
+     * 
+     * @see net.refractions.udig.internal.ui.UDIGApplication#createWorkbenchAdvisor()
+     */
+    @Override
+    protected WorkbenchAdvisor createWorkbenchAdvisor() {
+        return new AWEWorkbenchAdvivsor();
+    }
+
 }

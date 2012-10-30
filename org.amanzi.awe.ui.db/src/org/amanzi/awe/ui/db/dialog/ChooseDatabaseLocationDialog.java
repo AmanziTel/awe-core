@@ -44,8 +44,8 @@ public class ChooseDatabaseLocationDialog extends Dialog implements ModifyListen
 
     public ChooseDatabaseLocationDialog(final Shell parent, final String defaultLocation) {
         super(parent);
-        databaseLocation = defaultLocation;
         super.create();
+        databaseLocation = defaultLocation;
         getShell().setText(DatabaseUiPluginMessages.warningDialogName);
 
         getButton(OK).setEnabled(false);
@@ -97,11 +97,6 @@ public class ChooseDatabaseLocationDialog extends Dialog implements ModifyListen
             getButton(OK).setEnabled(true);
         }
 
-    }
-
-    @Override
-    protected void okPressed() {
-        super.okPressed();
     }
 
 }

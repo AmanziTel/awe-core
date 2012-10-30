@@ -41,19 +41,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      */
     private static final String[] DEFAULT_DATABASE_LOCATION = new String[] {".amanzi", "neo"};
 
-    /**
-     * Creates default location for database and returns it's path
-     * 
-     * @return default path to database location
-     */
-    public static String getDefaultDatabaseLocation() {
-
-        String location = DatabasePlugin.getInstance().getPreferenceStore()
-                .getString(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION);
-        if (!StringUtils.isEmpty(location)) {
-            return location;
-        }
-
+    public static String computeDefaultLocation() {
         String userHome = System.getProperty("user.home");
 
         File databaseDirectory = new File(userHome);
@@ -64,7 +52,24 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         if (!databaseDirectory.mkdirs()) {
             LOGGER.fatal("Database directory <" + databaseDirectory + "> was not created");
         }
-        location = databaseDirectory.getAbsolutePath();
+        return databaseDirectory.getAbsolutePath();
+    }
+
+    /**
+     * Creates default location for database and returns it's path
+     * 
+     * @return default path to database location
+     */
+    public static String getDefaultDatabaseLocation() {
+
+        String location = DatabasePlugin.getInstance().getPreferenceStore()
+                .getString(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION);
+
+        if (!StringUtils.isEmpty(location)) {
+            return location;
+        }
+
+        location = computeDefaultLocation();
         // DatabasePlugin.getInstance().getPreferenceStore().setValue(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION,
         // location);
         return location;

@@ -7,3 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Fragment-Host: org.amanzi.awe.ui;bundle-version="1.0.0"
 Export-Package: org.amanzi.awe.ui.db.dialog,
  org.amanzi.awe.ui.db.listener
+Require-Bundle: org.eclipse.emf.common.ui;bundle-version="2.7.0",
+ org.eclipse.core.resources;bundle-version="3.7.100"
+Import-Package: org.eclipse.ui.internal.ide
