@@ -19,12 +19,14 @@ import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
 import org.amanzi.awe.ui.view.widgets.ColorWidget.IColorChangedListener;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
 import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
+import org.amanzi.awe.ui.view.widgets.NetworkComboWidget.INetworkSelectionListener;
 import org.amanzi.awe.ui.view.widgets.PaletteComboWidget.IPaletteChanged;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
 import org.amanzi.awe.ui.view.widgets.SpinnerWidget.ISpinnerListener;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IDriveModelProvider;
+import org.amanzi.neo.providers.INetworkModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -43,54 +45,24 @@ public final class AWEWidgetFactory {
         private static volatile AWEWidgetFactory instance = new AWEWidgetFactory();
     }
 
-    private final IProjectModelProvider projectModelProvider;
-
-    private final IDriveModelProvider driveModelProvider;
-
-    private AWEWidgetFactory() {
-        this.projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
-        this.driveModelProvider = AWEUIPlugin.getDefault().getDriveModelProvider();
-    }
-
     public static AWEWidgetFactory getFactory() {
         return WizardFactoryHolder.instance;
     }
 
-    public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText,
-            final Composite parent, final int minimalLabelWidth) {
-        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider,
-                minimalLabelWidth));
-    }
+    private final IProjectModelProvider projectModelProvider;
 
-    public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText,
-            final Composite parent, final int minimalLabelWidth, final boolean shouldSort) {
-        return initializeWidget(new PropertyComboWidget(parent, listener, labelText, minimalLabelWidth, shouldSort));
-    }
+    private final IDriveModelProvider driveModelProvider;
 
-    public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent,
-            final int minimalLabelWidth) {
-        return initializeWidget(new DateTimeWidget(parent, listener, label, minimalLabelWidth));
+    private final INetworkModelProvider networkModelProvider;
+
+    private AWEWidgetFactory() {
+        this.projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
+        this.driveModelProvider = AWEUIPlugin.getDefault().getDriveModelProvider();
+        this.networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
     }
 
     public CheckBoxWidget addCheckBoxWidget(final ICheckBoxSelected listener, final String label, final Composite parent) {
         return initializeWidget(new CheckBoxWidget(parent, listener, label));
-    }
-
-    public TextWidget addTextWidget(final ITextChandedListener listener, final String label, final Composite parent) {
-        return initializeWidget(new TextWidget(parent, SWT.BORDER | SWT.READ_ONLY, listener, label));
-    }
-
-    public TextWidget addStyledTextWidget(final ITextChandedListener listener, final int style, final String label,
-            final Composite parent) {
-        return initializeWidget(new TextWidget(parent, style, listener, label));
-    }
-
-    public SpinnerWidget addSpinnerWidget(final ISpinnerListener listener, final String label, final Composite parent) {
-        return initializeWidget(new SpinnerWidget(parent, listener, label));
-    }
-
-    public PaletteComboWidget addPaletteComboWidget(final IPaletteChanged listener, final String label, final Composite parent) {
-        return initializeWidget(new PaletteComboWidget(parent, listener, label));
     }
 
     public ColorWidget addColorWidget(final IColorChangedListener listener, final Composite parent, final String tooltip) {
@@ -99,6 +71,45 @@ public final class AWEWidgetFactory {
 
     public CRSSelector addCRSSelectorWidget(final ICRSSelectorListener listener, final Composite parent) {
         return initializeWidget(new CRSSelector(parent, listener));
+    }
+
+    public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText,
+            final Composite parent, final int minimalLabelWidth) {
+        return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider,
+                minimalLabelWidth));
+    }
+
+    public NetworkComboWidget addNetworkComboWidget(final INetworkSelectionListener listener, final String labelText,
+            final Composite parent, final int minimalLabelWidth) {
+        return initializeWidget(new NetworkComboWidget(parent, listener, labelText, projectModelProvider, networkModelProvider,
+                minimalLabelWidth));
+    }
+
+    public PaletteComboWidget addPaletteComboWidget(final IPaletteChanged listener, final String label, final Composite parent) {
+        return initializeWidget(new PaletteComboWidget(parent, listener, label));
+    }
+
+    public DateTimeWidget addPeriodWidget(final ITimeChangedListener listener, final String label, final Composite parent,
+            final int minimalLabelWidth) {
+        return initializeWidget(new DateTimeWidget(parent, listener, label, minimalLabelWidth));
+    }
+
+    public PropertyComboWidget addPropertyComboWidget(final IPropertySelectionListener listener, final String labelText,
+            final Composite parent, final int minimalLabelWidth, final boolean shouldSort) {
+        return initializeWidget(new PropertyComboWidget(parent, listener, labelText, minimalLabelWidth, shouldSort));
+    }
+
+    public SpinnerWidget addSpinnerWidget(final ISpinnerListener listener, final String label, final Composite parent) {
+        return initializeWidget(new SpinnerWidget(parent, listener, label));
+    }
+
+    public TextWidget addStyledTextWidget(final ITextChandedListener listener, final int style, final String label,
+            final Composite parent) {
+        return initializeWidget(new TextWidget(parent, style, listener, label));
+    }
+
+    public TextWidget addTextWidget(final ITextChandedListener listener, final String label, final Composite parent) {
+        return initializeWidget(new TextWidget(parent, SWT.BORDER | SWT.READ_ONLY, listener, label));
     }
 
     public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {

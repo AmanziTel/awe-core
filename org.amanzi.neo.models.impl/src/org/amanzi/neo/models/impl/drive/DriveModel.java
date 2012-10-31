@@ -106,7 +106,7 @@ public class DriveModel extends AbstractMeasurementModel implements IDriveModel 
     }
 
     @Override
-    protected boolean isInAppropiatedProperty(String propertyName) {
+    protected boolean isInAppropriatedProperty(String propertyName) {
         // TODO Auto-generated method stub
         return false;
     }

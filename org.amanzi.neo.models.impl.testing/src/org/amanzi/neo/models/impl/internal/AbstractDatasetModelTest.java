@@ -117,7 +117,7 @@ public class AbstractDatasetModelTest extends AbstractMockitoTest {
         }
 
         @Override
-        protected boolean isInAppropiatedProperty(String propertyName) {
+        protected boolean isInAppropriatedProperty(String propertyName) {
             // TODO Auto-generated method stub
             return false;
         }

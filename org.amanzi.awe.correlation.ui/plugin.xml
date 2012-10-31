@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.correlation.ui.view.CorrelationView"
+            icon="icons/drive.png"
+            id="org.amanzi.awe.correlationView"
+            name="Correlation View"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.correlationView"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+
+</plugin>

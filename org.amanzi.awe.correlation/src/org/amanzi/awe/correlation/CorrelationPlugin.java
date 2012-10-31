@@ -1,30 +1,52 @@
 package org.amanzi.awe.correlation;
 
-import org.osgi.framework.BundleActivator;
+import org.amanzi.awe.correlation.provider.ICorrelationModelProvider;
+import org.amanzi.neo.providers.internal.AbstractProviderPlugin;
 import org.osgi.framework.BundleContext;
 
-public class CorrelationPlugin implements BundleActivator {
+public class CorrelationPlugin extends AbstractProviderPlugin {
 
-	private static BundleContext context;
+    private static final String PLUGIN_ID = "org.amanzi.awe.correlation";
 
-	static BundleContext getContext() {
-		return context;
-	}
+    private static final String CORRELATION_MODEL_PROVIDER_ID = "org.amanzi.providers.correlationModelProvider";
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
-	 */
-	public void start(BundleContext bundleContext) throws Exception {
-		CorrelationPlugin.context = bundleContext;
-	}
+    private static CorrelationPlugin instance;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext bundleContext) throws Exception {
-		CorrelationPlugin.context = null;
-	}
+    public static CorrelationPlugin getDefault() {
+        return instance;
+    }
+
+    public CorrelationPlugin() {
+
+    }
+
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
+    }
+
+    public ICorrelationModelProvider getCorrelationModelProvider() {
+        return getModelProvider(CORRELATION_MODEL_PROVIDER_ID);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void start(final BundleContext bundleContext) throws Exception {
+        super.start(bundleContext);
+        instance = this;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void stop(final BundleContext bundleContext) throws Exception {
+        instance = null;
+        super.stop(bundleContext);
+    }
 
 }

@@ -17,6 +17,7 @@ import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget.IComboSelecti
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.providers.IProjectModelProvider;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -45,6 +46,11 @@ public abstract class AbstractDatasetComboWidget<D extends IModel, L extends ICo
 
     protected IProjectModel getActiveProject() {
         return projectModelProvider.getActiveProjectModel();
+    }
+
+    @Override
+    protected GridData getElementLayoutData() {
+        return new GridData(GridData.FILL_HORIZONTAL);
     }
 
     @Override

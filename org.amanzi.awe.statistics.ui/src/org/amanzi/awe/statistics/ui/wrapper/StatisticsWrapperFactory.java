@@ -41,8 +41,6 @@ import org.apache.log4j.Logger;
  */
 public class StatisticsWrapperFactory implements ITreeWrapperFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(StatisticsWrapperFactory.class);
-
     private final class StatisticsModelIterator implements Iterator<IStatisticsModel> {
 
         private final Iterator<IMeasurementModel> sourceModels;
@@ -74,6 +72,8 @@ public class StatisticsWrapperFactory implements ITreeWrapperFactory {
 
     }
 
+    private static final Logger LOGGER = Logger.getLogger(StatisticsWrapperFactory.class);
+
     private final IStatisticsModelProvider statisticsModelProvider;
 
     private final IProjectModelProvider projectModelProvider;
@@ -84,6 +84,23 @@ public class StatisticsWrapperFactory implements ITreeWrapperFactory {
         this.statisticsModelProvider = StatisticsModelPlugin.getDefault().getStatisticsModelProvider();
         this.projectModelProvider = StatisticsModelPlugin.getDefault().getProjectModelProvider();
         this.driveModelProvider = StatisticsModelPlugin.getDefault().getDriveModelProvider();
+    }
+
+    private Iterator<IMeasurementModel> getMeasurementModelIterator(final IProjectModel activeProject) throws ModelException {
+        final List<IMeasurementModel> result = new ArrayList<IMeasurementModel>();
+
+        result.addAll(driveModelProvider.findAll(activeProject));
+
+        return result.iterator();
+    }
+
+    private Iterator<IStatisticsModel> getStatisticsModelsIterator(final IMeasurementModel sourceModel) {
+        try {
+            return statisticsModelProvider.findAll(sourceModel).iterator();
+        } catch (final ModelException e) {
+            LOGGER.error("Error on searching for Statistics Models", e);
+        }
+        return null;
     }
 
     @Override
@@ -117,23 +134,6 @@ public class StatisticsWrapperFactory implements ITreeWrapperFactory {
             LOGGER.error("Error on collecting Tree Wrappers", e);
         }
         return result;
-    }
-
-    private Iterator<IMeasurementModel> getMeasurementModelIterator(final IProjectModel activeProject) throws ModelException {
-        final List<IMeasurementModel> result = new ArrayList<IMeasurementModel>();
-
-        result.addAll(driveModelProvider.findAll(activeProject));
-
-        return result.iterator();
-    }
-
-    private Iterator<IStatisticsModel> getStatisticsModelsIterator(final IMeasurementModel sourceModel) {
-        try {
-            return statisticsModelProvider.findAll(sourceModel).iterator();
-        } catch (final ModelException e) {
-            LOGGER.error("Error on searching for Statistics Models", e);
-        }
-        return null;
     }
 
 }

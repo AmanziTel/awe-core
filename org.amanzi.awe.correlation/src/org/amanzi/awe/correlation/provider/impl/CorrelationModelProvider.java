@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.correlation.provider.impl;
 
-import org.amanzi.awe.correlation.model.CorrelationTypes;
+import org.amanzi.awe.correlation.model.CorrelationNodeTypes;
 import org.amanzi.awe.correlation.model.ICorrelationModel;
 import org.amanzi.awe.correlation.model.impl.CorrelationModel;
 import org.amanzi.awe.correlation.nodeproperties.ICorrelationProperties;
@@ -26,6 +26,7 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.impl.internal.AbstractNamedModelProvider;
 import org.amanzi.neo.services.INodeService;
@@ -97,6 +98,8 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
 
     private final ICorrelationProperties correlationProperties;
 
+    private final ITimePeriodNodeProperties timePeriodNodePropertie;
+
     /**
      * @param networkNodeProperties
      * @param measurementNodeProperties
@@ -105,14 +108,16 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
      * @param nodeService
      */
     public CorrelationModelProvider(final INetworkNodeProperties networkNodeProperties,
-            final IGeneralNodeProperties generalNodeProperties, final ICorrelationService correlationService,
-            final INodeService nodeService, final ICorrelationProperties correlationProperties) {
+            final IGeneralNodeProperties generalNodeProperties, final ICorrelationProperties correlationProperties,
+            final ICorrelationService correlationService, final INodeService nodeService,
+            final ITimePeriodNodeProperties timePeriodNodeProperties) {
         super(nodeService, generalNodeProperties);
         this.networkNodeProperties = networkNodeProperties;
         this.generalNodeProperties = generalNodeProperties;
         this.correlationService = correlationService;
         this.nodeService = nodeService;
         this.correlationProperties = correlationProperties;
+        this.timePeriodNodePropertie = timePeriodNodeProperties;
     }
 
     @Override
@@ -158,7 +163,7 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
     @Override
     protected CorrelationModel createInstance() {
         return new CorrelationModel(correlationService, nodeService, generalNodeProperties, networkNodeProperties,
-                correlationProperties);
+                correlationProperties, timePeriodNodePropertie);
     }
 
     @Override
@@ -208,7 +213,7 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
 
     @Override
     protected INodeType getModelType() {
-        return CorrelationTypes.CORRELATION_MODEL;
+        return CorrelationNodeTypes.CORRELATION_MODEL;
     }
 
     /**

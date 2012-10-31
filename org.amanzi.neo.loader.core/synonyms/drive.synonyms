@@ -1,5 +1,6 @@
 m.lat@Double! = ((?i)lat.*), (?i)latitude
 m.lon@Double! = ((?i)lon.*), (?i)longitude
+m.cell_id@Integer! = ((?i)cellId), (?i)ci,(?i)cell_id 
 m.timestamp@Timestamp! = ((?i)time)
 m.event@String = (?i)event
 m.imei@String = (?i)imei

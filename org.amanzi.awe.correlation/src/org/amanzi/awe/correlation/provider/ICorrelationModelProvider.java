@@ -30,7 +30,7 @@ import org.amanzi.neo.providers.internal.IModelProvider;
 public interface ICorrelationModelProvider extends IModelProvider<ICorrelationModel> {
 
     ICorrelationModel createCorrelationModel(INetworkModel networkModel, IMeasurementModel correlatedModel,
-            String correlationProperty, String correlatedProperty) throws ModelException;
+            String correlationPropertyName, String correlatedProperty) throws ModelException;
 
     ICorrelationModel findCorrelationModel(INetworkModel networkModel, IMeasurementModel correlatedModel,
             String correlationProperty, String correlatedProperty) throws ModelException;

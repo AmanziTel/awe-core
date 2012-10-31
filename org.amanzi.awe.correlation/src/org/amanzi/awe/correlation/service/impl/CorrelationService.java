@@ -16,17 +16,18 @@ package org.amanzi.awe.correlation.service.impl;
 import java.util.Iterator;
 
 import org.amanzi.awe.correlation.exceptions.DuplicatedProxyException;
-import org.amanzi.awe.correlation.model.CorrelationTypes;
+import org.amanzi.awe.correlation.model.CorrelationNodeTypes;
 import org.amanzi.awe.correlation.nodeproperties.ICorrelationProperties;
 import org.amanzi.awe.correlation.service.ICorrelationService;
 import org.amanzi.neo.models.network.NetworkElementType;
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -42,7 +43,7 @@ import org.neo4j.kernel.Traversal;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CorrelationService implements ICorrelationService {
+public class CorrelationService extends AbstractService implements ICorrelationService {
 
     public static enum CorrelationRelationshipType implements RelationshipType {
         CORRELATION, CORRELATED, PROXY;
@@ -57,15 +58,15 @@ public class CorrelationService implements ICorrelationService {
 
     private final ICorrelationProperties correlationProperties;
 
-    private final String CORRELATION_MODEL_NAME_FORMAT = "%s:%s@%s%s";
+    private final String CORRELATION_MODEL_NAME_FORMAT = "%s:%s@%s:%s";
 
     /**
      * @param nodeSerivce
      * @param generalNodeProeprties
      */
-    public CorrelationService(final INodeService nodeSerivce, final IGeneralNodeProperties generalNodeProeprties,
+    public CorrelationService(final GraphDatabaseService graphDb, final INodeService nodeSerivce,
             final ICorrelationProperties correlationProperties) {
-        super();
+        super(graphDb, null);
         this.nodeSerivce = nodeSerivce;
         this.correlationProperties = correlationProperties;
     }
@@ -76,7 +77,8 @@ public class CorrelationService implements ICorrelationService {
         assert networkRoot != null;
         assert measurementRoot != null;
         assert !StringUtils.isEmpty(correlatedProperty);
-        assert !StringUtils.isEmpty(correlationProperty);
+        assert correlationProperty != null;
+        assert !correlationProperty.isEmpty();
 
         String networkName = nodeSerivce.getNodeName(networkRoot);
         String measurementName = nodeSerivce.getNodeName(measurementRoot);
@@ -84,7 +86,7 @@ public class CorrelationService implements ICorrelationService {
         String modelName = String.format(CORRELATION_MODEL_NAME_FORMAT, networkName, correlationProperty, measurementName,
                 correlatedProperty);
 
-        Node modelNode = nodeSerivce.createNode(networkRoot, CorrelationTypes.CORRELATION_MODEL,
+        Node modelNode = nodeSerivce.createNode(networkRoot, CorrelationNodeTypes.CORRELATION_MODEL,
                 CorrelationRelationshipType.CORRELATION, String.format(modelName, networkName, measurementName));
 
         nodeSerivce.updateProperty(modelNode, correlationProperties.getCorrelatedNodeProperty(), correlatedProperty);
@@ -107,7 +109,7 @@ public class CorrelationService implements ICorrelationService {
             throw new DuplicatedProxyException(rootNode, sectorNode, measurementNode);
         }
 
-        proxyNode = nodeSerivce.createNodeInChain(rootNode, CorrelationTypes.PROXY);
+        proxyNode = nodeSerivce.createNodeInChain(rootNode, CorrelationNodeTypes.PROXY);
         nodeSerivce.linkNodes(proxyNode, sectorNode, CorrelationRelationshipType.PROXY);
         Relationship relationship = nodeSerivce.linkNodes(proxyNode, measurementNode, CorrelationRelationshipType.PROXY);
         nodeSerivce.updateProperty(relationship, correlationProperties.getCorrelatedModelNameProperty(), measuremntName);
@@ -120,9 +122,10 @@ public class CorrelationService implements ICorrelationService {
         assert networkRoot != null;
         assert measurementRoot != null;
         assert !StringUtils.isEmpty(correlatedProperty);
-        assert !StringUtils.isEmpty(correlationProperty);
+        assert correlationProperty != null;
+        assert !correlationProperty.isEmpty();
 
-        Iterator<Node> children = nodeSerivce.getChildren(networkRoot, CorrelationTypes.CORRELATION_MODEL,
+        Iterator<Node> children = nodeSerivce.getChildren(networkRoot, CorrelationNodeTypes.CORRELATION_MODEL,
                 CorrelationRelationshipType.CORRELATION);
         if (children == null || !children.hasNext()) {
             return null;

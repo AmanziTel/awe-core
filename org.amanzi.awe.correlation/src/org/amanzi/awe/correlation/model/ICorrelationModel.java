@@ -25,6 +25,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
+// TODO KV: add comments
 public interface ICorrelationModel extends IModel {
 
     Iterable<IProxyElement> findAllProxies() throws ModelException;
@@ -33,5 +34,15 @@ public interface ICorrelationModel extends IModel {
 
     String getCorrelationProperty();
 
+    Long getEndTime();
+
+    String getMeasurementName();
+
+    String getNetworkName();
+
+    int getProxiesCount();
+
     IProxyElement getProxy(IDataElement sector, IDataElement correlatedElement) throws ModelException;
+
+    Long getStartTime();
 }

@@ -351,7 +351,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         if (!StringUtils.isEmpty(sectorName)) {
             result = findElement(NetworkElementType.SECTOR, sectorName);
         }
-        if (result == null) {
+        if (result == null && ci != null) {
             final List<Node> ciList = getNodeListFromIndex(NetworkElementType.SECTOR, networkNodeProperties.getCIProperty(), ci);
             List<Node> resultList = null;
 
@@ -551,7 +551,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    protected boolean isInAppropiatedProperty(final String propertyName) {
+    protected boolean isInAppropriatedProperty(final String propertyName) {
         return !getGeoNodeProperties().getLatitudeProperty().equals(propertyName)
                 && !getGeoNodeProperties().getLongitudeProperty().equals(propertyName);
     }

@@ -75,6 +75,14 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
         this.labelFirst = labelFirst;
     }
 
+    protected abstract C createControl(Composite parent);
+
+    private void createLabel(final Composite parent) {
+        controlLabel = new Label(parent, SWT.NONE);
+        controlLabel.setText(label);
+        controlLabel.setLayoutData(getLabelLayoutData());
+    }
+
     @Override
     protected Composite createWidget(final Composite parent, final int style) {
         Composite composite = new Composite(parent, style);
@@ -95,17 +103,13 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
         return composite;
     }
 
-    private void createLabel(final Composite parent) {
-        controlLabel = new Label(parent, SWT.NONE);
-        controlLabel.setText(label);
-        controlLabel.setLayoutData(getLabelLayoutData());
+    protected C getControl() {
+        return control;
     }
 
     private GridData getControlLayoutData() {
         return new GridData(SWT.LEFT, SWT.CENTER, false, false);
     }
-
-    protected abstract C createControl(Composite parent);
 
     protected GridData getElementLayoutData() {
         return new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
@@ -119,10 +123,6 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
         }
 
         return gridData;
-    }
-
-    protected C getControl() {
-        return control;
     }
 
     @Override

@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.amanzi.awe.correlation.model.CorrelationTypes;
+import org.amanzi.awe.correlation.model.CorrelationNodeTypes;
 import org.amanzi.awe.correlation.model.ICorrelationModel;
 import org.amanzi.awe.correlation.model.IProxyElement;
 import org.amanzi.awe.correlation.nodeproperties.ICorrelationProperties;
@@ -31,6 +31,7 @@ import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
+import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -88,16 +89,25 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
 
     private String correlatedProperty;
 
-    private String correlationProperty;
+    private String correlationProperties;
+
+    private Long startTime = Long.MAX_VALUE;
+
+    private Long endTime = Long.MIN_VALUE;
+
+    private int proxiesCount;
+
+    private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
     public CorrelationModel(final ICorrelationService correlationService, final INodeService nodeService,
             final IGeneralNodeProperties generalNodeProperties, final INetworkNodeProperties networkNodeProperties,
-            final ICorrelationProperties correlationNodeProperties) {
+            final ICorrelationProperties correlationNodeProperties, final ITimePeriodNodeProperties timePeriodNodeProperties) {
         super(nodeService, generalNodeProperties);
 
         this.networkNodeProperties = networkNodeProperties;
         this.correlationService = correlationService;
         this.correlationNodeProperties = correlationNodeProperties;
+        this.timePeriodNodeProperties = timePeriodNodeProperties;
     }
 
     @Override
@@ -114,6 +124,13 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
     @Override
     public void finishUp() throws ModelException {
         proxiesCache.clear();
+        try {
+            getNodeService().updateProperty(getRootNode(), correlationNodeProperties.getProxiesCountNodeProperty(), proxiesCount);
+            getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getStartDateTimestampProperty(), startTime);
+            getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getEndDateTimestampProperty(), endTime);
+        } catch (ServiceException e) {
+            processException("can't update properties", e);
+        }
     }
 
     @Override
@@ -128,7 +145,12 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
 
     @Override
     public String getCorrelationProperty() {
-        return correlationProperty;
+        return correlationProperties;
+    }
+
+    @Override
+    public Long getEndTime() {
+        return endTime;
     }
 
     /**
@@ -139,8 +161,13 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
     }
 
     @Override
+    public String getMeasurementName() {
+        return measurementModel.getName();
+    }
+
+    @Override
     protected INodeType getModelType() {
-        return CorrelationTypes.CORRELATION_MODEL;
+        return CorrelationNodeTypes.CORRELATION_MODEL;
     }
 
     /**
@@ -150,11 +177,21 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         return networkModel;
     }
 
+    @Override
+    public String getNetworkName() {
+        return networkModel.getName();
+    }
+
     /**
      * @return Returns the networkNodeProperties.
      */
     public INetworkNodeProperties getNetworkNodeProperties() {
         return networkNodeProperties;
+    }
+
+    @Override
+    public int getProxiesCount() {
+        return proxiesCount;
     }
 
     @Override
@@ -172,8 +209,15 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
 
         try {
             if (element == null) {
-                Node proxyNode = correlationService.createProxy(getRootNode(), sectorNode, measurementNode,
-                        measurementModel.getName());
+                Node proxyNode = correlationService.findProxy(sectorNode, measurementNode, measurementModel.getName());
+                if (proxyNode == null) {
+                    proxyNode = correlationService.createProxy(getRootNode(), sectorNode, measurementNode,
+                            measurementModel.getName());
+                    Long timestamp = getNodeService().getNodeProperty(measurementNode,
+                            timePeriodNodeProperties.getTimestampProperty(), startTime, false);
+                    updateTimestamp(timestamp);
+                    proxiesCount++;
+                }
                 element = new ProxyElement(proxyNode, sector, correlatedElement);
                 proxiesCache.put(cacheKey, element);
             }
@@ -188,15 +232,26 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
     }
 
     @Override
+    public Long getStartTime() {
+        return startTime;
+    }
+
+    @Override
     public void initialize(final Node rootNode) throws ModelException {
         super.initialize(rootNode);
         try {
             this.correlatedProperty = getNodeService().getNodeProperty(rootNode,
                     correlationNodeProperties.getCorrelatedNodeProperty(), null, true);
-            this.correlationProperty = getNodeService().getNodeProperty(rootNode,
+            this.correlationProperties = getNodeService().getNodeProperty(rootNode,
                     correlationNodeProperties.getCorrelationNodeProperty(), null, true);
+            this.startTime = getNodeService().getNodeProperty(rootNode, timePeriodNodeProperties.getStartDateTimestampProperty(),
+                    startTime, false);
+            this.endTime = getNodeService().getNodeProperty(rootNode, timePeriodNodeProperties.getEndDateTimestampProperty(),
+                    endTime, false);
+            this.proxiesCount = getNodeService().getNodeProperty(rootNode, correlationNodeProperties.getProxiesCountNodeProperty(),
+                    0, false);
         } catch (ServiceException e) {
-            processException("can't get property from model", e);
+            processException("can't get property from model" + getName(), e);
         }
     }
 
@@ -206,6 +261,11 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
     public void setCorrelatedModels(final INetworkModel networkModel, final IMeasurementModel measurementModel) {
         this.networkModel = networkModel;
         this.measurementModel = measurementModel;
+    }
+
+    private void updateTimestamp(final long timestamp) {
+        startTime = Math.min(startTime, timestamp);
+        endTime = Math.max(endTime, timestamp);
     }
 
 }

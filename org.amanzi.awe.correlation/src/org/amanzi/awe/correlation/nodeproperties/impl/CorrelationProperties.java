@@ -31,6 +31,8 @@ public class CorrelationProperties implements ICorrelationProperties {
 
     private static final String CORRELATED_MODEL_PROPERTY = "correlated_model";
 
+    private static final String PROXIES_COUNT_NODE_PROPERTY = "proxies_count";
+
     @Override
     public String getCorrelatedModelNameProperty() {
         return CORRELATED_MODEL_PROPERTY;
@@ -44,6 +46,11 @@ public class CorrelationProperties implements ICorrelationProperties {
     @Override
     public String getCorrelationNodeProperty() {
         return CORRELATION_NODE_PROPERTY;
+    }
+
+    @Override
+    public String getProxiesCountNodeProperty() {
+        return PROXIES_COUNT_NODE_PROPERTY;
     }
 
 }

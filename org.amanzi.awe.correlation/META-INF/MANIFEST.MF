@@ -4,8 +4,14 @@ Bundle-Name: Correlation
 Bundle-SymbolicName: org.amanzi.awe.correlation;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.correlation.CorrelationPlugin
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.models.impl;bundle-version="1.0.0",
- org.amanzi.neo.providers;bundle-version="1.0.0"
-Bundle-ActivationPolicy: lazy
+ org.amanzi.neo.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Export-Package: org.amanzi.awe.correlation,
+ org.amanzi.awe.correlation.engine,
+ org.amanzi.awe.correlation.exception,
+ org.amanzi.awe.correlation.model
+Eclipse-ExtensibleAPI: true
+Eclipse-RegisterBuddy: org.amanzi.neo.core, org.amanzi.neo.providers

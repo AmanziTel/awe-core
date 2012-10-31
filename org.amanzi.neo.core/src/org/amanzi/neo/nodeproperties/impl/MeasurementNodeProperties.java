@@ -35,17 +35,11 @@ public class MeasurementNodeProperties implements IMeasurementNodeProperties {
 
     private static final String IMEI_PROPERTY = "imei";
 
-    /**
-     * @return Returns the filePathProperty.
-     */
-    @Override
-    public String getFilePathProperty() {
-        return FILE_PATH_PROPERTY;
-    }
+    private static final String CELL_ID_PROPERTY = "cell_id";
 
     @Override
-    public String getPrimaryTypeProperty() {
-        return PRIMARY_TYPE_PROPERTY;
+    public String getCellIdPropertyName() {
+        return CELL_ID_PROPERTY;
     }
 
     @Override
@@ -58,9 +52,22 @@ public class MeasurementNodeProperties implements IMeasurementNodeProperties {
         return EVENT_PROPERTY;
     }
 
+    /**
+     * @return Returns the filePathProperty.
+     */
+    @Override
+    public String getFilePathProperty() {
+        return FILE_PATH_PROPERTY;
+    }
+
     @Override
     public String getIMEIProperty() {
         return IMEI_PROPERTY;
+    }
+
+    @Override
+    public String getPrimaryTypeProperty() {
+        return PRIMARY_TYPE_PROPERTY;
     }
 
 }

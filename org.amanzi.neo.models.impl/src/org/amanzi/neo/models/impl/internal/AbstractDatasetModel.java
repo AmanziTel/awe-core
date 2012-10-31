@@ -113,7 +113,7 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel
 
         try {
             getNodeService().updateProperty(((DataElement)element).getNode(), propertyName, propertyValue);
-            if (isInAppropiatedProperty(propertyName)) {
+            if (isInAppropriatedProperty(propertyName)) {
                 getPropertyStatistics().renameProperty(element.getNodeType(), propertyName, element.get(propertyName),
                         propertyValue);
             }
@@ -124,7 +124,7 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel
         }
     }
 
-    protected abstract boolean isInAppropiatedProperty(String propertyName);
+    protected abstract boolean isInAppropriatedProperty(String propertyName);
 
     protected abstract void updateIndexModel(IDataElement element, String propertyName, Object propertyValue) throws ModelException;
 

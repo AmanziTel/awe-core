@@ -30,4 +30,6 @@ public interface ICorrelationProperties extends INodeProperties {
     String getCorrelatedNodeProperty();
 
     String getCorrelationNodeProperty();
+
+    String getProxiesCountNodeProperty();
 }

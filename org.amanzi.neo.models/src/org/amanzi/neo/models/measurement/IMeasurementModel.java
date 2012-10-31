@@ -41,20 +41,28 @@ public interface IMeasurementModel extends IDatasetModel {
 
     }
 
-    IFileElement getFile(IDataElement parent, String name, String path) throws ModelException;
-
-    ILocationElement createLocation(IDataElement parent, double latitude, double longitude, long timestamp) throws ModelException;
+    IDataElement addMeasurement(IDataElement parent, Map<String, Object> properties) throws ModelException;
 
     void addToLocation(IDataElement measurement, ILocationElement location) throws ModelException;
 
-    IDataElement addMeasurement(IDataElement parent, Map<String, Object> properties) throws ModelException;
+    ILocationElement createLocation(IDataElement parent, double latitude, double longitude, long timestamp) throws ModelException;
+
+    /**
+     * @param name
+     * @param value
+     * @return
+     * @throws ModelException
+     */
+    Iterable<IDataElement> findElementByProperty(String name, Object value) throws ModelException;
+
+    Iterable<IDataElement> getElements(long minTimestamp, long maxTimestamp) throws ModelException;
+
+    IFileElement getFile(IDataElement parent, String name, String path) throws ModelException;
 
     INodeType getMainMeasurementNodeType();
 
-    long getMinTimestamp();
-
     long getMaxTimestamp();
 
-    Iterable<IDataElement> getElements(long minTimestamp, long maxTimestamp) throws ModelException;
+    long getMinTimestamp();
 
 }

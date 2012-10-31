@@ -67,11 +67,14 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
 
     private boolean shouldSort = true;
 
-    protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
-            final boolean withoutListeners, final boolean shouldSort) {
-        this(parent, listener, label, minimalLabelWidth, withoutListeners);
+    /**
+     * @param parent
+     * @param label
+     */
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label) {
+        super(parent, listener, label);
 
-        this.shouldSort = shouldSort;
+        AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
     }
 
     /**
@@ -88,56 +91,29 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
      * @param parent
      * @param label
      */
-    protected AbstractComboWidget(final Composite parent, final L listener, final String label) {
-        super(parent, listener, label);
-
-        AWEEventManager.getManager().addListener(this, SUPPORTED_EVENTS);
-    }
-
-    /**
-     * @param parent
-     * @param label
-     */
     protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
             final boolean withoutListeners) {
         super(parent, listener, label, minimalLabelWidth);
     }
 
-    @Override
-    public void onEvent(final IEvent event) {
-        if (ArrayUtils.contains(SUPPORTED_EVENTS, event.getStatus())) {
-            fillCombo();
-        }
-    }
+    protected AbstractComboWidget(final Composite parent, final L listener, final String label, final int minimalLabelWidth,
+            final boolean withoutListeners, final boolean shouldSort) {
+        this(parent, listener, label, minimalLabelWidth, withoutListeners);
 
-    @Override
-    public Priority getPriority() {
-        return Priority.NORMAL;
-    }
-
-    @Override
-    public void initializeWidget() {
-        super.initializeWidget();
-        fillCombo();
+        this.shouldSort = shouldSort;
     }
 
     @Override
     protected Combo createControl(final Composite parent) {
         final Combo combo = new Combo(parent, SWT.NONE);
-
         combo.addSelectionListener(this);
 
         return combo;
     }
 
-    protected D getSelectedItem() {
-        final String itemText = getControl().getText();
-
-        if (!StringUtils.isEmpty(itemText)) {
-            selectedItem = itemsMap.get(itemText);
-        }
-
-        return selectedItem;
+    @Override
+    public void dispose() {
+        AWEEventManager.getManager().removeListener(this);
     }
 
     public void fillCombo() {
@@ -165,6 +141,54 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         }
     }
 
+    private void fireEvent() {
+        for (final L listener : getListeners()) {
+            fireListener(listener, getSelectedItem());
+        }
+    }
+
+    protected abstract void fireListener(L listener, D selectedItem);
+
+    protected D getDefaultSelectedItem() {
+        return null;
+    }
+
+    protected int getDefaultSelectedItemIndex() {
+        return 0;
+    }
+
+    protected abstract String getItemName(D item);
+
+    protected abstract Collection<D> getItems();
+
+    @Override
+    public Priority getPriority() {
+        return Priority.NORMAL;
+    }
+
+    protected D getSelectedItem() {
+        final String itemText = getControl().getText();
+
+        if (!StringUtils.isEmpty(itemText)) {
+            selectedItem = itemsMap.get(itemText);
+        }
+
+        return selectedItem;
+    }
+
+    @Override
+    public void initializeWidget() {
+        super.initializeWidget();
+        fillCombo();
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        if (ArrayUtils.contains(SUPPORTED_EVENTS, event.getStatus())) {
+            fillCombo();
+        }
+    }
+
     public void skipSelection() {
         selectedItem = null;
 
@@ -189,8 +213,8 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         boolean fireEvent = false;
         if (text == null) {
             text = StringUtils.EMPTY;
-            if ((getControl().getItemCount() > 0) && (getDefaultSelectedItemIndex() >= 0)
-                    && (getDefaultSelectedItemIndex() < getControl().getItemCount())) {
+            if (getControl().getItemCount() > 0 && getDefaultSelectedItemIndex() >= 0
+                    && getDefaultSelectedItemIndex() < getControl().getItemCount()) {
                 text = getControl().getItem(getDefaultSelectedItemIndex());
                 fireEvent = true;
             }
@@ -202,39 +226,14 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         }
     }
 
-    protected D getDefaultSelectedItem() {
-        return null;
-    }
-
-    protected int getDefaultSelectedItemIndex() {
-        return 0;
-    }
-
-    protected abstract Collection<D> getItems();
-
-    protected abstract String getItemName(D item);
-
     @Override
-    public void dispose() {
-        AWEEventManager.getManager().removeListener(this);
+    public void widgetDefaultSelected(final SelectionEvent e) {
+        widgetSelected(e);
     }
 
     @Override
     public void widgetSelected(final SelectionEvent e) {
         fireEvent();
     }
-
-    @Override
-    public void widgetDefaultSelected(final SelectionEvent e) {
-        widgetSelected(e);
-    }
-
-    private void fireEvent() {
-        for (final L listener : getListeners()) {
-            fireListener(listener, getSelectedItem());
-        }
-    }
-
-    protected abstract void fireListener(L listener, D selectedItem);
 
 }
