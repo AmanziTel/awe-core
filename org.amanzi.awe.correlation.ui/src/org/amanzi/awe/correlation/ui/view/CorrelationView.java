@@ -90,6 +90,7 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
 
                     @Override
                     public void run() {
+                        btnCorrelate.setEnabled(true);
                         updateTable(model);
                     }
                 }, true);
@@ -206,6 +207,7 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
     public void widgetSelected(final SelectionEvent e) {
         if (e.getSource().equals(btnCorrelate)) {
             if (selectedNetwork != null && selectedMeasurement != null) {
+                btnCorrelate.setEnabled(false);
                 CorrelationJob job = new CorrelationJob(selectedNetwork, "ci", selectedMeasurement, "cell_id");
                 job.schedule();
             }
