@@ -198,12 +198,7 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
 
     @Override
     public void widgetDefaultSelected(final SelectionEvent e) {
-        if (e.getSource().equals(btnCorrelate)) {
-            if (selectedNetwork != null && selectedMeasurement != null) {
-                CorrelationJob job = new CorrelationJob(selectedNetwork, "ci", selectedMeasurement, "cell_id");
-                job.schedule();
-            }
-        }
+        widgetSelected(e);
 
     }
 

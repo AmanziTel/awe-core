@@ -22,9 +22,8 @@ package org.amanzi.awe.correlation.ui.view.table;
  * @since 1.0.0
  */
 public enum CorrelationTableColumns {
-    NETWORK_COLUMN("Network", 0), MEASUREMENT_COLUMN("Measurement", 1), CORRELATION_PROPERTY("Correlation property", 2), CORRELATED_PROPERTY(
-            "Correlated property", 3), PROXIES_COUNT_COLUMN("Proxies", 4), START_TIME_COLUMN("Start time", 5), END_TIME_COLUMN(
-            "End time", 6);
+    NETWORK_COLUMN("Network", 0), MEASUREMENT_COLUMN("Measurement", 1), PROXIES_COUNT_COLUMN("Proxies", 2), START_TIME_COLUMN(
+            "Start time", 3), END_TIME_COLUMN("End time", 4);
 
     public static CorrelationTableColumns findByIndex(final int index) {
         for (CorrelationTableColumns column : CorrelationTableColumns.values()) {

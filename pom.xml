@@ -112,6 +112,9 @@
 				<module>org.amanzi.awe.nem</module>
 				<module>org.amanzi.awe.nem.feature</module>
 				<module>org.amanzi.awe.nem.ui</module>
+				<module>org.amanzi.awe.correlation</module>
+				<module>org.amanzi.awe.correlation.feature</module>
+			   	<module>org.amanzi.awe.correlation.ui</module>
 				<module>org.amanzi.awe.neostyle</module>
 				<module>org.amanzi.awe.network.ui</module>
 				<module>org.amanzi.awe.feature</module>

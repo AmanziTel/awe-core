@@ -54,10 +54,6 @@ public class CorrelationTableLabelProvider implements ITableLabelProvider {
             return model.getNetworkName();
         case MEASUREMENT_COLUMN:
             return model.getMeasurementName();
-        case CORRELATION_PROPERTY:
-            return model.getCorrelationProperty();
-        case CORRELATED_PROPERTY:
-            return model.getCorrelatedProperty();
         case PROXIES_COUNT_COLUMN:
             return String.valueOf(model.getProxiesCount());
         case START_TIME_COLUMN:
