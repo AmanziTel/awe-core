@@ -65,11 +65,49 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
         this.networkNodeProperties = networkNodeProperties;
     }
 
+    protected INetworkModel createNetworkModel(final String networkName) throws ModelException {
+        INetworkModel model = networkModelProvider.create(getCurrentProject(), networkName);
+        addProcessedModel(model);
+
+        return model;
+    }
+
+    private IDataElement findElement(final NetworkElementType elementType, final String elementName) throws ModelException {
+        return networkModel.findElement(elementType, elementName);
+    }
+
+    private IDataElement findSector(final String elementName, final Map<String, Object> properties) throws ModelException {
+        Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
+        Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
+        return networkModel.findSector(elementName, ci, lac);
+    }
+
+    @Override
+    public void finishUp() {
+        try {
+            networkModel.createSynonyms(getSynonymsMap());
+        } catch (ModelException e) {
+        } finally {
+            super.finishUp();
+        }
+
+    }
+
+    @Override
+    protected String getSynonymsType() {
+        return SYNONYMS_TYPE;
+    }
+
     @Override
     public void init(final IConfiguration configuration) throws ModelException {
         super.init(configuration);
 
         networkModel = createNetworkModel(configuration.getDatasetName());
+    }
+
+    @Override
+    public void onFileParsingStarted(final File file) {
+        // do nothing
     }
 
     // TODO: shouldn't throw exception
@@ -104,33 +142,6 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
                 }
             }
         }
-    }
-
-    private IDataElement findSector(final String elementName, final Map<String, Object> properties) throws ModelException {
-        Integer ci = (Integer)properties.get(networkNodeProperties.getCIProperty());
-        Integer lac = (Integer)properties.get(networkNodeProperties.getLACProperty());
-        return networkModel.findSector(elementName, ci, lac);
-    }
-
-    private IDataElement findElement(final NetworkElementType elementType, final String elementName) throws ModelException {
-        return networkModel.findElement(elementType, elementName);
-    }
-
-    @Override
-    protected String getSynonymsType() {
-        return SYNONYMS_TYPE;
-    }
-
-    protected INetworkModel createNetworkModel(final String networkName) throws ModelException {
-        INetworkModel model = networkModelProvider.create(getCurrentProject(), networkName);
-        addProcessedModel(model);
-
-        return model;
-    }
-
-    @Override
-    public void onFileParsingStarted(final File file) {
-        // do nothing
     }
 
 }

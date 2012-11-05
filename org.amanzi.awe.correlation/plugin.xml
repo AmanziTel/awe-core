@@ -38,6 +38,12 @@
             <nodePropertiesReference
                   refId="org.amanzi.nodeproperties.TimePeriodNodeProperties">
             </nodePropertiesReference>
+            <providerReference
+                  refId="org.amanzi.provider.DriveModelProvider">
+            </providerReference>
+            <providerReference
+                  refId="org.amanzi.providers.ProjectModelProvider">
+            </providerReference>
          </parameters>
       </provider>
    </extension>

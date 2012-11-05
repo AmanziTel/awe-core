@@ -17,7 +17,7 @@ import org.amanzi.awe.correlation.model.ICorrelationModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
 import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.providers.internal.IModelProvider;
+import org.amanzi.neo.providers.internal.INamedModelProvider;
 
 /**
  * TODO Purpose of
@@ -27,11 +27,13 @@ import org.amanzi.neo.providers.internal.IModelProvider;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface ICorrelationModelProvider extends IModelProvider<ICorrelationModel> {
+public interface ICorrelationModelProvider extends INamedModelProvider<ICorrelationModel, INetworkModel> {
 
     ICorrelationModel createCorrelationModel(INetworkModel networkModel, IMeasurementModel correlatedModel,
             String correlationPropertyName, String correlatedProperty) throws ModelException;
 
     ICorrelationModel findCorrelationModel(INetworkModel networkModel, IMeasurementModel correlatedModel,
             String correlationProperty, String correlatedProperty) throws ModelException;
+
+    void removeModel(ICorrelationModel model) throws ModelException;
 }

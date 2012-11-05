@@ -46,7 +46,7 @@ public class CreateNetworkElementContribution extends AbstractNetworkMenuContrib
 
     @Override
     public void fill(final Menu menu, final int index) {
-        final IUIItem item = getSelectedItem(LOGGER);
+        final IUIItem item = getSelectedItem();
 
         if (item == null) {
             return;

@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.correlation.ui.CorrelationUiPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.awe.ui;bundle-version="1.0.0",
- org.amanzi.awe.correlation;bundle-version="1.0.0"
+ org.amanzi.awe.correlation;bundle-version="1.0.0",
+ org.apache.commons.lang;bundle-version="2.4.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

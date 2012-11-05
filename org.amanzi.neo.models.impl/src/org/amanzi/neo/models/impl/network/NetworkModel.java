@@ -46,6 +46,7 @@ import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -144,6 +145,10 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             };
         }
 
+    }
+
+    public enum NetworkRelationshipTypes implements RelationshipType {
+        SYNONYMS;
     }
 
     private static final Logger LOGGER = Logger.getLogger(NetworkModel.class);
@@ -299,6 +304,17 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         return result;
+    }
+
+    @Override
+    public void createSynonyms(final Map<String, Object> synonymnsMap) throws ModelException {
+        assert synonymnsMap != null;
+        try {
+            getNodeService()
+                    .createNode(getRootNode(), NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS, synonymnsMap);
+        } catch (ServiceException e) {
+            processException("can't create synonyms for model" + getName(), e);
+        }
     }
 
     @Override

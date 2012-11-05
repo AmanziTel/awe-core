@@ -16,6 +16,8 @@ package org.amanzi.awe.correlation.model;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.models.network.INetworkModel;
 
 /**
  * TODO Purpose of
@@ -30,19 +32,37 @@ public interface ICorrelationModel extends IModel {
 
     Iterable<IProxyElement> findAllProxies() throws ModelException;
 
+    /**
+     * @return
+     */
+    Integer getCorrelatedMCount();
+
     String getCorrelatedProperty();
 
     String getCorrelationProperty();
 
     Long getEndTime();
 
-    String getMeasurementName();
+    /**
+     * @return
+     */
+    IMeasurementModel getMeasurementModel();
 
-    String getNetworkName();
+    INetworkModel getNetworModel();
 
     int getProxiesCount();
 
     IProxyElement getProxy(IDataElement sector, IDataElement correlatedElement) throws ModelException;
 
     Long getStartTime();
+
+    /**
+     * @return
+     */
+    Integer getTotalMCount();
+
+    /**
+     * @return
+     */
+    Integer getTotalSectorsCount();
 }

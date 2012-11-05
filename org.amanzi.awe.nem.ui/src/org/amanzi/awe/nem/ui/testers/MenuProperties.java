@@ -31,13 +31,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public enum MenuProperties {
 
-    IS_COPYABLE("isCopyable"), IS_DELETABLE("isDeletable"), IS_ADDETABLE("isAddetable");
-
-    private String name;
-
-    private MenuProperties(final String parameterName) {
-        this.name = parameterName;
-    }
+    IS_COPYABLE("isCopyable"), IS_DELETABLE("isDeletable"), IS_ADDETABLE("isAddetable"), IS_EXPORTABLE("isExportable");
 
     public static MenuProperties findByName(final String parameterName) {
         for (final MenuProperties item : values()) {
@@ -46,6 +40,12 @@ public enum MenuProperties {
             }
         }
         return null;
+    }
+
+    private String name;
+
+    private MenuProperties(final String parameterName) {
+        this.name = parameterName;
     }
 
     public boolean check(final INetworkModel model, final IDataElement element) {
@@ -59,6 +59,7 @@ public enum MenuProperties {
                     .size() > 0;
         case IS_DELETABLE:
         case IS_COPYABLE:
+        case IS_EXPORTABLE:
             return model != null ? true : false;
         default:
             break;

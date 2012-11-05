@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.correlation.model;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.dto.IDataElement;
 
 /**
@@ -25,7 +27,7 @@ import org.amanzi.neo.dto.IDataElement;
  */
 public interface IProxyElement extends IDataElement {
 
-    IDataElement getCorrelatedElement();
+    Iterator<IDataElement> getCorrelatedElement();
 
     IDataElement getSectorElement();
 }

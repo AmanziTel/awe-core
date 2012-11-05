@@ -49,6 +49,19 @@
                   </with>
                </visibleWhen>
             </dynamic>
+            <dynamic
+                  class="org.amanzi.awe.nem.ui.contributions.ExportNetworkContribution"
+                  id="org.amanzi.awe.nem.ui.exportNetwork">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeMenuSelection">
+                     <test
+                           property="org.amanzi.awe.nem.ui.isExportable">
+                     </test>
+                  </with>
+               </visibleWhen>
+            </dynamic>
       </menuContribution>
       <menuContribution
             allPopups="false"
@@ -66,26 +79,6 @@
       <command
             id="org.amanzi.awe.nem.ui.delete"
             name="Delete">
-      </command>
-      <command
-            id="org.amanzi.awe.nem.ui.createItem"
-            name="CITY">
-      </command>
-      <command
-            id="org.amanzi.awe.nem.ui.createItem"
-            name="MSC">
-      </command>
-      <command
-            id="org.amanzi.awe.nem.ui.createItem"
-            name="SITE">
-      </command>
-      <command
-            id="org.amanzi.awe.nem.ui.createItem"
-            name="SECTOR">
-      </command>
-      <command
-            id="org.amanzi.awe.nem.ui.createItem"
-            name="BSC">
       </command>
       <command
             id="org.amanzi.awe.nem.ui.createNetwork"
@@ -118,7 +111,7 @@
             class="org.amanzi.awe.nem.ui.testers.NEMTester"
             id="org.amanzi.awe.nem.ui.deletabletester"
             namespace="org.amanzi.awe.nem.ui"
-            properties="isDeletable,isAddetable,isCopyable"
+            properties="isDeletable,isAddetable,isCopyable,isExportable"
             type="org.eclipse.jface.viewers.IStructuredSelection">
       </propertyTester>
    </extension>

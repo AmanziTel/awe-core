@@ -13,12 +13,18 @@
 
 package org.amanzi.awe.correlation.provider.impl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.amanzi.awe.correlation.model.CorrelationNodeTypes;
 import org.amanzi.awe.correlation.model.ICorrelationModel;
 import org.amanzi.awe.correlation.model.impl.CorrelationModel;
 import org.amanzi.awe.correlation.nodeproperties.ICorrelationProperties;
 import org.amanzi.awe.correlation.provider.ICorrelationModelProvider;
 import org.amanzi.awe.correlation.service.ICorrelationService;
+import org.amanzi.neo.impl.dto.DataElement;
+import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
@@ -28,6 +34,8 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.providers.IDriveModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractNamedModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -100,6 +108,10 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
 
     private final ITimePeriodNodeProperties timePeriodNodePropertie;
 
+    private final IDriveModelProvider driveModelProvider;
+
+    private final IProjectModelProvider projectModelProvider;
+
     /**
      * @param networkNodeProperties
      * @param measurementNodeProperties
@@ -110,7 +122,8 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
     public CorrelationModelProvider(final INetworkNodeProperties networkNodeProperties,
             final IGeneralNodeProperties generalNodeProperties, final ICorrelationProperties correlationProperties,
             final ICorrelationService correlationService, final INodeService nodeService,
-            final ITimePeriodNodeProperties timePeriodNodeProperties) {
+            final ITimePeriodNodeProperties timePeriodNodeProperties, final IDriveModelProvider driveModelProvider,
+            final IProjectModelProvider projectModelProvider) {
         super(nodeService, generalNodeProperties);
         this.networkNodeProperties = networkNodeProperties;
         this.generalNodeProperties = generalNodeProperties;
@@ -118,6 +131,8 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
         this.nodeService = nodeService;
         this.correlationProperties = correlationProperties;
         this.timePeriodNodePropertie = timePeriodNodeProperties;
+        this.driveModelProvider = driveModelProvider;
+        this.projectModelProvider = projectModelProvider;
     }
 
     @Override
@@ -150,6 +165,7 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
                 addToCache(result, key);
             }
         } catch (final ServiceException e) {
+            deleteFromCache(key);
             processException("Error on searching for a CorrelationModel Model <" + networkModel + ", " + correlatedModel + ">", e);
         }
 
@@ -164,6 +180,28 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
     protected CorrelationModel createInstance() {
         return new CorrelationModel(correlationService, nodeService, generalNodeProperties, networkNodeProperties,
                 correlationProperties, timePeriodNodePropertie);
+    }
+
+    @Override
+    public List<ICorrelationModel> findAll(final INetworkModel parent) throws ModelException {
+        assert parent != null;
+        List<ICorrelationModel> correlations = new ArrayList<ICorrelationModel>();
+        try {
+            Iterator<Node> nodes = correlationService.findAllNetworkCorrelations(((DataElement)parent.asDataElement()).getNode());
+            while (nodes.hasNext()) {
+                Node correlation = nodes.next();
+                CorrelationModel model = initializeFromNode(correlation);
+                Node measurementNode = correlationService.findMeasurementModel(correlation);
+                IDriveModel drive = driveModelProvider.findByName(projectModelProvider.getActiveProjectModel(),
+                        nodeService.getNodeName(measurementNode));
+                model.setCorrelatedModels(parent, drive);
+                correlations.add(model);
+
+            }
+        } catch (ServiceException e) {
+            processException("Can't find correlations for model " + parent.getName(), e);
+        }
+        return correlations;
     }
 
     @Override
@@ -224,7 +262,13 @@ public class CorrelationModelProvider extends AbstractNamedModelProvider<ICorrel
     private void initializeCorrelationModel(final CorrelationModel result, final INetworkModel networkModel,
             final IMeasurementModel measurementModel) {
         result.setCorrelatedModels(networkModel, measurementModel);
-
     }
 
+    @Override
+    public void removeModel(final ICorrelationModel model) throws ModelException {
+        deleteFromCache(new CorrelationModelKey(model.getNetworModel(), model.getMeasurementModel(),
+                model.getCorrelationProperty(), model.getCorrelatedProperty()));
+        model.delete();
+
+    }
 }

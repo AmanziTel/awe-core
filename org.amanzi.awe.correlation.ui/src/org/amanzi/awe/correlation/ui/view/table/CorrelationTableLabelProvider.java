@@ -14,6 +14,9 @@
 package org.amanzi.awe.correlation.ui.view.table;
 
 import org.amanzi.awe.correlation.model.ICorrelationModel;
+import org.amanzi.awe.ui.icons.IconManager;
+import org.amanzi.neo.dateformat.DateFormatManager;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
@@ -27,6 +30,10 @@ import org.eclipse.swt.graphics.Image;
  * @since 1.0.0
  */
 public class CorrelationTableLabelProvider implements ITableLabelProvider {
+
+    private static final String UNDEFINED = "undefined";
+
+    private static final Image DELETE_IMG = IconManager.getInstance().getImage("delete");
 
     @Override
     public void addListener(final ILabelProviderListener listener) {
@@ -42,7 +49,13 @@ public class CorrelationTableLabelProvider implements ITableLabelProvider {
 
     @Override
     public Image getColumnImage(final Object element, final int columnIndex) {
-        return null;
+        CorrelationTableColumns column = CorrelationTableColumns.findByIndex(columnIndex);
+        switch (column) {
+        case DELETE:
+            return DELETE_IMG;
+        default:
+            return null;
+        }
     }
 
     @Override
@@ -51,15 +64,29 @@ public class CorrelationTableLabelProvider implements ITableLabelProvider {
         ICorrelationModel model = (ICorrelationModel)element;
         switch (column) {
         case NETWORK_COLUMN:
-            return model.getNetworkName();
+            return model.getNetworModel().getName();
         case MEASUREMENT_COLUMN:
-            return model.getMeasurementName();
+            return model.getMeasurementModel().getName();
+        case TOTAL_SECTORS_COUNT:
+            return model.getTotalSectorsCount().toString();
+        case CORRELATED_M_COUNT:
+            return model.getCorrelatedMCount().toString();
+        case TOTAL_M_COUNT:
+            return model.getTotalMCount().toString();
         case PROXIES_COUNT_COLUMN:
             return String.valueOf(model.getProxiesCount());
         case START_TIME_COLUMN:
-            return model.getStartTime().toString();
+            if (model.getProxiesCount() <= 0) {
+                return UNDEFINED;
+            }
+            return DateFormatManager.getInstance().parseLongToStringDate(model.getStartTime());
         case END_TIME_COLUMN:
-            return model.getEndTime().toString();
+            if (model.getProxiesCount() <= 0) {
+                return UNDEFINED;
+            }
+            return DateFormatManager.getInstance().parseLongToStringDate(model.getEndTime());
+        case DELETE:
+            return StringUtils.EMPTY;
         default:
             return model.getName();
         }

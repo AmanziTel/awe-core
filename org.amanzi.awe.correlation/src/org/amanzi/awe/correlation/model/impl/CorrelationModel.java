@@ -14,8 +14,10 @@
 package org.amanzi.awe.correlation.model.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.awe.correlation.model.CorrelationNodeTypes;
 import org.amanzi.awe.correlation.model.ICorrelationModel;
@@ -28,15 +30,16 @@ import org.amanzi.neo.impl.util.AbstractDataElementIterator;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
 import org.amanzi.neo.models.measurement.IMeasurementModel;
+import org.amanzi.neo.models.measurement.MeasurementNodeType;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.INetworkNodeProperties;
 import org.amanzi.neo.nodeproperties.ITimePeriodNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -63,9 +66,9 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         protected IProxyElement createDataElement(final Node node) {
             try {
                 Node sector = correlationService.getSectorForProxy(node);
-                Node measurement = correlationService.getMeasurementForProxy(node);
+                Iterator<Node> measurements = correlationService.getMeasurementForProxy(node, measurementModel.getName());
 
-                return new ProxyElement(getRootNode(), new DataElement(sector), new DataElement(measurement));
+                return new ProxyElement(getRootNode(), new DataElement(sector), new DataElementIterator(measurements));
             } catch (ServiceException e) {
                 LOGGER.error("can't create proxyElement", e);
                 return null;
@@ -83,7 +86,9 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
 
     private INetworkModel networkModel;
 
-    private final Map<Pair<IDataElement, IDataElement>, IProxyElement> proxiesCache = new HashMap<Pair<IDataElement, IDataElement>, IProxyElement>();
+    private final Map<IDataElement, IProxyElement> proxiesCache = new HashMap<IDataElement, IProxyElement>();
+
+    private final Map<IProxyElement, Set<IDataElement>> measurementCache = new HashMap<IProxyElement, Set<IDataElement>>();
 
     private final ICorrelationProperties correlationNodeProperties;
 
@@ -99,6 +104,12 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
 
     private final ITimePeriodNodeProperties timePeriodNodeProperties;
 
+    private Integer totalSectorsCount;
+
+    private Integer correlatedMCount;
+
+    private Integer totalMCount;
+
     public CorrelationModel(final ICorrelationService correlationService, final INodeService nodeService,
             final IGeneralNodeProperties generalNodeProperties, final INetworkNodeProperties networkNodeProperties,
             final ICorrelationProperties correlationNodeProperties, final ITimePeriodNodeProperties timePeriodNodeProperties) {
@@ -108,6 +119,24 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         this.correlationService = correlationService;
         this.correlationNodeProperties = correlationNodeProperties;
         this.timePeriodNodeProperties = timePeriodNodeProperties;
+    }
+
+    private void computeCorrelatedM() {
+        for (Set<IDataElement> measurements : measurementCache.values()) {
+            correlatedMCount += measurements.size();
+        }
+
+    }
+
+    @Override
+    public void delete() throws ModelException {
+        try {
+            correlationService.deleteModel(getRootNode());
+        } catch (ServiceException e) {
+            processException("Can't remove model" + getName(), e);
+        } catch (NodeTypeNotExistsException e) {
+            processException("Can't remove model" + getName(), e);
+        }
     }
 
     @Override
@@ -123,11 +152,22 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
 
     @Override
     public void finishUp() throws ModelException {
-        proxiesCache.clear();
+
         try {
+            totalSectorsCount = networkModel.getPropertyStatistics().getCount(NetworkElementType.SECTOR);
+            proxiesCount = proxiesCache.size();
+            computeCorrelatedM();
+            totalMCount = measurementModel.getPropertyStatistics().getCount(MeasurementNodeType.M);
+
             getNodeService().updateProperty(getRootNode(), correlationNodeProperties.getProxiesCountNodeProperty(), proxiesCount);
             getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getStartDateTimestampProperty(), startTime);
             getNodeService().updateProperty(getRootNode(), timePeriodNodeProperties.getEndDateTimestampProperty(), endTime);
+            getNodeService().updateProperty(getRootNode(), correlationNodeProperties.getTotalSectorsCount(), totalSectorsCount);
+            getNodeService().updateProperty(getRootNode(), correlationNodeProperties.getCorrelatedMCountNodeProperty(),
+                    correlatedMCount);
+            getNodeService().updateProperty(getRootNode(), correlationNodeProperties.getTotalMCountNodeProperty(), totalMCount);
+            proxiesCache.clear();
+            measurementCache.clear();
         } catch (ServiceException e) {
             processException("can't update properties", e);
         }
@@ -136,6 +176,11 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
     @Override
     public Iterable<IDataElement> getAllElementsByType(final INodeType nodeType) throws ModelException {
         return null;
+    }
+
+    @Override
+    public Integer getCorrelatedMCount() {
+        return correlatedMCount;
     }
 
     @Override
@@ -153,16 +198,9 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         return endTime;
     }
 
-    /**
-     * @return Returns the measurementModel.
-     */
+    @Override
     public IMeasurementModel getMeasurementModel() {
         return measurementModel;
-    }
-
-    @Override
-    public String getMeasurementName() {
-        return measurementModel.getName();
     }
 
     @Override
@@ -171,22 +209,15 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
     }
 
     /**
-     * @return Returns the networkModel.
-     */
-    public INetworkModel getNetworkModel() {
-        return networkModel;
-    }
-
-    @Override
-    public String getNetworkName() {
-        return networkModel.getName();
-    }
-
-    /**
      * @return Returns the networkNodeProperties.
      */
     public INetworkNodeProperties getNetworkNodeProperties() {
         return networkNodeProperties;
+    }
+
+    @Override
+    public INetworkModel getNetworModel() {
+        return networkModel;
     }
 
     @Override
@@ -202,25 +233,26 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         assert sector != null;
         assert correlatedElement != null;
 
-        Pair<IDataElement, IDataElement> cacheKey = new ImmutablePair<IDataElement, IDataElement>(sector, correlatedElement);
-        IProxyElement element = proxiesCache.get(cacheKey);
+        IProxyElement proxy = proxiesCache.get(sector);
         Node sectorNode = ((DataElement)sector).getNode();
         Node measurementNode = ((DataElement)correlatedElement).getNode();
-
         try {
-            if (element == null) {
-                Node proxyNode = correlationService.findProxy(sectorNode, measurementNode, measurementModel.getName());
-                if (proxyNode == null) {
-                    proxyNode = correlationService.createProxy(getRootNode(), sectorNode, measurementNode,
-                            measurementModel.getName());
-                    Long timestamp = getNodeService().getNodeProperty(measurementNode,
-                            timePeriodNodeProperties.getTimestampProperty(), startTime, false);
-                    updateTimestamp(timestamp);
-                    proxiesCount++;
-                }
-                element = new ProxyElement(proxyNode, sector, correlatedElement);
-                proxiesCache.put(cacheKey, element);
+            Node proxyNode = correlationService.findProxy(sectorNode, measurementNode, measurementModel.getName());
+            if (proxyNode == null) {
+                proxyNode = correlationService.createProxy(getRootNode(), sectorNode, measurementNode, measurementModel.getName());
+                Long timestamp = getNodeService().getNodeProperty(measurementNode, timePeriodNodeProperties.getTimestampProperty(),
+                        startTime, false);
+                updateTimestamp(timestamp);
             }
+            if (proxy == null) {
+                proxy = new ProxyElement(proxyNode, sector);
+                proxiesCache.put(sector, proxy);
+            }
+
+            if (measurementCache.get(proxy) == null) {
+                measurementCache.put(proxy, new HashSet<IDataElement>());
+            }
+            measurementCache.get(proxy).add(correlatedElement);
         } catch (ServiceException e) {
             processException("can't create proxy node for sector " + sector + " and measurement " + correlatedElement, e);
         }
@@ -228,12 +260,22 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("getProxy(" + sector + "," + correlatedElement + ")"));
         }
-        return element;
+        return proxy;
     }
 
     @Override
     public Long getStartTime() {
         return startTime;
+    }
+
+    @Override
+    public Integer getTotalMCount() {
+        return totalMCount;
+    }
+
+    @Override
+    public Integer getTotalSectorsCount() {
+        return totalSectorsCount;
     }
 
     @Override
@@ -249,6 +291,12 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
             this.endTime = getNodeService().getNodeProperty(rootNode, timePeriodNodeProperties.getEndDateTimestampProperty(),
                     endTime, false);
             this.proxiesCount = getNodeService().getNodeProperty(rootNode, correlationNodeProperties.getProxiesCountNodeProperty(),
+                    0, false);
+            this.totalSectorsCount = getNodeService().getNodeProperty(rootNode, correlationNodeProperties.getTotalSectorsCount(),
+                    0, false);
+            this.correlatedMCount = getNodeService().getNodeProperty(rootNode,
+                    correlationNodeProperties.getCorrelatedMCountNodeProperty(), 0, false);
+            this.totalMCount = getNodeService().getNodeProperty(rootNode, correlationNodeProperties.getTotalMCountNodeProperty(),
                     0, false);
         } catch (ServiceException e) {
             processException("can't get property from model" + getName(), e);
@@ -267,5 +315,4 @@ public class CorrelationModel extends AbstractNamedModel implements ICorrelation
         startTime = Math.min(startTime, timestamp);
         endTime = Math.max(endTime, timestamp);
     }
-
 }

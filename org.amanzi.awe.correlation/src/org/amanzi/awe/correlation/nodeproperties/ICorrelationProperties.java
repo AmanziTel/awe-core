@@ -25,11 +25,17 @@ import org.amanzi.neo.nodeproperties.INodeProperties;
  */
 public interface ICorrelationProperties extends INodeProperties {
 
+    String getCorrelatedMCountNodeProperty();
+
     String getCorrelatedModelNameProperty();
 
     String getCorrelatedNodeProperty();
 
+    String getTotalSectorsCount();
+
     String getCorrelationNodeProperty();
 
     String getProxiesCountNodeProperty();
+
+    String getTotalMCountNodeProperty();
 }

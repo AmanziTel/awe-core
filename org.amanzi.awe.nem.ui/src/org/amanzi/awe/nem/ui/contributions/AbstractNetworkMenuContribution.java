@@ -52,8 +52,8 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
     /**
      * @return
      */
-    protected IUIItem getSelectedItem(final Logger logger) {
-        if (logger.isDebugEnabled()) {
+    protected IUIItem getSelectedItem() {
+        if (LOGGER.isDebugEnabled()) {
             log("geting selected tree item", Level.INFO);
         }
 
@@ -74,7 +74,7 @@ public abstract class AbstractNetworkMenuContribution extends ContributionItem {
             item = (IUIItem)firstElement;
             item = MenuUtils.getModelFromItem(item) == null ? null : item;
         }
-        if (logger.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             log("found ITreeItem " + item, Level.INFO);
         }
         return item;

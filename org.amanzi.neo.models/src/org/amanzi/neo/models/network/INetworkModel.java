@@ -33,6 +33,10 @@ import org.amanzi.neo.nodetypes.INodeType;
 // TODO: LN: 10.10.2012, add comments
 public interface INetworkModel extends IDatasetModel {
 
+    public interface INetworkElementType extends INodeType {
+
+    }
+
     public interface ISectorElement extends IDataElement {
 
         Double getAzimuth();
@@ -47,19 +51,17 @@ public interface INetworkModel extends IDatasetModel {
 
     }
 
-    public interface INetworkElementType extends INodeType {
+    IDataElement createElement(INetworkElementType elementType, IDataElement parent, String name, Map<String, Object> properties)
+            throws ModelException;
 
-    }
+    void createSynonyms(Map<String, Object> synonymnsMap) throws ModelException;
 
     IDataElement findElement(INetworkElementType elementType, String elementName) throws ModelException;
 
     IDataElement findSector(String sectorName, Integer ci, Integer lac) throws ModelException;
 
-    IDataElement createElement(INetworkElementType elementType, IDataElement parent, String name, Map<String, Object> properties)
-            throws ModelException;
+    INodeType[] getNetworkStructure();
 
     IDataElement replaceChild(IDataElement child, IDataElement newParent) throws ModelException;
-
-    INodeType[] getNetworkStructure();
 
 }

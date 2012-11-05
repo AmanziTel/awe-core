@@ -33,6 +33,28 @@ public class CorrelationMessages extends NLS {
 
     public static String CORRELATION_BUTTON;
 
+    public static String NETWORK_COLUMN_LABEL;
+
+    public static String MEASUREMENT_COLUMN_LABEL;
+
+    public static String PROXIES_COLUMN_LABEL;
+
+    public static String SECTOR_COUNT_COLUMN_LABEL;
+
+    public static String CORRELATED_M_COUNT_COLUMN_LABEL;
+
+    public static String TOTAL_M_COUNT_COLUMN_LABEL;
+
+    public static String START_TIME_COLUMN_LABEL;
+
+    public static String END_TIME_COLUMN_LABEL;
+
+    public static String DELETE_COLUMN_LABEL;
+
+    public static String REMOVE_CORRELATION_DIALOG_TITLE;
+
+    public static String REMOVE_CORRELATION_DIALOG_MESSAGE;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, CorrelationMessages.class);
     }

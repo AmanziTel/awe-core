@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.correlation.ui.view.table;
 
+import java.util.List;
+
 import org.amanzi.awe.correlation.model.ICorrelationModel;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -33,14 +35,11 @@ public class CorrelationTableContentProvider implements IStructuredContentProvid
 
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object[] getElements(final Object inputElement) {
-        if (inputElement instanceof ICorrelationModel) {
-            ICorrelationModel[] models = new ICorrelationModel[1];
-            models[0] = (ICorrelationModel)inputElement;
-            return models;
-        }
-        return new String[0];
+        List<ICorrelationModel> correlation = (List<ICorrelationModel>)inputElement;
+        return correlation.toArray(new ICorrelationModel[correlation.size()]);
     }
 
     @Override

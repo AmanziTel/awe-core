@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.correlation.model.impl;
 
+import java.util.Iterator;
+
 import org.amanzi.awe.correlation.model.IProxyElement;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
@@ -28,17 +30,23 @@ import org.neo4j.graphdb.Node;
  */
 public class ProxyElement extends DataElement implements IProxyElement {
 
-    private final IDataElement measurement;
+    private final Iterator<IDataElement> measurement;
     private final IDataElement sector;
 
-    public ProxyElement(final Node rootNode, final IDataElement sector, final IDataElement measurement) {
+    public ProxyElement(final Node rootNode, final IDataElement sector) {
         super(rootNode);
         this.sector = sector;
-        this.measurement = measurement;
+        measurement = null;
+    }
+
+    public ProxyElement(final Node rootNode, final IDataElement sector, final Iterator<IDataElement> measurement2) {
+        super(rootNode);
+        this.sector = sector;
+        this.measurement = measurement2;
     }
 
     @Override
-    public IDataElement getCorrelatedElement() {
+    public Iterator<IDataElement> getCorrelatedElement() {
         return measurement;
     }
 

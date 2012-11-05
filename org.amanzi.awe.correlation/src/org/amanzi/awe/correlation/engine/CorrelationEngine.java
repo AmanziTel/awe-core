@@ -14,6 +14,7 @@
 package org.amanzi.awe.correlation.engine;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.correlation.CorrelationPlugin;
@@ -92,6 +93,15 @@ public class CorrelationEngine extends AbstractTransactional {
 
     private static Map<ID, CorrelationEngine> engineCache = new HashMap<ID, CorrelationEngine>();
 
+    public static synchronized List<ICorrelationModel> getAllNetworkCorrelations(final INetworkModel network) {
+        try {
+            return CorrelationPlugin.getDefault().getCorrelationModelProvider().findAll(network);
+        } catch (ModelException e) {
+            LOGGER.error("can't get all correlation", e);
+            return null;
+        }
+    }
+
     public static synchronized CorrelationEngine getEngine(final INetworkModel networkModel, final String correlationProperties,
             final IMeasurementModel measurementModel, final String correlatedroperties) {
         final ID id = new ID(networkModel, measurementModel, correlationProperties, correlatedroperties);
@@ -103,6 +113,16 @@ public class CorrelationEngine extends AbstractTransactional {
         }
 
         return result;
+    }
+
+    public static synchronized void removeModel(final ICorrelationModel model) throws ModelException {
+        assert model != null;
+        try {
+            CorrelationPlugin.getDefault().getCorrelationModelProvider().removeModel(model);
+        } catch (ModelException e) {
+            LOGGER.error("can't remove model ", e);
+            throw e;
+        }
     }
 
     /**
@@ -149,9 +169,9 @@ public class CorrelationEngine extends AbstractTransactional {
                 LOGGER.info("CorrelationModel not exists in Database. Create new one.");
                 correlationModel = modelProvider.createCorrelationModel(networkModel, measurementModel, correlationPropertyName,
                         correlatedPropertyName);
-
+                buildCorrelation(correlationModel, monitor);
             }
-            buildCorrelation(correlationModel, monitor);
+
             isSuccess = true;
         } catch (final Exception e) {
             LOGGER.error("An error occured on Statistics Calculation", e);

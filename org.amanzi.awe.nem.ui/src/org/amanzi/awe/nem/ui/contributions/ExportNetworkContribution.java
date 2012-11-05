@@ -14,7 +14,6 @@
 package org.amanzi.awe.nem.ui.contributions;
 
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
-import org.amanzi.awe.nem.ui.wizard.NetworkElementCopyWizard;
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -34,7 +33,7 @@ import org.eclipse.swt.widgets.MenuItem;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class CopyNetworkElementContribution extends AbstractNetworkMenuContribution {
+public class ExportNetworkContribution extends AbstractNetworkMenuContribution {
 
     @Override
     public void fill(final Menu menu, final int index) {
@@ -45,14 +44,7 @@ public class CopyNetworkElementContribution extends AbstractNetworkMenuContribut
         }
 
         final INetworkModel model = MenuUtils.getModelFromItem(item);
-        final IDataElement element = MenuUtils.getElementFromItem(item);
-        final INodeType type = MenuUtils.getType(model, element);
-        String itemName = "Copy ";
-        if (element == null) {
-            itemName += model.getName();
-        } else {
-            itemName += element.getName();
-        }
+        String itemName = "Export network " + model.getName() + " to .txt";
 
         final MenuItem menuItem = new MenuItem(menu, SWT.PUSH, index);
 
@@ -60,14 +52,20 @@ public class CopyNetworkElementContribution extends AbstractNetworkMenuContribut
         menuItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                openWizard(model, element, type);
+                openWizard(model, null, null);
             }
         });
 
     }
 
     @Override
-    protected IWizard getWizard(final INetworkModel model, final IDataElement root, final INodeType type) {
-        return new NetworkElementCopyWizard(model, root, type);
+    protected IWizard getWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
+        // TODO Auto-generated method stub
+        return null;
     }
+
+    @Override
+    protected void openWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
+    }
+
 }

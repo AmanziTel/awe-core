@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.correlation.service;
 
+import java.util.Iterator;
+
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.IService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.neo4j.graphdb.Node;
@@ -32,12 +35,35 @@ public interface ICorrelationService extends IService {
 
     Node createProxy(Node rootNode, Node sectorNode, Node measurementNode, String measuremntName) throws ServiceException;
 
+    /**
+     * @param root
+     * @throws ServiceException
+     * @throws NodeTypeNotExistsException
+     */
+    void deleteModel(Node root) throws ServiceException, NodeTypeNotExistsException;
+
+    Iterator<Node> findAllNetworkCorrelations(Node node) throws ServiceException;
+
     Node findCorrelationModelNode(Node networkRoot, Node measurementRoot, String correlationProperty, String correlatedProperty)
             throws ServiceException;
 
+    /**
+     * @param correlation
+     * @return
+     * @throws ServiceException
+     */
+    Node findMeasurementModel(Node correlation) throws ServiceException;
+
     Node findProxy(Node sectorNode, Node measurementNode, String measuremntName) throws ServiceException;
 
-    Node getMeasurementForProxy(Node proxy) throws ServiceException;
+    /**
+     * @param sectorNode
+     * @param measuremntName
+     * @return
+     */
+    Node findSectorProxyForModel(Node sectorNode, String measuremntName);
+
+    Iterator<Node> getMeasurementForProxy(Node proxy, String name) throws ServiceException;
 
     Node getSectorForProxy(Node proxy) throws ServiceException;
 }

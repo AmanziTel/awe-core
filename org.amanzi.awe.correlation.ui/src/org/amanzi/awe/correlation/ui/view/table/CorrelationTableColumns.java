@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.correlation.ui.view.table;
 
+import org.amanzi.awe.correlation.ui.internal.CorrelationMessages;
+
 /**
  * TODO Purpose of
  * <p>
@@ -22,8 +24,11 @@ package org.amanzi.awe.correlation.ui.view.table;
  * @since 1.0.0
  */
 public enum CorrelationTableColumns {
-    NETWORK_COLUMN("Network", 0), MEASUREMENT_COLUMN("Measurement", 1), PROXIES_COUNT_COLUMN("Proxies", 2), START_TIME_COLUMN(
-            "Start time", 3), END_TIME_COLUMN("End time", 4);
+    NETWORK_COLUMN(CorrelationMessages.NETWORK_COLUMN_LABEL, 0), MEASUREMENT_COLUMN(CorrelationMessages.MEASUREMENT_COLUMN_LABEL, 1), PROXIES_COUNT_COLUMN(
+            CorrelationMessages.PROXIES_COLUMN_LABEL, 2), TOTAL_SECTORS_COUNT(CorrelationMessages.SECTOR_COUNT_COLUMN_LABEL, 3), CORRELATED_M_COUNT(
+            CorrelationMessages.CORRELATED_M_COUNT_COLUMN_LABEL, 4), TOTAL_M_COUNT(CorrelationMessages.TOTAL_M_COUNT_COLUMN_LABEL,
+            5), START_TIME_COLUMN(CorrelationMessages.START_TIME_COLUMN_LABEL, 6), END_TIME_COLUMN(
+            CorrelationMessages.END_TIME_COLUMN_LABEL, 7), DELETE(CorrelationMessages.DELETE_COLUMN_LABEL, 8);
 
     public static CorrelationTableColumns findByIndex(final int index) {
         for (CorrelationTableColumns column : CorrelationTableColumns.values()) {

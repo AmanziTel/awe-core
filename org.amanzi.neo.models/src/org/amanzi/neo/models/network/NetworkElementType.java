@@ -26,12 +26,23 @@ import org.apache.commons.lang3.ArrayUtils;
  * @since 1.0.0
  */
 public enum NetworkElementType implements INetworkElementType {
-    NETWORK(-1), CITY(0), MSC(1), BSC(2), SITE(3), SECTOR(4), TRX(5), FREQUENCY_PLAN(6);
+    NETWORK(-1), CITY(0), MSC(1), BSC(2), SITE(3), SECTOR(4), TRX(5), FREQUENCY_PLAN(6), SYNONYMS;
 
     private static NetworkElementType[] GENERAL_NETWORK_ELEMENT = ArrayUtils.subarray(values(), NETWORK.ordinal() + 1,
-            values().length);
+            values().length - 1);
+
+    public static int compare(final NetworkElementType type1, final NetworkElementType type2) {
+        return type1.index - type2.index;
+    }
+
+    public static NetworkElementType[] getGeneralNetworkElements() {
+        return GENERAL_NETWORK_ELEMENT;
+    }
 
     private int index;
+
+    private NetworkElementType() {
+    }
 
     private NetworkElementType(final int index) {
         this.index = index;
@@ -40,14 +51,6 @@ public enum NetworkElementType implements INetworkElementType {
     @Override
     public String getId() {
         return NodeTypeUtils.getTypeId(this);
-    }
-
-    public static NetworkElementType[] getGeneralNetworkElements() {
-        return GENERAL_NETWORK_ELEMENT;
-    }
-
-    public static int compare(final NetworkElementType type1, final NetworkElementType type2) {
-        return type1.index - type2.index;
     }
 
 }

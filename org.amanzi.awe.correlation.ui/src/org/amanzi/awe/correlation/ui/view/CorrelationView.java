@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.correlation.ui.view;
 
+import java.util.List;
+
 import org.amanzi.awe.correlation.engine.CorrelationEngine;
 import org.amanzi.awe.correlation.exception.CorrelationEngineException;
 import org.amanzi.awe.correlation.model.ICorrelationModel;
@@ -37,6 +39,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -44,7 +47,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -85,13 +87,13 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
             CorrelationEngine engine = CorrelationEngine.getEngine(networkModel, correlationProperty, measurementModel,
                     correlatedProperty);
             try {
-                final ICorrelationModel model = engine.build(monitor);
+                engine.build(monitor);
                 ActionUtil.getInstance().runTask(new Runnable() {
 
                     @Override
                     public void run() {
                         btnCorrelate.setEnabled(true);
-                        updateTable(model);
+                        updateTable(CorrelationEngine.getAllNetworkCorrelations(networkModel));
                     }
                 }, true);
             } catch (CorrelationEngineException e) {
@@ -119,12 +121,19 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
      * @param tableLayout
      * @param networkColumn
      */
-    private void createColumn(final CorrelationTableColumns columnData, final TableLayout tableLayout) {
-        TableColumn column = new TableColumn(correlationTable.getTable(), SWT.BORDER);
-        column.setText(columnData.getName());
-        column.setToolTipText(columnData.getName());
-        tableLayout.addColumnData(new ColumnWeightData(1));
+    private TableViewerColumn createColumn(final CorrelationTableColumns columnData, final TableLayout tableLayout) {
+        TableViewerColumn column = new TableViewerColumn(correlationTable, SWT.BORDER);
+        column.getColumn().setText(columnData.getName());
+        column.getColumn().setToolTipText(columnData.getName());
 
+        if (columnData.equals(CorrelationTableColumns.DELETE)) {
+            column.setEditingSupport(new DeletionSupport(correlationTable));
+            tableLayout.addColumnData(new ColumnWeightData(0));
+        } else {
+            tableLayout.addColumnData(new ColumnWeightData(1));
+        }
+
+        return column;
     }
 
     @Override
@@ -138,15 +147,15 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
         controlComposite.setLayout(TWO_ROW_GRID_LAYOUT);
         controlComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-        DriveComboWidget driveWidget = AWEWidgetFactory.getFactory().addDriveComboWidget(this,
-                CorrelationMessages.DRIVE_NAME_LABEL, controlComposite, MINIMAL_LABEL_WIDTH);
-
-        driveWidget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         NetworkComboWidget networkWidget = AWEWidgetFactory.getFactory().addNetworkComboWidget(this,
                 CorrelationMessages.NETWORK_NAME_LABEL, controlComposite, MINIMAL_LABEL_WIDTH);
 
         networkWidget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        DriveComboWidget driveWidget = AWEWidgetFactory.getFactory().addDriveComboWidget(this,
+                CorrelationMessages.DRIVE_NAME_LABEL, controlComposite, MINIMAL_LABEL_WIDTH);
+
+        driveWidget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         btnCorrelate = new Button(controlComposite, SWT.PUSH);
         btnCorrelate.setText(CorrelationMessages.CORRELATION_BUTTON);
@@ -193,8 +202,8 @@ public class CorrelationView extends ViewPart implements IDriveSelectionListener
 
     }
 
-    private void updateTable(final ICorrelationModel model) {
-        correlationTable.setInput(model);
+    private void updateTable(final List<ICorrelationModel> list) {
+        correlationTable.setInput(list);
     }
 
     @Override
