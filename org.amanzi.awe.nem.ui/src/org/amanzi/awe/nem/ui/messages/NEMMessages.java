@@ -25,6 +25,8 @@ public class NEMMessages extends NLS {
 
     private static final String BUNDLE_NAME = NEMMessages.class.getName();
 
+    public static String EDIT_PROPERTIES_PAGE = null;
+
     private static ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME);
 
     public static String NETWORK_NAME_LABEL;
@@ -78,6 +80,24 @@ public class NEMMessages extends NLS {
     public static String NETWORK_ALREADY_EXIST;
 
     public static String ENTER_NETWORK_NAME;
+
+    public static String DESTINATION_FOLDER_PAGE_TITLE;
+
+    public static String SELECT_NETWORK_FOR_EXPORT;
+
+    public static String FILE_NAME_IS_INCORRECT;
+
+    public static String SELECT_NETWORK_DATA_TO_EXPORT;
+
+    public static String EXPORT_NETWORK_DATA_ITEM;
+
+    public static String SELECTED_EXPORTED_DATA_MESSAGE;
+
+    public static String EXPORT_SELECTION_DATA_ITEM;
+
+    public static String EXPORT_NETWORK_DATA_ITEM_FILE_NAME_FORMAT;
+
+    public static String EXPORT_SELECTION_DATA_ITEM_FILE_NAME_FORMAT;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, NEMMessages.class);

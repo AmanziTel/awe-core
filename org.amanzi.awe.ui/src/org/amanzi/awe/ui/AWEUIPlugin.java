@@ -10,8 +10,27 @@ public class AWEUIPlugin extends AbstractProviderPlugin {
 
     private static AWEUIPlugin instance;
 
+    private static final String DEFAULT_LOAD_PATH = "default_load_path";
+
+    public static AWEUIPlugin getDefault() {
+        return instance;
+    }
+
     public AWEUIPlugin() {
 
+    }
+
+    public String getDefaultLoadPath() {
+        return getPreferenceStore().getString(DEFAULT_LOAD_PATH);
+    }
+
+    @Override
+    public String getPluginId() {
+        return PLUGIN_ID;
+    }
+
+    public void setDefaultLoadPath(final String path) {
+        getPreferenceStore().setValue(DEFAULT_LOAD_PATH, path);
     }
 
     /*
@@ -32,15 +51,6 @@ public class AWEUIPlugin extends AbstractProviderPlugin {
     public void stop(final BundleContext bundleContext) throws Exception {
         instance = null;
         super.stop(bundleContext);
-    }
-
-    public static AWEUIPlugin getDefault() {
-        return instance;
-    }
-
-    @Override
-    public String getPluginId() {
-        return PLUGIN_ID;
     }
 
 }

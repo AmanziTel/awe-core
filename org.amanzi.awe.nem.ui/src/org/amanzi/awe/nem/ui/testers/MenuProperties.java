@@ -59,8 +59,9 @@ public enum MenuProperties {
                     .size() > 0;
         case IS_DELETABLE:
         case IS_COPYABLE:
-        case IS_EXPORTABLE:
             return model != null ? true : false;
+        case IS_EXPORTABLE:
+            return model != null && element == null;
         default:
             break;
         }

@@ -16,13 +16,13 @@ package org.amanzi.neo.loader.ui.page.impl.network;
 import java.io.File;
 
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.impl.SingleFileConfiguration;
 import org.amanzi.neo.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
-import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget;
-import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectNetworkNameWidget;
@@ -65,7 +65,7 @@ public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
         networkNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForNetwork(getMainComposite(), this, true, true);
         AWEWidgetFactory.getFactory().addCRSSelectorWidget(this, getMainComposite());
 
-        resourceEditor = WizardFactory.getInstance().addFileSelector(getMainComposite(), this);
+        resourceEditor = AWEWidgetFactory.getFactory().addFileSelector(getMainComposite(), this);
 
         loaderCombo = WizardFactory.getInstance().addLoaderSelector(getMainComposite(), this, getLoaders());
 
@@ -73,9 +73,26 @@ public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
     }
 
     @Override
-    public void setCurrentLoader(final ILoader<SingleFileConfiguration, ? > currentLoader) {
-        super.setCurrentLoader(currentLoader);
-        loaderCombo.updateData();
+    public void dispose() {
+        networkNameCombo.finishUp();
+        loaderCombo.finishUp();
+        resourceEditor.finishUp();
+    }
+
+    @Override
+    public void onLoaderChanged() {
+        update();
+    }
+
+    @Override
+    public void onNetworkChanged() {
+        ISingleFileConfiguration configuration = getConfiguration();
+
+        if (networkNameCombo != null) {
+            configuration.setDatasetName(networkNameCombo.getText());
+        }
+
+        update();
     }
 
     @Override
@@ -95,25 +112,8 @@ public class LoadNetworkPage extends AbstractLoaderPage<SingleFileConfiguration>
     }
 
     @Override
-    public void onNetworkChanged() {
-        ISingleFileConfiguration configuration = getConfiguration();
-
-        if (networkNameCombo != null) {
-            configuration.setDatasetName(networkNameCombo.getText());
-        }
-
-        update();
-    }
-
-    @Override
-    public void onLoaderChanged() {
-        update();
-    }
-
-    @Override
-    public void dispose() {
-        networkNameCombo.finishUp();
-        loaderCombo.finishUp();
-        resourceEditor.finishUp();
+    public void setCurrentLoader(final ILoader<SingleFileConfiguration, ? > currentLoader) {
+        super.setCurrentLoader(currentLoader);
+        loaderCombo.updateData();
     }
 }

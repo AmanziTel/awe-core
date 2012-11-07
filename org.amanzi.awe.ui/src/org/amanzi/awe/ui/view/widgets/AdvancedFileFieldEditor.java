@@ -11,12 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.widgets.impl.internal;
+package org.amanzi.awe.ui.view.widgets;
 
 import java.io.File;
 
-import org.amanzi.neo.loader.ui.internal.LoaderUIPlugin;
-import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
+import org.amanzi.awe.ui.AWEUIPlugin;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
@@ -30,6 +29,8 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class AdvancedFileFieldEditor extends FileFieldEditor {
 
+    private static final int NUMBER_OF_COLUMNS = 4;
+
     /**
      * @param name
      * @param labelText
@@ -37,7 +38,7 @@ public class AdvancedFileFieldEditor extends FileFieldEditor {
      */
     public AdvancedFileFieldEditor(final String name, final String labelText, final Composite parent) {
         super(name, labelText, parent);
-        setFilterPath(new File(LoaderUIPlugin.getDefault().getDefaultLoadPath()));
+        setFilterPath(new File(AWEUIPlugin.getDefault().getDefaultLoadPath()));
     }
 
     @Override
@@ -48,7 +49,7 @@ public class AdvancedFileFieldEditor extends FileFieldEditor {
             File file = new File(getStringValue());
 
             if (file.getParentFile() != null) {
-                LoaderUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
+                AWEUIPlugin.getDefault().setDefaultLoadPath(file.getParentFile().getAbsolutePath());
             }
         }
 
@@ -57,6 +58,6 @@ public class AdvancedFileFieldEditor extends FileFieldEditor {
 
     @Override
     public int getNumberOfControls() {
-        return AbstractLoaderPage.NUMBER_OF_COLUMNS;
+        return NUMBER_OF_COLUMNS;
     }
 }

@@ -14,6 +14,7 @@
 package org.amanzi.awe.nem.ui.contributions;
 
 import org.amanzi.awe.nem.ui.utils.MenuUtils;
+import org.amanzi.awe.nem.ui.wizard.NetworkExportWizard;
 import org.amanzi.awe.ui.dto.IUIItem;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.network.INetworkModel;
@@ -60,12 +61,7 @@ public class ExportNetworkContribution extends AbstractNetworkMenuContribution {
 
     @Override
     protected IWizard getWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected void openWizard(final INetworkModel model, final IDataElement root, final INodeType newType) {
+        return new NetworkExportWizard(model);
     }
 
 }

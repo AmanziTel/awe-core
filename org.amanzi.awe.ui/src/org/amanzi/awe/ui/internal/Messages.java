@@ -31,6 +31,10 @@ public class Messages extends NLS {
     public static String dateTypesPreferencePageAddButton;
     public static String dateTypesPreferencePageIsDefault;
 
+    public static String ResourceSelectorWidget_SelectDirectoryTitle;
+
+    public static String ResourceSelectorWidget_SelectFileTitle;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -18,8 +18,6 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.internal.LoaderCorePlugin;
-import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
-import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.ResourceType;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectLoaderWidget.ISelectLoaderListener;
@@ -47,6 +45,15 @@ public final class WizardFactory {
         private static volatile WizardFactory instance = new WizardFactory();
     }
 
+    public static WizardFactory getInstance() {
+        return WizardFactoryHolder.instance;
+    }
+
+    protected static <T extends AbstractPageWidget< ? , ? >> T initializeWidget(final T widget) {
+        widget.initializeWidget();
+        return widget;
+    }
+
     private final IProjectModelProvider projectModelProvider;
 
     private final INetworkModelProvider networkModelProvider;
@@ -59,8 +66,8 @@ public final class WizardFactory {
         driveModelProvider = LoaderCorePlugin.getInstance().getDriveModelProvider();
     }
 
-    public static WizardFactory getInstance() {
-        return WizardFactoryHolder.instance;
+    public SelectDriveNameWidget addDatasetNameSelectorForDrive(final Composite parent, final ISelectDriveListener listener) {
+        return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
     }
 
     public SelectNetworkNameWidget addDatasetNameSelectorForNetwork(final Composite parent, final ISelectNetworkListener listener,
@@ -69,8 +76,8 @@ public final class WizardFactory {
                 networkModelProvider));
     }
 
-    public SelectDriveNameWidget addDatasetNameSelectorForDrive(final Composite parent, final ISelectDriveListener listener) {
-        return initializeWidget(new SelectDriveNameWidget(parent, listener, projectModelProvider, driveModelProvider));
+    public DriveDataFileSelector addDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
+        return initializeWidget(new DriveDataFileSelector(parent, listener));
     }
 
     public SelectDriveResourcesWidget addDriveResourceSelector(final Composite parent, final ISelectDriveResourceListener listener,
@@ -82,25 +89,6 @@ public final class WizardFactory {
     public <T extends IConfiguration> SelectLoaderWidget<T> addLoaderSelector(final Composite parent,
             final ISelectLoaderListener listener, final List<ILoader<T, ? >> loaders) {
         return initializeWidget(new SelectLoaderWidget(true, parent, listener, loaders, projectModelProvider));
-    }
-
-    public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener,
-            final String... fileExtensions) {
-        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
-                fileExtensions));
-    }
-
-    public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener) {
-        return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider));
-    }
-
-    public DriveDataFileSelector addDriveDataFileSelector(final Composite parent, final ISelectDriveResourceListener listener) {
-        return initializeWidget(new DriveDataFileSelector(parent, listener));
-    }
-
-    protected static <T extends AbstractPageWidget< ? , ? >> T initializeWidget(final T widget) {
-        widget.initializeWidget();
-        return widget;
     }
 
 }

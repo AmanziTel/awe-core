@@ -16,8 +16,10 @@ package org.amanzi.neo.loader.ui.page.widgets.impl;
 import java.io.File;
 import java.util.Collection;
 
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.impl.internal.AbstractLoaderPage;
-import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveResourcesWidget.ISelectDriveResourceListener;
 import org.amanzi.neo.loader.ui.page.widgets.impl.internal.DriveDataFileSelector;
 import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
@@ -42,9 +44,9 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
 
     public interface ISelectDriveResourceListener extends AbstractPageWidget.IPageEventListener {
 
-        void onResourcesSelected(Collection<File> files);
-
         void onDirectorySelected(String directoryName);
+
+        void onResourcesSelected(Collection<File> files);
 
     }
 
@@ -75,11 +77,16 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
         panel.setLayoutData(getGroupLayoutData());
         panel.setLayout(new GridLayout(1, false));
 
-        resourceSelector = WizardFactory.getInstance().addDirectorySelector(getPanel(panel), this);
+        resourceSelector = AWEWidgetFactory.getFactory().addDirectorySelector(getPanel(panel), this);
         driveDataSelector = WizardFactory.getInstance().addDriveDataFileSelector(getPanel(panel), listener);
         driveDataSelector.setFileFilter(filter);
 
         return panel;
+    }
+
+    protected Object getGroupLayoutData() {
+        // TODO: LN: 10.10.2012, make a factory for LayoutData
+        return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
     }
 
     private Composite getPanel(final Composite parent) {
@@ -90,15 +97,6 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
         panel.setLayout(new GridLayout(3, false));
 
         return panel;
-    }
-
-    protected Object getGroupLayoutData() {
-        // TODO: LN: 10.10.2012, make a factory for LayoutData
-        return new GridData(SWT.FILL, SWT.CENTER, true, false, AbstractLoaderPage.NUMBER_OF_COLUMNS, 1);
-    }
-
-    public void updateFilter(final IOFileFilter filter) {
-        driveDataSelector.setFileFilter(filter);
     }
 
     @Override
@@ -115,6 +113,10 @@ public class SelectDriveResourcesWidget extends AbstractPageWidget<Composite, IS
         }
 
         driveDataSelector.setFiles(new File(directoryName));
+    }
+
+    public void updateFilter(final IOFileFilter filter) {
+        driveDataSelector.setFileFilter(filter);
     }
 
 }

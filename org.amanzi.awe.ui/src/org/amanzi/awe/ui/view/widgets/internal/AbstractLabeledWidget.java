@@ -103,7 +103,7 @@ public abstract class AbstractLabeledWidget<C extends Control, L extends IAWEWid
         return composite;
     }
 
-    protected C getControl() {
+    public C getControl() {
         return control;
     }
 

@@ -11,15 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.page.widgets.impl;
+package org.amanzi.awe.ui.view.widgets;
 
-import org.amanzi.neo.loader.ui.internal.Messages;
-import org.amanzi.neo.loader.ui.page.widgets.impl.ResourceSelectorWidget.IResourceSelectorListener;
-import org.amanzi.neo.loader.ui.page.widgets.impl.internal.AdvancedFileFieldEditor;
-import org.amanzi.neo.loader.ui.page.widgets.internal.AbstractPageWidget;
+import org.amanzi.awe.ui.internal.Messages;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget.IResourceSelectorListener;
+import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
@@ -33,9 +33,9 @@ import org.eclipse.swt.widgets.Composite;
  * @since 1.0.0
  */
 // TODO: LN: 10.10.2012, refactor to use widgets from org.amanzi.awe.ui
-public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResourceSelectorListener> implements ModifyListener {
+public class ResourceSelectorWidget extends AbstractAWEWidget<Composite, IResourceSelectorListener> implements ModifyListener {
 
-    public interface IResourceSelectorListener extends AbstractPageWidget.IPageEventListener {
+    public interface IResourceSelectorListener extends AbstractAWEWidget.IAWEWidgetListener {
         void onResourceChanged();
     }
 
@@ -54,10 +54,10 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
      * @param loaderPage
      * @param projectModelProvider
      */
-    protected ResourceSelectorWidget(final ResourceType resourceType, final Composite parent,
+    public ResourceSelectorWidget(final ResourceType resourceType, final Composite parent,
             final IResourceSelectorListener listener, final IProjectModelProvider projectModelProvider,
             final String... fileExtensions) {
-        super(true, parent, listener, projectModelProvider);
+        super(parent, SWT.FILL, listener);
         this.resourceType = resourceType;
         this.fileExtensions = fileExtensions;
     }
@@ -84,9 +84,16 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
         return parent;
     }
 
-    @Override
-    protected int getStyle() {
-        return 0;
+    /**
+     *
+     */
+    public void finishUp() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public String getFileName() {
+        return editor.getStringValue();
     }
 
     @Override
@@ -94,10 +101,6 @@ public class ResourceSelectorWidget extends AbstractPageWidget<Composite, IResou
         for (final IResourceSelectorListener listener : getListeners()) {
             listener.onResourceChanged();
         }
-    }
-
-    public String getFileName() {
-        return editor.getStringValue();
     }
 
 }

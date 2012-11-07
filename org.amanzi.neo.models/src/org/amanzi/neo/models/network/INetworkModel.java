@@ -62,6 +62,11 @@ public interface INetworkModel extends IDatasetModel {
 
     INodeType[] getNetworkStructure();
 
+    /**
+     * @return
+     */
+    Map<INodeType, String[]> getSynonyms();
+
     IDataElement replaceChild(IDataElement child, IDataElement newParent) throws ModelException;
 
 }

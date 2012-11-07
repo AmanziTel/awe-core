@@ -42,7 +42,7 @@ public class NetworkComboWidget extends AbstractDatasetComboWidget<INetworkModel
 
     }
 
-    private static final Logger LOGGER = Logger.getLogger(DriveComboWidget.class);
+    private static final Logger LOGGER = Logger.getLogger(NetworkComboWidget.class);
 
     private final INetworkModelProvider networkModelProvider;
 

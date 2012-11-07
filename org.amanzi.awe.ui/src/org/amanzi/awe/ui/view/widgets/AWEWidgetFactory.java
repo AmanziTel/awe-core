@@ -22,6 +22,8 @@ import org.amanzi.awe.ui.view.widgets.DriveComboWidget.IDriveSelectionListener;
 import org.amanzi.awe.ui.view.widgets.NetworkComboWidget.INetworkSelectionListener;
 import org.amanzi.awe.ui.view.widgets.PaletteComboWidget.IPaletteChanged;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget.IPropertySelectionListener;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget.IResourceSelectorListener;
+import org.amanzi.awe.ui.view.widgets.ResourceSelectorWidget.ResourceType;
 import org.amanzi.awe.ui.view.widgets.SpinnerWidget.ISpinnerListener;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractAWEWidget;
@@ -73,10 +75,20 @@ public final class AWEWidgetFactory {
         return initializeWidget(new CRSSelector(parent, listener));
     }
 
+    public ResourceSelectorWidget addDirectorySelector(final Composite parent, final IResourceSelectorListener listener) {
+        return initializeWidget(new ResourceSelectorWidget(ResourceType.DIRECTORY, parent, listener, projectModelProvider));
+    }
+
     public DriveComboWidget addDriveComboWidget(final IDriveSelectionListener listener, final String labelText,
             final Composite parent, final int minimalLabelWidth) {
         return initializeWidget(new DriveComboWidget(parent, listener, labelText, projectModelProvider, driveModelProvider,
                 minimalLabelWidth));
+    }
+
+    public ResourceSelectorWidget addFileSelector(final Composite parent, final IResourceSelectorListener listener,
+            final String... fileExtensions) {
+        return initializeWidget(new ResourceSelectorWidget(ResourceType.FILE, parent, listener, projectModelProvider,
+                fileExtensions));
     }
 
     public NetworkComboWidget addNetworkComboWidget(final INetworkSelectionListener listener, final String labelText,

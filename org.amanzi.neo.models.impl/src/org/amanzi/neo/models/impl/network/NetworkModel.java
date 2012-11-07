@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.impl.network;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -166,6 +167,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
     };
 
+    private Map<INodeType, String[]> synonyms;
+
     /**
      * @param nodeService
      * @param generalNodeProperties
@@ -310,8 +313,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public void createSynonyms(final Map<String, Object> synonymnsMap) throws ModelException {
         assert synonymnsMap != null;
         try {
-            getNodeService()
-                    .createNode(getRootNode(), NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS, synonymnsMap);
+            Node node = getNodeService().createNode(getRootNode(), NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS,
+                    synonymnsMap);
+            initializeSynonyms(node);
         } catch (ServiceException e) {
             processException("can't create synonyms for model" + getName(), e);
         }
@@ -541,9 +545,27 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
+    public Map<INodeType, String[]> getSynonyms() {
+        return synonyms;
+    }
+
+    @Override
     public void initialize(final Node rootNode) throws ModelException {
         super.initialize(rootNode);
         initializeNetworkStructure();
+        Node synonymNode = null;
+        Iterator<Node> nodes;
+        try {
+            nodes = getNodeService().getChildren(rootNode, NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS);
+
+            if (nodes.hasNext()) {
+                synonymNode = nodes.next();
+            }
+        } catch (ServiceException e) {
+            processException("can't get children from node " + rootNode, e);
+        }
+        initializeSynonyms(synonymNode);
+
     }
 
     /**
@@ -564,6 +586,25 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             this.structure.add(type);
         }
 
+    }
+
+    /**
+     * @param node
+     */
+    private void initializeSynonyms(final Node node) {
+        synonyms = new HashMap<INodeType, String[]>();
+        if (node == null) {
+            return;
+        }
+        for (String key : node.getPropertyKeys()) {
+            try {
+                INodeType type = NodeTypeManager.getInstance().getType(key);
+                synonyms.put(type, (String[])node.getProperty(key));
+            } catch (NodeTypeNotExistsException e) {
+                LOGGER.error("can't define type", e);
+            }
+
+        }
     }
 
     @Override
