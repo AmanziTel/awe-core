@@ -13,10 +13,23 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages.export;
 
-import org.amanzi.awe.nem.ui.messages.NEMMessages;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.amanzi.awe.nem.export.ExportedDataItems;
+import org.amanzi.awe.nem.export.SynonymsWrapper;
+import org.amanzi.awe.nem.ui.widgets.SynonymsEditorTable;
+import org.amanzi.awe.nem.ui.widgets.SynonymsEditorTable.ISynonymsTableListener;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Layout;
 
 /**
  * TODO Purpose of
@@ -26,19 +39,73 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class EditSynonymsPage extends WizardPage implements INetworkExportPage {
+public class EditSynonymsPage extends WizardPage implements INetworkExportPage, ISynonymsTableListener {
+
+    private static final Layout ONE_COLUMN_LAYOUT = new GridLayout(1, false);
+
+    private final ExportedDataItems pageType;
+
+    private INetworkModel model;
+
+    private List<SynonymsWrapper> properties;
+
+    private Composite main;
+
+    private SynonymsEditorTable tableWiget;
 
     /**
      * @param pageName
      */
-    protected EditSynonymsPage() {
-        super(NEMMessages.EDIT_PROPERTIES_PAGE);
+    public EditSynonymsPage(final ExportedDataItems item) {
+        super(item.getName());
+        this.pageType = item;
     }
 
     @Override
     public void createControl(final Composite parent) {
-        // TODO Auto-generated method stub
+        this.main = new Composite(parent, SWT.NONE);
+        main.setLayout(ONE_COLUMN_LAYOUT);
+        main.setLayoutData(new GridData(GridData.FILL_BOTH));
+        tableWiget = new SynonymsEditorTable(main, this, properties);
+        tableWiget.initializeWidget();
+        setControl(main);
+    }
 
+    /**
+     * @return Returns the pageType.
+     */
+    public ExportedDataItems getPageType() {
+        return pageType;
+    }
+
+    /**
+     * @return Returns the properties.
+     */
+    public List<SynonymsWrapper> getProperties() {
+        return properties;
+    }
+
+    private void initProperties() {
+        switch (pageType) {
+        case EXPORT_NETWORK_DATA:
+            intiWrappers(model.getSynonyms());
+            break;
+        default:
+            break;
+        }
+    }
+
+    /**
+     * @param synonyms
+     * @return
+     */
+    private void intiWrappers(final Map<String, String> synonyms) {
+        properties = new ArrayList<SynonymsWrapper>();
+        for (Entry<String, String> property : synonyms.entrySet()) {
+            String[] key = property.getKey().split("\\.");
+            properties.add(new SynonymsWrapper(key[0], key[1], property.getValue()));
+        }
+        Collections.sort(properties);
     }
 
     @Override
@@ -49,7 +116,11 @@ public class EditSynonymsPage extends WizardPage implements INetworkExportPage {
 
     @Override
     public void setUpNetwork(final INetworkModel model) {
-        // TODO Auto-generated method stub
+        if (!model.equals(this.model)) {
+            this.model = model;
+            initProperties();
+            setTitle(pageType.getName());
+        }
 
     }
 

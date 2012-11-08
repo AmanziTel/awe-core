@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.awe.filters.IFilter;
@@ -154,6 +155,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     private static final Logger LOGGER = Logger.getLogger(NetworkModel.class);
 
+    private static final String SYNONYMS_KEY_FORMAT = "%s.%s";
+
     private final INetworkNodeProperties networkNodeProperties;
 
     private final LRUMap elementLocationsIteratorCache = new LRUMap(5);
@@ -167,7 +170,9 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
     };
 
-    private Map<INodeType, String[]> synonyms;
+    private Map<String, String> synonyms;
+
+    private Node synonymNode;
 
     /**
      * @param nodeService
@@ -248,7 +253,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         } else {
             result = createDefaultElement(elementType, parent, name, properties);
         }
-
+        updateSynonyms(elementType, properties);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getFinishLogStatement("createElement"));
         }
@@ -307,18 +312,6 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
         }
 
         return result;
-    }
-
-    @Override
-    public void createSynonyms(final Map<String, Object> synonymnsMap) throws ModelException {
-        assert synonymnsMap != null;
-        try {
-            Node node = getNodeService().createNode(getRootNode(), NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS,
-                    synonymnsMap);
-            initializeSynonyms(node);
-        } catch (ServiceException e) {
-            processException("can't create synonyms for model" + getName(), e);
-        }
     }
 
     @Override
@@ -399,7 +392,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public void finishUp() throws ModelException {
         LOGGER.info("Finishing up model <" + getName() + ">");
         try {
-
+            initializeSynonyms();
+            getNodeService().updateProperties(synonymNode, synonyms);
             getNodeService().updateProperty(getRootNode(), networkNodeProperties.getStuctureProperty(),
                     structureToStringArrayFormat());
         } catch (final ServiceException e) {
@@ -545,7 +539,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     }
 
     @Override
-    public Map<INodeType, String[]> getSynonyms() {
+    public Map<String, String> getSynonyms() {
         return synonyms;
     }
 
@@ -553,18 +547,7 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
     public void initialize(final Node rootNode) throws ModelException {
         super.initialize(rootNode);
         initializeNetworkStructure();
-        Node synonymNode = null;
-        Iterator<Node> nodes;
-        try {
-            nodes = getNodeService().getChildren(rootNode, NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS);
-
-            if (nodes.hasNext()) {
-                synonymNode = nodes.next();
-            }
-        } catch (ServiceException e) {
-            processException("can't get children from node " + rootNode, e);
-        }
-        initializeSynonyms(synonymNode);
+        initializeSynonyms();
 
     }
 
@@ -590,20 +573,34 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
 
     /**
      * @param node
+     * @throws ModelException
      */
-    private void initializeSynonyms(final Node node) {
-        synonyms = new HashMap<INodeType, String[]>();
-        if (node == null) {
+    private void initializeSynonyms() throws ModelException {
+        if (synonymNode != null) {
             return;
         }
-        for (String key : node.getPropertyKeys()) {
-            try {
-                INodeType type = NodeTypeManager.getInstance().getType(key);
-                synonyms.put(type, (String[])node.getProperty(key));
-            } catch (NodeTypeNotExistsException e) {
-                LOGGER.error("can't define type", e);
-            }
+        Iterator<Node> nodes;
+        try {
+            nodes = getNodeService().getChildren(getRootNode(), NetworkElementType.SYNONYMS, NetworkRelationshipTypes.SYNONYMS);
 
+            if (nodes.hasNext()) {
+                synonymNode = nodes.next();
+            } else {
+                synonymNode = getNodeService().createNode(getRootNode(), NetworkElementType.SYNONYMS,
+                        NetworkRelationshipTypes.SYNONYMS);
+            }
+        } catch (ServiceException e) {
+            processException("can't get children from node " + getRootNode(), e);
+        }
+        synonyms = new HashMap<String, String>();
+        if (synonymNode == null) {
+            return;
+        }
+        for (String key : synonymNode.getPropertyKeys()) {
+            if (key.equals(getGeneralNodeProperties().getNodeTypeProperty())) {
+                continue;
+            }
+            synonyms.put(key, (String)synonymNode.getProperty(key));
         }
     }
 
@@ -734,5 +731,45 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             updateLocation(lat, (Double)propertyValue);
         }
 
+    }
+
+    /**
+     * @param elementType
+     * @param properties
+     * @throws ParameterInconsistencyException
+     */
+    private void updateSynonyms(final INetworkElementType elementType, final Map<String, Object> properties)
+            throws ParameterInconsistencyException {
+        if (synonyms == null) {
+            return;
+        }
+        // validate input
+        if (elementType == null) {
+            throw new ParameterInconsistencyException("elementType");
+        }
+        if (properties == null) {
+            throw new ParameterInconsistencyException("properties", null);
+        }
+        String typeId = elementType.getId();
+        for (String property : properties.keySet()) {
+            String key = String.format(SYNONYMS_KEY_FORMAT, typeId, property);
+            if (!synonyms.containsKey(key) && !property.equals(getGeneralNodeProperties().getNodeTypeProperty())) {
+                if (property.equals(getGeneralNodeProperties().getNodeNameProperty())) {
+                    synonyms.put(key, elementType.getId().toUpperCase());
+                } else {
+                    synonyms.put(key, property);
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void updateSynonyms(final Map<String, Object> synonymnsMap) throws ModelException {
+        assert synonymnsMap != null;
+        initializeSynonyms();
+        for (Entry<String, Object> synonym : synonymnsMap.entrySet()) {
+            synonyms.put(synonym.getKey(), (String)synonym.getValue());
+        }
     }
 }

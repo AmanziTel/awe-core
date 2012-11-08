@@ -221,7 +221,7 @@ public abstract class AbstractComboWidget<D extends Object, L extends IComboSele
         }
 
         getControl().setText(text);
-        if (fireEvent) {
+        if (fireEvent || text != null) {
             fireEvent();
         }
     }

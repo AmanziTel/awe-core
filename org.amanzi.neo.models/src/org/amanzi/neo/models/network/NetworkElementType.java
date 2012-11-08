@@ -53,4 +53,8 @@ public enum NetworkElementType implements INetworkElementType {
         return NodeTypeUtils.getTypeId(this);
     }
 
+    public int getIndex() {
+        return this.index;
+    }
+
 }

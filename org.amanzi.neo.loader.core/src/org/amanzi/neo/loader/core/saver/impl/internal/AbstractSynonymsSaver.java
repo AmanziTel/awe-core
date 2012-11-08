@@ -319,6 +319,8 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
         }
     }
 
+    private static final String SYNONYM_KEY_FORMAT = "%s.%s";
+
     private final Map<String, Object> synonymsMap = new HashMap<String, Object>();
 
     protected static final Property< ? > SKIPPED_PROPERTY = new SkippedProperty();
@@ -424,14 +426,13 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
 
     protected Map<String, Object> getSynonymsMap() {
         for (Entry<INodeType, Map<String, Property< ? >>> header : headers.entrySet()) {
-            List<String> synonyms = new ArrayList<String>();
             for (Property< ? > property : header.getValue().values()) {
-                if (property.getPropertyName() == null || property.getHeaderName() == null) {
+                if (StringUtils.isEmpty(property.getPropertyName()) || StringUtils.isEmpty(property.getHeaderName())) {
                     continue;
                 }
-                synonyms.add(property.getPropertyName() + ":" + property.getHeaderName());
+                synonymsMap.put(String.format(SYNONYM_KEY_FORMAT, header.getKey().getId(), property.getPropertyName()),
+                        property.getHeaderName());
             }
-            synonymsMap.put(header.getKey().getId(), synonyms.toArray(new String[synonyms.size()]));
         }
         return synonymsMap;
 

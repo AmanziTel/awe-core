@@ -15,6 +15,7 @@ package org.amanzi.awe.ui.view.widgets;
 
 import org.amanzi.awe.ui.AWEUIPlugin;
 import org.amanzi.awe.ui.view.widgets.CRSSelector.ICRSSelectorListener;
+import org.amanzi.awe.ui.view.widgets.CharsetWidget.ICharsetChangedListener;
 import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
 import org.amanzi.awe.ui.view.widgets.ColorWidget.IColorChangedListener;
 import org.amanzi.awe.ui.view.widgets.DateTimeWidget.ITimeChangedListener;
@@ -61,6 +62,10 @@ public final class AWEWidgetFactory {
         this.projectModelProvider = AWEUIPlugin.getDefault().getProjectModelProvider();
         this.driveModelProvider = AWEUIPlugin.getDefault().getDriveModelProvider();
         this.networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
+    }
+
+    public CharsetWidget addCharsetWidget(final ICharsetChangedListener listener, final Composite parent) {
+        return initializeWidget(new CharsetWidget(parent, listener));
     }
 
     public CheckBoxWidget addCheckBoxWidget(final ICheckBoxSelected listener, final String label, final Composite parent) {

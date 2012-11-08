@@ -54,7 +54,7 @@ public interface INetworkModel extends IDatasetModel {
     IDataElement createElement(INetworkElementType elementType, IDataElement parent, String name, Map<String, Object> properties)
             throws ModelException;
 
-    void createSynonyms(Map<String, Object> synonymnsMap) throws ModelException;
+    void updateSynonyms(Map<String, Object> synonymnsMap) throws ModelException;
 
     IDataElement findElement(INetworkElementType elementType, String elementName) throws ModelException;
 
@@ -65,7 +65,7 @@ public interface INetworkModel extends IDatasetModel {
     /**
      * @return
      */
-    Map<INodeType, String[]> getSynonyms();
+    Map<String, String> getSynonyms();
 
     IDataElement replaceChild(IDataElement child, IDataElement newParent) throws ModelException;
 

@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.amanzi.awe.nem.exceptions.NemManagerOperationException;
+import org.amanzi.awe.nem.export.ExportedDataContainer;
 import org.amanzi.awe.nem.internal.NemPlugin;
 import org.amanzi.awe.nem.managers.properties.DynamicNetworkType;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
@@ -193,7 +194,7 @@ public class NetworkElementManager {
             throws NemManagerOperationException {
         monitor.setTaskName("Creation network model" + name);
 
-        EventChain eventChain = new EventChain(false);
+        EventChain eventChain = new EventChain(true);
         try {
             INetworkModel model = networkModelProvider.createModel(projectModelPovider.getActiveProjectModel(), name, structure,
                     coordinateReferenceSystem);
@@ -208,6 +209,15 @@ public class NetworkElementManager {
         }
 
         AWEEventManager.getManager().fireEventChain(eventChain);
+    }
+
+    /**
+     * @param container
+     * @param monitor
+     */
+    public void exportNetworkData(final ExportedDataContainer container, final IProgressMonitor monitor) {
+        NetworkExportJob job = new NetworkExportJob(container);
+        job.schedule();
     }
 
     public Set<String> getExistedNetworkNames() {

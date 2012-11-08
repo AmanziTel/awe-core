@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.nem.ui.wizard.pages.export;
+package org.amanzi.awe.nem.ui.properties.table;
 
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
 
@@ -23,36 +23,27 @@ import org.amanzi.awe.nem.ui.messages.NEMMessages;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public enum ExportedDataItems {
-    EXPORT_NETWORK_DATA(NEMMessages.EXPORT_NETWORK_DATA_ITEM, NEMMessages.EXPORT_NETWORK_DATA_ITEM_FILE_NAME_FORMAT, 0), EXPOR_SELECTION_DATA(
-            NEMMessages.EXPORT_SELECTION_DATA_ITEM, NEMMessages.EXPORT_SELECTION_DATA_ITEM_FILE_NAME_FORMAT, 1);
+public enum SynonymsTableColumns {
 
-    public static ExportedDataItems findByName(final String name) {
-        for (ExportedDataItems item : ExportedDataItems.values()) {
-            if (item.getName().equals(name)) {
-                return item;
+    TYPE(NEMMessages.SYNONYM_TABLE_TYPE_COLUMN, 0), PROPERTY(NEMMessages.SYNONYM_TABLE_PROPERTY_COLUMN, 1), HEADER(
+            NEMMessages.SYNONYM_TABLE_HEADER_COLUMN, 2);
+
+    public static SynonymsTableColumns findByIndex(final int i) {
+        for (SynonymsTableColumns column : SynonymsTableColumns.values()) {
+            if (column.getIndex() == i) {
+                return column;
             }
         }
         return null;
     }
 
-    private int index;
-
     private String name;
 
-    private String fileNameFormat;
+    private int index;
 
-    private ExportedDataItems(final String name, final String fileNameFormat, final int index) {
+    private SynonymsTableColumns(final String name, final int index) {
         this.name = name;
         this.index = index;
-        this.fileNameFormat = fileNameFormat;
-    }
-
-    /**
-     * @return Returns the fileNameFormat.
-     */
-    public String getFileNameFormat() {
-        return fileNameFormat;
     }
 
     /**

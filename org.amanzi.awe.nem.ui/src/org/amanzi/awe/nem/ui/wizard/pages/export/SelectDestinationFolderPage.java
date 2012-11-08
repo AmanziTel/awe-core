@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.nem.ui.wizard.pages.export;
 
+import java.io.File;
+import java.text.MessageFormat;
+
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.NetworkComboWidget;
@@ -53,6 +56,8 @@ public class SelectDestinationFolderPage extends WizardPage
 
     private String file;
 
+    private INetworkModel defaultModel;
+
     /**
      * @param pageName
      */
@@ -63,7 +68,7 @@ public class SelectDestinationFolderPage extends WizardPage
 
     @Override
     public void createControl(final Composite parent) {
-        Composite main = new Composite(parent, SWT.BORDER);
+        Composite main = new Composite(parent, SWT.NONE);
         main.setLayout(ONE_ROW_GRID_LAYOUT);
         main.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cNetwork = AWEWidgetFactory.getFactory().addNetworkComboWidget(this, NEMMessages.NETWORK_NAME_LABEL, main,
@@ -73,11 +78,22 @@ public class SelectDestinationFolderPage extends WizardPage
         selectorComposite.setLayout(new GridLayout(1, false));
         selectorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.selector = AWEWidgetFactory.getFactory().addDirectorySelector(selectorComposite, this);
-        if (model != null) {
-            int i = cNetwork.getControl().indexOf(model.getName());
+        if (defaultModel != null) {
+            int i = cNetwork.getControl().indexOf(defaultModel.getName());
+            model = defaultModel;
             cNetwork.getControl().select(i);
         }
         setControl(main);
+    }
+
+    @Override
+    public void dispose() {
+        cNetwork.dispose();
+        super.dispose();
+    }
+
+    public String getDestinationFolderPath() {
+        return file;
     }
 
     /**
@@ -96,7 +112,13 @@ public class SelectDestinationFolderPage extends WizardPage
         }
         if (StringUtils.isEmpty(file)) {
             setPageComplete(false);
-            setErrorMessage(NEMMessages.FILE_NAME_IS_INCORRECT);
+            setErrorMessage(NEMMessages.DESTINATION_FOLDER_CANT_BE_EMPTY);
+            return;
+        }
+        File directory = new File(file);
+        if (!directory.exists() || !directory.isDirectory()) {
+            setPageComplete(false);
+            setErrorMessage(MessageFormat.format(NEMMessages.DESTINATION_FOLDER_DOES_NOT_EXISTS, file));
             return;
         }
         setPageComplete(true);
@@ -117,6 +139,6 @@ public class SelectDestinationFolderPage extends WizardPage
 
     @Override
     public void setUpNetwork(final INetworkModel model) {
-        this.model = model;
+        this.defaultModel = model;
     }
 }

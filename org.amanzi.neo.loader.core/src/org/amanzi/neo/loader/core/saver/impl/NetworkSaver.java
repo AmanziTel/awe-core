@@ -85,7 +85,7 @@ public class NetworkSaver extends AbstractSynonymsSaver<IConfiguration> {
     @Override
     public void finishUp() {
         try {
-            networkModel.createSynonyms(getSynonymsMap());
+            networkModel.updateSynonyms(getSynonymsMap());
         } catch (ModelException e) {
         } finally {
             super.finishUp();

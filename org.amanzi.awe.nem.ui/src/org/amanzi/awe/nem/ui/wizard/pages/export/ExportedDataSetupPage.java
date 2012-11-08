@@ -16,6 +16,7 @@ package org.amanzi.awe.nem.ui.wizard.pages.export;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.amanzi.awe.nem.export.ExportedDataItems;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.eclipse.jface.wizard.WizardPage;
@@ -75,6 +76,10 @@ public class ExportedDataSetupPage extends WizardPage implements INetworkExportP
             createCombobox(mainComposite, item);
         }
         setControl(mainComposite);
+    }
+
+    public Map<Integer, ExportedDataItems> getSelectedPages() {
+        return sourcePages;
     }
 
     @Override
