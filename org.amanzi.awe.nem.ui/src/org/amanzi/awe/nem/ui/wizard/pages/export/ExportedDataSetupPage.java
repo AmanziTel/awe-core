@@ -63,6 +63,7 @@ public class ExportedDataSetupPage extends WizardPage implements INetworkExportP
         if (item.getIndex() == 0) {
             sourcePages.put(item.getIndex(), item);
             bCheck.setSelection(true);
+            bCheck.setEnabled(false);
         }
     }
 

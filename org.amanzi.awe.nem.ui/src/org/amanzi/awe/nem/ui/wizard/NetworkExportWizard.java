@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 import org.amanzi.awe.nem.export.ExportedDataContainer;
 import org.amanzi.awe.nem.export.ExportedDataItems;
 import org.amanzi.awe.nem.managers.network.NetworkElementManager;
-import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.wizard.pages.export.EditExportSettingsPage;
 import org.amanzi.awe.nem.ui.wizard.pages.export.EditSynonymsPage;
 import org.amanzi.awe.nem.ui.wizard.pages.export.ExportedDataSetupPage;
@@ -86,7 +85,7 @@ public class NetworkExportWizard extends Wizard {
             index++;
             ExportedDataItems nextPage = exportDataPage.getSelectedPages().get(index);
             if (nextPage == null) {
-                return getPage(NEMMessages.EXPORT_GENERAL_SETTINGS_PAGE);
+                return generalExportSettingsPage;
             } else {
                 return getPage(nextPage.getName());
             }
@@ -96,6 +95,30 @@ public class NetworkExportWizard extends Wizard {
             networkPage.setUpNetwork(networkModel);
         }
         return networkPage;
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(final IWizardPage page) {
+        if (page.equals(mainPage)) {
+            return null;
+        } else if (exportDataPage.equals(page)) {
+            return mainPage;
+        } else if (page instanceof EditSynonymsPage) {
+            EditSynonymsPage currentPage = (EditSynonymsPage)page;
+            int index = currentPage.getPageType().getIndex();
+            index--;
+            ExportedDataItems prevPage = exportDataPage.getSelectedPages().get(index);
+            if (prevPage == null) {
+                return exportDataPage;
+            } else {
+                return getPage(prevPage.getName());
+            }
+        } else if (generalExportSettingsPage.equals(page)) {
+            ExportedDataItems prevPage = (ExportedDataItems)exportDataPage.getSelectedPages().values().toArray()[exportDataPage
+                    .getSelectedPages().size()];
+            return getPage(prevPage.getName());
+        }
+        return null;
     }
 
     @Override

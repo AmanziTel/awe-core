@@ -90,6 +90,8 @@ public class EditSynonymsPage extends WizardPage implements INetworkExportPage, 
         case EXPORT_NETWORK_DATA:
             intiWrappers(model.getSynonyms());
             break;
+        case EXPOR_SELECTION_DATA:
+            properties = pageType.getProperties();
         default:
             break;
         }

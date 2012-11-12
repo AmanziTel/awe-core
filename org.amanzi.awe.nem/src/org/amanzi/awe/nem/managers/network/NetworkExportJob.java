@@ -30,6 +30,7 @@ import org.amanzi.awe.nem.export.SynonymsWrapper;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.network.INetworkModel;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -80,6 +81,19 @@ public class NetworkExportJob extends Job {
             values[index] = lineData.getValue().toString();
         }
         return values;
+    }
+
+    /**
+     * @param values
+     */
+    private boolean checkValues(final String[] values) {
+        for (String value : values) {
+            if (!StringUtils.isEmpty(value)) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     /**
@@ -188,7 +202,9 @@ public class NetworkExportJob extends Job {
         for (Entry<ExportedDataItems, CSVWriter> entry : writerStreams.entrySet()) {
             Map<String, Integer> columns = this.fileColumns.get(entry.getKey());
             String[] values = buildLine(line, columns);
-            entry.getValue().writeNext(values);
+            if (checkValues(values)) {
+                entry.getValue().writeNext(values);
+            }
         }
     }
 }

@@ -13,7 +13,11 @@
 
 package org.amanzi.awe.nem.export;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.awe.nem.messages.NEMMessages;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * TODO Purpose of
@@ -25,7 +29,8 @@ import org.amanzi.awe.nem.messages.NEMMessages;
  */
 public enum ExportedDataItems {
     EXPORT_NETWORK_DATA(NEMMessages.EXPORT_NETWORK_DATA_ITEM, NEMMessages.EXPORT_NETWORK_DATA_ITEM_FILE_NAME_FORMAT, 0), EXPOR_SELECTION_DATA(
-            NEMMessages.EXPORT_SELECTION_DATA_ITEM, NEMMessages.EXPORT_SELECTION_DATA_ITEM_FILE_NAME_FORMAT, 1);
+            NEMMessages.EXPORT_SELECTION_DATA_ITEM, NEMMessages.EXPORT_SELECTION_DATA_ITEM_FILE_NAME_FORMAT, 1,
+            new SynonymsWrapper("sector", "name", "Sector"));
 
     public static ExportedDataItems findByName(final String name) {
         for (ExportedDataItems item : ExportedDataItems.values()) {
@@ -42,10 +47,19 @@ public enum ExportedDataItems {
 
     private String fileNameFormat;
 
+    private final List<SynonymsWrapper> properties = new ArrayList<SynonymsWrapper>();
+
     private ExportedDataItems(final String name, final String fileNameFormat, final int index) {
         this.name = name;
         this.index = index;
         this.fileNameFormat = fileNameFormat;
+    }
+
+    private ExportedDataItems(final String name, final String fileNameFormat, final int index, final SynonymsWrapper... properties) {
+        this.name = name;
+        this.index = index;
+        this.fileNameFormat = fileNameFormat;
+        CollectionUtils.addAll(this.properties, properties);
     }
 
     /**
@@ -67,5 +81,12 @@ public enum ExportedDataItems {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * @return Returns the properties.
+     */
+    public List<SynonymsWrapper> getProperties() {
+        return properties;
     }
 }
