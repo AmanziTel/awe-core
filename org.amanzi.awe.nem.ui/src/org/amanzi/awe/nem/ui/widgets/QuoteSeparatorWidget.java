@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
-import org.amanzi.awe.nem.ui.widgets.ExportSeparatorWidget.ISeparatorChangedListener;
+import org.amanzi.awe.nem.ui.widgets.QuoteSeparatorWidget.IQouteChangedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
 import org.eclipse.swt.widgets.Composite;
 
@@ -30,34 +30,31 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class ExportSeparatorWidget extends AbstractComboWidget<String, ISeparatorChangedListener> {
-    public interface ISeparatorChangedListener extends AbstractComboWidget.IComboSelectionListener {
-        void onSeparatorChanged(Character separator);
+public class QuoteSeparatorWidget extends AbstractComboWidget<String, IQouteChangedListener> {
+    public interface IQouteChangedListener extends AbstractComboWidget.IComboSelectionListener {
+        void onQuoteChanged(Character quote);
     }
 
-    private static final Map<String, Character> SEPARATOR_MAPPING;
+    private static final Map<String, Character> QUOTE_MAPPING;
 
     static {
-        SEPARATOR_MAPPING = new HashMap<String, Character>();
-        SEPARATOR_MAPPING.put("SPACE", ' ');
-        SEPARATOR_MAPPING.put("TAB", '\t');
-        SEPARATOR_MAPPING.put("DOT (.)", '.');
-        SEPARATOR_MAPPING.put("SEMICOLON (;)", ';');
+        QUOTE_MAPPING = new HashMap<String, Character>();
+        QUOTE_MAPPING.put("Double quotes (\")", '"');
+        QUOTE_MAPPING.put("Singe quote (\')", '\'');
     }
 
     /**
      * @param parent
      * @param listener
-     * @param minLabelWidth
      * @param label
      */
-    public ExportSeparatorWidget(final Composite parent, final ISeparatorChangedListener listener, final int minLabelWidth) {
-        super(parent, listener, NEMMessages.SEPARATOR_COMBO_LABEL, minLabelWidth);
+    public QuoteSeparatorWidget(final Composite parent, final IQouteChangedListener listener, final int minimalLabelWidth) {
+        super(parent, listener, NEMMessages.QUOTE_COMBO_LABEL, minimalLabelWidth);
     }
 
     @Override
-    protected void fireListener(final ISeparatorChangedListener listener, final String selectedItem) {
-        listener.onSeparatorChanged(SEPARATOR_MAPPING.get(selectedItem));
+    protected void fireListener(final IQouteChangedListener listener, final String selectedItem) {
+        listener.onQuoteChanged(QUOTE_MAPPING.get(selectedItem));
     }
 
     @Override
@@ -67,6 +64,6 @@ public class ExportSeparatorWidget extends AbstractComboWidget<String, ISeparato
 
     @Override
     protected Collection<String> getItems() {
-        return SEPARATOR_MAPPING.keySet();
+        return QUOTE_MAPPING.keySet();
     }
 }

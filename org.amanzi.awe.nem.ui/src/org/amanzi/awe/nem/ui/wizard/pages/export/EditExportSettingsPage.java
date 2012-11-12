@@ -18,6 +18,8 @@ import java.nio.charset.Charset;
 import org.amanzi.awe.nem.ui.messages.NEMMessages;
 import org.amanzi.awe.nem.ui.widgets.ExportSeparatorWidget;
 import org.amanzi.awe.nem.ui.widgets.ExportSeparatorWidget.ISeparatorChangedListener;
+import org.amanzi.awe.nem.ui.widgets.QuoteSeparatorWidget;
+import org.amanzi.awe.nem.ui.widgets.QuoteSeparatorWidget.IQouteChangedListener;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.CharsetWidget;
 import org.amanzi.awe.ui.view.widgets.CharsetWidget.ICharsetChangedListener;
@@ -35,7 +37,11 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class EditExportSettingsPage extends WizardPage implements ICharsetChangedListener, ISeparatorChangedListener {
+public class EditExportSettingsPage extends WizardPage
+        implements
+            ICharsetChangedListener,
+            ISeparatorChangedListener,
+            IQouteChangedListener {
 
     private static final GridLayout ONE_COLUMN_LAYOUT = new GridLayout(1, false);
 
@@ -43,11 +49,16 @@ public class EditExportSettingsPage extends WizardPage implements ICharsetChange
 
     private Charset charset;
 
-    private String separator;
+    private char separator;
+
+    private char quote;
 
     private ExportSeparatorWidget separatorWidget;
 
     private CharsetWidget charsetWidget;
+
+    private QuoteSeparatorWidget quoteSeparatorWidget;
+    private static final int MIN_LABEL_WIDTH = 100;
 
     /**
      * @param pageName
@@ -59,14 +70,19 @@ public class EditExportSettingsPage extends WizardPage implements ICharsetChange
 
     @Override
     public void createControl(final Composite parent) {
+        parent.setLayoutData(new GridData(GridData.FILL_BOTH));
         main = new Composite(parent, SWT.NONE);
         main.setLayout(ONE_COLUMN_LAYOUT);
-        main.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        charsetWidget = AWEWidgetFactory.getFactory().addCharsetWidget(this, main);
-        separatorWidget = new ExportSeparatorWidget(main, this);
+        charsetWidget = AWEWidgetFactory.getFactory().addCharsetWidget(this, main, MIN_LABEL_WIDTH);
+
+        separatorWidget = new ExportSeparatorWidget(main, this, MIN_LABEL_WIDTH);
+
+        quoteSeparatorWidget = new QuoteSeparatorWidget(main, this, MIN_LABEL_WIDTH);
+
         separatorWidget.initializeWidget();
-
+        quoteSeparatorWidget.initializeWidget();
+        main.setLayoutData(new GridData(GridData.FILL_BOTH));
         setControl(main);
     }
 
@@ -74,6 +90,7 @@ public class EditExportSettingsPage extends WizardPage implements ICharsetChange
     public void dispose() {
         charsetWidget.dispose();
         separatorWidget.dispose();
+        quoteSeparatorWidget.dispose();
         super.dispose();
     }
 
@@ -84,7 +101,14 @@ public class EditExportSettingsPage extends WizardPage implements ICharsetChange
         return charset;
     }
 
-    public String getSeparator() {
+    /**
+     * @return
+     */
+    public char getQuoteSeparator() {
+        return quote;
+    }
+
+    public char getSeparator() {
         return separator;
     }
 
@@ -95,7 +119,12 @@ public class EditExportSettingsPage extends WizardPage implements ICharsetChange
     }
 
     @Override
-    public void onSeparatorChanged(final String separator) {
+    public void onQuoteChanged(final Character quote) {
+        this.quote = quote;
+    }
+
+    @Override
+    public void onSeparatorChanged(final Character separator) {
         this.separator = separator;
 
     }

@@ -123,7 +123,7 @@ public class NetworkExportWizard extends Wizard {
     private ExportedDataContainer prepareExportedContainer() {
         ExportedDataContainer container = new ExportedDataContainer(mainPage.getNetworkModel(),
                 generalExportSettingsPage.getCharset(), generalExportSettingsPage.getSeparator(),
-                mainPage.getDestinationFolderPath());
+                generalExportSettingsPage.getQuoteSeparator(), mainPage.getDestinationFolderPath());
         for (Entry<Integer, ExportedDataItems> pages : exportDataPage.getSelectedPages().entrySet()) {
             EditSynonymsPage page = (EditSynonymsPage)getPage(pages.getValue().getName());
             container.addToSynonyms(page.getPageType(), page.getProperties());

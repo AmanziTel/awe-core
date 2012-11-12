@@ -37,11 +37,12 @@ public class CharsetWidget extends AbstractComboWidget<Charset, ICharsetChangedL
     /**
      * @param parent
      * @param listener
+     * @param minLabelWidth
      * @param label
      * @param minimalLabelWidth
      */
-    protected CharsetWidget(final Composite parent, final ICharsetChangedListener listener) {
-        super(parent, listener, Messages.charsetWidgetLabel, 0);
+    protected CharsetWidget(final Composite parent, final ICharsetChangedListener listener, final int minLabelWidth) {
+        super(parent, listener, Messages.charsetWidgetLabel, minLabelWidth);
     }
 
     @Override

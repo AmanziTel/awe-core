@@ -111,6 +111,8 @@ public class NEMMessages extends NLS {
 
     public static String SEPARATOR_COMBO_LABEL;
 
+    public static String QUOTE_COMBO_LABEL;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, NEMMessages.class);
     }

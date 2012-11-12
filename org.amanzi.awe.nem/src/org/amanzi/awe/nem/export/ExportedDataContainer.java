@@ -31,9 +31,10 @@ import org.amanzi.neo.models.network.INetworkModel;
 public class ExportedDataContainer {
     private final INetworkModel model;
     private final Charset charset;
-    private final String separator;
+    private final char separator;
     private final Map<ExportedDataItems, List<SynonymsWrapper>> synonyms;
     private final String directoryPath;
+    private final char quoteChar;
 
     /**
      * @param model
@@ -41,10 +42,11 @@ public class ExportedDataContainer {
      * @param separator
      * @param directoryPath
      */
-    public ExportedDataContainer(final INetworkModel model, final Charset charset, final String separator,
+    public ExportedDataContainer(final INetworkModel model, final Charset charset, final char separator, final char quoteChar,
             final String directoryPath) {
         super();
         this.model = model;
+        this.quoteChar = quoteChar;
         this.charset = charset;
         this.separator = separator;
         this.directoryPath = directoryPath;
@@ -77,9 +79,16 @@ public class ExportedDataContainer {
     }
 
     /**
+     * @return Returns the quoteChar.
+     */
+    public char getQuoteChar() {
+        return quoteChar;
+    }
+
+    /**
      * @return Returns the separator.
      */
-    public String getSeparator() {
+    public char getSeparator() {
         return separator;
     }
 

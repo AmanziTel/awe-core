@@ -64,8 +64,8 @@ public final class AWEWidgetFactory {
         this.networkModelProvider = AWEUIPlugin.getDefault().getNetworkModelProvider();
     }
 
-    public CharsetWidget addCharsetWidget(final ICharsetChangedListener listener, final Composite parent) {
-        return initializeWidget(new CharsetWidget(parent, listener));
+    public CharsetWidget addCharsetWidget(final ICharsetChangedListener listener, final Composite parent, final int minLabelWidth) {
+        return initializeWidget(new CharsetWidget(parent, listener, minLabelWidth));
     }
 
     public CheckBoxWidget addCheckBoxWidget(final ICheckBoxSelected listener, final String label, final Composite parent) {

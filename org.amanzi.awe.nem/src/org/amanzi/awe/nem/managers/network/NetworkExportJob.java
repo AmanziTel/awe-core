@@ -14,9 +14,11 @@
 package org.amanzi.awe.nem.managers.network;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,8 @@ import org.amanzi.awe.nem.export.ExportedDataContainer;
 import org.amanzi.awe.nem.export.ExportedDataItems;
 import org.amanzi.awe.nem.export.SynonymsWrapper;
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.network.INetworkModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -47,6 +51,8 @@ public class NetworkExportJob extends Job {
 
     private final ExportedDataContainer container;
     private final Map<ExportedDataItems, CSVWriter> writerStreams;
+    private final Map<ExportedDataItems, Map<String, Integer>> fileColumns;
+    private final INetworkModel model;
 
     /**
      * @param name
@@ -54,7 +60,26 @@ public class NetworkExportJob extends Job {
     public NetworkExportJob(final ExportedDataContainer container) {
         super("export networkData");
         this.container = container;
+        this.model = container.getModel();
+        fileColumns = new HashMap<ExportedDataItems, Map<String, Integer>>();
         writerStreams = new HashMap<ExportedDataItems, CSVWriter>();
+    }
+
+    /**
+     * @param line
+     * @param columns
+     * @return
+     */
+    private String[] buildLine(final Map<String, Object> line, final Map<String, Integer> columns) {
+        String[] values = new String[columns.size()];
+        for (Entry<String, Object> lineData : line.entrySet()) {
+            Integer index = columns.get(lineData.getKey());
+            if (index == null) {
+                continue;
+            }
+            values[index] = lineData.getValue().toString();
+        }
+        return values;
     }
 
     /**
@@ -69,41 +94,77 @@ public class NetworkExportJob extends Job {
     }
 
     /**
+     * @param line
+     * @param children
+     * @param monitor
+     * @throws ModelException
+     */
+    private void collectLine(final Map<String, Object> line, final Iterable<IDataElement> children, final IProgressMonitor monitor)
+            throws ModelException {
+        for (IDataElement inner : children) {
+            prepareLine(line, inner);
+            if (!model.getChildren(inner).iterator().hasNext()) {
+                writeLine(line);
+            }
+            monitor.worked(1);
+            collectLine(line, model.getChildren(inner), monitor);
+        }
+    }
+
+    /**
      * @param file
      * @throws IOException
      */
     private void openWriterStream(final Entry<ExportedDataItems, List<SynonymsWrapper>> file) throws IOException {
         String filePath = container.getDirectoryPath() + File.separator
-                + MessageFormat.format(file.getKey().getFileNameFormat(), container.getModel().getName());
-        CSVWriter writer = new CSVWriter(new FileWriter(filePath));
-        String[] headers = prepareHeadersFromSynonyms(file.getValue());
-        writer.writeNext(headers);
+                + MessageFormat.format(file.getKey().getFileNameFormat(), model.getName());
+        OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), container.getCharset());
+        CSVWriter writer = new CSVWriter(osw, container.getSeparator(), container.getQuoteChar());
+        List<String> headers = prepareHeadersFromSynonyms(file.getKey(), file.getValue());
+        writer.writeNext(headers.toArray(new String[0]));
         writerStreams.put(file.getKey(), writer);
     }
 
     /**
+     * @param exportedDataItems
      * @param list
      * @return
      */
-    private String[] prepareHeadersFromSynonyms(final List<SynonymsWrapper> synonyms) {
-        String[] headers = new String[synonyms.toArray().length];
-        for (int i = 0; i < headers.length; i++) {
-            headers[i] = synonyms.get(i).getHeader();
+    private List<String> prepareHeadersFromSynonyms(final ExportedDataItems exportedDataItems, final List<SynonymsWrapper> synonyms) {
+        Map<String, Integer> association = new HashMap<String, Integer>();
+        List<String> headers = new ArrayList<String>();
+        int i = 0;
+        for (SynonymsWrapper synonym : synonyms) {
+            association.put(synonym.getType() + synonym.getProperty(), i);
+            headers.add(synonym.getHeader());
+            i++;
         }
+        fileColumns.put(exportedDataItems, association);
         return headers;
+    }
+
+    /**
+     * @param line
+     * @param element
+     */
+    private void prepareLine(final Map<String, Object> line, final IDataElement element) {
+        for (Entry<String, Object> entry : element.asMap().entrySet()) {
+            line.put(element.getNodeType().getId() + entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
     protected IStatus run(final IProgressMonitor monitor) {
-        monitor.beginTask("Network" + container.getModel().getName() + " export", container.getModel().getPropertyStatistics()
-                .getCount());
+        monitor.beginTask("Network" + model.getName() + " export", model.getPropertyStatistics().getCount());
         try {
             for (Entry<ExportedDataItems, List<SynonymsWrapper>> file : container.getSynonyms().entrySet()) {
                 openWriterStream(file);
             }
-            for (IDataElement element : container.getModel().getChildren(container.getModel().asDataElement())) {
+            for (IDataElement element : model.getChildren(model.asDataElement())) {
+                Map<String, Object> line = new HashMap<String, Object>();
+                prepareLine(line, element);
+                collectLine(line, model.getChildren(element), monitor);
 
-                monitor.worked(1);
             }
         } catch (Exception e) {
             LOGGER.error("can't export network", e);
@@ -118,5 +179,16 @@ public class NetworkExportJob extends Job {
         }
 
         return Status.OK_STATUS;
+    }
+
+    /**
+     * @param line
+     */
+    private void writeLine(final Map<String, Object> line) {
+        for (Entry<ExportedDataItems, CSVWriter> entry : writerStreams.entrySet()) {
+            Map<String, Integer> columns = this.fileColumns.get(entry.getKey());
+            String[] values = buildLine(line, columns);
+            entry.getValue().writeNext(values);
+        }
     }
 }
