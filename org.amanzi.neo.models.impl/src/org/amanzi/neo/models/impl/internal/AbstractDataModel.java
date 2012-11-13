@@ -47,41 +47,22 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
     }
 
     @Override
-    public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
-        assert childElement != null;
-
+    public void deleteElement(final IDataElement element) throws ModelException {
+        assert element != null;
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("getParentElement", childElement));
+            LOGGER.debug(getStartLogStatement("deleteElement", element));
         }
 
-        DataElement result = null;
-
+        final Node parentNode = ((DataElement)element).getNode();
         try {
-            final Node childNode = ((DataElement)childElement).getNode();
-
-            final Node parentNode = getParent(childNode);
-
-            if (parentNode != null) {
-                final INodeType nodeType = getNodeService().getNodeType(parentNode);
-
-                if (nodeType.equals(getType()) && parentNode.equals(getRootNode())) {
-                    result = new DataElement(parentNode);
-
-                    result.setName(getNodeService().getNodeName(parentNode));
-                    result.setNodeType(nodeType);
-                }
-            }
+            getNodeService().deleteChain(parentNode);
         } catch (final ServiceException e) {
-            processException("An error occured on searching for a Parent Element", e);
-        } catch (final NodeTypeNotExistsException e) {
-            processException("An error occured on initializing child element", e);
+            processException("Can't delete element" + e, e);
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("getParentElement"));
+            LOGGER.debug(getFinishLogStatement("deleteElement"));
         }
-
-        return result;
     }
 
     @Override
@@ -101,21 +82,40 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
     }
 
     @Override
-    public void deleteElement(final IDataElement element) throws ModelException {
-        assert element != null;
+    public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
+        assert childElement != null;
+
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("deleteElement", element));
+            LOGGER.debug(getStartLogStatement("getParentElement", childElement));
         }
 
-        final Node parentNode = ((DataElement)element).getNode();
+        DataElement result = null;
+
         try {
-            getNodeService().deleteChain(parentNode);
+            final Node childNode = ((DataElement)childElement).getNode();
+
+            final Node parentNode = getParent(childNode);
+
+            if (parentNode != null) {
+                final INodeType nodeType = getNodeService().getNodeType(parentNode);
+
+                // if (nodeType.equals(getType()) && parentNode.equals(getRootNode())) {
+                result = new DataElement(parentNode);
+
+                result.setName(getNodeService().getNodeName(parentNode));
+                result.setNodeType(nodeType);
+                // }
+            }
         } catch (final ServiceException e) {
-            processException("Can't delete element" + e, e);
+            processException("An error occured on searching for a Parent Element", e);
+        } catch (final NodeTypeNotExistsException e) {
+            processException("An error occured on initializing child element", e);
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("deleteElement"));
+            LOGGER.debug(getFinishLogStatement("getParentElement"));
         }
+
+        return result;
     }
 }
