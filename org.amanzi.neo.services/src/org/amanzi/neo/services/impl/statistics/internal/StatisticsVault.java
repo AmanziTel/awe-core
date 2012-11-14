@@ -42,15 +42,60 @@ public class StatisticsVault {
         isChanged = false;
     }
 
-    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
-        assert nodeType != null;
-        assert properties != null;
+    public void addNodeTypeVault(final NodeTypeVault nodeTypeVault) {
+        nodeTypeVaults.put(nodeTypeVault.getNodeType(), nodeTypeVault);
+    }
 
-        NodeTypeVault vault = getNodeTypeVaule(nodeType);
-        vault.indexElement(properties);
+    /**
+     * @param nodeType
+     * @param asMap
+     */
+    public void deleteElement(final INodeType nodeType, final Map<String, Object> properties) {
+        getNodeTypeVaule(nodeType).deleteElement(properties);
+        count--;
 
-        count++;
-        isChanged = true;
+    }
+
+    public Collection<NodeTypeVault> getAllNodeTypeVaults() {
+        return nodeTypeVaults.values();
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public int getCount(final INodeType nodeType) {
+        return getNodeTypeVaule(nodeType).getCount();
+    }
+
+    /**
+     * @param type
+     * @param property
+     * @return
+     */
+    public Object getDefaultValue(final INodeType type, final String property) {
+        return getNodeTypeVaule(type).getDefaultValue(property);
+    }
+
+    public NodeTypeVault getNodeTypeVaule(final INodeType nodeType) {
+        NodeTypeVault result = nodeTypeVaults.get(nodeType);
+
+        if (result == null) {
+            result = new NodeTypeVault(nodeType);
+            nodeTypeVaults.put(nodeType, result);
+        }
+
+        return result;
+    }
+
+    public Class< ? > getPropertyClass(final INodeType nodeType, final String propertyName) {
+        NodeTypeVault nodeTypeVault = getNodeTypeVaule(nodeType);
+
+        if (nodeTypeVault != null) {
+            return nodeTypeVault.getPropertyClass(propertyName);
+        }
+
+        return null;
     }
 
     public Set<String> getPropertyNames() {
@@ -67,45 +112,38 @@ public class StatisticsVault {
         return getNodeTypeVaule(nodeType).getPropertyNames();
     }
 
-    public int getCount() {
-        return count;
-    }
-
-    public int getCount(final INodeType nodeType) {
-        return getNodeTypeVaule(nodeType).getCount();
+    public int getValueCount(final INodeType nodeType, final String property, final Object value) {
+        return getNodeTypeVaule(nodeType).getValueCount(property, value);
     }
 
     public Set<Object> getValues(final INodeType nodeType, final String property) {
         return getNodeTypeVaule(nodeType).getValues(property);
     }
 
-    public int getValueCount(final INodeType nodeType, final String property, final Object value) {
-        return getNodeTypeVaule(nodeType).getValueCount(property, value);
-    }
+    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
+        assert nodeType != null;
+        assert properties != null;
 
-    protected NodeTypeVault getNodeTypeVaule(final INodeType nodeType) {
-        NodeTypeVault result = nodeTypeVaults.get(nodeType);
+        NodeTypeVault vault = getNodeTypeVaule(nodeType);
+        vault.indexElement(properties);
 
-        if (result == null) {
-            result = new NodeTypeVault(nodeType);
-            nodeTypeVaults.put(nodeType, result);
-        }
-
-        return result;
-    }
-
-    public void updateDefaultProperties(INodeType nodeType, Map<String, Object> properties) {
-        NodeTypeVault result = getNodeTypeVaule(nodeType);
-        result.updateDefaultValues(properties);
-        isChanged = result.isChanged();
-    }
-
-    public Collection<NodeTypeVault> getAllNodeTypeVaults() {
-        return nodeTypeVaults.values();
+        count++;
+        isChanged = true;
     }
 
     public boolean isChanged() {
         return isChanged;
+    }
+
+    /**
+     * @param nodeType
+     * @param propertyName
+     * @param oldValue
+     * @param newValue
+     */
+    public void renameProperty(final INodeType nodeType, final String propertyName, final Object oldValue, final Object newValue) {
+        getNodeTypeVaule(nodeType).renameProperty(propertyName, oldValue, newValue);
+
     }
 
     public void setChanged(final boolean isChanged) {
@@ -116,46 +154,9 @@ public class StatisticsVault {
         this.count = count;
     }
 
-    public void addNodeTypeVault(final NodeTypeVault nodeTypeVault) {
-        nodeTypeVaults.put(nodeTypeVault.getNodeType(), nodeTypeVault);
-    }
-
-    public Class< ? > getPropertyClass(final INodeType nodeType, final String propertyName) {
-        NodeTypeVault nodeTypeVault = getNodeTypeVaule(nodeType);
-
-        if (nodeTypeVault != null) {
-            return nodeTypeVault.getPropertyClass(propertyName);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param type
-     * @param property
-     * @return
-     */
-    public Object getDefaultValue(INodeType type, String property) {
-        return getNodeTypeVaule(type).getDefaultValue(property);
-    }
-
-    /**
-     * @param nodeType
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
-    public void renameProperty(INodeType nodeType, String propertyName, Object oldValue, Object newValue) {
-        getNodeTypeVaule(nodeType).renameProperty(propertyName, oldValue, newValue);
-
-    }
-
-    /**
-     * @param nodeType
-     * @param asMap
-     */
-    public void deleteProeprties(INodeType nodeType, Map<String, Object> properties) {
-        getNodeTypeVaule(nodeType).deleteProperties(properties);
-
+    public void updateDefaultProperties(final INodeType nodeType, final Map<String, Object> properties) {
+        NodeTypeVault result = getNodeTypeVaule(nodeType);
+        result.updateDefaultValues(properties);
+        isChanged = result.isChanged();
     }
 }

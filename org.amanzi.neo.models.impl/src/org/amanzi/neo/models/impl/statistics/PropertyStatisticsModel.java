@@ -58,8 +58,83 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    protected void initialize(final Node parentNode, final String name, final INodeType nodeType) throws ModelException {
-        throw new UnsupportedOperationException("PropertyStatisticsModel can be initialized only with node");
+    public void deleteElement(final IDataElement element) throws ModelException {
+        statisticsVault.deleteElement(element.getNodeType(), element.asMap());
+        try {
+            statisticsService.updateStatistics(getRootNode(), statisticsVault,
+                    statisticsVault.getNodeTypeVaule(element.getNodeType()));
+        } catch (ServiceException e) {
+            processException("Can't update property", e);
+        }
+    }
+
+    @Override
+    public void finishUp() throws ModelException {
+        LOGGER.info("Finishing up model <" + getName() + ">");
+        assert statisticsVault != null;
+
+        try {
+            statisticsService.saveStatistics(getRootNode(), statisticsVault);
+        } catch (ServiceException e) {
+            processException("An error occured on saving Statistics", e);
+        }
+    }
+
+    @Override
+    public int getCount() {
+        return statisticsVault.getCount();
+    }
+
+    @Override
+    public int getCount(final INodeType nodeType) {
+        return statisticsVault.getCount(nodeType);
+    }
+
+    @Override
+    public Object getDefaultValues(final INodeType type, final String property) {
+        return statisticsVault.getDefaultValue(type, property);
+
+    }
+
+    @Override
+    public Set<INodeType> getNodeTypes() {
+        Set<INodeType> result = new HashSet<INodeType>();
+
+        for (NodeTypeVault vault : statisticsVault.getAllNodeTypeVaults()) {
+            result.add(vault.getNodeType());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Class< ? > getPropertyClass(final INodeType nodeType, final String property) {
+        return statisticsVault.getPropertyClass(nodeType, property);
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return statisticsVault.getPropertyNames();
+    }
+
+    @Override
+    public Set<String> getPropertyNames(final INodeType nodeType) {
+        return statisticsVault.getPropertyNames(nodeType);
+    }
+
+    @Override
+    public int getValueCount(final INodeType nodeType, final String property, final Object value) {
+        return statisticsVault.getValueCount(nodeType, property, value);
+    }
+
+    @Override
+    public Set<Object> getValues(final INodeType nodeType, final String property) {
+        return statisticsVault.getValues(nodeType, property);
+    }
+
+    @Override
+    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
+        statisticsVault.indexElement(nodeType, properties);
     }
 
     @Override
@@ -82,81 +157,13 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    public void finishUp() throws ModelException {
-        LOGGER.info("Finishing up model <" + getName() + ">");
-        assert statisticsVault != null;
-
-        try {
-            statisticsService.saveStatistics(getRootNode(), statisticsVault);
-        } catch (ServiceException e) {
-            processException("An error occured on saving Statistics", e);
-        }
+    protected void initialize(final Node parentNode, final String name, final INodeType nodeType) throws ModelException {
+        throw new UnsupportedOperationException("PropertyStatisticsModel can be initialized only with node");
     }
 
     @Override
-    public void indexElement(final INodeType nodeType, final Map<String, Object> properties) throws ServiceException {
-        statisticsVault.indexElement(nodeType, properties);
-    }
-
-    @Override
-    public Set<String> getPropertyNames() {
-        return statisticsVault.getPropertyNames();
-    }
-
-    @Override
-    public Set<String> getPropertyNames(final INodeType nodeType) {
-        return statisticsVault.getPropertyNames(nodeType);
-    }
-
-    @Override
-    public int getCount() {
-        return statisticsVault.getCount();
-    }
-
-    @Override
-    public int getCount(final INodeType nodeType) {
-        return statisticsVault.getCount(nodeType);
-    }
-
-    @Override
-    public Set<Object> getValues(final INodeType nodeType, final String property) {
-        return statisticsVault.getValues(nodeType, property);
-    }
-
-    @Override
-    public int getValueCount(final INodeType nodeType, final String property, final Object value) {
-        return statisticsVault.getValueCount(nodeType, property, value);
-    }
-
-    @Override
-    public Set<INodeType> getNodeTypes() {
-        Set<INodeType> result = new HashSet<INodeType>();
-
-        for (NodeTypeVault vault : statisticsVault.getAllNodeTypeVaults()) {
-            result.add(vault.getNodeType());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Class< ? > getPropertyClass(final INodeType nodeType, final String property) {
-        return statisticsVault.getPropertyClass(nodeType, property);
-    }
-
-    @Override
-    public void updateDefaultProperties(INodeType type, Map<String, Object> preparedProeprties) {
-        statisticsVault.updateDefaultProperties(type, preparedProeprties);
-    }
-
-    @Override
-    public Object getDefaultValues(INodeType type, String property) {
-        return statisticsVault.getDefaultValue(type, property);
-
-    }
-
-    @Override
-    public void renameProperty(INodeType nodeType, String propertyName, Object oldValue, Object newValue) throws ModelException {
+    public void renameProperty(final INodeType nodeType, final String propertyName, final Object oldValue, final Object newValue)
+            throws ModelException {
         statisticsVault.renameProperty(nodeType, propertyName, oldValue, newValue);
         try {
             statisticsService.renameProperty(getRootNode(), nodeType, propertyName, oldValue, newValue);
@@ -166,12 +173,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    public void deleteElementProperties(IDataElement element) throws ModelException {
-        statisticsVault.deleteProeprties(element.getNodeType(), element.asMap());
-        try {
-            statisticsService.deleteProperty(getRootNode(), element.getNodeType(), element.asMap());
-        } catch (ServiceException e) {
-            processException("Can't update property", e);
-        }
+    public void updateDefaultProperties(final INodeType type, final Map<String, Object> preparedProeprties) {
+        statisticsVault.updateDefaultProperties(type, preparedProeprties);
     }
 }

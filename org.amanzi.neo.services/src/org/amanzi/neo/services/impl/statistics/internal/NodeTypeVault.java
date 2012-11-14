@@ -46,29 +46,55 @@ public class NodeTypeVault {
         isChanged = false;
     }
 
+    public void addPropertyVault(final PropertyVault propertyVault) {
+        propertyVaults.put(propertyVault.getPropertyName(), propertyVault);
+    }
+
+    /**
+     * @param properties
+     */
+    public void deleteElement(final Map<String, Object> properties) {
+        for (Entry<String, Object> property : properties.entrySet()) {
+            PropertyVault result = propertyVaults.get(property.getKey());
+            if (result != null) {
+                result.removeProperty(property.getValue());
+            }
+        }
+        count--;
+    }
+
+    public Collection<PropertyVault> getAllPropertyVaults() {
+        return propertyVaults.values();
+    }
+
     public int getCount() {
         return count;
     }
 
-    public void indexElement(final Map<String, Object> properties) throws ServiceException {
-        for (Entry<String, Object> propertyEntry : properties.entrySet()) {
-            getPropertyVault(propertyEntry.getKey()).index(propertyEntry.getValue());
+    /**
+     * @param property
+     * @return
+     */
+    public Object getDefaultValue(final String property) {
+        return getPropertyVault(property).getDefaultValue();
+    }
+
+    public INodeType getNodeType() {
+        return nodeType;
+    }
+
+    public Class< ? > getPropertyClass(final String propertyName) {
+        PropertyVault propertyVault = propertyVaults.get(propertyName);
+
+        if (propertyVault != null) {
+            return propertyVault.getClassType();
         }
 
-        count++;
-        isChanged = true;
+        return null;
     }
 
     public Set<String> getPropertyNames() {
         return propertyVaults.keySet();
-    }
-
-    public Set<Object> getValues(final String property) {
-        return getPropertyVault(property).getValues();
-    }
-
-    public int getValueCount(final String property, final Object value) {
-        return getPropertyVault(property).getValueCount(value);
     }
 
     protected PropertyVault getPropertyVault(final String property) {
@@ -82,16 +108,35 @@ public class NodeTypeVault {
         return result;
     }
 
-    public Collection<PropertyVault> getAllPropertyVaults() {
-        return propertyVaults.values();
+    public int getValueCount(final String property, final Object value) {
+        return getPropertyVault(property).getValueCount(value);
     }
 
-    public INodeType getNodeType() {
-        return nodeType;
+    public Set<Object> getValues(final String property) {
+        return getPropertyVault(property).getValues();
+    }
+
+    public void indexElement(final Map<String, Object> properties) throws ServiceException {
+        for (Entry<String, Object> propertyEntry : properties.entrySet()) {
+            getPropertyVault(propertyEntry.getKey()).index(propertyEntry.getValue());
+        }
+
+        count++;
+        isChanged = true;
     }
 
     public boolean isChanged() {
         return isChanged;
+    }
+
+    /**
+     * @param propertyName
+     * @param oldValue
+     * @param newValue
+     */
+    public void renameProperty(final String propertyName, final Object oldValue, final Object newValue) {
+        getPropertyVault(propertyName).renameProperty(oldValue, newValue);
+
     }
 
     public void setChanged(final boolean isChanged) {
@@ -102,59 +147,14 @@ public class NodeTypeVault {
         this.count = count;
     }
 
-    public void addPropertyVault(final PropertyVault propertyVault) {
-        propertyVaults.put(propertyVault.getPropertyName(), propertyVault);
-    }
-
-    public Class< ? > getPropertyClass(final String propertyName) {
-        PropertyVault propertyVault = propertyVaults.get(propertyName);
-
-        if (propertyVault != null) {
-            return propertyVault.getClassType();
-        }
-
-        return null;
-    }
-
     /**
      * @param properties
      */
-    public void updateDefaultValues(Map<String, Object> properties) {
+    public void updateDefaultValues(final Map<String, Object> properties) {
         for (Entry<String, Object> entry : properties.entrySet()) {
             PropertyVault propertyVault = getPropertyVault(entry.getKey());
             propertyVault.setDefaultValue(entry.getValue());
         }
         isChanged = !properties.isEmpty();
-    }
-
-    /**
-     * @param property
-     * @return
-     */
-    public Object getDefaultValue(String property) {
-        return getPropertyVault(property).getDefaultValue();
-    }
-
-    /**
-     * @param propertyName
-     * @param oldValue
-     * @param newValue
-     */
-    public void renameProperty(String propertyName, Object oldValue, Object newValue) {
-        getPropertyVault(propertyName).renameProperty(oldValue, newValue);
-
-    }
-
-    /**
-     * @param properties
-     */
-    public void deleteProperties(Map<String, Object> properties) {
-        for (Entry<String, Object> property : properties.entrySet()) {
-            PropertyVault result = propertyVaults.get(property.getKey());
-            if (result != null) {
-                result.removeProperty(property.getValue());
-            }
-        }
-
     }
 }

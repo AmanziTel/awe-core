@@ -55,6 +55,6 @@ public interface IPropertyStatisticsModel extends IModel {
 
     void renameProperty(INodeType nodeType, String propertyName, Object oldValue, Object newValue) throws ModelException;
 
-    void deleteElementProperties(IDataElement element) throws ModelException;
+    void deleteElement(IDataElement element) throws ModelException;
 
 }

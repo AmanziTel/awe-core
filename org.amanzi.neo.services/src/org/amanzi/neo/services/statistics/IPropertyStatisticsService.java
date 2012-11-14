@@ -13,12 +13,11 @@
 
 package org.amanzi.neo.services.statistics;
 
-import java.util.Map;
-
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.IService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.statistics.internal.NodeTypeVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.neo4j.graphdb.Node;
 
@@ -33,13 +32,19 @@ import org.neo4j.graphdb.Node;
 // TODO: LN: 10.10.2012, add
 public interface IPropertyStatisticsService extends IService {
 
-    void saveStatistics(Node node, StatisticsVault vault) throws ServiceException;
-
     StatisticsVault loadStatistics(Node rootNode) throws ServiceException, NodeTypeNotExistsException;
 
     void renameProperty(Node rootNode, INodeType nodeType, String propertyName, Object oldValue, Object newValue)
             throws ServiceException;
 
-    void deleteProperty(Node rootNode, INodeType nodeType, Map<String, Object> asMap) throws ServiceException;
+    void saveStatistics(Node node, StatisticsVault vault) throws ServiceException;
+
+    /**
+     * @param rootNode
+     * @param vault
+     * @param nodeType
+     * @throws ServiceException
+     */
+    void updateStatistics(Node rootNode, StatisticsVault vault, NodeTypeVault nodeType) throws ServiceException;
 
 }

@@ -272,7 +272,6 @@ public class NetworkElementManager {
 
     public void removeElement(final INetworkModel model, final IDataElement element) throws ModelException {
         LOGGER.info("Start  removing element " + element + " from model " + model + " at " + new Date(System.currentTimeMillis()));
-        final IDataElement parentElement = model.getParentElement(element);
         Job job = new Job("Removing element" + element.getName() + " from model " + model.getName()) {
             @Override
             protected IStatus run(final IProgressMonitor monitor) {
@@ -285,7 +284,6 @@ public class NetworkElementManager {
                         public void run() {
                             EventChain chain = new EventChain(false);
                             chain.addEvent(new DataUpdatedEvent(null));
-                            chain.addEvent(new ShowInViewEvent(model, parentElement, null));
                             AWEEventManager.getManager().fireEventChain(chain);
                         }
                     }, false);

@@ -192,7 +192,7 @@ public abstract class AbstractDatasetModel extends AbstractNamedModel
         assert element != null;
 
         indexModel.deleteIndex(((DataElement)element).getNode(), element.getNodeType());
-        propertyStatisticsModel.deleteElementProperties(element);
+        propertyStatisticsModel.deleteElement(element);
         super.deleteElement(element);
     }
 
