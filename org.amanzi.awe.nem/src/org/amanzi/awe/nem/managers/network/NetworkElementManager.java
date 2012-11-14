@@ -215,7 +215,7 @@ public class NetworkElementManager {
      * @param container
      * @param monitor
      */
-    public void exportNetworkData(final ExportedDataContainer container, final IProgressMonitor monitor) {
+    public void exportNetworkData(final ExportedDataContainer container) {
         NetworkExportJob job = new NetworkExportJob(container);
         job.schedule();
     }

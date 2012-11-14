@@ -185,13 +185,13 @@ public class NetworkExportJob extends Job {
             return new Status(Status.ERROR, "org.amanzi.awe.nem", "can't export network");
         } finally {
             try {
+                monitor.done();
                 closeStreams();
             } catch (IOException e) {
                 LOGGER.error("can't close input stream", e);
                 return new Status(Status.ERROR, "org.amanzi.awe.nem", "can't export network");
             }
         }
-
         return Status.OK_STATUS;
     }
 

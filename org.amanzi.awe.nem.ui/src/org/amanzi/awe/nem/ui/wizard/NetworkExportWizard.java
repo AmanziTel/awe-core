@@ -24,10 +24,6 @@ import org.amanzi.awe.nem.ui.wizard.pages.export.ExportedDataSetupPage;
 import org.amanzi.awe.nem.ui.wizard.pages.export.INetworkExportPage;
 import org.amanzi.awe.nem.ui.wizard.pages.export.SelectDestinationFolderPage;
 import org.amanzi.neo.models.network.INetworkModel;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
@@ -124,19 +120,7 @@ public class NetworkExportWizard extends Wizard {
     @Override
     public boolean performFinish() {
         final ExportedDataContainer container = prepareExportedContainer();
-        Job job = new Job("Export network " + mainPage.getNetworkModel().getName()) {
-
-            @Override
-            protected IStatus run(final IProgressMonitor monitor) {
-                try {
-                    NetworkElementManager.getInstance().exportNetworkData(container, monitor);
-                } catch (Exception e) {
-                    return new Status(Status.ERROR, "org.amanzi.awe.nem.ui", "Can't export network");
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
+        NetworkElementManager.getInstance().exportNetworkData(container);
         return true;
     }
 
