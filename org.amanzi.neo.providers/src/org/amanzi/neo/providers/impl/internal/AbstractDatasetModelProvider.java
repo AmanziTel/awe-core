@@ -43,13 +43,13 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
         extends
             AbstractNamedModelProvider<M, P, C> implements IDatasetModelProvider<M, P> {
 
-    private final IndexModelProvider indexModelProvider;
+    private final IIndexModelProvider indexModelProvider;
 
-    private final PropertyStatisticsModelProvider propertyStatisticsModelProvider;
+    private final IPropertyStatisticsModelProvider propertyStatisticsModelProvider;
 
     private final IGeoNodeProperties geoNodeProperties;
 
-    private final GISModelProvider gisModelProvider;
+    private final IGISModelProvider gisModelProvider;
 
     /**
      * @param nodeService
@@ -59,10 +59,10 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
             final IIndexModelProvider indexModelProvider, final IPropertyStatisticsModelProvider propertyStatisticsModelProvider,
             final IGeoNodeProperties geoNodeProperties, final IGISModelProvider gisModelProvider) {
         super(nodeService, generalNodeProperties);
-        this.indexModelProvider = (IndexModelProvider)indexModelProvider;
-        this.propertyStatisticsModelProvider = (PropertyStatisticsModelProvider)propertyStatisticsModelProvider;
+        this.indexModelProvider = indexModelProvider;
+        this.propertyStatisticsModelProvider = propertyStatisticsModelProvider;
         this.geoNodeProperties = geoNodeProperties;
-        this.gisModelProvider = (GISModelProvider)gisModelProvider;
+        this.gisModelProvider = gisModelProvider;
     }
 
     @SuppressWarnings("unchecked")
@@ -74,9 +74,9 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
         IKey multiKey = new MultiKey(nameKey, nodeKey);
 
         deleteFromCache(nameKey, nodeKey, multiKey);
-        indexModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
-        propertyStatisticsModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
-        gisModelProvider.deleteFromCache(nameKey, nodeKey, multiKey);
+        ((IndexModelProvider)indexModelProvider).deleteFromCache(nameKey, nodeKey, multiKey);
+        ((PropertyStatisticsModelProvider)propertyStatisticsModelProvider).deleteFromCache(nameKey, nodeKey, multiKey);
+        ((GISModelProvider)gisModelProvider).deleteFromCache(nameKey, nodeKey, multiKey);
         model.delete();
     }
 
@@ -85,7 +85,7 @@ public abstract class AbstractDatasetModelProvider<M extends IDatasetModel, P ex
     }
 
     protected GISModelProvider getGisModelProvider() {
-        return gisModelProvider;
+        return (GISModelProvider)gisModelProvider;
     }
 
     private void initializeGIS(final C model) throws ModelException {

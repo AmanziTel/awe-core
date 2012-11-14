@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.amanzi.neo.db.internal.DatabasePlugin;
 import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
@@ -62,7 +63,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * Default constructor All parameters set as a default
      */
     public Neo4jDatabaseManager() {
-        this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType(), DEFAULT_MEMORY_MAPPING);
+        this(null, AccessType.getDefaulAccessType(), DEFAULT_MEMORY_MAPPING);
     }
 
     /**
@@ -71,7 +72,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * @param accessType access type of database connection
      */
     public Neo4jDatabaseManager(final AccessType accessType) {
-        this(getDefaultDatabaseLocation(), accessType);
+        this(null, accessType);
     }
 
     /**
@@ -81,7 +82,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * @param memoryMapping memory mapping parameters
      */
     public Neo4jDatabaseManager(final AccessType accessType, final Map<String, String> memoryMapping) {
-        this(getDefaultDatabaseLocation(), accessType, memoryMapping);
+        this(null, accessType, memoryMapping);
     }
 
     /**
@@ -90,7 +91,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * @param memoryMapping memory mapping parameters
      */
     public Neo4jDatabaseManager(final Map<String, String> memoryMapping) {
-        this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType(), memoryMapping);
+        this(null, AccessType.getDefaulAccessType(), memoryMapping);
     }
 
     /**
@@ -120,11 +121,11 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * @param memoryMapping memory mapping parameters
      */
     public Neo4jDatabaseManager(final String databaseLocation, final AccessType accessType, final Map<String, String> memoryMapping) {
-        this.databaseLocation = databaseLocation;
+        this.databaseLocation = StringUtils.isEmpty(databaseLocation) ? getDefaultDatabaseLocation() : databaseLocation;
         this.accessType = accessType;
         this.memoryMapping = memoryMapping;
         DatabasePlugin.getInstance().getPreferenceStore()
-                .setValue(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION, databaseLocation);
+                .setValue(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION, this.databaseLocation);
         LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
                 + "accessType = <" + accessType + ">");
     }

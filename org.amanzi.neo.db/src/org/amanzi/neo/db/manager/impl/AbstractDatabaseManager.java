@@ -41,46 +41,13 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      */
     private static final String[] DEFAULT_DATABASE_LOCATION = new String[] {".amanzi", "neo"};
 
-    public static String computeDefaultLocation() {
-        String userHome = System.getProperty("user.home");
-
-        File databaseDirectory = new File(userHome);
-        for (String subDirectory : DEFAULT_DATABASE_LOCATION) {
-            databaseDirectory = new File(databaseDirectory, subDirectory);
-        }
-
-        if (!databaseDirectory.mkdirs()) {
-            LOGGER.fatal("Database directory <" + databaseDirectory + "> was not created");
-        }
-        return databaseDirectory.getAbsolutePath();
-    }
-
-    /**
-     * Creates default location for database and returns it's path
-     * 
-     * @return default path to database location
-     */
-    public static String getDefaultDatabaseLocation() {
-
-        String location = DatabasePlugin.getInstance().getPreferenceStore()
-                .getString(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION);
-
-        if (!StringUtils.isEmpty(location)) {
-            return location;
-        }
-
-        location = computeDefaultLocation();
-        // DatabasePlugin.getInstance().getPreferenceStore().setValue(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION,
-        // location);
-        return location;
-    }
-
     /*
      * Map of Transactions-per-Thread
      */
     private final ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
 
     private final ThreadLocal<Integer> transactionStack = new ThreadLocal<Integer>();
+
     /*
      * Listeners for Database Events
      */
@@ -113,6 +80,20 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         transactionMap.set(tx);
     }
 
+    protected String computeDefaultLocation() {
+        String userHome = System.getProperty("user.home");
+
+        File databaseDirectory = new File(userHome);
+        for (String subDirectory : DEFAULT_DATABASE_LOCATION) {
+            databaseDirectory = new File(databaseDirectory, subDirectory);
+        }
+
+        if (!databaseDirectory.mkdirs()) {
+            LOGGER.fatal("Database directory <" + databaseDirectory + "> was not created");
+        }
+        return databaseDirectory.getAbsolutePath();
+    }
+
     @Override
     public void finishThreadTransaction() {
         if (LOGGER.isDebugEnabled()) {
@@ -143,6 +124,26 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         for (IDatabaseEventListener listener : listeners) {
             listener.onDatabaseEvent(event);
         }
+    }
+
+    /**
+     * Creates default location for database and returns it's path
+     * 
+     * @return default path to database location
+     */
+    protected String getDefaultDatabaseLocation() {
+
+        String location = DatabasePlugin.getInstance().getPreferenceStore()
+                .getString(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION);
+
+        if (!StringUtils.isEmpty(location)) {
+            return location;
+        }
+
+        location = computeDefaultLocation();
+        // DatabasePlugin.getInstance().getPreferenceStore().setValue(DatabasePlugin.PREFERENCE_KEY_DATABASE_LOCATION,
+        // location);
+        return location;
     }
 
     /**

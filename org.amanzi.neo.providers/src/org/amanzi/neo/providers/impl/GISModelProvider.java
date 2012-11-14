@@ -84,10 +84,6 @@ public class GISModelProvider extends AbstractNamedModelProvider<IGISModel, IRen
         model.setSourceModel(parent);
     }
 
-    /**
-     * @param mainGIS
-     * @param crs
-     */
     protected void setCRS(final IGISModel gisModel, final CoordinateReferenceSystem crs) {
         GISModel model = (GISModel)gisModel;
         if (crs == null) {

@@ -53,17 +53,17 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
         }
 
         @Override
-        protected INodeType getModelType() {
-            return null;
-        }
-
-        @Override
         protected AbstractDatasetModel createInstance() {
             return null;
         }
 
         @Override
         protected Class< ? extends IDatasetModel> getModelClass() {
+            return null;
+        }
+
+        @Override
+        protected INodeType getModelType() {
             return null;
         }
 
@@ -101,17 +101,6 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckProviderActivityOnPostInitialization() throws Exception {
-        when(indexModelProvider.getIndexModel(model)).thenReturn(indexModel);
-        when(propertyStatisticsModelProvider.getPropertyStatistics(model)).thenReturn(statisitcsModel);
-
-        provider.postInitialize(model);
-
-        verify(indexModelProvider).getIndexModel(model);
-        verify(propertyStatisticsModelProvider).getPropertyStatistics(model);
-    }
-
-    @Test
     public void testCheckModelActivityOnPostInitialization() throws Exception {
         when(indexModelProvider.getIndexModel(model)).thenReturn(indexModel);
         when(propertyStatisticsModelProvider.getPropertyStatistics(model)).thenReturn(statisitcsModel);
@@ -120,5 +109,16 @@ public class AbstractDatasetModelProviderTest extends AbstractMockitoTest {
 
         verify(model).setIndexModel(indexModel);
         verify(model).setPropertyStatisticsModel(statisitcsModel);
+    }
+
+    @Test
+    public void testCheckProviderActivityOnPostInitialization() throws Exception {
+        when(indexModelProvider.getIndexModel(model)).thenReturn(indexModel);
+        when(propertyStatisticsModelProvider.getPropertyStatistics(model)).thenReturn(statisitcsModel);
+
+        provider.postInitialize(model);
+
+        verify(indexModelProvider).getIndexModel(model);
+        verify(propertyStatisticsModelProvider).getPropertyStatistics(model);
     }
 }

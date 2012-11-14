@@ -45,6 +45,16 @@ import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
  */
 public class Neo4jDatabaseManagerTest {
 
+    /**
+     * Type of Event Actions
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    private static enum EventActionType {
+        SHUTDOWN, STARTUP, FULL_COMMIT, FULL_ROLLBACK;
+    }
+
     /** String INCORRECT_MEMORY_MAPPING field */
     private static final String INCORRECT_MEMORY_MAPPING = "Incorrect Memory Mapping";
 
@@ -64,43 +74,17 @@ public class Neo4jDatabaseManagerTest {
 
     private static final Random RANDOM = new Random();
 
-    private final Mockery context = new Mockery();
-
-    /**
-     * Type of Event Actions
-     * 
-     * @author gerzog
-     * @since 1.0.0
-     */
-    private static enum EventActionType {
-        SHUTDOWN, STARTUP, FULL_COMMIT, FULL_ROLLBACK;
-    }
-
-    @BeforeClass
-    public static void setUpTest() {
-        // initialize Log4j
-        new LogStarter().earlyStartup();
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
-        clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        DatabaseManagerFactory.getDatabaseManager().shutdown();
-
-        clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
-        clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
-
+    private static void clearDbLocation(final File dbLocation) throws IOException {
+        if (dbLocation.exists()) {
+            for (File subFile : dbLocation.listFiles()) {
+                if (subFile.isDirectory()) {
+                    clearDbLocation(subFile);
+                } else {
+                    FileUtils.forceDelete(subFile);
+                }
+            }
+            FileUtils.forceDelete(dbLocation);
+        }
     }
 
     private static String getDirectoryLocation(final String[] subDirectories) throws IOException {
@@ -115,204 +99,13 @@ public class Neo4jDatabaseManagerTest {
         return testHomeFile.getAbsolutePath();
     }
 
-    private static void clearDbLocation(final File dbLocation) throws IOException {
-        if (dbLocation.exists()) {
-            for (File subFile : dbLocation.listFiles()) {
-                if (subFile.isDirectory()) {
-                    clearDbLocation(subFile);
-                } else {
-                    FileUtils.forceDelete(subFile);
-                }
-            }
-            FileUtils.forceDelete(dbLocation);
-        }
+    @BeforeClass
+    public static void setUpTest() {
+        // initialize Log4j
+        new LogStarter().earlyStartup();
     }
 
-    private String getRandomDatabaseLocation() throws IOException {
-        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY + RANDOM.nextInt());
-        FileUtils.forceMkdir(databaseDirectory);
-        return databaseDirectory.getAbsolutePath();
-    }
-
-    private String getDefaultDatabaseLocation() throws IOException {
-        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY);
-        FileUtils.forceMkdir(databaseDirectory);
-        return databaseDirectory.getAbsolutePath();
-    }
-
-    private String getDefaultNeo4jDatabaseLocation() throws IOException {
-        File databaseDirectory = new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES));
-        FileUtils.forceMkdir(databaseDirectory);
-        return databaseDirectory.getAbsolutePath();
-    }
-
-    private Map<String, String> getFakeMappingParameters() {
-        HashMap<String, String> result = new HashMap<String, String>();
-
-        result.put("some key", "some value");
-
-        return result;
-    }
-
-    @Test
-    public void checkFullConstructor() throws IOException {
-        final String dbLocation = getDefaultDatabaseLocation();
-        final AccessType accessType = AccessType.READ_ONLY;
-        final Map<String, String> memoryMapping = getFakeMappingParameters();
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation, accessType, memoryMapping);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, accessType, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkConstructorWithDefaultMemoryMapping() throws IOException {
-        final String dbLocation = getRandomDatabaseLocation();
-        final AccessType accessType = AccessType.READ_ONLY;
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation, accessType);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, accessType, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkConstructorWithDefaultAccessType() throws IOException {
-        final String dbLocation = getRandomDatabaseLocation();
-        final Map<String, String> memoryMapping = getFakeMappingParameters();
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation, memoryMapping);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_WRITE, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkConstructorWithDefaultLocation() throws IOException {
-        final AccessType accessType = AccessType.READ_ONLY;
-        final Map<String, String> memoryMapping = getFakeMappingParameters();
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(accessType, memoryMapping);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_ONLY, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkConstructorWithDefaultMemoryMappingAndAccessType() throws IOException {
-        final String dbLocation = getRandomDatabaseLocation();
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.getDefaulAccessType(), dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkConstructorWithDefaultMemoryMappingAndLocation() throws IOException {
-        final AccessType accessType = AccessType.READ_ONLY;
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(accessType);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_ONLY, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkConstructorWithDefaultLocationAndAccessType() throws IOException {
-        final Map<String, String> memoryMapping = getFakeMappingParameters();
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(memoryMapping);
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_WRITE, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkDefaultConstructor() throws IOException {
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
-
-        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getLocation());
-        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_WRITE, dbManager.getAccessType());
-        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
-    }
-
-    @Test
-    public void checkGraphDatabaseService() {
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
-
-        Assert.assertNotNull("Graph DB Service should not be null", dbManager.getDatabaseService());
-
-        // shutdown db
-        dbManager.shutdown();
-    }
-
-    @Test
-    public void checkReadWriteDatabaseService() {
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_WRITE);
-
-        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedGraphDatabase.class, dbManager.getDatabaseService()
-                .getClass());
-
-        // shutdown db
-        dbManager.shutdown();
-    }
-
-    @Test
-    public void checkDatabaseLocationOfService() throws IOException {
-        String dbLocation = getDefaultDatabaseLocation();
-
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation);
-
-        Assert.assertTrue("Location of Service incorrect", dbManager.getDatabaseService().toString().contains(dbLocation));
-
-        // shutdown db
-        dbManager.shutdown();
-    }
-
-    @Test
-    public void checkBeforeAndAfterStartupEvent() {
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
-        dbManager.addDatabaseEventListener(getDatabaseListener(EventType.BEFORE_STARTUP, EventType.AFTER_STARTUP));
-
-        dbManager.getDatabaseService();
-
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void checkReadOnlyDatabaseService() {
-        // for read only we need to have already created DB
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
-        dbManager.getDatabaseService();
-        dbManager.shutdown();
-
-        dbManager = new Neo4jDatabaseManager(AccessType.READ_ONLY);
-
-        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager
-                .getDatabaseService().getClass());
-
-        // shutdown db
-        dbManager.shutdown();
-    }
-
-    @Test
-    public void checkBeforeAndAfterShutdownEvent() {
-        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.SHUTDOWN, EventType.BEFORE_SHUTDOWN,
-                EventType.AFTER_SHUTDOWN);
-
-        dbManager.shutdown();
-
-        context.assertIsSatisfied();
-    }
+    private final Mockery context = new Mockery();
 
     @Test
     public void checkBeforeAndAfterFullCommitEvent() {
@@ -334,20 +127,197 @@ public class Neo4jDatabaseManagerTest {
         context.assertIsSatisfied();
     }
 
-    /**
-     * Creates Mock for Event testing
-     * 
-     * @param eventType type of event to test
-     * @return Neo4jDatabaseManager configured with corresponding mocks
-     */
-    private Neo4jDatabaseManager getMockDbManagerForEvents(final EventActionType actionType, final EventType... eventTypes) {
+    @Test
+    public void checkBeforeAndAfterShutdownEvent() {
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.SHUTDOWN, EventType.BEFORE_SHUTDOWN,
+                EventType.AFTER_SHUTDOWN);
+
+        dbManager.shutdown();
+
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void checkBeforeAndAfterStartupEvent() {
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
-        dbManager.setDatabaseService(getGraphDbServiceMock(actionType));
+        dbManager.addDatabaseEventListener(getDatabaseListener(EventType.BEFORE_STARTUP, EventType.AFTER_STARTUP));
 
-        IDatabaseEventListener listener = getDatabaseListener(eventTypes);
-        dbManager.addDatabaseEventListener(listener);
+        dbManager.getDatabaseService();
 
-        return dbManager;
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void checkConstructorWithDefaultAccessType() throws IOException {
+        final String dbLocation = getRandomDatabaseLocation();
+        final Map<String, String> memoryMapping = getFakeMappingParameters();
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation, memoryMapping);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_WRITE, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkConstructorWithDefaultLocation() throws IOException {
+        final AccessType accessType = AccessType.READ_ONLY;
+        final Map<String, String> memoryMapping = getFakeMappingParameters();
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(accessType, memoryMapping);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getDefaultLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_ONLY, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkConstructorWithDefaultLocationAndAccessType() throws IOException {
+        final Map<String, String> memoryMapping = getFakeMappingParameters();
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(memoryMapping);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getDefaultLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_WRITE, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkConstructorWithDefaultMemoryMapping() throws IOException {
+        final String dbLocation = getRandomDatabaseLocation();
+        final AccessType accessType = AccessType.READ_ONLY;
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation, accessType);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, accessType, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkConstructorWithDefaultMemoryMappingAndAccessType() throws IOException {
+        final String dbLocation = getRandomDatabaseLocation();
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.getDefaulAccessType(), dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkConstructorWithDefaultMemoryMappingAndLocation() throws IOException {
+        final AccessType accessType = AccessType.READ_ONLY;
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(accessType);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getDefaultLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_ONLY, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkDatabaseLocationOfService() throws IOException {
+        String dbLocation = getDefaultDatabaseLocation();
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation);
+
+        Assert.assertTrue("Location of Service incorrect", dbManager.getDatabaseService().toString().contains(dbLocation));
+
+        // shutdown db
+        dbManager.shutdown();
+    }
+
+    @Test
+    public void checkDefaultConstructor() throws IOException {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, getDefaultNeo4jDatabaseLocation(), dbManager.getDefaultLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, AccessType.READ_WRITE, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkFullConstructor() throws IOException {
+        final String dbLocation = getDefaultDatabaseLocation();
+        final AccessType accessType = AccessType.READ_ONLY;
+        final Map<String, String> memoryMapping = getFakeMappingParameters();
+
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation, accessType, memoryMapping);
+
+        Assert.assertEquals(INCORRECT_DATABASE_LOCATION, dbLocation, dbManager.getLocation());
+        Assert.assertEquals(INCORRECT_ACCESS_TYPE, accessType, dbManager.getAccessType());
+        Assert.assertEquals(INCORRECT_MEMORY_MAPPING, memoryMapping, dbManager.getMemoryMapping());
+    }
+
+    @Test
+    public void checkGraphDatabaseService() {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+
+        Assert.assertNotNull("Graph DB Service should not be null", dbManager.getDatabaseService());
+
+        // shutdown db
+        dbManager.shutdown();
+    }
+
+    @Test
+    public void checkReadWriteDatabaseService() throws IOException {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_WRITE);
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedGraphDatabase.class, dbManager.getDatabaseService()
+                .getClass());
+
+        // shutdown db
+        dbManager.shutdown();
+    }
+
+    @Test
+    public void checkReadOnlyDatabaseService() {
+        // for read only we need to have already created DB
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+        dbManager.getDatabaseService();
+        dbManager.shutdown();
+
+        dbManager = new Neo4jDatabaseManager(AccessType.READ_ONLY);
+
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager
+                .getDatabaseService().getClass());
+
+        // shutdown db
+        dbManager.shutdown();
+    }
+
+    private IDatabaseEventListener getDatabaseListener(final EventType... eventTypes) {
+        final IDatabaseEventListener eventListener = context.mock(IDatabaseEventListener.class);
+
+        for (final EventType eventType : eventTypes) {
+            context.checking(new Expectations() {
+                {
+                    oneOf(eventListener).onDatabaseEvent(with(equal(new DatabaseEvent(eventType))));
+                }
+            });
+        }
+
+        return eventListener;
+    }
+
+    private String getDefaultDatabaseLocation() throws IOException {
+        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY);
+        FileUtils.forceMkdir(databaseDirectory);
+        return databaseDirectory.getAbsolutePath();
+    }
+
+    private String getDefaultNeo4jDatabaseLocation() throws IOException {
+        File databaseDirectory = new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES));
+        FileUtils.forceMkdir(databaseDirectory);
+        return databaseDirectory.getAbsolutePath();
+    }
+
+    private Map<String, String> getFakeMappingParameters() {
+        HashMap<String, String> result = new HashMap<String, String>();
+
+        result.put("some key", "some value");
+
+        return result;
     }
 
     /**
@@ -374,18 +344,47 @@ public class Neo4jDatabaseManagerTest {
         return service;
     }
 
-    private IDatabaseEventListener getDatabaseListener(final EventType... eventTypes) {
-        final IDatabaseEventListener eventListener = context.mock(IDatabaseEventListener.class);
+    /**
+     * Creates Mock for Event testing
+     * 
+     * @param eventType type of event to test
+     * @return Neo4jDatabaseManager configured with corresponding mocks
+     */
+    private Neo4jDatabaseManager getMockDbManagerForEvents(final EventActionType actionType, final EventType... eventTypes) {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+        dbManager.setDatabaseService(getGraphDbServiceMock(actionType));
 
-        for (final EventType eventType : eventTypes) {
-            context.checking(new Expectations() {
-                {
-                    oneOf(eventListener).onDatabaseEvent(with(equal(new DatabaseEvent(eventType))));
-                }
-            });
-        }
+        IDatabaseEventListener listener = getDatabaseListener(eventTypes);
+        dbManager.addDatabaseEventListener(listener);
 
-        return eventListener;
+        return dbManager;
+    }
+
+    private String getRandomDatabaseLocation() throws IOException {
+        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY + RANDOM.nextInt());
+        FileUtils.forceMkdir(databaseDirectory);
+        return databaseDirectory.getAbsolutePath();
+    }
+
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
+        clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
+    }
+
+    /**
+     * @throws java.lang.Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+        DatabaseManagerFactory.getDatabaseManager().shutdown();
+
+        clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
+        clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
+
     }
 
 }
