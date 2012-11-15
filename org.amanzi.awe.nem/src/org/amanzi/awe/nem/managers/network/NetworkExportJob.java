@@ -118,7 +118,7 @@ public class NetworkExportJob extends Job {
         for (IDataElement inner : children) {
             prepareLine(line, inner);
             if (!model.getChildren(inner).iterator().hasNext()) {
-                writeLine(line);
+                writeLine(line, inner);
             }
             monitor.worked(1);
             collectLine(line, model.getChildren(inner), monitor);
@@ -197,14 +197,26 @@ public class NetworkExportJob extends Job {
 
     /**
      * @param line
+     * @param inner
      */
-    private void writeLine(final Map<String, Object> line) {
+    private void writeLine(final Map<String, Object> line, final IDataElement inner) {
         for (Entry<ExportedDataItems, CSVWriter> entry : writerStreams.entrySet()) {
             Map<String, Integer> columns = this.fileColumns.get(entry.getKey());
             String[] values = buildLine(line, columns);
             if (checkValues(values)) {
                 entry.getValue().writeNext(values);
             }
+        }
+        clearLine(line, inner);
+    }
+
+    /**
+     * @param line
+     * @param inner
+     */
+    private void clearLine(final Map<String, Object> line, final IDataElement inner) {
+        for (String key : inner.asMap().keySet()) {
+            line.remove(key);
         }
     }
 }

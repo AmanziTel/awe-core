@@ -36,7 +36,7 @@ public final class CSVUtils {
 
     private static final Logger LOGGER = Logger.getLogger(CSVUtils.class);
 
-    private static final char[] POSSIBLE_SEPARATORS = new char[] {'\t', ',', ';', '\n'};
+    private static final char[] POSSIBLE_SEPARATORS = new char[] {'\t', ',', ';', '.', '\n'};
 
     private static final int MINIMAL_HEADERS_SIZE = 2;
 
@@ -46,7 +46,7 @@ public final class CSVUtils {
     private CSVUtils() {
     }
 
-    public static char getSeparator(File file) {
+    public static char getSeparator(final File file) {
         int max = 0;
         Character result = null;
         for (Entry<Character, Integer> candidate : defineDelimeters(file).entrySet()) {
@@ -59,7 +59,7 @@ public final class CSVUtils {
         return result;
     }
 
-    private static Map<Character, Integer> defineDelimeters(File file) {
+    private static Map<Character, Integer> defineDelimeters(final File file) {
         BufferedReader read = null;
         Map<Character, Integer> seaprators = new HashMap<Character, Integer>();
         String line;

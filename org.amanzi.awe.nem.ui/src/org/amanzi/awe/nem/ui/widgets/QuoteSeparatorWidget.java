@@ -22,6 +22,8 @@ import org.amanzi.awe.nem.ui.widgets.QuoteSeparatorWidget.IQouteChangedListener;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
 import org.eclipse.swt.widgets.Composite;
 
+import au.com.bytecode.opencsv.CSVWriter;
+
 /**
  * TODO Purpose of
  * <p>
@@ -41,6 +43,7 @@ public class QuoteSeparatorWidget extends AbstractComboWidget<String, IQouteChan
         QUOTE_MAPPING = new HashMap<String, Character>();
         QUOTE_MAPPING.put("Double quotes (\")", '"');
         QUOTE_MAPPING.put("Singe quote (\')", '\'');
+        QUOTE_MAPPING.put("None quotes", CSVWriter.NO_QUOTE_CHARACTER);
     }
 
     /**
@@ -55,6 +58,11 @@ public class QuoteSeparatorWidget extends AbstractComboWidget<String, IQouteChan
     @Override
     protected void fireListener(final IQouteChangedListener listener, final String selectedItem) {
         listener.onQuoteChanged(QUOTE_MAPPING.get(selectedItem));
+    }
+
+    @Override
+    protected String getDefaultSelectedItem() {
+        return "None quotes";
     }
 
     @Override

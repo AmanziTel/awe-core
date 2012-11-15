@@ -61,6 +61,11 @@ public class ExportSeparatorWidget extends AbstractComboWidget<String, ISeparato
     }
 
     @Override
+    protected String getDefaultSelectedItem() {
+        return "SEMICOLON (;)";
+    }
+
+    @Override
     protected String getItemName(final String item) {
         return item;
     }
