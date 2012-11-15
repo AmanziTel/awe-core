@@ -41,7 +41,6 @@ public class ExportSeparatorWidget extends AbstractComboWidget<String, ISeparato
         SEPARATOR_MAPPING = new HashMap<String, Character>();
         SEPARATOR_MAPPING.put("SPACE", ' ');
         SEPARATOR_MAPPING.put("TAB", '\t');
-        SEPARATOR_MAPPING.put("DOT (.)", '.');
         SEPARATOR_MAPPING.put("SEMICOLON (;)", ';');
     }
 
