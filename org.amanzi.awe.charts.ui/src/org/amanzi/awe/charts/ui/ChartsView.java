@@ -119,13 +119,13 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         columnsSelectorWidget = new ItemsSelectorWidget(filteringContainer, this, CELLS_LABEL);
 
         groupSelectorWidget.initializeWidget();
+        columnsSelectorWidget.initializeWidget();
         int width = parent.getShell().getSize().x;
 
         chartComposite = new ChartComposite(parent, SWT.FILL, null, ChartComposite.DEFAULT_WIDTH, ChartComposite.DEFAULT_HEIGHT,
                 ChartComposite.DEFAULT_MINIMUM_DRAW_WIDTH, ChartComposite.DEFAULT_MINIMUM_DRAW_HEIGHT, width,
                 ChartComposite.DEFAULT_MAXIMUM_DRAW_HEIGHT, true, true, true, true, true, true);
 
-        columnsSelectorWidget.initializeWidget();
         chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         chartComposite.setVisible(false);
         chartComposite.addChartMouseListener(this);
@@ -265,8 +265,8 @@ public class ChartsView extends ViewPart implements ItemSelectedListener, ChartM
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = (prime * result) + ((container == null) ? 0 : container.hashCode());
-            result = (prime * result) + ((model == null) ? 0 : model.hashCode());
+            result = prime * result + (container == null ? 0 : container.hashCode());
+            result = prime * result + (model == null ? 0 : model.hashCode());
             return result;
         }
 

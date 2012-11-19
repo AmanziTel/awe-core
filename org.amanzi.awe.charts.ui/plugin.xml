@@ -23,7 +23,7 @@
                minimized="false"
                relationship="top"
                relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="false">
+               visible="true">
          </view>
       </perspectiveExtension>
    </extension>

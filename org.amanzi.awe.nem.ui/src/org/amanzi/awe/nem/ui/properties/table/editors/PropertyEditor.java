@@ -31,18 +31,18 @@ import org.eclipse.jface.viewers.TextCellEditor;
  */
 public class PropertyEditor extends EditingSupport {
 
-    private PropertyColumns column;
+    private final PropertyColumns column;
 
     /**
      * @param viewer
      */
-    public PropertyEditor(ColumnViewer viewer, PropertyColumns column) {
+    public PropertyEditor(final ColumnViewer viewer, final PropertyColumns column) {
         super(viewer);
         this.column = column;
     }
 
     @Override
-    protected CellEditor getCellEditor(Object element) {
+    protected CellEditor getCellEditor(final Object element) {
         switch (column) {
         case DEFAULT_VALUE:
             return new TextCellEditor(((TableViewer)getViewer()).getTable());
@@ -53,10 +53,11 @@ public class PropertyEditor extends EditingSupport {
     }
 
     @Override
-    protected boolean canEdit(Object element) {
+    protected boolean canEdit(final Object element) {
         switch (column) {
         case DEFAULT_VALUE:
-            return true;
+            PropertyContainer container = (PropertyContainer)element;
+            return !container.getName().equals("ci_lac");
         default:
             break;
         }
@@ -64,7 +65,7 @@ public class PropertyEditor extends EditingSupport {
     }
 
     @Override
-    protected Object getValue(Object element) {
+    protected Object getValue(final Object element) {
         PropertyContainer property = (PropertyContainer)element;
         switch (column) {
         case DEFAULT_VALUE:
@@ -76,7 +77,7 @@ public class PropertyEditor extends EditingSupport {
     }
 
     @Override
-    protected void setValue(Object element, Object value) {
+    protected void setValue(final Object element, final Object value) {
         PropertyContainer target = (PropertyContainer)element;
         String newValue = (String)value;
         switch (column) {

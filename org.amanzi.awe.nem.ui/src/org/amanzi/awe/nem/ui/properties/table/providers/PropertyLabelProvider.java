@@ -15,7 +15,12 @@ package org.amanzi.awe.nem.ui.properties.table.providers;
 
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.PropertyColumns;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableColorProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * TODO Purpose of
@@ -25,19 +30,43 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PropertyLabelProvider extends ColumnLabelProvider {
+public class PropertyLabelProvider implements ITableLabelProvider, ITableColorProvider {
 
-    private PropertyColumns type;
+    @Override
+    public void addListener(final ILabelProviderListener listener) {
+        // TODO Auto-generated method stub
 
-    public PropertyLabelProvider(PropertyColumns type) {
-        super();
-        this.type = type;
     }
 
     @Override
-    public String getText(Object element) {
+    public void dispose() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean isLabelProperty(final Object element, final String property) {
+        // TODO Auto-generated method stub
+        return true;
+    }
+
+    @Override
+    public void removeListener(final ILabelProviderListener listener) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Image getColumnImage(final Object element, final int columnIndex) {
+
+        return null;
+    }
+
+    @Override
+    public String getColumnText(final Object element, final int columnIndex) {
         PropertyContainer property = (PropertyContainer)element;
-        switch (type) {
+        PropertyColumns column = PropertyColumns.findByIndex(columnIndex);
+        switch (column) {
         case NAME:
             return property.getName();
         case TYPE:
@@ -45,5 +74,20 @@ public class PropertyLabelProvider extends ColumnLabelProvider {
         default:
             return property.getValue().toString();
         }
+    }
+
+    @Override
+    public Color getForeground(final Object element, final int columnIndex) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Color getBackground(final Object element, final int columnIndex) {
+        PropertyContainer property = (PropertyContainer)element;
+        if (property.getName().equals("ci_lac")) {
+            return new Color(Display.getCurrent(), 220, 220, 220);
+        }
+        return null;
     }
 }

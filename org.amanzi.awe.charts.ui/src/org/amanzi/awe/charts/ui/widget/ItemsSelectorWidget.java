@@ -65,7 +65,7 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
     }
 
     public void setItems(final Collection<String> items) {
-        if ((this.allItems == null) || !this.allItems.containsAll(items)) {
+        if (this.allItems == null || !this.allItems.containsAll(items)) {
             this.allItems = Lists.newArrayList(items);
             changeSelected(allItems);
         }
@@ -96,11 +96,12 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
         parent.setLayoutData(getGridData(SWT.FILL));
 
         Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(3, false));
+        composite.setLayout(new GridLayout(2, false));
+        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         field = new Text(composite, SWT.BORDER | SWT.SINGLE | SWT.READ_ONLY);
         field.setVisible(true);
-        field.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        field.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         editButton = new Button(composite, SWT.NONE);
         editButton.setText("...");
@@ -125,6 +126,11 @@ public class ItemsSelectorWidget extends AbstractLabeledWidget<Composite, ItemSe
     public void widgetDefaultSelected(final SelectionEvent e) {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    protected GridData getElementLayoutData() {
+        return new GridData(GridData.FILL_HORIZONTAL);
     }
 
     @Override

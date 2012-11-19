@@ -15,6 +15,7 @@ package org.amanzi.awe.nem.ui.properties.table;
 
 import java.util.List;
 
+import org.amanzi.awe.nem.managers.properties.KnownTypes;
 import org.amanzi.awe.nem.managers.properties.PropertyContainer;
 import org.amanzi.awe.nem.ui.properties.table.editors.PropertyEditor;
 import org.amanzi.awe.nem.ui.properties.table.providers.PropertyLabelProvider;
@@ -66,11 +67,12 @@ public class PropertyTable extends TableViewer {
 
     private void createTableColumn(final PropertyColumns columnId) {
         TableViewerColumn column = new TableViewerColumn(this, SWT.NONE);
-        column.setLabelProvider(new PropertyLabelProvider(columnId));
         column.getColumn().setText(columnId.getName());
         column.getColumn().setToolTipText(columnId.getName());
         column.getColumn().setWidth(COLUMN_WIDTH);
-        column.setEditingSupport(new PropertyEditor(this, columnId));
+        if (columnId.equals(PropertyColumns.DEFAULT_VALUE)) {
+            column.setEditingSupport(new PropertyEditor(this, columnId));
+        }
     }
 
     private void fillTable() {
@@ -80,9 +82,8 @@ public class PropertyTable extends TableViewer {
     public void initialize() {
         getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         setContentProvider(new TableContentProvider());
-
         createColumns();
-
+        setLabelProvider(new PropertyLabelProvider());
         fillTable();
 
         getTable().setHeaderVisible(true);
@@ -97,6 +98,27 @@ public class PropertyTable extends TableViewer {
 
     @Override
     public void update(final Object element, final String[] properties) {
+        PropertyContainer container = (PropertyContainer)element;
+        if (container.getName().equals("ci") || container.getName().equals("lac")) {
+            PropertyContainer ciContainer = new PropertyContainer("ci", KnownTypes.INTEGER);
+            PropertyContainer lacContainer = new PropertyContainer("lac", KnownTypes.INTEGER);
+            PropertyContainer ciLac = new PropertyContainer("ci_lac", KnownTypes.STRING);
+            int cilacIndex = this.properties.indexOf(ciLac);
+            int ciIndex = this.properties.indexOf(ciContainer);
+            int lacIndex = this.properties.indexOf(lacContainer);
+            ciContainer = this.properties.get(ciIndex);
+            lacContainer = this.properties.get(lacIndex);
+
+            if (cilacIndex >= 0) {
+                ciLac = this.properties.get(cilacIndex);
+                String ciLacValue = ciContainer.getValue() + "_" + lacContainer.getValue();
+                ciLac.setValue(ciLacValue);
+                String[] props = new String[1];
+                props[0] = ciLacValue;
+                super.update(ciLac, props);
+            }
+
+        }
         listener.onUpdate(null);
         super.update(element, properties);
     }

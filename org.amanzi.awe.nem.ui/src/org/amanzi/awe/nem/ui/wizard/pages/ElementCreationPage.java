@@ -67,7 +67,6 @@ public class ElementCreationPage extends PropertyEditorPage {
                 int lacIndex = properties.indexOf(lacContainer);
                 ciContainer = properties.get(ciIndex);
                 lacContainer = properties.get(lacIndex);
-
                 sector = model.findSector((String)nameContainer.getValue(), (Integer)ciContainer.getValue(),
                         (Integer)lacContainer.getValue());
 
@@ -94,17 +93,33 @@ public class ElementCreationPage extends PropertyEditorPage {
         final IPropertyStatisticsModel propertyModel = model.getPropertyStatistics();
         final Set<String> properties = propertyModel.getPropertyNames(getType());
         final List<PropertyContainer> containers = new ArrayList<PropertyContainer>();
-
+        Object ci = null;
+        Object lac = null;
+        PropertyContainer ciLac = null;
         for (final String property : properties) {
             if (property.equals(getGeneralNodeProperties().getNodeTypeProperty())) {
                 continue;
             }
+
             Object value = propertyModel.getDefaultValues(getType(), property);
+
             final Class< ? > clazz = propertyModel.getPropertyClass(getType(), property);
             final KnownTypes type = KnownTypes.getTypeByClass(clazz);
             final PropertyContainer container = new PropertyContainer(property, type);
             container.setValue(value == null ? type.getDefaultValue() : value);
             containers.add(container);
+            if (property.equals(getNetworkNodeProperties().getCIProperty())) {
+                ci = value;
+            } else if (property.equals(getNetworkNodeProperties().getLACProperty())) {
+                lac = value;
+            } else if (property.equals(getNetworkNodeProperties().getCIProperty() + "_"
+                    + getNetworkNodeProperties().getLACProperty())) {
+                ciLac = container;
+            }
+        }
+        if (ciLac != null) {
+            String ciLacValue = ci + "_" + lac;
+            ciLac.setValue(ciLacValue);
         }
         return containers;
     }

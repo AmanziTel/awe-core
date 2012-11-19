@@ -12,7 +12,15 @@
  */
 package org.amanzi.awe.network.ui.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.awe.ui.manager.AWEEventManager;
+import org.amanzi.awe.ui.tree.item.ITreeItem;
 import org.amanzi.awe.ui.tree.view.AbstractAWETreeView;
+import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.NetworkElementType;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -34,5 +42,18 @@ public class NetworkTreeView extends AbstractAWETreeView {
     @Override
     public String getViewId() {
         return NETWORK_TREE_VIEW_ID;
+    }
+
+    @Override
+    protected void onItemSeelcted(final ITreeItem selectedItem) {
+        IDataElement child = selectedItem.castChild(IDataElement.class);
+        if (child != null) {
+            if (child.getNodeType().equals(NetworkElementType.SECTOR) || child.getNodeType().equals(NetworkElementType.SITE)) {
+                List<IDataElement> elements = new ArrayList<IDataElement>();
+                elements.add(child);
+                INetworkModel model = selectedItem.castParent(INetworkModel.class);
+                AWEEventManager.getManager().fireShowOnMapEvent(model, elements, null);
+            }
+        }
     }
 }

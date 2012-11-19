@@ -472,6 +472,8 @@ public class NetworkModel extends AbstractDatasetModel implements INetworkModel 
             result = new ElementLocationIterator(dataElements).toIterable();
 
             elementLocationsIteratorCache.put(dataElements, result);
+        } else {
+            result = new ElementLocationIterator(dataElements).toIterable();
         }
 
         return result;

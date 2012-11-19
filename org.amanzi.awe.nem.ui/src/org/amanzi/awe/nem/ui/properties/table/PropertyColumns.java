@@ -25,18 +25,37 @@ import org.amanzi.awe.nem.ui.messages.NEMMessages;
  */
 public enum PropertyColumns {
 
-    NAME(NEMMessages.COLUMN_NAME_LABEL), TYPE(NEMMessages.COLUMN_TYPE_LABEL), DEFAULT_VALUE(NEMMessages.COLUMN_DEFAULT_VALUE_LABEL);
+    NAME(NEMMessages.COLUMN_NAME_LABEL, 0), TYPE(NEMMessages.COLUMN_TYPE_LABEL, 1), DEFAULT_VALUE(
+            NEMMessages.COLUMN_DEFAULT_VALUE_LABEL, 2);
 
     private String name;
+    private int index;
 
     /**
      * 
      */
-    private PropertyColumns(String name) {
+    private PropertyColumns(final String name, final int index) {
         this.name = name;
+        this.index = index;
     }
 
     public String getName() {
         return this.name;
+    }
+
+    public static PropertyColumns findByIndex(final int index) {
+        for (PropertyColumns column : values()) {
+            if (column.getIndex() == index) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return Returns the index.
+     */
+    public int getIndex() {
+        return index;
     }
 }

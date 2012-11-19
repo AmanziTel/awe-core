@@ -270,7 +270,7 @@ public class NeoCatalogListener implements IAWEEventListenter {
                 selectedLocations.add(element);
             }
 
-            bounds = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat, model.getMainGIS().getCRS());
+            bounds = new ReferencedEnvelope(minLon, maxLon, minLat, maxLat , model.getMainGIS().getCRS());
         }
 
         try {

@@ -332,7 +332,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         }
     }
 
-    private Collection<IDataElement> getSelectedLocations() {
+    private Collection<IDataElement> getSelectedElements() {
         if (selectedElements == null) {
             selectedElements = new ArrayList<IDataElement>();
             Iterables.addAll(selectedElements, selection.getSelectedElements());
@@ -341,7 +341,7 @@ public abstract class AbstractRenderer extends RendererImpl {
         return selectedElements;
     }
 
-    private Collection<ILocationElement> getSelectedElements() {
+    private Collection<ILocationElement> getSelectedLocations() {
         if (locationElements == null) {
             locationElements = new ArrayList<ILocationElement>();
             Iterables.addAll(locationElements, selection.getSelectedLocations());

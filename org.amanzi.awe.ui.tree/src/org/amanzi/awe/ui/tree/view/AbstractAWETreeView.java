@@ -30,10 +30,13 @@ import org.amanzi.neo.models.IModel;
 import org.apache.commons.lang3.ObjectUtils;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -49,7 +52,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventListenter, IAWETreeView {
+public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventListenter, IAWETreeView, SelectionListener {
 
     private static final EventStatus[] DEFAULT_SUPPORTED_EVENTS = {EventStatus.DATA_UPDATED, EventStatus.PROJECT_CHANGED};
 
@@ -60,8 +63,8 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     private final FactoryResolver factoryResolver;
 
     protected AbstractAWETreeView() {
-        eventManager = AWEEventManager.getManager();
 
+        eventManager = AWEEventManager.getManager();
         factoryResolver = FactoryResolver.getResolver();
     }
 
@@ -72,7 +75,7 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
 
         getSite().setSelectionProvider(treeViewer);
         getSite().registerContextMenu(menu, treeViewer);
-
+        treeViewer.getTree().addSelectionListener(this);
         eventManager.addListener(this, getSupportedEvents());
     }
 
@@ -112,6 +115,28 @@ public abstract class AbstractAWETreeView extends ViewPart implements IAWEEventL
     @Override
     public void setFocus() {
         treeViewer.getControl().setFocus();
+    }
+
+    @Override
+    public void widgetSelected(final SelectionEvent e) {
+        IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+        ITreeItem selectedItem = (ITreeItem)selection.getFirstElement();
+        onItemSeelcted(selectedItem);
+
+    }
+
+    /**
+     * @param selectedItem
+     */
+    protected void onItemSeelcted(final ITreeItem selectedItem) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void widgetDefaultSelected(final SelectionEvent e) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
