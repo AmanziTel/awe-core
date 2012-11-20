@@ -52,7 +52,7 @@ public class NetworkTreeView extends AbstractAWETreeView {
                 List<IDataElement> elements = new ArrayList<IDataElement>();
                 elements.add(child);
                 INetworkModel model = selectedItem.castParent(INetworkModel.class);
-                AWEEventManager.getManager().fireShowOnMapEvent(model, elements, null);
+                AWEEventManager.getManager().fireShowOnMapEvent(model, elements, model.getMainGIS().getBounds(), null);
             }
         }
     }

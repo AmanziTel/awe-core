@@ -303,8 +303,8 @@ public abstract class AbstractRenderer extends RendererImpl {
         final float radius = 60;
         final float[] fractions = {0.01f, 1.0f};
         for (; elementSize > 0; elementSize *= 0.8) {
-            final Color[] colors = {commonStyle.changeColor(Color.CYAN, 5), commonStyle.changeColor(Color.WHITE, 5)};
-            destination.setPaint(new RadialGradientPaint(point.x - elementSize / 3, point.y - elementSize / 3, radius, fractions,
+            final Color[] colors = {commonStyle.changeColor(Color.CYAN, 40), commonStyle.changeColor(Color.WHITE, 40)};
+            destination.setPaint(new RadialGradientPaint(point.x - elementSize / 2, point.y - elementSize / 2, radius, fractions,
                     colors));
             destination.fillOval((int)(point.x - elementSize * 2.25), (int)(point.y - elementSize * 2.25), 4 * elementSize,
                     4 * elementSize);

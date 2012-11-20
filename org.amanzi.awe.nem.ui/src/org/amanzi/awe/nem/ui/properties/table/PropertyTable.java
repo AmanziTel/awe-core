@@ -71,7 +71,7 @@ public class PropertyTable extends TableViewer {
         column.getColumn().setToolTipText(columnId.getName());
         column.getColumn().setWidth(COLUMN_WIDTH);
         if (columnId.equals(PropertyColumns.DEFAULT_VALUE)) {
-            column.setEditingSupport(new PropertyEditor(this, columnId));
+            column.setEditingSupport(new PropertyEditor(this));
         }
     }
 
