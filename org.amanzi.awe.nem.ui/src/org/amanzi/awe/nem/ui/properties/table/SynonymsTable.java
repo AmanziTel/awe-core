@@ -40,8 +40,7 @@ public class SynonymsTable extends TableViewer {
      * @param parent
      */
     public SynonymsTable(final Composite parent) {
-        super(parent);
-        // TODO Auto-generated constructor stub
+        super(parent, SWT.FULL_SELECTION);
     }
 
     /**

@@ -95,7 +95,8 @@ public class PropertyTableWidget extends AbstractAWEWidget<Composite, ITableChan
         tableComposite.setLayout(ONE_COLUMNS_LAYOUT);
         tableComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tableViewer = new PropertyTable(tableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, propertyContainer, this);
+        tableViewer = new PropertyTable(tableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION,
+                propertyContainer, this);
 
         tableViewer.getTable().addSelectionListener(this);
         tableViewer.initialize();
