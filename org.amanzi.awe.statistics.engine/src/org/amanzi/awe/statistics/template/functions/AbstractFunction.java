@@ -11,30 +11,33 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.nodeproperties;
-
-import org.amanzi.neo.nodeproperties.INodeProperties;
+package org.amanzi.awe.statistics.template.functions;
 
 /**
  * TODO Purpose of
  * <p>
  * </p>
  * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public interface IStatisticsNodeProperties extends INodeProperties {
+public abstract class AbstractFunction implements IAggregationFunction {
 
-    String getTemplateNameProperty();
+    private Double sum;
 
-    String getAggregationPropertyNameProperty();
+    protected AbstractFunction() {
+        sum = 0d;
+    }
 
-    String getValueProperty();
+    @Override
+    public IAggregationFunction update(final Number value) {
+        sum += value.doubleValue();
+        return this;
+    }
 
-    String getColumnNamesProperty();
-
-    String isSummuryProperty();
-
-    String getTotalValueProperty();
+    @Override
+    public Number getTotal() {
+        return sum;
+    }
 
 }

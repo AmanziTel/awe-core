@@ -27,4 +27,7 @@ public interface IStatisticsCell extends ISourcedElement {
 
     Number getValue();
 
+    int getSize();
+
+    Number getTotalValue();
 }

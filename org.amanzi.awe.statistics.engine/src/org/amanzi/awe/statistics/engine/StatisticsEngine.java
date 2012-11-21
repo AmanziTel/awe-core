@@ -31,6 +31,7 @@ import org.amanzi.awe.statistics.provider.IStatisticsModelProvider;
 import org.amanzi.awe.statistics.template.ITemplate;
 import org.amanzi.awe.statistics.template.ITemplateColumn;
 import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
+import org.amanzi.awe.statistics.template.functions.impl.Average;
 import org.amanzi.neo.core.period.Period;
 import org.amanzi.neo.core.period.PeriodManager;
 import org.amanzi.neo.core.transactional.AbstractTransactional;
@@ -239,13 +240,18 @@ public class StatisticsEngine extends AbstractTransactional {
                 final ITemplateColumn column = template.getColumn(previousStatisticsCell.getName());
 
                 final Number statisticsValue = previousStatisticsCell.getValue();
-                Number statisticsResult = null;
-                if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
-                    statisticsResult = calculateValue(currentStatisticsRow, column, statisticsValue);
+                IAggregationFunction statisticsResult = null;
+                if (statisticsValue != null && statisticsValue instanceof Number) {
+                    statisticsResult = calculateValue(currentStatisticsRow, column, previousStatisticsCell);
+                } else {
+                    statisticsModel
+                            .updateStatisticsCell(currentStatisticsRow, column.getName(), null, null, previousStatisticsCell);
+                    updateTransaction();
+                    continue;
                 }
 
-                if (statisticsModel
-                        .updateStatisticsCell(currentStatisticsRow, columnName, statisticsResult, previousStatisticsCell)) {
+                if (statisticsModel.updateStatisticsCell(currentStatisticsRow, columnName, statisticsResult.getResult(),
+                        statisticsResult.getTotal(), previousStatisticsCell)) {
                     periodCount++;
                 }
             }
@@ -256,6 +262,30 @@ public class StatisticsEngine extends AbstractTransactional {
         subProgressMonitor.done();
 
         flush();
+    }
+
+    /**
+     * @param currentStatisticsRow
+     * @param column
+     * @param previousStatisticsCell
+     * @return
+     */
+    private IAggregationFunction calculateValue(final IStatisticsRow currentStatisticsRow, final ITemplateColumn column,
+            final IStatisticsCell previousStatisticsCell) {
+        final Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(currentStatisticsRow,
+                column);
+
+        IAggregationFunction function = functionCache.get(key);
+
+        if (function == null) {
+            function = column.getFunction();
+
+            functionCache.put(key, function);
+        }
+        if (function instanceof Average) {
+            return ((Average)function).update(previousStatisticsCell.getTotalValue(), previousStatisticsCell.getSize());
+        }
+        return function.update(previousStatisticsCell.getValue());
     }
 
     @SuppressWarnings("unchecked")
@@ -313,19 +343,25 @@ public class StatisticsEngine extends AbstractTransactional {
                                             + statisticsRow + ">: <" + statisticsValue + ">.");
                                 }
 
-                                Number statisticsResult = null;
-                                Number summuryResult = null;
-                                if ((statisticsValue != null) && (statisticsValue instanceof Number)) {
+                                IAggregationFunction statisticsResult = null;
+                                IAggregationFunction summuryResult = null;
+                                if (statisticsValue != null && statisticsValue instanceof Number) {
                                     statisticsResult = calculateValue(statisticsRow, column, (Number)statisticsValue);
                                     summuryResult = calculateValue(summuryRow, column, (Number)statisticsValue);
+                                } else {
+                                    statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), null, null, dataElement);
+                                    statisticsModel.updateStatisticsCell(summuryRow, column.getName(), null, null, dataElement);
+                                    updateTransaction();
+                                    continue;
                                 }
 
-                                if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(), statisticsResult,
-                                        dataElement)) {
+                                if (statisticsModel.updateStatisticsCell(statisticsRow, column.getName(),
+                                        statisticsResult.getResult(), statisticsResult.getTotal(), dataElement)) {
                                     periodCount++;
                                 }
-                                statisticsModel.updateStatisticsCell(summuryRow, column.getName(), summuryResult, dataElement);
-                                updateTransaction();
+                                statisticsModel.updateStatisticsCell(summuryRow, column.getName(), summuryResult.getResult(),
+                                        summuryResult.getTotal(), dataElement);
+
                             }
                         } catch (final Exception e) {
                             LOGGER.error("Error on calculating statistics by template on element " + dataElement + ".");
@@ -356,7 +392,8 @@ public class StatisticsEngine extends AbstractTransactional {
         }
     }
 
-    private Number calculateValue(final IStatisticsRow statisticsRow, final ITemplateColumn templateColumn, final Number value) {
+    private IAggregationFunction calculateValue(final IStatisticsRow statisticsRow, final ITemplateColumn templateColumn,
+            final Number value) {
         final Pair<IStatisticsRow, ITemplateColumn> key = new ImmutablePair<IStatisticsRow, ITemplateColumn>(statisticsRow,
                 templateColumn);
 
@@ -368,7 +405,7 @@ public class StatisticsEngine extends AbstractTransactional {
             functionCache.put(key, function);
         }
 
-        return function.update(value).getResult();
+        return function.update(value);
     }
 
     protected void flush() {

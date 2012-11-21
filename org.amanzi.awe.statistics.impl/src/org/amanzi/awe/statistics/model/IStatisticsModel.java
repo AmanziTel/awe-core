@@ -43,8 +43,8 @@ public interface IStatisticsModel extends IAnalyzisModel<IMeasurementModel>, ITr
 
     IStatisticsRow getStatisticsRow(IStatisticsGroup group, long startDate, long endDate) throws ModelException;
 
-    boolean updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, IDataElement... sourceElements)
-            throws ModelException;
+    boolean updateStatisticsCell(IStatisticsRow statisticsRow, String name, Object value, Object totalValue,
+            IDataElement... sourceElements) throws ModelException;
 
     Iterable<IStatisticsRow> getStatisticsRows(String period) throws ModelException;
 

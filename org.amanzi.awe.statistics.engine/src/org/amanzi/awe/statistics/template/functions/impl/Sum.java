@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.statistics.template.functions.impl;
 
-import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
+import org.amanzi.awe.statistics.template.functions.AbstractFunction;
 
 /**
  * <p>
@@ -23,27 +23,20 @@ import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
  * @author Pechko_E
  * @since 1.0.0
  */
-public class Sum implements IAggregationFunction {
-    private Double sum;
+public class Sum extends AbstractFunction {
 
     public Sum() {
-        sum = 0.0;
-    }
-
-    @Override
-    public Number getResult() {
-        return sum;
-    }
-
-    @Override
-    public IAggregationFunction update(Number value) {
-        sum += value.doubleValue();
-        return this;
+        super();
     }
 
     @Override
     public boolean acceptsNulls() {
         return false;
+    }
+
+    @Override
+    public Number getResult() {
+        return getTotal();
     }
 
 }

@@ -29,6 +29,10 @@ public class StatisticsCell extends SourcedElement implements IStatisticsCell {
 
     private Number value;
 
+    private int size;
+
+    private Number totalValue;
+
     public StatisticsCell(final Node node, final ICollectFunction function) {
         super(node, function);
     }
@@ -40,6 +44,27 @@ public class StatisticsCell extends SourcedElement implements IStatisticsCell {
 
     public void setValue(final Number value) {
         this.value = value;
+    }
+
+    public void setSize(final int size) {
+        this.size = size;
+    }
+
+    @Override
+    public int getSize() {
+        return size;
+    }
+
+    @Override
+    public Number getTotalValue() {
+        return totalValue;
+    }
+
+    /**
+     * @param totalValue The totalValue to set.
+     */
+    public void setTotalValue(final Number totalValue) {
+        this.totalValue = totalValue;
     }
 
 }

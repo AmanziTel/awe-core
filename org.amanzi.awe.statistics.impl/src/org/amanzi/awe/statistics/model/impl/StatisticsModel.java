@@ -92,7 +92,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
         @Override
         protected IDataElement getNext(final IStatisticsCell element) {
-            return filter == null ? element : ((filter.getCellName().equals(element.getName())) ? element : null);
+            return filter == null ? element : filter.getCellName().equals(element.getName()) ? element : null;
         }
 
     }
@@ -627,6 +627,8 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
             cell.setName(getNodeService().getNodeName(node));
             cell.setNodeType(getNodeService().getNodeType(node));
             cell.setValue((Number)getNodeService().getNodeProperty(node, statisticsNodeProperties.getValueProperty(), null, false));
+            cell.setTotalValue(getNodeService().getNodeProperty(node, statisticsNodeProperties.getTotalValueProperty(), 0d, false));
+            cell.setSize(getNodeService().getNodeProperty(node, getGeneralNodeProperties().getSizeProperty(), 0, false));
         } catch (final ServiceException e) {
             LOGGER.error("Error on getting StatisticsRow Node from Database", e);
             return null;
@@ -692,7 +694,7 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
 
     @Override
     public boolean updateStatisticsCell(final IStatisticsRow statisticsRow, final String name, final Object value,
-            final IDataElement... sourceElement) throws ModelException {
+            final Object totalValue, final IDataElement... sourceElement) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("updateStatisticsCell", statisticsRow, name, value));
         }
@@ -715,12 +717,23 @@ public class StatisticsModel extends AbstractAnalyzisModel<IMeasurementModel> im
         }
 
         try {
-            if (value != null) {
+            if (value != null && totalValue != null) {
+                int size = getNodeService().getNodeProperty(statisticsCellNode, getGeneralNodeProperties().getSizeProperty(), 0,
+                        false);
+
+                getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getTotalValueProperty(), totalValue);
                 getNodeService().updateProperty(statisticsCellNode, statisticsNodeProperties.getValueProperty(), value);
                 for (final IDataElement singleElement : sourceElement) {
                     final DataElement source = (DataElement)singleElement;
                     statisticsService.addSourceNode(statisticsCellNode, source.getNode());
+                    if (source instanceof StatisticsCell) {
+                        StatisticsCell cell = (StatisticsCell)source;
+                        size += cell.getSize();
+                    } else {
+                        size++;
+                    }
                 }
+                getNodeService().updateProperty(statisticsCellNode, getGeneralNodeProperties().getSizeProperty(), size);
             }
         } catch (final ServiceException e) {
             processException("Error on updating value of Statistics Cell <" + name + "> in Row <" + statisticsRow + ">", e);

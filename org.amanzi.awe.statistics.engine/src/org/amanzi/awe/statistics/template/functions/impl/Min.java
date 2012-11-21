@@ -37,11 +37,16 @@ public class Min implements IAggregationFunction {
     }
 
     @Override
-    public IAggregationFunction update(Number value) {
+    public IAggregationFunction update(final Number value) {
         if (Math.min(minValue, value.doubleValue()) == value.doubleValue()) {
             minValue = value.doubleValue();
         }
         return this;
+    }
+
+    @Override
+    public Number getTotal() {
+        return getResult();
     }
 
 }

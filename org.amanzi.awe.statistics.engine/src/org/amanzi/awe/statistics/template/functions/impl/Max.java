@@ -37,11 +37,15 @@ public class Max implements IAggregationFunction {
     }
 
     @Override
-    public IAggregationFunction update(Number value) {
+    public IAggregationFunction update(final Number value) {
         if (Math.max(maxValue, value.doubleValue()) == value.doubleValue()) {
             maxValue = value.doubleValue();
         }
         return this;
     }
 
+    @Override
+    public Number getTotal() {
+        return getResult();
+    }
 }

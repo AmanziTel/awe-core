@@ -26,6 +26,8 @@ public interface IAggregationFunction {
 
     Number getResult();
 
+    Number getTotal();
+
     boolean acceptsNulls();
 
 }

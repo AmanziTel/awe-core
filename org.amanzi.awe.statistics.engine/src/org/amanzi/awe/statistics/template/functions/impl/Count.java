@@ -25,9 +25,10 @@ import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
  */
 public class Count implements IAggregationFunction {
     private Integer count;
-    private boolean acceptsNulls;
+    private final boolean acceptsNulls;
 
-    public Count(boolean acceptsNulls) {
+    public Count(final boolean acceptsNulls) {
+        super();
         this.acceptsNulls = acceptsNulls;
         count = 0;
     }
@@ -42,8 +43,8 @@ public class Count implements IAggregationFunction {
     }
 
     @Override
-    public IAggregationFunction update(Number value) {
-        if ((value != null) || ((value == null) && acceptsNulls)) {
+    public IAggregationFunction update(final Number value) {
+        if (value != null || value == null && acceptsNulls) {
             count += 1;
         }
         return this;
@@ -54,4 +55,8 @@ public class Count implements IAggregationFunction {
         return acceptsNulls;
     }
 
+    @Override
+    public Number getTotal() {
+        return getResult();
+    }
 }

@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.statistics.template.functions.impl;
 
+import org.amanzi.awe.statistics.template.functions.AbstractFunction;
 import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
 
 /**
@@ -23,27 +24,32 @@ import org.amanzi.awe.statistics.template.functions.IAggregationFunction;
  * @author Pechko_E
  * @since 1.0.0
  */
-public class Average implements IAggregationFunction {
-    private Double sum;
+public class Average extends AbstractFunction {
     private Integer count;
 
     public Average() {
-        sum = 0.0;
+        super();
         count = 0;
     }
 
     @Override
     public Number getResult() {
         if (count != 0) {
-            return sum / count;
+            return getTotal().doubleValue() / count;
         }
         return Double.NaN;
     }
 
     @Override
-    public IAggregationFunction update(Number value) {
-        sum += value.doubleValue();
+    public IAggregationFunction update(final Number value) {
+        super.update(value);
         count += 1;
+        return this;
+    }
+
+    public IAggregationFunction update(final Number value, final int count) {
+        super.update(value);
+        this.count += count;
         return this;
     }
 
