@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.amanzi.parsers">
+        <parser
+            class="org.amanzi.neo.geoptima.loader.core.parser.impl.FtpDataParser"
+            id="org.amanzi.parser.FtpDataParser">
+      </parser>
+   </extension>
+ <extension
+         point="org.amanzi.loaders">
+        <loader
+            id="org.amanzi.loader.GeoptimaFtpLoader"
+            name="Geoptima ftp Loader"
+            parser="org.amanzi.parser.FtpDataParser"
+            validator="org.amanzi.validators.GeoptimaValidator">
+         <savers
+               saver="org.amanzi.saver.GeoptimaSaver">
+         </savers>
+      </loader>
+      
+       <loader
+            id="org.amanzi.loader.GeoptimaWebLoader"
+            name="Geoptima web Loader"
+            parser="org.amanzi.parser.MultiCSVParser"
+            validator="org.amanzi.validators.GeoptimaValidator">
+         <savers
+               saver="org.amanzi.saver.GeoptimaSaver">
+         </savers>
+      </loader>
+      
+   </extension>
+</plugin>

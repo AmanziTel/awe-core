@@ -84,7 +84,9 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         File scriptsFolder = new File(scripts.getPath());
         for (File script : scriptsFolder.listFiles()) {
             LOGGER.info("Initialize  bundle " + bundle.getSymbolicName() + " with script " + script.getName());
-            runtime.executeScript(script);
+            if (script.isFile()) {
+                runtime.executeScript(script);
+            }
         }
     }
 
