@@ -109,7 +109,6 @@ public class LoaderContext {
                 for (ILoaderPage<T> page : pages) {
                     result.addLoaderPage(page);
                 }
-
                 return result;
             }
         } catch (CoreException e) {

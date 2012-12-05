@@ -32,4 +32,5 @@ public interface ILoaderWizard<T extends IConfiguration> extends IImportWizard {
     void setWindowTitle(String title);
 
     <C extends IConfiguration> C getConfiguration(ILoaderPage<C> loaderPage);
+
 }

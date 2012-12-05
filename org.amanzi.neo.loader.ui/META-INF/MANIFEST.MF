@@ -4,14 +4,18 @@ Bundle-Name: Ui
 Bundle-SymbolicName: org.amanzi.neo.loader.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.neo.loader.ui.internal.LoaderUIPlugin
-Require-Bundle: org.amanzi.neo.loader.core;bundle-version="1.0.0",
- org.amanzi.awe.ui;bundle-version="1.0.0",
+Require-Bundle: org.amanzi.neo.loader.core;bundle-version="1.0.0";visibility:=reexport,
+ org.amanzi.awe.ui;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.awe.libs;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Export-Package: org.amanzi.neo.loader.ui.handler,
  org.amanzi.neo.loader.ui.page,
+ org.amanzi.neo.loader.ui.page.impl.internal,
+ org.amanzi.neo.loader.ui.page.widgets.impl,
+ org.amanzi.neo.loader.ui.page.widgets.internal,
  org.amanzi.neo.loader.ui.wizard,
- org.amanzi.neo.loader.ui.wizard.impl
+ org.amanzi.neo.loader.ui.wizard.impl,
+ org.amanzi.neo.loader.ui.wizard.impl.internal
 Eclipse-ExtensibleAPI: true

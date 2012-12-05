@@ -145,6 +145,8 @@
 		<module>org.amanzi.log4j</module>
 		<module>org.amanzi.neo.db</module>
 		<module>org.amanzi.neo.core</module>
+		<module>org.amanzi.neo.geoptima.loader.core</module>
+		<module>org.amanzi.neo.geoptima.loader.ui</module>
 		<module>org.amanzi.neo.loader.core</module>
 		<module>org.amanzi.neo.loader.ui</module>
 		<module>org.amanzi.neo.models</module>

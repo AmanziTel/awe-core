@@ -50,7 +50,7 @@
    <element name="page">
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="loaders" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="loaders" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="class" type="string">
             <annotation>

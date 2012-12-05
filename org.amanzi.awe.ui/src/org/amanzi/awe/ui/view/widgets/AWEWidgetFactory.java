@@ -129,6 +129,16 @@ public final class AWEWidgetFactory {
         return initializeWidget(new TextWidget(parent, SWT.BORDER | SWT.READ_ONLY, listener, label));
     }
 
+    public TextWidget addTextWidget(final ITextChandedListener listener, final String label, final Composite parent,
+            final int minimalLabelWidth) {
+        return initializeWidget(new TextWidget(parent, SWT.BORDER | SWT.READ_ONLY, listener, label, minimalLabelWidth));
+    }
+
+    public TextWidget addTextWidget(final ITextChandedListener listener, final int style, final String label,
+            final Composite parent, final int minimalLabelWidth) {
+        return initializeWidget(new TextWidget(parent, style, listener, label, minimalLabelWidth));
+    }
+
     public <T extends AbstractAWEWidget< ? , ? >> T initializeWidget(final T widget) {
         widget.initializeWidget();
         return widget;

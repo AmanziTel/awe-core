@@ -39,16 +39,29 @@ public class TextWidget extends AbstractLabeledWidget<Text, ITextChandedListener
     }
 
     private Text text;
-    private int controlStyle;
+    private final int controlStyle;
 
     /**
      * @param parent
      * @param listener
      * @param label
      */
-    protected TextWidget(final Composite parent, int controlStyle, final ITextChandedListener listener, final String label) {
-        super(parent, listener, label);
+    protected TextWidget(final Composite parent, final int controlStyle, final ITextChandedListener listener, final String label) {
+        this(parent, controlStyle, listener, label, 0);
+    }
+
+    protected TextWidget(final Composite parent, final int controlStyle, final ITextChandedListener listener, final String label,
+            final int minimalLabelWidth) {
+        super(parent, listener, label, minimalLabelWidth);
         this.controlStyle = controlStyle;
+    }
+
+    public void setDefault(final String text) {
+        this.text.setText(text);
+    }
+
+    public String getText() {
+        return text.getText();
     }
 
     @Override
@@ -69,7 +82,7 @@ public class TextWidget extends AbstractLabeledWidget<Text, ITextChandedListener
     }
 
     @Override
-    public void modifyText(ModifyEvent e) {
+    public void modifyText(final ModifyEvent e) {
         for (ITextChandedListener listener : getListeners()) {
             listener.onTextChanged(text.getText());
         }

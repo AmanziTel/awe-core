@@ -17,6 +17,7 @@
                refId="org.amanzi.loader.TEMSLoader">
          </loaders>
       </page>
+      
       <page
             class="org.amanzi.neo.loader.ui.page.impl.network.LoadNetworkPage"
             description="%LoadNetworkPageDescription"
@@ -40,6 +41,7 @@
             id="org.amanzi.wizards.DriveLoaderWizard"
             title="%LoadDriveWizardTitle">
       </wizard>
+       
    </extension>
    <extension
          point="org.eclipse.ui.commands">
