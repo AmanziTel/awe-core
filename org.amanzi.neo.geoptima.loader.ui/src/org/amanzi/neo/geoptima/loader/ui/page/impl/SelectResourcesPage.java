@@ -14,6 +14,10 @@
 package org.amanzi.neo.geoptima.loader.ui.page.impl;
 
 import org.amanzi.neo.geoptima.loader.ui.internal.Messages;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget;
+import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
+import org.amanzi.neo.loader.ui.page.widgets.impl.WizardFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.widgets.Composite;
 
@@ -25,13 +29,16 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class SelectResourcesPage extends AbstractConfigurationPage {
+public class SelectResourcesPage extends AbstractConfigurationPage implements ISelectDriveListener {
+    private SelectDriveNameWidget driveNameCombo;
+
     /**
      * @param pageName
      */
     public SelectResourcesPage() {
         super(Messages.selectDataUploadingFilters_PageName);
         setTitle(Messages.selectDataUploadingFilters_PageName);
+        setPageComplete(false);
     }
 
     @Override
@@ -47,6 +54,29 @@ public class SelectResourcesPage extends AbstractConfigurationPage {
     @Override
     public void createControl(final Composite parent) {
         super.createControl(parent);
+        driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
+    }
+
+    /**
+     *
+     */
+    private boolean update() {
+        if (getConfiguration() == null || StringUtils.isEmpty(getConfiguration().getDatasetName())) {
+            setErrorMessage(Messages.enterDatasetName_message);
+            setPageComplete(false);
+            return false;
+        }
+        setErrorMessage(null);
+        setPageComplete(true);
+        return true;
+    }
+
+    @Override
+    public void onDriveChanged() {
+        if (driveNameCombo != null) {
+            getConfiguration().setDatasetName(driveNameCombo.getText());
+            update();
+        }
     }
 
 }

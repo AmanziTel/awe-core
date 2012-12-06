@@ -44,6 +44,8 @@ public class Messages extends NLS {
 
     public static String selectFilesToUploadMessage;
 
+    public static String enterDatasetName_message;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }
