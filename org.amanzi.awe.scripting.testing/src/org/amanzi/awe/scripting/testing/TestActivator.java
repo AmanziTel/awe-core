@@ -15,6 +15,7 @@ package org.amanzi.awe.scripting.testing;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.osgi.framework.BundleContext;
 
@@ -33,12 +34,12 @@ public class TestActivator extends AbstractScriptingPlugin {
     public static final String ID = "org.amanzi.awe.scripting.testing";
     private static TestActivator plugin;
 
-    private static void initPlugin(TestActivator plug) {
+    private static void initPlugin(final TestActivator plug) {
         plugin = plug;
     }
 
     @Override
-    public void start(BundleContext context) throws ScriptingException {
+    public void start(final BundleContext context) throws ScriptingException {
         try {
             super.start(context);
             initPlugin(this);
@@ -50,6 +51,11 @@ public class TestActivator extends AbstractScriptingPlugin {
 
     public static TestActivator getDefault() {
         return plugin;
+    }
+
+    @Override
+    protected String getPluginName() {
+        return StringUtils.EMPTY;
     }
 
 }

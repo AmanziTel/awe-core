@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.amanzi.awe.scripting.JRubyRuntimeWrapper;
 import org.amanzi.awe.scripting.exceptions.ScriptingException;
 import org.amanzi.neo.geoptima.loader.core.IRemoteSupportConfiguration;
 import org.amanzi.neo.geoptima.loader.core.internal.GeoptimaLoaderCorePlugin;
@@ -63,8 +64,9 @@ public class FtpDataParser
         File folder = createFolder(TEMPORARY_DIRECTORY_PATH);
         uploadData(configuration.getFtpClient(), configuration.getFiles(), folder, null);
         try {
-            GeoptimaLoaderCorePlugin.getDefault().getRuntimeWrapper()
-                    .executeScript("show_geoptima -x -l -a " + TEMPORARY_DIRECTORY_PATH + "-/*/*json");
+            JRubyRuntimeWrapper wrapper = GeoptimaLoaderCorePlugin.getDefault().getRuntimeWrapper();
+            wrapper.executeScript("-x -l -a ~/.amanzi/temp/2012-08-06/*json", GeoptimaLoaderCorePlugin.getDefault()
+                    .getScriptsForProject("geoptima-loader").get(0));
         } catch (ScriptingException e) {
             LOGGER.error("can't process convering", e);
         }

@@ -33,6 +33,7 @@ public class StatisticsPlugin extends AbstractScriptingPlugin {
     private static final Logger LOGGER = Logger.getLogger(StatisticsPlugin.class);
 
     public static final String ID = "org.amanzi.awe.statistics.good";
+    public static final String PLUGIN_NAME = "org.amanzi.awe.statistics.engine";
     public static final String SCRIPT_PATH = "ruby/netview/";
     private static StatisticsPlugin plugin;
 
@@ -53,6 +54,11 @@ public class StatisticsPlugin extends AbstractScriptingPlugin {
 
     public static StatisticsPlugin getDefault() {
         return plugin;
+    }
+
+    @Override
+    protected String getPluginName() {
+        return PLUGIN_NAME;
     }
 
 }

@@ -11,7 +11,7 @@ public class GeoptimaLoaderCorePlugin extends AbstractScriptingPlugin {
      */
     private static final Logger LOGGER = Logger.getLogger(GeoptimaLoaderCorePlugin.class);
 
-    public static final String ID = "org.amanzi.awe.geoptima.loader.core";
+    public static final String ID = "org.amanzi.neo.geoptima.loader.core";
     private static GeoptimaLoaderCorePlugin plugin;
 
     private static void initPlugin(final GeoptimaLoaderCorePlugin plug) {
@@ -31,6 +31,11 @@ public class GeoptimaLoaderCorePlugin extends AbstractScriptingPlugin {
 
     public static GeoptimaLoaderCorePlugin getDefault() {
         return plugin;
+    }
+
+    @Override
+    protected String getPluginName() {
+        return ID;
     }
 
 }

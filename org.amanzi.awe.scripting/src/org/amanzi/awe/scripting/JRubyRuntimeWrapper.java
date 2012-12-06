@@ -54,7 +54,7 @@ public class JRubyRuntimeWrapper {
      * @param runtime
      * @param destination
      */
-    protected JRubyRuntimeWrapper(Ruby runtime, File destination) {
+    protected JRubyRuntimeWrapper(final Ruby runtime, final File destination) {
         this.runtime = runtime;
         this.destination = destination;
     }
@@ -66,7 +66,7 @@ public class JRubyRuntimeWrapper {
      * @throws ScriptingException
      * @throws FileNotFoundException
      */
-    public Object executeScriptByName(String scriptId) throws FileNotFoundException, ScriptingException {
+    public Object executeScriptByName(final String scriptId) throws FileNotFoundException, ScriptingException {
         if (StringUtils.isEmpty(scriptId) && !scriptId.contains(NAME_SEPARATOR)) {
             LOGGER.error(scriptId + " has incorrect format. Correct format is <MODULE>:<SCRIPT_NAME>");
         }
@@ -90,7 +90,7 @@ public class JRubyRuntimeWrapper {
      * @return
      * @throws ScriptingException
      */
-    public Object executeScript(File file) throws ScriptingException {
+    public Object executeScript(final File file) throws ScriptingException {
         String script = ScriptUtils.getInstance().getScript(file);
         return executeScript(script);
     }
@@ -100,7 +100,7 @@ public class JRubyRuntimeWrapper {
      * 
      * @param name
      */
-    private File getModuleFolder(String name) {
+    private File getModuleFolder(final String name) {
         File[] existedModules = destination.listFiles();
         LOGGER.info("< Start searching " + name + " in destination  " + destination.getAbsolutePath() + " children "
                 + destination.list() + " >");
@@ -118,7 +118,7 @@ public class JRubyRuntimeWrapper {
      * @param script
      * @return
      */
-    public Object executeScript(String script) throws ScriptingException {
+    public Object executeScript(final String script) throws ScriptingException {
         try {
             IRubyObject object = runtime.evalScriptlet(script);
             return defineJavaObject(object);
@@ -129,20 +129,30 @@ public class JRubyRuntimeWrapper {
 
     }
 
+    public Object executeScript(final String script, final File fileName) throws ScriptingException {
+        try {
+            IRubyObject object = runtime.getArgsFile();
+            return defineJavaObject(object);
+        } catch (Exception e) {
+            LOGGER.error("Can't execute script " + script + "because of", e);
+            throw new ScriptingException("Can't execute script " + script + "because of", e);
+        }
+    }
+
     /**
      * try to define ruby object as java object
      * 
      * @param object
      * @return
      */
-    private Object defineJavaObject(IRubyObject object) {
+    private Object defineJavaObject(final IRubyObject object) {
         Object unwrapped;
         if (object instanceof JavaProxy) {
             unwrapped = ((JavaProxy)object).unwrap();
         } else if (object instanceof RubyNumeric) {
             unwrapped = ((RubyNumeric)object).getDoubleValue();
         } else if (object instanceof RubyHash) {
-            unwrapped = convertToHashMap(((RubyHash)object));
+            unwrapped = convertToHashMap((RubyHash)object);
         } else if (object instanceof RubyString) {
             unwrapped = object.asString().getValue();
         } else {
@@ -155,7 +165,7 @@ public class JRubyRuntimeWrapper {
      * @param entrySet
      * @return
      */
-    private Map<Object, Object> convertToHashMap(RubyHash rubyMap) {
+    private Map<Object, Object> convertToHashMap(final RubyHash rubyMap) {
         HashMap<Object, Object> map = new HashMap<Object, Object>();
         for (Object key : rubyMap.keySet()) {
             map.put(key, rubyMap.get(key));
@@ -163,11 +173,11 @@ public class JRubyRuntimeWrapper {
         return map;
     }
 
-    public IRubyObject wrap(Object javaObject) {
+    public IRubyObject wrap(final Object javaObject) {
         return JavaEmbedUtils.javaToRuby(runtime, javaObject);
     }
 
-    public <K extends Object, V extends Object> Map<RubySymbol, V> toSymbolMap(Map<K, V> originalMap) {
+    public <K extends Object, V extends Object> Map<RubySymbol, V> toSymbolMap(final Map<K, V> originalMap) {
         HashMap<RubySymbol, V> result = new HashMap<RubySymbol, V>();
 
         for (Entry<K, V> entry : originalMap.entrySet()) {

@@ -54,7 +54,9 @@ public class ScriptUtils {
     private static final String POSTFIX_JAR = ".jar!/";
     private static final String PREFIX_FILE = "file:";
     private static final String LIB_PATH = "lib/ruby/";
-    private static final String[] JRUBY_VERSIONS = new String[] {"1.9", "2.0", "2.1"};
+    private static final String[] JRUBY_VERSIONS = new String[] {"1.8", "2.0", "2.1"};
+
+    private static final String JRUBY_PLUGI_LIB = "ruby_libs";
 
     private String jRubyHome;
     private String jRubyVersion;
@@ -101,11 +103,12 @@ public class ScriptUtils {
     }
 
     /**
+     * @param pluginName
      * @param scripts
      * @return
      * @throws Exception
      */
-    public List<String> makeLoadPath(final String path) throws ScriptingException {
+    public List<String> makeLoadPath(final String path, final String pluginName) throws ScriptingException {
         try {
             getJRubyHome();
             getJrubyVersion();
@@ -122,8 +125,27 @@ public class ScriptUtils {
         loadPath.add(jRubyHome + LIB_PATH + jRubyVersion);
         loadPath.add(jRubyHome + LIB_PATH + jRubyVersion + "/java");
         loadPath.add(jRubyHome + "lib");
-
+        makePluginLoadName(pluginName, loadPath);
         return loadPath;
+    }
+
+    /**
+     * @param pluginName
+     * @param loadPath
+     * @throws ScriptingException
+     */
+    private void makePluginLoadName(final String pluginName, final List<String> loadPath) throws ScriptingException {
+        if (StringUtils.isEmpty(pluginName)) {
+            LOGGER.warn("Plugin name is empty");
+            return;
+        }
+        String pluginPath = getPluginRoot(pluginName);
+        if (StringUtils.isEmpty(pluginPath)) {
+            LOGGER.warn("Plugin not found");
+            return;
+        }
+        loadPath.add(pluginPath + JRUBY_PLUGI_LIB);
+
     }
 
     /**
@@ -158,7 +180,7 @@ public class ScriptUtils {
      */
     private boolean checkFileExisting(final JarFile jarFile, final String folderPath, final String versionFolder) {
         if (jarFile == null) {
-            if ((new File(folderPath + versionFolder)).isDirectory()) {
+            if (new File(folderPath + versionFolder).isDirectory()) {
                 return true;
             }
         } else if (jarFile.getEntry(versionFolder) != null) {

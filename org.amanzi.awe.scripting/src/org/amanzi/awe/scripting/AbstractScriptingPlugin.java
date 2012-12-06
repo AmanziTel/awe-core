@@ -102,6 +102,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         }
     }
 
+    protected abstract String getPluginName();
+
     /**
      * get list of project folder content
      * 
@@ -169,7 +171,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                     setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
                     setObjectSpaceEnabled(true);
                     setLoader(getClassLoader());
-                    setLoadPaths(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
+                    setLoadPaths(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath(), getPluginName()));
                 }
             };
             runtime = Ruby.newInstance(config);
