@@ -24,6 +24,7 @@ import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.ChartType;
 import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
 import org.amanzi.awe.distribution.model.type.impl.EnumeratedDistributionType;
+import org.amanzi.awe.distribution.model.type.impl.IntegerDistributionType;
 import org.amanzi.awe.distribution.model.type.impl.NumberDistributionRange;
 import org.amanzi.awe.distribution.model.type.impl.NumberDistributionType;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -176,7 +177,9 @@ public class DistributionManager {
                 }
             } else if (Number.class.isAssignableFrom(clazz)) {
                 for (final NumberDistributionRange numberDistributionType : NumberDistributionRange.values()) {
-                    result.add(getNumberDistributionType(numberDistributionType, select));
+                    boolean isInteger = Integer.class.isAssignableFrom(clazz) || Long.class.isAssignableFrom(clazz);
+
+                    result.add(getNumberDistributionType(numberDistributionType, select, isInteger));
                 }
             }
 
@@ -210,7 +213,7 @@ public class DistributionManager {
     }
 
     private IDistributionType< ? > getNumberDistributionType(final NumberDistributionRange numberDistributionType,
-            final Select select) {
+            final Select select, boolean isInteger) {
         final IDistributionCacheKey key = new NumberDistributionCacheKey(model, nodeType, propertyName, numberDistributionType,
                 select);
 
@@ -220,7 +223,11 @@ public class DistributionManager {
             LOGGER.info("Creating Number DistributionType by Parameters <" + model + ", " + nodeType + ", " + propertyName + ", "
                     + select + ">.");
 
-            result = new NumberDistributionType(model, nodeType, propertyName, numberDistributionType, select);
+            if (isInteger) {
+                result = new IntegerDistributionType(model, nodeType, propertyName, numberDistributionType, select);
+            } else {
+                result = new NumberDistributionType(model, nodeType, propertyName, numberDistributionType, select);
+            }
             distributionTypeCache.put(key, result);
         }
 
@@ -255,7 +262,7 @@ public class DistributionManager {
     }
 
     public Set<Select> getPossibleSelects() {
-        if (nodeType == null || propertyName == null) {
+        if ((nodeType == null) || (propertyName == null)) {
             return null;
         }
 
