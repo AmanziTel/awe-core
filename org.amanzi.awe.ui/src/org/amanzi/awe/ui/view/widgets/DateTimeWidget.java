@@ -90,7 +90,6 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
 
         result.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
         result.setVisible(true);
-
         return result;
     }
 
@@ -104,7 +103,7 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
     }
 
     public void setDefaultDate(final Date newDate) {
-        if ((defaultDate == null) || !newDate.equals(defaultDate)) {
+        if (defaultDate == null || !newDate.equals(defaultDate)) {
             this.currentDate = newDate;
             this.defaultDate = newDate;
         }
@@ -131,6 +130,9 @@ public class DateTimeWidget extends AbstractLabeledWidget<Composite, ITimeChange
         }
 
         updateDate(currentDate);
+        for (ITimeChangedListener listener : getListeners()) {
+            listener.onTimeChanged(currentDate, this);
+        }
     }
 
     @Override

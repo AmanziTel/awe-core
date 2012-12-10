@@ -7,6 +7,10 @@
             class="org.amanzi.neo.geoptima.loader.core.parser.impl.FtpDataParser"
             id="org.amanzi.parser.FtpDataParser">
       </parser>
+       <parser
+            class="org.amanzi.neo.geoptima.loader.core.parser.impl.WebDataParser"
+            id="org.amanzi.parser.WebDataParser">
+      </parser>
    </extension>
  <extension
          point="org.amanzi.loaders">
@@ -23,7 +27,7 @@
        <loader
             id="org.amanzi.loader.GeoptimaWebLoader"
             name="Geoptima web Loader"
-            parser="org.amanzi.parser.MultiCSVParser"
+            parser="org.amanzi.parser.WebDataParser"
             validator="org.amanzi.validators.GeoptimaValidator">
          <savers
                saver="org.amanzi.saver.GeoptimaSaver">

@@ -388,6 +388,7 @@ $datasets.keys.sort.each do |imei|
   end
   if events && ($print || $export)
     names = $event_names
+    puts "#{names.to_s}"
     names = dataset.events_names if(names.length<1)
     export = Export.new(imei,names,dataset)
     export.export_stats(dataset.stats) if($export_stats)

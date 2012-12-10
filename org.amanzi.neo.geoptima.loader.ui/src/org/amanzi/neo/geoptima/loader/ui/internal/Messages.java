@@ -46,6 +46,17 @@ public class Messages extends NLS {
 
     public static String enterDatasetName_message;
 
+    public static String imei_Label;
+    public static String imsi_Label;
+
+    public static String endDate_label;
+
+    public static String startDate_label;
+
+    public static String enterRequiredCredentials_msg;
+
+    public static String incorrectDateValue_msg;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }

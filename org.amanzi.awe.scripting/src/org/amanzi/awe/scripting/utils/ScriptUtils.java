@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
@@ -143,6 +144,32 @@ public class ScriptUtils {
         if (StringUtils.isEmpty(pluginPath)) {
             LOGGER.warn("Plugin not found");
             return;
+        }
+        JarFile jarFile = null;
+        if (pluginPath.startsWith(PREFIX_FILE) && pluginPath.endsWith(POSTFIX_JAR)) {
+            String path = prepareJarPath(pluginPath);
+            try {
+                jarFile = new JarFile(path);
+            } catch (IOException e) {
+                LOGGER.error("can't find jar file", e);
+            }
+        }
+        if (jarFile == null) {
+            File rootFolder = new File(pluginPath + JRUBY_PLUGI_LIB);
+            if (rootFolder.exists()) {
+                for (File file : rootFolder.listFiles()) {
+                    if (file.isDirectory()) {
+                        loadPath.add(file.getAbsolutePath());
+                    }
+                }
+            }
+        } else {
+            while (jarFile.entries() != null) {
+                JarEntry entry = jarFile.entries().nextElement();
+                if (entry.isDirectory()) {
+                    loadPath.add(pluginPath + File.separator + entry.getName());
+                }
+            }
         }
         loadPath.add(pluginPath + JRUBY_PLUGI_LIB);
 

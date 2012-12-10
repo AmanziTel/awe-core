@@ -14,7 +14,9 @@
 package org.amanzi.neo.geoptima.loader.ui.page.impl;
 
 import org.amanzi.neo.geoptima.loader.core.IRemoteSupportConfiguration;
+import org.amanzi.neo.geoptima.loader.impl.core.RemoteSupportConfiguration;
 import org.amanzi.neo.geoptima.loader.ui.wizard.impl.GeoptimaLoaderWizard;
+import org.amanzi.neo.loader.core.ILoader;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,11 +46,14 @@ public abstract class AbstractConfigurationPage extends WizardPage {
 
     private IRemoteSupportConfiguration configuration;
 
+    private ILoader<RemoteSupportConfiguration, ? > loader;
+
     @Override
     public void createControl(final Composite parent) {
         mainComposite = new Group(parent, SWT.NONE);
         mainComposite.setLayout(STANDARD_LOADER_PAGE_LAYOUT);
         this.configuration = ((GeoptimaLoaderWizard)getWizard()).getWizardConfiguration();
+        this.loader = ((GeoptimaLoaderTypeSelectionPage)getWizard().getPages()[0]).getCurrentLoader();
         setControl(mainComposite);
     }
 
@@ -64,5 +69,12 @@ public abstract class AbstractConfigurationPage extends WizardPage {
      */
     public IRemoteSupportConfiguration getConfiguration() {
         return configuration;
+    }
+
+    /**
+     * @return Returns the loader.
+     */
+    public ILoader<RemoteSupportConfiguration, ? > getLoader() {
+        return loader;
     }
 }

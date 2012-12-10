@@ -88,6 +88,7 @@ public class GeoptimaLoaderTypeSelectionPage extends AbstractLoaderPage<RemoteSu
         super.createControl(parent);
         loaderList = new GeoptimaLoaderTypeSelectorWidget(getMainComposite(), this, null, getLoaders());
         loaderList.initializeWidget();
+        onLoaderChanged();
         update();
     }
 
@@ -97,7 +98,6 @@ public class GeoptimaLoaderTypeSelectionPage extends AbstractLoaderPage<RemoteSu
             setCurrentLoader(getLoader(loaderList.getSelectedLoader()));
             update();
         }
-
     }
 
     @Override

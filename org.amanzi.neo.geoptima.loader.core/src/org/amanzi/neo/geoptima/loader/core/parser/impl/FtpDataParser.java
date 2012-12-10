@@ -65,8 +65,7 @@ public class FtpDataParser
         uploadData(configuration.getFtpClient(), configuration.getFiles(), folder, null);
         try {
             JRubyRuntimeWrapper wrapper = GeoptimaLoaderCorePlugin.getDefault().getRuntimeWrapper();
-            wrapper.executeScript("-x -l -a ~/.amanzi/temp/2012-08-06/*json", GeoptimaLoaderCorePlugin.getDefault()
-                    .getScriptsForProject("geoptima-loader").get(0));
+            wrapper.executeScript(GeoptimaLoaderCorePlugin.getDefault().getScriptsForProject("geoptima-loader").get(0));
         } catch (ScriptingException e) {
             LOGGER.error("can't process convering", e);
         }

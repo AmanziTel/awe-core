@@ -29,13 +29,13 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class SelectResourcesPage extends AbstractConfigurationPage implements ISelectDriveListener {
+public class SelectDatasetCredentialsPage extends AbstractConfigurationPage implements ISelectDriveListener {
     private SelectDriveNameWidget driveNameCombo;
 
     /**
      * @param pageName
      */
-    public SelectResourcesPage() {
+    public SelectDatasetCredentialsPage() {
         super(Messages.selectDataUploadingFilters_PageName);
         setTitle(Messages.selectDataUploadingFilters_PageName);
         setPageComplete(false);
@@ -79,4 +79,9 @@ public class SelectResourcesPage extends AbstractConfigurationPage implements IS
         }
     }
 
+    @Override
+    public void dispose() {
+        driveNameCombo.finishUp();
+        super.dispose();
+    }
 }

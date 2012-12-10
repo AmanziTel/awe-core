@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.TextWidget;
 import org.amanzi.neo.geoptima.loader.ui.internal.Messages;
 import org.amanzi.neo.geoptima.loader.ui.widgets.impl.FtpTreeViewer;
 import org.apache.commons.net.ftp.FTPClient;
@@ -47,6 +49,10 @@ public class SelectFtpDataPage extends SelectRemoteDataPage implements Selection
 
     private FtpTreeViewer viewer;
 
+    private TextWidget userNameWidget;
+
+    private TextWidget passwordWidget;
+
     /**
      * @param name
      */
@@ -57,6 +63,14 @@ public class SelectFtpDataPage extends SelectRemoteDataPage implements Selection
     @Override
     public void createControl(final Composite parent) {
         super.createControl(parent);
+        userNameWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, Messages.userName_Label, getMainComposite(),
+                getMinimalLabelWidth());
+
+        passwordWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER | SWT.PASSWORD, Messages.password_Label,
+                getMainComposite(), getMinimalLabelWidth());
+
+        userNameWidget.setDefault(getDefaulUserName());
+        passwordWidget.setDefault(getDefaulPassword());
         viewer = new FtpTreeViewer(getMainComposite());
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.heightHint = 200;
@@ -117,7 +131,7 @@ public class SelectFtpDataPage extends SelectRemoteDataPage implements Selection
             client.configure(config);
 
             client.connect(getUrl());
-            client.login(getUser(), getPassword());
+            client.login(userNameWidget.getText(), passwordWidget.getText());
             viewer.initialize(client);
             getConfiguration().setFtpClient(client);
         } catch (IOException e) {
@@ -137,13 +151,19 @@ public class SelectFtpDataPage extends SelectRemoteDataPage implements Selection
         return "ftp.amanzitel.com";
     }
 
-    @Override
     protected String getDefaulUserName() {
         return "amanzitel";
     }
 
-    @Override
     protected String getDefaulPassword() {
         return "J3sT?dr4";
+    }
+
+    @Override
+    public void onTextChanged(final String text) {
+        if (userNameWidget != null && passwordWidget != null) {
+            getConfiguration().setCredentials(getUrl(), userNameWidget.getText(), passwordWidget.getText());
+        }
+
     }
 }

@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.geoptima.loader.impl.core;
 
+import java.util.Calendar;
+
 import org.amanzi.neo.geoptima.loader.core.IRemoteSupportConfiguration;
 import org.amanzi.neo.loader.core.impl.MultiFileConfiguration;
 import org.apache.commons.net.ftp.FTPClient;
@@ -37,6 +39,14 @@ public class RemoteSupportConfiguration extends MultiFileConfiguration implement
     private FTPFile[] files;
     private FTPClient ftpClient;
 
+    private Calendar endTime;
+
+    private Calendar startTime;
+
+    private String imei;
+
+    private String imsi;
+
     @Override
     public boolean isConnectable() {
         return false;
@@ -52,6 +62,7 @@ public class RemoteSupportConfiguration extends MultiFileConfiguration implement
     /**
      * @return Returns the url.
      */
+    @Override
     public String getUrl() {
         return url;
     }
@@ -89,5 +100,65 @@ public class RemoteSupportConfiguration extends MultiFileConfiguration implement
     @Override
     public FTPClient getFtpClient() {
         return ftpClient;
+    }
+
+    @Override
+    public void setStartTime(final Calendar calendar) {
+        this.startTime = calendar;
+
+    }
+
+    @Override
+    public void setEndTime(final Calendar calendar) {
+        this.endTime = calendar;
+
+    }
+
+    /**
+     * @return Returns the imei.
+     */
+    @Override
+    public String getImei() {
+        return imei;
+    }
+
+    /**
+     * @param imei The imei to set.
+     */
+    @Override
+    public void setImei(final String imei) {
+        this.imei = imei;
+    }
+
+    /**
+     * @return Returns the imsi.
+     */
+    @Override
+    public String getImsi() {
+        return imsi;
+    }
+
+    /**
+     * @param imsi The imsi to set.
+     */
+    @Override
+    public void setImsi(final String imsi) {
+        this.imsi = imsi;
+    }
+
+    /**
+     * @return Returns the endTime.
+     */
+    @Override
+    public Calendar getEndTime() {
+        return endTime;
+    }
+
+    /**
+     * @return Returns the startTime.
+     */
+    @Override
+    public Calendar getStartTime() {
+        return startTime;
     }
 }

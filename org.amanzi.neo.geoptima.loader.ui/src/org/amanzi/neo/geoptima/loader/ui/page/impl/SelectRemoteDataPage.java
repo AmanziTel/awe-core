@@ -35,10 +35,6 @@ public abstract class SelectRemoteDataPage extends AbstractLocationDataPage impl
 
     private TextWidget hostWidget;
 
-    private TextWidget userNameWidget;
-
-    private TextWidget passwordWidget;
-
     /**
      * @param pageName
      */
@@ -51,42 +47,23 @@ public abstract class SelectRemoteDataPage extends AbstractLocationDataPage impl
         super.createControl(parent);
         hostWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, Messages.host_Label, getMainComposite(),
                 MINIMAL_LABEL_WIDTH);
-        userNameWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, Messages.userName_Label, getMainComposite(),
-                MINIMAL_LABEL_WIDTH);
 
-        passwordWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER | SWT.PASSWORD, Messages.password_Label,
-                getMainComposite(), MINIMAL_LABEL_WIDTH);
-
-        userNameWidget.setDefault(getDefaulUserName());
         hostWidget.setDefault(getDefaultHost());
-        passwordWidget.setDefault(getDefaulPassword());
     }
 
     protected abstract String getDefaultHost();
-
-    protected abstract String getDefaulUserName();
-
-    protected abstract String getDefaulPassword();
 
     @Override
     public IWizardPage getPreviousPage() {
         return getWizard().getPages()[0];
     }
 
-    @Override
-    public void onTextChanged(final String text) {
-        getConfiguration().setCredentials(getUrl(), getUser(), getPassword());
+    protected int getMinimalLabelWidth() {
+        return MINIMAL_LABEL_WIDTH;
     }
 
     protected String getUrl() {
         return hostWidget.getText();
     }
 
-    protected String getUser() {
-        return userNameWidget.getText();
-    }
-
-    protected String getPassword() {
-        return passwordWidget.getText();
-    }
 }

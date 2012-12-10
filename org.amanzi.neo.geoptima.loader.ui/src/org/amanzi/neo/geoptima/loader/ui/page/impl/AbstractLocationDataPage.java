@@ -42,7 +42,7 @@ public abstract class AbstractLocationDataPage extends AbstractConfigurationPage
     public IWizardPage getNextPage() {
         IWizardPage page = getWizard().getPage(Messages.selectDataUploadingFilters_PageName);
         if (page == null) {
-            ((Wizard)getWizard()).addPage(new SelectResourcesPage());
+            ((Wizard)getWizard()).addPage(new SelectDatasetCredentialsPage());
         } else {
             return page;
         }

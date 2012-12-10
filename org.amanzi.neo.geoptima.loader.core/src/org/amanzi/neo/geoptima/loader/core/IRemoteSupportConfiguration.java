@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.geoptima.loader.core;
 
+import java.util.Calendar;
+
 import org.amanzi.neo.loader.core.IMultiFileConfiguration;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -44,5 +46,50 @@ public interface IRemoteSupportConfiguration extends IMultiFileConfiguration {
      * @return
      */
     FTPClient getFtpClient();
+
+    /**
+     * @param calendar
+     */
+    void setStartTime(Calendar calendar);
+
+    /**
+     * @param calendar
+     */
+    void setEndTime(Calendar calendar);
+
+    /**
+     * @return
+     */
+    Calendar getEndTime();
+
+    /**
+     * @return
+     */
+    Calendar getStartTime();
+
+    /**
+     * @param imsi
+     */
+    void setImsi(String imsi);
+
+    /**
+     * @return
+     */
+    String getImsi();
+
+    /**
+     * @param imei
+     */
+    void setImei(String imei);
+
+    /**
+     * @return
+     */
+    String getImei();
+
+    /**
+     * @return
+     */
+    String getUrl();
 
 }
