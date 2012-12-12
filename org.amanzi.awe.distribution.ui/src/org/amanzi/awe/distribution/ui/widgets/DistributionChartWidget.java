@@ -148,8 +148,6 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
 
             plot.setRangeAxis(percentageAxis);
             break;
-        case CDF:
-            break;
         }
 
         dataset.updateDelegate(chartType);
