@@ -95,6 +95,8 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     private DistributionColoringContainer distributionColoringContainer;
 
+    private ChartType previousChartType = null;
+
     /**
      * @param parent
      * @param style
@@ -173,8 +175,11 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     @Override
     public void onChartTypeSelected(final ChartType chartType) {
-        for (final IDistributionPropertiesListener listener : getListeners()) {
-            listener.onChartTypeChanged(chartType);
+        if (!chartType.equals(previousChartType)) {
+            for (final IDistributionPropertiesListener listener : getListeners()) {
+                listener.onChartTypeChanged(chartType);
+            }
+            previousChartType = chartType;
         }
     }
 
@@ -213,14 +218,14 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
         thirdColorProperties.setHidden(isHidden);
         thirdColor.setHidden(isHidden || isThirdColorPropertiesHidden);
 
-        if (!isThirdColorPropertiesHidden && distributionColoringContainer != null) {
+        if (!isThirdColorPropertiesHidden && (distributionColoringContainer != null)) {
             distributionColoringContainer.setThreeColors();
             fireColorsUpdated();
         }
     }
 
     private void setPalettePanelHidden(final boolean isHidden) {
-        if (!isHidden && distributionColoringContainer != null) {
+        if (!isHidden && (distributionColoringContainer != null)) {
             distributionColoringContainer.setPalette();
             fireColorsUpdated();
         }
@@ -232,7 +237,7 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
         selectedValues.setHidden(isHidden);
         spinner.setHidden(isHidden);
 
-        if (!isHidden && distributionColoringContainer != null) {
+        if (!isHidden && (distributionColoringContainer != null)) {
             distributionColoringContainer.setDefault();
             fireColorsUpdated();
         }
@@ -241,7 +246,7 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
     private void setBlendPanelHidden(final boolean isHidden) {
         blendProperties.setHidden(isHidden);
 
-        if (!isHidden && distributionColoringContainer != null) {
+        if (!isHidden && (distributionColoringContainer != null)) {
             distributionColoringContainer.setTwoColors();
             fireColorsUpdated();
         }
@@ -311,7 +316,7 @@ public class DistributionPropertiesWidget extends AbstractAWEWidget<Composite, I
 
     @Override
     public void onPaletteChanged(final BrewerPalette palette) {
-        if (palette != null && distributionColoringContainer != null) {
+        if ((palette != null) && (distributionColoringContainer != null)) {
             if (distributionColoringContainer.updatePalette(palette)) {
                 fireColorsUpdated();
             }
