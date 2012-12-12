@@ -547,6 +547,24 @@ public class DistributionModel extends AbstractAnalyzisModel<IPropertyStatistica
     }
 
     @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(super.getName());
+        builder.append(" distribution for ");
+        builder.append(getSourceModel().getName());
+        builder.append(" on property ");
+        builder.append(propertyName);
+
+        if (select != null) {
+            builder.append(" with selection ");
+            builder.append(select);
+        }
+
+        return builder.toString();
+    }
+
+    @Override
     public String getPropertyName() {
         return propertyName;
     }
