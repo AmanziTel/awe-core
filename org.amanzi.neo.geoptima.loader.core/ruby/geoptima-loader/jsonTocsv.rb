@@ -18,12 +18,12 @@ $files = Dir.glob("SOURCE_DATA_PATH")
 $print = true
 $export = true
 $seperate = false
-$export_stats = true
+$export_stats = false
 $map_headers = true
 $combine_all = true
 $more_headers = true
-$show_error_stats = true
-$export_gpx = true
+$show_error_stats = false
+$export_gpx = false
 $split_time = false
 class HeaderMap
   attr_reader :prefix, :name, :event
