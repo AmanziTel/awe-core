@@ -16,6 +16,7 @@ package org.amanzi.awe.distribution.ui.widgets;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.view.widgets.PropertyComboWidget;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.eclipse.swt.widgets.Composite;
@@ -53,6 +54,11 @@ public class DistributionPropertyWidget extends PropertyComboWidget {
         }
 
         return result;
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        // do nothing
     }
 
 }

@@ -253,11 +253,6 @@ public class DistributionManager {
         chartTypes.add(ChartType.LOGARITHMIC);
         chartTypes.add(ChartType.PERCENTS);
 
-        final Class< ? > clazz = model.getPropertyStatistics().getPropertyClass(nodeType, propertyName);
-        if (!clazz.equals(String.class) && !clazz.equals(Boolean.class)) {
-            chartTypes.add(ChartType.CDF);
-        }
-
         return chartTypes;
     }
 

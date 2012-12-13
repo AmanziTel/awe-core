@@ -18,6 +18,7 @@ import java.util.Collection;
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.type.IDistributionType.Select;
 import org.amanzi.awe.distribution.ui.widgets.SelectComboWidget.ISelectChanged;
+import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
 import org.eclipse.swt.widgets.Composite;
 
@@ -67,7 +68,7 @@ public class SelectComboWidget extends AbstractComboWidget<Select, ISelectChange
     public void fillCombo() {
         super.fillCombo();
 
-        if (getItems() != null && getItems().size() == 1) {
+        if ((getItems() != null) && (getItems().size() == 1)) {
             setEnabled(false);
         }
     }
@@ -81,6 +82,11 @@ public class SelectComboWidget extends AbstractComboWidget<Select, ISelectChange
     protected void fireListener(final ISelectChanged listener, final Select selectedItem) {
         listener.onSelectChanged(selectedItem);
 
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        // do nothing
     }
 
 }

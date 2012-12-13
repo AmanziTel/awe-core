@@ -120,8 +120,6 @@ public class DistributionChartDataset extends AbstractDataset implements Categor
             case PERCENTS:
                 currentDelegate = new PercentageDistributionChartDataset();
                 break;
-            case CDF:
-                break;
             }
             delegateMap.put(chartType, currentDelegate);
 

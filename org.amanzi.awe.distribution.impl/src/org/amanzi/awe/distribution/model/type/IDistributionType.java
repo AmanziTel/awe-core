@@ -49,13 +49,7 @@ public interface IDistributionType<T extends IRange> {
         /*
          * Chart show Logarithmic count of property for each bar
          */
-        LOGARITHMIC("Logarithmic counts"),
-
-        /*
-         * Chart show CDF of this property
-         */
-        CDF("CDF Chart");
-
+        LOGARITHMIC("Logarithmic counts");
         /*
          * title of this type of chart
          */

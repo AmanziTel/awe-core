@@ -148,8 +148,6 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
 
             plot.setRangeAxis(percentageAxis);
             break;
-        case CDF:
-            break;
         }
 
         dataset.updateDelegate(chartType);
@@ -165,7 +163,7 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
         try {
             this.model = distributionModel;
 
-            distributionChart.setTitle(distributionModel.getName());
+            distributionChart.setTitle(distributionModel.toString());
             dataset.setDistributionBars(distributionModel.getDistributionBars());
 
             update();
@@ -184,7 +182,7 @@ public class DistributionChartWidget extends AbstractAWEWidget<ChartComposite, I
             final IDistributionBar bar = (IDistributionBar)((CategoryItemEntity)entity).getColumnKey();
             final int index = dataset.getColumnIndex(bar);
 
-            if (selectedBar == null || !selectedBar.equals(bar)) {
+            if ((selectedBar == null) || !selectedBar.equals(bar)) {
                 for (final IDistributionChartListener listener : getListeners()) {
                     listener.onBarSelected(bar, index);
                 }

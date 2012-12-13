@@ -18,6 +18,7 @@ import java.util.Collection;
 import org.amanzi.awe.distribution.engine.manager.DistributionManager;
 import org.amanzi.awe.distribution.model.type.IDistributionType;
 import org.amanzi.awe.distribution.ui.widgets.DistributionTypeWidget.IDistributionTypeListener;
+import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
 import org.eclipse.swt.widgets.Composite;
 
@@ -77,6 +78,11 @@ public class DistributionTypeWidget extends AbstractComboWidget<IDistributionTyp
     @Override
     protected int getDefaultSelectedItemIndex() {
         return -1;
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        // do nothing
     }
 
 }
