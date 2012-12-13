@@ -19,6 +19,8 @@ import java.util.List;
 
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.TextWidget;
+import org.amanzi.neo.geoptima.core.ui.manager.CredentialsManager;
+import org.amanzi.neo.geoptima.core.ui.messages.CoreMessages;
 import org.amanzi.neo.geoptima.loader.ui.internal.Messages;
 import org.amanzi.neo.geoptima.loader.ui.widgets.impl.FtpTreeViewer;
 import org.apache.commons.net.ftp.FTPClient;
@@ -63,10 +65,10 @@ public class SelectFtpDataPage extends SelectRemoteDataPage implements Selection
     @Override
     public void createControl(final Composite parent) {
         super.createControl(parent);
-        userNameWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, Messages.userName_Label, getMainComposite(),
+        userNameWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, CoreMessages.userName, getMainComposite(),
                 getMinimalLabelWidth());
 
-        passwordWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER | SWT.PASSWORD, Messages.password_Label,
+        passwordWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER | SWT.PASSWORD, CoreMessages.password,
                 getMainComposite(), getMinimalLabelWidth());
 
         userNameWidget.setDefault(getDefaulUserName());
@@ -145,18 +147,17 @@ public class SelectFtpDataPage extends SelectRemoteDataPage implements Selection
 
     }
 
-    // TODO KV: move all default credentials to preference store
     @Override
     protected String getDefaultHost() {
-        return "ftp.amanzitel.com";
+        return CredentialsManager.getFtpHost();
     }
 
     protected String getDefaulUserName() {
-        return "amanzitel";
+        return CredentialsManager.getFtpUserName();
     }
 
     protected String getDefaulPassword() {
-        return "J3sT?dr4";
+        return CredentialsManager.getFtpPassword();
     }
 
     @Override

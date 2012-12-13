@@ -136,11 +136,11 @@ public class GeoptimaSaver extends AbstractDriveSaver {
             long previousTimestamp = (Long)cacheData.get(getTimePeriodNodeProperties().getTimestampProperty());
             long currentTimestamp = (Long)data.get(getTimePeriodNodeProperties().getTimestampProperty());
 
-            if ((currentTimestamp - previousTimestamp) < DOMINANT_TIMEOUT) {
+            if (currentTimestamp - previousTimestamp < DOMINANT_TIMEOUT) {
                 Integer signalStrength = (Integer)cacheData.get(SIGNAL_STRENGTH);
                 Integer neighbourStrength = (Integer)data.get(NEIGHBOUR_SIGNAL_STRENGTH);
 
-                if ((signalStrength != null) && (neighbourStrength != null)) {
+                if (signalStrength != null && neighbourStrength != null) {
                     Integer deltaRssi = neighbourStrength - signalStrength;
 
                     dominantValue = deltaRssi > 0;
@@ -160,6 +160,9 @@ public class GeoptimaSaver extends AbstractDriveSaver {
 
     private void fixDate(final IMappedStringData data) {
         String time = data.get(TIMESTAMP_PROPERTY);
+        if (time == null) {
+            return;
+        }
         int lastPointIndex = time.lastIndexOf(".");
         time = time.substring(0, lastPointIndex + 4);
         data.put(TIMESTAMP_PROPERTY, time);

@@ -75,7 +75,7 @@ public abstract class MultiStreamParser<S extends ISingleFileConfiguration, P ex
 
     @Override
     protected D parseNextElement() throws IOException {
-        if ((currentParser != null) && currentParser.hasNext()) {
+        if (currentParser != null && currentParser.hasNext()) {
             return currentParser.next();
         } else {
             if (parserIterator.hasNext()) {

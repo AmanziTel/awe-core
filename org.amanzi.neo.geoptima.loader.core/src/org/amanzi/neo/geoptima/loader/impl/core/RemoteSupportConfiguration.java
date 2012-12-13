@@ -47,6 +47,8 @@ public class RemoteSupportConfiguration extends MultiFileConfiguration implement
 
     private String imsi;
 
+    private boolean removeData;
+
     @Override
     public boolean isConnectable() {
         return false;
@@ -160,5 +162,15 @@ public class RemoteSupportConfiguration extends MultiFileConfiguration implement
     @Override
     public Calendar getStartTime() {
         return startTime;
+    }
+
+    @Override
+    public boolean isRemoveData() {
+        return removeData;
+    }
+
+    @Override
+    public void setRemoveData(final boolean removeData) {
+        this.removeData = removeData;
     }
 }

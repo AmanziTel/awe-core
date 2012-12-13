@@ -129,14 +129,12 @@ public class JRubyRuntimeWrapper {
 
     }
 
-    public Object executeScript(final String script, final File fileName) throws ScriptingException {
-        try {
-            IRubyObject object = runtime.getArgsFile();
-            return defineJavaObject(object);
-        } catch (Exception e) {
-            LOGGER.error("Can't execute script " + script + "because of", e);
-            throw new ScriptingException("Can't execute script " + script + "because of", e);
+    public Object executeScript(final File file, final Map<String, String> scriptReplacement) throws ScriptingException {
+        String script = ScriptUtils.getInstance().getScript(file);
+        for (Entry<String, String> entry : scriptReplacement.entrySet()) {
+            script = script.replace(entry.getKey(), entry.getValue());
         }
+        return executeScript(script);
     }
 
     /**

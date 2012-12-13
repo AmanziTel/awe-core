@@ -6,7 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.neo.geoptima.loader.core.internal.GeoptimaLoaderCorePlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.loader.core;bundle-version="1.0.3",
- org.amanzi.awe.scripting;bundle-version="1.0.0"
+ org.amanzi.awe.scripting;bundle-version="1.0.0",
+ org.amanzi.neo.core;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.geoptima.loader.core,

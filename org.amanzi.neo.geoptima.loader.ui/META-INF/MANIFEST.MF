@@ -7,6 +7,7 @@ Bundle-Activator: org.amanzi.neo.geoptima.loader.ui.internal.GeoptimaLoaderUi
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.loader.ui;bundle-version="1.0.0",
  org.amanzi.neo.geoptima.loader.core;bundle-version="1.0.0",
- org.amanzi.log4j;bundle-version="1.0.0"
+ org.amanzi.log4j;bundle-version="1.0.0",
+ org.amanzi.neo.geoptima.core.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -92,4 +92,14 @@ public interface IRemoteSupportConfiguration extends IMultiFileConfiguration {
      */
     String getUrl();
 
+    /**
+     * @param removeData
+     */
+    void setRemoveData(boolean removeData);
+
+    /**
+     * @return
+     */
+    boolean isRemoveData();
+
 }

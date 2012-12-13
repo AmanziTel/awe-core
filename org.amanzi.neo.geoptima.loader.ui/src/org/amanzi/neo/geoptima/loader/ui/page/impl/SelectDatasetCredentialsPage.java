@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.geoptima.loader.ui.page.impl;
 
+import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
+import org.amanzi.awe.ui.view.widgets.CheckBoxWidget;
+import org.amanzi.awe.ui.view.widgets.CheckBoxWidget.ICheckBoxSelected;
 import org.amanzi.neo.geoptima.loader.ui.internal.Messages;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget;
 import org.amanzi.neo.loader.ui.page.widgets.impl.SelectDriveNameWidget.ISelectDriveListener;
@@ -29,7 +32,7 @@ import org.eclipse.swt.widgets.Composite;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class SelectDatasetCredentialsPage extends AbstractConfigurationPage implements ISelectDriveListener {
+public class SelectDatasetCredentialsPage extends AbstractConfigurationPage implements ISelectDriveListener, ICheckBoxSelected {
     private SelectDriveNameWidget driveNameCombo;
 
     /**
@@ -55,6 +58,7 @@ public class SelectDatasetCredentialsPage extends AbstractConfigurationPage impl
     public void createControl(final Composite parent) {
         super.createControl(parent);
         driveNameCombo = WizardFactory.getInstance().addDatasetNameSelectorForDrive(getMainComposite(), this);
+        AWEWidgetFactory.getFactory().addCheckBoxWidget(this, Messages.removeData_afterloading_label, getMainComposite());
     }
 
     /**
@@ -83,5 +87,11 @@ public class SelectDatasetCredentialsPage extends AbstractConfigurationPage impl
     public void dispose() {
         driveNameCombo.finishUp();
         super.dispose();
+    }
+
+    @Override
+    public void onCheckBoxSelected(final CheckBoxWidget source) {
+        getConfiguration().setRemoveData(source.isChecked());
+
     }
 }

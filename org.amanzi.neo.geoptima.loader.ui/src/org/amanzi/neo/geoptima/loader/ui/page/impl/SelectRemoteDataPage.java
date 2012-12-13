@@ -16,7 +16,7 @@ package org.amanzi.neo.geoptima.loader.ui.page.impl;
 import org.amanzi.awe.ui.view.widgets.AWEWidgetFactory;
 import org.amanzi.awe.ui.view.widgets.TextWidget;
 import org.amanzi.awe.ui.view.widgets.TextWidget.ITextChandedListener;
-import org.amanzi.neo.geoptima.loader.ui.internal.Messages;
+import org.amanzi.neo.geoptima.core.ui.messages.CoreMessages;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -45,7 +45,7 @@ public abstract class SelectRemoteDataPage extends AbstractLocationDataPage impl
     @Override
     public void createControl(final Composite parent) {
         super.createControl(parent);
-        hostWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, Messages.host_Label, getMainComposite(),
+        hostWidget = AWEWidgetFactory.getFactory().addTextWidget(this, SWT.BORDER, CoreMessages.host, getMainComposite(),
                 MINIMAL_LABEL_WIDTH);
 
         hostWidget.setDefault(getDefaultHost());

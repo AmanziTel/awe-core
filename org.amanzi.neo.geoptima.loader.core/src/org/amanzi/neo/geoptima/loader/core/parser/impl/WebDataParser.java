@@ -57,7 +57,8 @@ public class WebDataParser extends AbstractParser<IRemoteSupportConfiguration, I
 
     @Override
     protected File getFileFromConfiguration(final IRemoteSupportConfiguration configuration) {
-        // TODO Auto-generated method stub
+        // File file=File.createTempFile(System.getProperty("user.home") + "/.amanzi/temp",
+        // "web_data_temp.csv");;
         return null;
     }
 
@@ -70,8 +71,10 @@ public class WebDataParser extends AbstractParser<IRemoteSupportConfiguration, I
                 + TIME_FORMAT.format(getConfiguration().getEndTime().getTime());
         String urlString = String.format(FIRST_URL_PATTERN, getConfiguration().getUrl(), getConfiguration().getImsi().trim()
                 .substring(0, 5), startTime, endTime);
+        System.out.println(urlString + URL_PATTERN_FORMAT);
         try {
-            url = new URL(urlString);
+            url = new URL(
+                    "http://explorer.amanzitel.com/geoptima/event/extractNew.csv?dataset=24001&cdate=2012-11-10T16:00:25&cimei=358506046830281&cimsi=240016008967428");
 
             urlConn = url.openConnection();
             urlConn.setConnectTimeout(60000);

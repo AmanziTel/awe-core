@@ -102,7 +102,11 @@ public abstract class AbstractSynonymsSaver<T extends IConfiguration> extends Ab
             if (StringUtils.isEmpty(value)) {
                 return null;
             }
-            return Integer.parseInt(value);
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
     }

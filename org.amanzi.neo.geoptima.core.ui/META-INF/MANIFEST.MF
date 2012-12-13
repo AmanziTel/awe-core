@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ui
+Bundle-SymbolicName: org.amanzi.neo.geoptima.core.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.neo.geoptima.core.ui.internal.GeoptimaCoreUIPlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.amanzi.awe.ui;bundle-version="1.0.0",
+ org.amanzi.log4j;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.neo.geoptima.core.ui.manager,
+ org.amanzi.neo.geoptima.core.ui.messages

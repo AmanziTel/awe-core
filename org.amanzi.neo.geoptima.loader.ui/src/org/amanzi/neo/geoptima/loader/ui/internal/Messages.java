@@ -34,12 +34,6 @@ public class Messages extends NLS {
     public static String selectFtpSource_PageName;
     public static String selectDataUploadingFilters_PageName;
 
-    public static String host_Label;
-
-    public static String userName_Label;
-
-    public static String password_Label;
-
     public static String connectButton_Label;
 
     public static String selectFilesToUploadMessage;
@@ -56,6 +50,8 @@ public class Messages extends NLS {
     public static String enterRequiredCredentials_msg;
 
     public static String incorrectDateValue_msg;
+
+    public static String removeData_afterloading_label;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
