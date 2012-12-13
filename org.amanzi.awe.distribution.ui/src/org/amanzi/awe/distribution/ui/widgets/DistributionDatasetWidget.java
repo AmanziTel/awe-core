@@ -17,8 +17,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.amanzi.awe.distribution.ui.DistributionView;
 import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.DistributionDataset;
 import org.amanzi.awe.distribution.ui.widgets.DistributionDatasetWidget.IDistributionDatasetSelectionListener;
+import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.view.widgets.internal.AbstractComboWidget;
 import org.amanzi.neo.models.drive.IDriveModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -141,6 +143,13 @@ public class DistributionDatasetWidget extends AbstractComboWidget<DistributionD
     @Override
     protected int getDefaultSelectedItemIndex() {
         return -1;
+    }
+
+    @Override
+    public void onEvent(final IEvent event) {
+        if (!(event.getSource() instanceof DistributionView)) {
+            super.onEvent(event);
+        }
     }
 
 }

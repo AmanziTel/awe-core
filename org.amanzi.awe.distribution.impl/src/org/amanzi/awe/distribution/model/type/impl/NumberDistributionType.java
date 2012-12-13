@@ -87,7 +87,7 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
             while (Precision.compareTo(max, min, PRECISION_DELTA) > 0) {
                 final boolean includeMax = Precision.compareTo(max, min + step, PRECISION_DELTA) > 0;
 
-                final double curMax = includeMax ? min + step : max;
+                final double curMax = includeMax ? increaseMinimum(min, step) : max;
                 final RangeFilterType filterType = includeMax ? RangeFilterType.INCLUDE_START_AND_END
                         : RangeFilterType.INCLUDE_START_EXCLUDE_END;
 
@@ -96,11 +96,15 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
                 final RangeFilter filter = new RangeFilter(getPropertyName(), range, filterType);
                 ranges.add(new SimpleRange(getNumberDistributionRangeName(min, curMax), filter));
 
-                min += step;
+                min = increaseMinimum(min, step);
             }
         }
 
         return ranges;
+    }
+
+    protected double increaseMinimum(final double previousMinimum, final double step) {
+        return previousMinimum + step;
     }
 
     private double getStep(final double min, final double max, final int delta) {
@@ -110,7 +114,7 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
         return res;
     }
 
-    private String getNumberDistributionRangeName(final double min, final double max) {
+    protected String getNumberDistributionRangeName(final double min, final double max) {
         final StringBuilder sb = new StringBuilder();
 
         sb.append(DECIMAL_FORMAT.format(min)).append(" - ").append(DECIMAL_FORMAT.format(max));
@@ -123,7 +127,7 @@ public class NumberDistributionType extends AbstractDistributionType<SimpleRange
             final NumberDistributionType type = (NumberDistributionType)o;
             return super.equals(type) && ObjectUtils.equals(numberDistributionRange, type.numberDistributionRange);
         }
-        
+
         return false;
     }
 }

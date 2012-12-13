@@ -302,6 +302,8 @@ public class DistributionView extends ViewPart
     @Override
     public void onChartTypeChanged(final ChartType chartType) {
         distributionChart.updateChartType(chartType);
+
+        runDistribution();
     }
 
     private void updateChartColors() {
