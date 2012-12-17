@@ -116,6 +116,7 @@
 				<module>org.amanzi.awe.correlation.feature</module>
 			   	<module>org.amanzi.awe.correlation.ui</module>
 				<module>org.amanzi.awe.neostyle</module>
+				<module>org.amanzi.neo.geoptima.feature</module>
 				<module>org.amanzi.awe.network.ui</module>
 				<module>org.amanzi.awe.feature</module>
 				<module>org.amanzi.awe.project</module>

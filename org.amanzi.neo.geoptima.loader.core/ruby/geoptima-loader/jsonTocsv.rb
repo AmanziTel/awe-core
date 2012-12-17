@@ -22,7 +22,7 @@ $export_stats = false
 $map_headers = true
 $combine_all = true
 $more_headers = true
-$show_error_stats = false
+$show_error_stats = true
 $export_gpx = false
 $split_time = false
 class HeaderMap
