@@ -16,4 +16,24 @@
       [Enter License Description here.]
    </license>
 
+   <plugin
+         id="org.amanzi.neo.geoptima.core.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.neo.geoptima.loader.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.neo.geoptima.loader.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>
