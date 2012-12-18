@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -164,10 +165,12 @@ public class ScriptUtils {
                 }
             }
         } else {
-            while (jarFile.entries() != null) {
-                JarEntry entry = jarFile.entries().nextElement();
+            Enumeration<JarEntry> entries = jarFile.entries();
+            JarEntry entry;
+            while ((entry = entries.nextElement()) != null) {
                 if (entry.isDirectory()) {
                     loadPath.add(pluginPath + File.separator + entry.getName());
+                    LOGGER.info("initialized with jar entry " + pluginPath + File.separator + entry.getName());
                 }
             }
         }
@@ -220,10 +223,10 @@ public class ScriptUtils {
      * @param jRubyHome2
      * @return
      */
-    private String prepareJarPath(String jrubyHomePath) {
-        jrubyHomePath = jrubyHomePath.substring(PREFIX_FILE.length(), jrubyHomePath.length() - 2);
-        LOGGER.info("Prepared Path < " + jrubyHomePath + " >");
-        return jrubyHomePath;
+    private String prepareJarPath(String pluginPath) {
+        pluginPath = pluginPath.substring(PREFIX_FILE.length(), pluginPath.length() - 2);
+        LOGGER.info("Prepared Path < " + pluginPath + " >");
+        return pluginPath;
     }
 
     /**
