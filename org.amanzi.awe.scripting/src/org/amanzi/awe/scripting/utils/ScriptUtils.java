@@ -167,10 +167,11 @@ public class ScriptUtils {
         } else {
             Enumeration<JarEntry> entries = jarFile.entries();
             JarEntry entry;
-            while ((entry = entries.nextElement()) != null) {
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
                 if (entry.isDirectory()) {
-                    loadPath.add(pluginPath + File.separator + entry.getName());
-                    LOGGER.info("initialized with jar entry " + pluginPath + File.separator + entry.getName());
+                    loadPath.add(pluginPath + entry.getName());
+                    LOGGER.info("initialized with jar entry " + pluginPath + entry.getName());
                 }
             }
         }
