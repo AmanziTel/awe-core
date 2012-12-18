@@ -117,6 +117,9 @@
 			   	<module>org.amanzi.awe.correlation.ui</module>
 				<module>org.amanzi.awe.neostyle</module>
 				<module>org.amanzi.neo.geoptima.feature</module>
+				<module>org.amanzi.neo.geoptima.core.ui</module>
+				<module>org.amanzi.neo.geoptima.loader.core</module>
+				<module>org.amanzi.neo.geoptima.loader.ui</module>
 				<module>org.amanzi.awe.network.ui</module>
 				<module>org.amanzi.awe.feature</module>
 				<module>org.amanzi.awe.project</module>
@@ -146,9 +149,6 @@
 		<module>org.amanzi.log4j</module>
 		<module>org.amanzi.neo.db</module>
 		<module>org.amanzi.neo.core</module>
-		<module>org.amanzi.neo.geoptima.core.ui</module>
-		<module>org.amanzi.neo.geoptima.loader.core</module>
-		<module>org.amanzi.neo.geoptima.loader.ui</module>
 		<module>org.amanzi.neo.loader.core</module>
 		<module>org.amanzi.neo.loader.ui</module>
 		<module>org.amanzi.neo.models</module>
