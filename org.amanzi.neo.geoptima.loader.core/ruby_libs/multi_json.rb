@@ -24,19 +24,6 @@ module MultiJson
     # if any adapters are already loaded, then checks
     # to see which are installed if none are loaded.
     def default_adapter
-      return :oj if defined?(::Oj)
-      return :yajl if defined?(::Yajl)
-      return :json_gem if defined?(::JSON)
-
-      REQUIREMENT_MAP.each do |(library, adapter)|
-        begin
-          require library
-          return adapter
-        rescue LoadError
-          next
-        end
-      end
-
       Kernel.warn "[WARNING] MultiJson is using the default adapter (ok_json). We recommend loading a different JSON library to improve performance."
       :ok_json
     end
