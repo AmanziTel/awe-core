@@ -32,6 +32,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 
 /**
@@ -146,6 +147,7 @@ public class ScriptUtils {
             LOGGER.warn("Plugin not found");
             return;
         }
+        loadPath.add(pluginPath);
         JarFile jarFile = null;
         if (pluginPath.startsWith(PREFIX_FILE) && pluginPath.endsWith(POSTFIX_JAR)) {
             String path = prepareJarPath(pluginPath);
@@ -164,19 +166,22 @@ public class ScriptUtils {
                     }
                 }
             }
+
         } else {
-            Enumeration<JarEntry> entries = jarFile.entries();
             JarEntry entry;
-            while (entries.hasMoreElements()) {
+            for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
                 entry = entries.nextElement();
-                if (entry.isDirectory()) {
-                    loadPath.add(pluginPath + entry.getName());
+                LOGGER.info(entry.getName());
+                if (entry.isDirectory() && entry.getName().contains(JRUBY_PLUGI_LIB)) {
+                    Path path = new Path(pluginPath + entry.getName());
+                    LOGGER.info("OSS string " + path + " " + path.toOSString() + " ");
+                    loadPath.add(path.toOSString());
                     LOGGER.info("initialized with jar entry " + pluginPath + entry.getName());
                 }
             }
         }
-        loadPath.add(pluginPath + JRUBY_PLUGI_LIB);
 
+        loadPath.add(pluginPath + JRUBY_PLUGI_LIB);
     }
 
     /**
