@@ -248,6 +248,9 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         public void initWorkspace() throws IOException {
 
             scriptsFolder = new File(WORKSPACE_FOLDER, SCRIPTS_FOLDER);
+            // IProjectTemplate template = new ProjectTemplate(path, type, name,
+            // isReplacingParameters, description, iconURL, id);
+
             if (!scriptsFolder.exists()) {
                 FileUtils.forceMkdir(scriptsFolder);
             }

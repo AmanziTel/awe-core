@@ -172,7 +172,6 @@ public class ScriptUtils {
                 entry = entries.nextElement();
                 LOGGER.info(entry.getName());
                 if (entry.isDirectory() && entry.getName().contains(JRUBY_PLUGI_LIB)) {
-                    LOGGER.info("OSS string " + entry.getName() + " ");
                     loadPath.add(entry.getName().substring(0, entry.getName().length() - 1));
                     LOGGER.info("initialized with jar entry " + entry.getName());
                 }

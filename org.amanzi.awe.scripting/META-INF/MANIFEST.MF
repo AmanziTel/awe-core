@@ -4,7 +4,10 @@ Bundle-Name: Scripting
 Bundle-SymbolicName: org.amanzi.awe.scripting
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.jruby;visibility:=reexport,
- org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport
+ org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
+ com.aptana.core;bundle-version="3.3.0",
+ com.aptana.scripting;bundle-version="3.0.0",
+ com.aptana.ruby.ui;bundle-version="3.0.2"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.scripting,

@@ -60,6 +60,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <feature id="org.amanzi.awe.nem.feature"/>
       <feature id="org.amanzi.awe.correlation.feature"/>
       <feature id="org.amanzi.neo.geoptima.feature"/>
+      <feature id="org.radrails.rails" version="3.3.0.201212171824-7e-7Q7f5FNTNHIZ_"/>
    </features>
 
    <configurations>

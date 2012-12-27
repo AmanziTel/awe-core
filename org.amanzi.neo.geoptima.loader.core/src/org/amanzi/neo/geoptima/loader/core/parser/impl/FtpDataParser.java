@@ -71,7 +71,7 @@ public class FtpDataParser
     };
     private static final FileFilter DIRECTORY_FILE_FILTER = FileFilterUtils.directoryFileFilter();
     private static final FileFilter CSV_FILE_FILTER = FileFilterUtils.suffixFileFilter(".csv");
-    private static final String SOURCE_DATA_PATH_FORMAT = "%s/**/*.json";
+    private static final String SOURCE_DATA_PATH_FORMAT = "%s" + File.separator + "**" + File.separator + "*.json";
 
     private final List<File> files = new ArrayList<File>();
 
